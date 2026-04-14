@@ -1,4 +1,4 @@
-import { CheckSquare, Pencil, Calendar } from "lucide-react";
+import { Circle, Pencil, Calendar } from "lucide-react";
 
 export const I18N = {
   de: {
@@ -40,6 +40,7 @@ export const I18N = {
     image: "Bild", video: "Video", audio: "Audio", document: "Dokument", file: "Datei",
     locale: "de-DE",
     connectProject: "Projekt verknüpfen",
+    connectAreaResource: "Bereich/Ressource verknüpfen",
     inArea: "In Bereich",
     withResource: "Mit Ressource",
     relatedProject: "Zugehöriges Projekt",
@@ -84,6 +85,7 @@ export const I18N = {
     image: "Image", video: "Video", audio: "Audio", document: "Document", file: "File",
     locale: "en-US",
     connectProject: "Link Project",
+    connectAreaResource: "Link Area/Resource",
     inArea: "In Area",
     withResource: "With Resource",
     relatedProject: "Related Project",
@@ -128,6 +130,7 @@ export const I18N = {
     image: "Imagen", video: "Video", audio: "Audio", document: "Documento", file: "Archivo",
     locale: "es-ES",
     connectProject: "Vincular Proyecto",
+    connectAreaResource: "Vincular Área/Recurso",
     inArea: "En Área",
     withResource: "Con Recurso",
     relatedProject: "Proyecto Relacionado",
@@ -142,7 +145,7 @@ export const getCC = (t) => ({
 });
 
 export const getTABS = (t) => [
-  { id: "tasks",    label: t.tasks,    color: "#7C83F7", Icon: CheckSquare },
+  { id: "tasks",    label: t.tasks,    color: "#7C83F7", Icon: Circle },
   { id: "notes",    label: t.notes,    color: "#F59E0B", Icon: Pencil },
-  { id: "calendar", label: t.calendar, color: "#38BDF8", Icon: Calendar },
+  { id: "calendar", label: t.calendar, color: "#1D4ED8", Icon: Calendar },
 ];

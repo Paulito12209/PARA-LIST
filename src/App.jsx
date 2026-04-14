@@ -28,8 +28,8 @@ const fmtDate = (d, locale) =>
 
 const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
-  { id: "tasks",  color: "#38BDF8", Icon: CheckSquare },
-  { id: "cal",    color: "#34D399", Icon: Calendar },
+  { id: "tasks",  color: "#38BDF8", Icon: Circle },
+  { id: "cal",    color: "#1E40AF", Icon: Calendar },
   { id: "media",  color: "#10B981", Icon: Paperclip },
   { id: "link",   color: "#FB923C", Icon: Link2 },
 ];
@@ -608,12 +608,14 @@ function CatListScreen({ type, cats, onOpen, onAdd, onBack, t, CC }) {
 }
 
 /* ── Bookmark Rail ───────────────────────────────────────────── */
-function BookmarkRail({ active, onSelect }) {
+function BookmarkRail({ active, onSelect, baseColor }) {
   return (
     <div className="bookmark-rail">
       {BOOKMARKS.map((bm) => {
         const BmIcon = bm.Icon;
         const isActive = active === bm.id;
+        const color = (bm.id === 'canvas' && baseColor) ? baseColor : bm.color;
+        
         return (
           <button
             key={bm.id}
@@ -624,12 +626,12 @@ function BookmarkRail({ active, onSelect }) {
             }`}
             onClick={() => onSelect(bm.id)}
             style={{
-              background: isActive ? bm.color : bm.color + "28",
-              border: `1px solid ${bm.color}${isActive ? "" : "50"}`,
+              background: isActive ? color : color + "28",
+              border: `1px solid ${color}${isActive ? "" : "50"}`,
               borderRight: "none",
             }}
           >
-            <BmIcon size={11} color={isActive ? "#fff" : bm.color} />
+            <BmIcon size={11} color={isActive ? "#fff" : color} />
           </button>
         );
       })}
@@ -712,7 +714,7 @@ function CatDetailScreen({
                 : {}
             }
           >
-            {related ? related.name : t.connectProject}
+            {related ? related.name : (cat.type === 'project' ? t.connectAreaResource : t.connectProject)}
           </button>
 
           {cat.tags?.map((tag) => (
@@ -820,7 +822,7 @@ function CatDetailScreen({
           ))}
       </div>
 
-      <BookmarkRail active={bm} onSelect={setBm} />
+      <BookmarkRail active={bm} onSelect={setBm} baseColor={cfg.color} />
 
       {/* Bottom nav */}
       <div className="nav-bottom">

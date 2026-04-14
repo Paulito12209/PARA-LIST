@@ -53,10 +53,19 @@
     letter-spacing: -0.5px;
   }
 
+  &__info {
+    flex: 1;
+  }
+
   &__date {
     font-size: 11px;
     color: $color-muted;
     margin-top: $spacing-2xs;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-sm;
   }
 
   &__bell {
@@ -567,6 +576,15 @@
     color: $color-muted;
     margin-top: $spacing-2xs;
     @include text-truncate;
+  }
+
+  &__cat-tag {
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 1px 6px;
+    display: inline-block;
+    margin-top: $spacing-xs;
   }
 
   &__delete {

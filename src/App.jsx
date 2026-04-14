@@ -221,7 +221,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, lang }) {
                 {isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}
               </span>
             )}
-            {cat && (
+            {cat && CC[cat.type] && (
               <span
                 className="task-item__cat-tag"
                 style={{
@@ -257,7 +257,7 @@ function NoteList({ entries, cats, onDelete, t, CC }) {
             <Trash2 size={14} color="#5858A0" />
           </button>
         </div>
-        {cat && (
+        {cat && CC[cat.type] && (
           <span
             className="note-item__cat-tag"
             style={{
@@ -306,7 +306,7 @@ function CalList({ entries, cats, onDelete, t, CC, lang }) {
             <Trash2 size={14} color="#5858A0" />
           </button>
         </div>
-        {cat && (
+        {cat && CC[cat.type] && (
           <span
             className="cal-item__cat-tag"
             style={{
@@ -323,7 +323,7 @@ function CalList({ entries, cats, onDelete, t, CC, lang }) {
 }
 
 /* ── Media List ──────────────────────────────────────────────── */
-function MediaList({ entries, onDelete, t }) {
+function MediaList({ entries, cats, onDelete, t, CC }) {
   const getMediaConfig = (mediaType) => {
     switch (mediaType) {
       case "image": return { Icon: ImageIcon, color: "#0D9488", label: t.image };
@@ -336,6 +336,7 @@ function MediaList({ entries, onDelete, t }) {
 
   return entries.map((e) => {
     const { Icon, color, label } = getMediaConfig(e.mediaType);
+    const cat = cats?.find((c) => c.id === e.catId);
     return (
       <div 
         key={e.id} 
@@ -355,6 +356,17 @@ function MediaList({ entries, onDelete, t }) {
         <div className="media-item__body">
           <div className="media-item__title">{e.title}</div>
           <div className="media-item__meta">{label}</div>
+          {cat && CC[cat.type] && (
+            <span
+              className="media-item__cat-tag"
+              style={{
+                color: CC[cat.type].color,
+                background: CC[cat.type].color + "18",
+              }}
+            >
+              {cat.name}
+            </span>
+          )}
         </div>
         <button 
           className="media-item__delete" 
@@ -371,21 +383,35 @@ function MediaList({ entries, onDelete, t }) {
 }
 
 /* ── Link List ───────────────────────────────────────────────── */
-function LinkList({ entries, onDelete, t }) {
-  return entries.map((e) => (
-    <div key={e.id} className="media-item">
-      <div className="media-item__icon" style={{ background: "#FB923C22", color: "#FB923C" }}>
-        <Link2 size={18} />
+function LinkList({ entries, cats, onDelete, t, CC }) {
+  return entries.map((e) => {
+    const cat = cats?.find((c) => c.id === e.catId);
+    return (
+      <div key={e.id} className="media-item">
+        <div className="media-item__icon" style={{ background: "#FB923C22", color: "#FB923C" }}>
+          <Link2 size={18} />
+        </div>
+        <div className="media-item__body">
+          <div className="media-item__title">{e.title}</div>
+          {e.url && <div className="media-item__meta">{e.url}</div>}
+          {cat && CC[cat.type] && (
+            <span
+              className="media-item__cat-tag"
+              style={{
+                color: CC[cat.type].color,
+                background: CC[cat.type].color + "18",
+              }}
+            >
+              {cat.name}
+            </span>
+          )}
+        </div>
+        <button className="media-item__delete" onClick={() => onDelete(e.id)}>
+          <Trash2 size={14} color="#5858A0" />
+        </button>
       </div>
-      <div className="media-item__body">
-        <div className="media-item__title">{e.title}</div>
-        {e.url && <div className="media-item__meta">{e.url}</div>}
-      </div>
-      <button className="media-item__delete" onClick={() => onDelete(e.id)}>
-        <Trash2 size={14} color="#5858A0" />
-      </button>
-    </div>
-  ));
+    );
+  });
 }
 
 /* ── Home Screen ─────────────────────────────────────────────── */
@@ -804,7 +830,7 @@ function CatDetailScreen({
           ) : (
             <TaskList t={t} CC={CC} lang={lang}
                 entries={entries.filter((e) => e.type === "task")}
-              cats={[]}
+              cats={allCats}
               onToggle={toggleTask}
               onDelete={deleteEntry}
             />
@@ -815,7 +841,7 @@ function CatDetailScreen({
           ) : (
             <CalList t={t} CC={CC} lang={lang}
               entries={entries.filter((e) => e.type === "calendar")}
-              cats={[]}
+              cats={allCats}
               onDelete={deleteEntry}
             />
           ))}
@@ -823,8 +849,9 @@ function CatDetailScreen({
           (entries.filter((e) => e.type === "media").length === 0 ? (
             <div className="cat-detail__section-empty">{t.noMedia}</div>
           ) : (
-            <MediaList t={t}
+            <MediaList t={t} CC={CC}
               entries={entries.filter((e) => e.type === "media")}
+              cats={allCats}
               onDelete={deleteEntry}
             />
           ))}
@@ -832,8 +859,9 @@ function CatDetailScreen({
           (entries.filter((e) => e.type === "link").length === 0 ? (
             <div className="cat-detail__section-empty">{t.noLink}</div>
           ) : (
-            <LinkList t={t}
+            <LinkList t={t} CC={CC}
               entries={entries.filter((e) => e.type === "link")}
+              cats={allCats}
               onDelete={deleteEntry}
             />
           ))}
@@ -1312,13 +1340,18 @@ export default function App() {
           (() => {
             const cat = state.cats.find((c) => c.id === cur.catId);
             if (!cat) return null;
+            
+            // Inclusive filtering: include entries from "child" categories
+            const childIds = state.cats.filter(c => c.relatedId === cat.id).map(c => c.id);
+            const inclusiveEntries = state.entries.filter(e => e.catId === cat.id || childIds.includes(e.catId));
+            
             return (
               <CatDetailScreen
                 t={t}
                 CC={CC}
                 cat={cat}
                 allCats={state.cats}
-                entries={state.entries.filter((e) => e.catId === cat.id)}
+                entries={inclusiveEntries}
                 onUpdate={(p) => updateCat(cat.id, p)}
                 onDelete={() => {
                   if (window.confirm(t.confirmDelete(cat.name)))

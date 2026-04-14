@@ -1,0 +1,140 @@
+// ============================================================
+// PARA·LIST – Design Tokens (8px Material Grid)
+// ============================================================
+
+// ── Spacing (8px base) ──────────────────────────────────────
+$spacing-2xs: 2px;
+$spacing-xs:  4px;
+$spacing-sm:  8px;
+$spacing-md:  16px;   // Standard content-to-edge
+$spacing-lg:  24px;
+$spacing-xl:  32px;
+$spacing-2xl: 40px;
+$spacing-3xl: 48px;
+$spacing-4xl: 56px;
+$spacing-5xl: 64px;
+
+:root {
+  --spacing-2xs: #{$spacing-2xs};
+  --spacing-xs:  #{$spacing-xs};
+  --spacing-sm:  #{$spacing-sm};
+  --spacing-md:  #{$spacing-md};
+  --spacing-lg:  #{$spacing-lg};
+  --spacing-xl:  #{$spacing-xl};
+  --spacing-2xl: #{$spacing-2xl};
+  --spacing-3xl: #{$spacing-3xl};
+  --spacing-4xl: #{$spacing-4xl};
+  --spacing-5xl: #{$spacing-5xl};
+}
+
+// ── Radii ───────────────────────────────────────────────────
+$radius-xs:   4px;
+$radius-sm:   8px;
+$radius-md:   12px;
+$radius-lg:   16px;
+$radius-xl:   20px;
+$radius-pill:  999px;
+
+:root {
+  --radius-xs:   #{$radius-xs};
+  --radius-sm:   #{$radius-sm};
+  --radius-md:   #{$radius-md};
+  --radius-lg:   #{$radius-lg};
+  --radius-xl:   #{$radius-xl};
+  --radius-pill: #{$radius-pill};
+}
+
+// ── Colors – Surfaces ───────────────────────────────────────
+$color-bg:      #07070F;
+$color-surface: #0F0F1C;
+$color-card:    #161626;
+$color-hover:   #1C1C30;
+$color-border:  #222238;
+$color-dim:     #262648;
+
+// ── Colors – Typography ─────────────────────────────────────
+$color-text:    #EDEEFF;
+$color-muted:   #5858A0;
+
+// ── Colors – Categories (PARA) ──────────────────────────────
+$color-project:     #E03E3E;
+$color-project-dim: #1D0A0A;
+$color-area:        #D09020;
+$color-area-dim:    #1D1508;
+$color-resource:    #30A060;
+$color-resource-dim:#081408;
+
+// ── Colors – Tabs (Tasks / Notes / Calendar) ────────────────
+$color-task:     #7C83F7;
+$color-note:     #F59E0B;
+$color-calendar: #38BDF8;
+
+// ── Colors – Notifications ──────────────────────────────────
+$color-notif-red:    #F26565;
+$color-notif-navy:   #1E40AF;
+$color-notif-violet: #7C3AED;
+
+// ── Colors – Bookmarks ──────────────────────────────────────
+$color-bm-canvas: #818CF8;
+$color-bm-tasks:  #38BDF8;
+$color-bm-cal:    #34D399;
+$color-bm-link:   #FB923C;
+
+:root {
+  // Surfaces
+  --color-bg:      #{$color-bg};
+  --color-surface: #{$color-surface};
+  --color-card:    #{$color-card};
+  --color-hover:   #{$color-hover};
+  --color-border:  #{$color-border};
+  --color-dim:     #{$color-dim};
+
+  // Typography
+  --color-text:    #{$color-text};
+  --color-muted:   #{$color-muted};
+
+  // Categories
+  --color-project:     #{$color-project};
+  --color-project-dim: #{$color-project-dim};
+  --color-area:        #{$color-area};
+  --color-area-dim:    #{$color-area-dim};
+  --color-resource:    #{$color-resource};
+  --color-resource-dim:#{$color-resource-dim};
+
+  // Tabs
+  --color-task:     #{$color-task};
+  --color-note:     #{$color-note};
+  --color-calendar: #{$color-calendar};
+
+  // Notifications
+  --color-notif-red:    #{$color-notif-red};
+  --color-notif-navy:   #{$color-notif-navy};
+  --color-notif-violet: #{$color-notif-violet};
+
+  // Bookmarks
+  --color-bm-canvas: #{$color-bm-canvas};
+  --color-bm-tasks:  #{$color-bm-tasks};
+  --color-bm-cal:    #{$color-bm-cal};
+  --color-bm-link:   #{$color-bm-link};
+}
+
+// ── Typography ──────────────────────────────────────────────
+$font-body:    'DM Sans', system-ui, sans-serif;
+$font-heading: 'Bricolage Grotesque', 'DM Sans', system-ui, sans-serif;
+
+:root {
+  --font-body:    #{$font-body};
+  --font-heading: #{$font-heading};
+}
+
+// ── Transitions ─────────────────────────────────────────────
+$transition-fast:   0.15s ease;
+$transition-normal: 0.22s ease;
+$transition-slow:   0.35s ease;
+
+// ── Bookmark rail width ─────────────────────────────────────
+$bookmark-width: 24px;
+
+// ── FAB size ────────────────────────────────────────────────
+$fab-size: 52px;
+$fab-size-sm: 46px;

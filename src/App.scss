@@ -1,0 +1,904 @@
+// ============================================================
+// PARA·LIST – Component Styles (BEM)
+// ============================================================
+@use './styles/variables' as *;
+@use './styles/mixins' as *;
+
+// ── App Shell ───────────────────────────────────────────────
+.app {
+  width: 100%;
+  max-width: 420px;
+  height: 100dvh;
+  margin: 0 auto;
+  background: $color-bg;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  font-family: $font-body;
+  color: $color-text;
+}
+
+// ── Command Panel ───────────────────────────────────────────
+.command-panel {
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+  border-bottom: 1px solid $color-border;
+  transition: background $transition-normal;
+
+  &--closed {
+    background: $color-surface;
+  }
+
+  &--open {
+    background: $color-hover;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md $spacing-md $spacing-sm;
+  }
+
+  &__greeting {
+    font-family: $font-heading;
+    font-size: 19px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+  }
+
+  &__date {
+    font-size: 11px;
+    color: $color-muted;
+    margin-top: $spacing-2xs;
+  }
+
+  &__bell {
+    @include floating-btn(40px, $radius-md);
+    position: relative;
+    border: 1.5px solid $color-border;
+    background: $color-dim;
+    transition: all $transition-fast;
+  }
+
+  &__bell-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 2px solid $color-hover;
+  }
+
+  // Pull-down drawer content
+  &__drawer {
+    padding: 0 $spacing-md $spacing-xs;
+    animation: panel-in 0.2s ease;
+  }
+
+  &__drawer-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+    padding: $spacing-sm $spacing-sm + $spacing-xs;
+    border-radius: $spacing-sm + $spacing-2xs;
+    border: 1px solid $color-border;
+    margin-bottom: $spacing-xs + $spacing-2xs;
+    background: $color-card;
+
+    &--overdue {
+      background: rgba($color-notif-red, 0.09);
+    }
+  }
+
+  &__drawer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__drawer-title {
+    font-size: 13px;
+    color: $color-text;
+    flex: 1;
+    @include text-truncate;
+  }
+
+  &__drawer-meta {
+    font-size: 11px;
+    color: $color-muted;
+    flex-shrink: 0;
+  }
+
+  &__drawer-empty {
+    color: $color-muted;
+    font-size: 13px;
+    text-align: center;
+    padding: $spacing-sm + $spacing-2xs 0 $spacing-xs;
+  }
+
+  // Handle bar
+  &__handle {
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+
+    &--closed {
+      padding: $spacing-xs 0 $spacing-sm;
+    }
+
+    &--open {
+      padding: $spacing-sm 0 $spacing-sm + $spacing-2xs;
+    }
+  }
+
+  &__handle-bar {
+    width: 34px;
+    height: 4px;
+    border-radius: $spacing-2xs;
+    background: $color-dim;
+  }
+}
+
+// ── Main Content Area ───────────────────────────────────────
+.main-content {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+// ── Home Screen ─────────────────────────────────────────────
+.home {
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
+
+  &__content {
+    padding: $spacing-md $spacing-md 0;
+  }
+}
+
+// ── Category Grid ───────────────────────────────────────────
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm + 1px;
+  margin-bottom: $spacing-md;
+}
+
+.category-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: $radius-lg;
+  border: 1px solid transparent;
+  padding: $spacing-xs;
+  transition: transform $transition-fast, opacity $transition-fast;
+
+  &--project {
+    background: $color-project-dim;
+    border-color: rgba($color-project, 0.19);
+  }
+
+  &--area {
+    background: $color-area-dim;
+    border-color: rgba($color-area, 0.19);
+  }
+
+  &--resource {
+    background: $color-resource-dim;
+    border-color: rgba($color-resource, 0.19);
+  }
+
+  &__main {
+    flex: 1;
+    padding: $spacing-sm - $spacing-2xs $spacing-2xs;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: $spacing-sm;
+    min-height: 82px;
+  }
+
+  &__label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  &__count {
+    font-size: 10px;
+    color: $color-muted;
+    background: $color-card;
+    border-radius: $radius-pill;
+    padding: 1px 7px;
+  }
+
+  &__add-btn {
+    margin-top: $spacing-xs;
+    border-radius: $radius-pill;
+    padding: $spacing-sm - 2px;
+    @include flex-center;
+    border: 1px solid transparent;
+    transition: opacity $transition-fast;
+
+    &--project {
+      background: rgba($color-project, 0.08);
+      border-color: rgba($color-project, 0.25);
+    }
+
+    &--area {
+      background: rgba($color-area, 0.08);
+      border-color: rgba($color-area, 0.25);
+    }
+
+    &--resource {
+      background: rgba($color-resource, 0.08);
+      border-color: rgba($color-resource, 0.25);
+    }
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+// ── List Section (Switcher + Entries) ────────────────────────
+.list-section {
+  position: relative;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 $spacing-md;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__label {
+    font-family: $font-heading;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.3px;
+  }
+}
+
+// ── List Switcher (Floating Icons) ──────────────────────────
+.list-switcher {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  background: $color-card;
+  border-radius: $radius-pill;
+  padding: $spacing-xs;
+  border: 1px solid $color-border;
+
+  &__btn {
+    @include floating-btn(34px, $radius-pill);
+    transition: all $transition-fast;
+    color: $color-muted;
+
+    &--active {
+      color: white;
+      // Shadow/bg set dynamically
+    }
+  }
+}
+
+// ── Entry List Container ────────────────────────────────────
+.entry-list {
+  padding: 0 $spacing-md;
+  padding-bottom: 100px;
+  min-height: 200px;
+
+  &__empty {
+    text-align: center;
+    padding: $spacing-2xl 0;
+    color: $color-muted;
+    font-size: 13px;
+  }
+
+  &__empty-icon {
+    font-size: 28px;
+    margin-bottom: $spacing-sm + $spacing-2xs;
+    opacity: 0.4;
+  }
+}
+
+// ── Task Item ───────────────────────────────────────────────
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm + $spacing-xs;
+  padding: $spacing-sm + 3px $spacing-md - $spacing-2xs;
+  border-radius: $radius-md + 1px;
+  @include card-base;
+  margin-bottom: $spacing-xs + $spacing-2xs;
+  transition: opacity 0.2s;
+
+  &--done {
+    opacity: 0.45;
+  }
+
+  &__checkbox {
+    @include floating-btn(22px, 11px);
+    border: 2px solid $color-dim;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+
+    &--checked {
+      border-color: $color-task;
+      background: $color-task;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-text;
+    @include text-truncate;
+
+    &--done {
+      text-decoration: line-through;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    gap: $spacing-xs + $spacing-2xs;
+    margin-top: $spacing-2xs;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  &__due {
+    font-size: 11px;
+    color: $color-muted;
+
+    &--overdue {
+      color: $color-notif-red;
+      font-weight: 600;
+    }
+  }
+
+  &__cat-tag {
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 1px 6px;
+  }
+
+  &__delete {
+    padding: $spacing-xs;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+}
+
+// ── Note Item ───────────────────────────────────────────────
+.note-item {
+  padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
+  border-radius: $radius-md + 1px;
+  @include card-base;
+  margin-bottom: $spacing-xs + $spacing-2xs;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__excerpt {
+    font-size: 12px;
+    color: $color-muted;
+    margin-top: $spacing-xs;
+    line-height: 1.5;
+    @include line-clamp(2);
+  }
+
+  &__delete {
+    margin-left: $spacing-sm;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &__cat-tag {
+    display: inline-block;
+    margin-top: $spacing-sm;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 2px 7px;
+  }
+}
+
+// ── Calendar Item ───────────────────────────────────────────
+.cal-item {
+  padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
+  border-radius: $radius-md + 1px;
+  @include card-base;
+  margin-bottom: $spacing-xs + $spacing-2xs;
+
+  &--today {
+    border-color: rgba($color-calendar, 0.31);
+  }
+
+  &--past {
+    opacity: 0.45;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+  }
+
+  &__date-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: $spacing-sm + $spacing-2xs;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.21);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__date-month {
+    font-size: 8px;
+    color: $color-calendar;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &__date-day {
+    font-size: 15px;
+    color: $color-calendar;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__time {
+    font-size: 11px;
+    color: $color-calendar;
+    margin-top: $spacing-2xs;
+  }
+
+  &__delete {
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &__cat-tag {
+    display: inline-block;
+    margin-top: $spacing-sm;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 2px 7px;
+  }
+}
+
+// ── FAB (Floating Action Button) ────────────────────────────
+.fab {
+  position: absolute;
+  bottom: $spacing-lg;
+  right: $spacing-md + $spacing-xs;
+  @include floating-btn($fab-size, $radius-lg);
+  border: none;
+  z-index: 5;
+
+  svg {
+    display: block;
+  }
+}
+
+// ── Category List Screen ────────────────────────────────────
+.cat-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: slide-in-right $transition-normal;
+
+  &__header {
+    padding: $spacing-md + $spacing-xs $spacing-md $spacing-md;
+    border-bottom: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-xs;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 21px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-sm + $spacing-xs $spacing-md;
+    padding-bottom: 100px;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $spacing-3xl 0;
+    color: $color-muted;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-xs;
+    width: 100%;
+    padding: $spacing-sm + 5px $spacing-md;
+    border-radius: $radius-md + 1px;
+    @include card-base;
+    text-align: left;
+    margin-bottom: $spacing-xs + $spacing-2xs;
+  }
+
+  &__item-icon {
+    @include floating-btn(34px, $spacing-sm + $spacing-2xs);
+  }
+
+  &__item-info {
+    flex: 1;
+  }
+
+  &__item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__item-date {
+    font-size: 11px;
+    color: $color-muted;
+    margin-top: $spacing-2xs;
+  }
+}
+
+// ── Bottom Navigation (Back + Action) ───────────────────────
+.nav-bottom {
+  position: absolute;
+  bottom: $spacing-lg;
+  left: 0;
+  right: 0;
+  padding: 0 $spacing-md + $spacing-xs;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  z-index: 5;
+
+  &__back {
+    pointer-events: all;
+    @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
+    background: $color-surface;
+    border: 1px solid $color-border;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-sm + 1px;
+    pointer-events: all;
+  }
+
+  &__delete {
+    @include floating-btn($fab-size-sm, $radius-md + 1px);
+    background: rgba($color-notif-red, 0.12);
+    border: 1px solid rgba($color-notif-red, 0.27);
+  }
+
+  &__add {
+    @include floating-btn($fab-size, $radius-lg);
+    border: none;
+  }
+}
+
+// ── Category Detail Screen ──────────────────────────────────
+.cat-detail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: slide-in-right $transition-normal;
+
+  &__header {
+    padding: $spacing-md + $spacing-2xs (
+      $spacing-2xl + $spacing-2xs) $spacing-md - $spacing-2xs $spacing-md;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__title-input {
+    flex: 1;
+    font-size: 19px;
+    font-family: $font-heading;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+    background: transparent;
+  }
+
+  &__pills {
+    display: flex;
+    gap: $spacing-sm - 1px;
+    flex-wrap: wrap;
+  }
+
+  &__date-pill {
+    padding: $spacing-xs $spacing-sm + $spacing-2xs;
+    border-radius: $radius-pill;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: $font-body;
+    background: $color-dim;
+    border: 1px solid $color-border;
+    color: $color-muted;
+    transition: all $transition-fast;
+  }
+
+  &__tag {
+    padding: $spacing-xs $spacing-sm + $spacing-2xs;
+    border-radius: $radius-pill;
+    font-size: 10px;
+    font-weight: 600;
+    background: $color-dim;
+    color: $color-muted;
+  }
+
+  &__date-input {
+    margin-top: $spacing-sm;
+    @include input-base;
+    color-scheme: dark;
+  }
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-md (
+      $spacing-2xl + $spacing-md - $spacing-2xs) 110px $spacing-md;
+  }
+
+  &__textarea {
+    width: 100%;
+    min-height: 220px;
+    font-size: 14px;
+    line-height: 1.75;
+    color: $color-text;
+    background: transparent;
+    border: none;
+    resize: none;
+    font-family: $font-body;
+  }
+
+  &__section-empty {
+    color: $color-muted;
+    font-size: 13px;
+    text-align: center;
+    padding: $spacing-xl 0;
+  }
+}
+
+// ── Bookmark Rail ───────────────────────────────────────────
+.bookmark-rail {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%
+  );
+display: flex;
+flex-direction: column;
+gap: 3px;
+z-index: 5;
+
+&__tab {
+  width: $bookmark-width + $spacing-2xs;
+  height: $spacing-3xl + $spacing-2xs;
+  border-radius: $spacing-sm - 1px 0 0 ($spacing-sm - 1px);
+  border-right: none;
+  @include flex-center;
+  transition: all 0.18s;
+}
+}
+
+// ── Modal Overlay ───────────────────────────────────────────
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: flex-end;
+
+  &__sheet {
+    width: 100%;
+    background: $color-surface;
+    border-radius: $radius-xl $radius-xl 0 0;
+    padding: $spacing-md + $spacing-xs $spacing-md $spacing-xl + $spacing-xs;
+    border: 1px solid $color-border;
+    border-bottom: none;
+    max-height: 82vh;
+    overflow-y: auto;
+    animation: slide-up $transition-normal;
+  }
+
+  &__handle {
+    width: 34px;
+    height: 4px;
+    border-radius: $spacing-2xs;
+    background: $color-dim;
+    margin: 0 auto $spacing-md + $spacing-xs;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__close {
+    padding: $spacing-xs;
+  }
+
+  &__input {
+    @include input-base;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  &__input+&__input,
+  &__input+&__select,
+  &__textarea+&__select,
+  &__select {
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__textarea {
+    @include input-base;
+    font-size: 13px;
+    line-height: 1.65;
+    resize: none;
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__select {
+    @include input-base;
+    font-size: 13px;
+    color-scheme: dark;
+    cursor: pointer;
+  }
+
+  &__date-input,
+  &__time-input {
+    @include input-base;
+    font-size: 13px;
+    color-scheme: dark;
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__submit {
+    width: 100%;
+    margin-top: $spacing-md - $spacing-2xs;
+    padding: $spacing-sm + 5px;
+    border-radius: $radius-md + 1px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-body;
+    transition: opacity $transition-fast;
+
+    &--disabled {
+      opacity: 0.45;
+    }
+  }
+
+  // New category modal variant
+  &__icon-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+    margin-bottom: $spacing-md;
+  }
+}
+
+// ── Loading Screen ──────────────────────────────────────────
+.loading {
+  @include flex-center;
+  height: 100dvh;
+  background: $color-bg;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  &__text {
+    font-family: $font-heading;
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+    opacity: 0.6;
+  }
+
+  &__spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid $color-dim;
+    border-top-color: $color-task;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

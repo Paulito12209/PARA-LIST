@@ -1,4 +1,4 @@
-import { Circle, Pencil, Calendar } from "lucide-react";
+import { CheckCircle2, Pencil, Calendar } from "lucide-react";
 
 export const I18N = {
   de: {
@@ -46,6 +46,11 @@ export const I18N = {
     withResource: "Mit Ressource",
     relatedProject: "Zugehöriges Projekt",
     noConnection: "Keine Verknüpfung",
+    welcome: "Willkommen!",
+    onboardingLang: "Welche Sprache sprichst du?",
+    onboardingName: "Wie ist dein Name?",
+    userName: "Dein Name",
+    getStarted: "Loslegen",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -92,6 +97,11 @@ export const I18N = {
     withResource: "With Resource",
     relatedProject: "Related Project",
     noConnection: "No connection",
+    welcome: "Welcome!",
+    onboardingLang: "What's your language?",
+    onboardingName: "What's your name?",
+    userName: "Your Name",
+    getStarted: "Get Started",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -138,6 +148,11 @@ export const I18N = {
     withResource: "Con Recurso",
     relatedProject: "Proyecto Relacionado",
     noConnection: "Sin vínculo",
+    welcome: "¡Bienvenido!",
+    onboardingLang: "¿Qué idioma hablas?",
+    onboardingName: "¿Cómo te llamas?",
+    userName: "Tu Nombre",
+    getStarted: "Empezar",
   }
 };
 
@@ -148,7 +163,7 @@ export const getCC = (t) => ({
 });
 
 export const getTABS = (t) => [
-  { id: "tasks",    label: t.tasks,    color: "#7C83F7", Icon: Circle },
+  { id: "tasks",    label: t.tasks,    color: "#7C83F7", Icon: CheckCircle2 },
   { id: "notes",    label: t.notes,    color: "#F59E0B", Icon: Pencil },
   { id: "calendar", label: t.calendar, color: "#1D4ED8", Icon: Calendar },
 ];

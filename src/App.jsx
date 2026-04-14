@@ -5,6 +5,7 @@ import {
   Circle, Triangle, Square, Plus, ChevronLeft, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
+  CheckCircle2,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
 } from "lucide-react";
 import "./App.scss";
@@ -28,7 +29,7 @@ const fmtDate = (d, locale) =>
 
 const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
-  { id: "tasks",  color: "#38BDF8", Icon: Circle },
+  { id: "tasks",  color: "#7C83F7", Icon: CheckCircle2 },
   { id: "cal",    color: "#1E40AF", Icon: Calendar },
   { id: "media",  color: "#10B981", Icon: Paperclip },
   { id: "link",   color: "#FB923C", Icon: Link2 },
@@ -47,7 +48,8 @@ const CAT_ICONS = {
 /* ── seed data ───────────────────────────────────────────────── */
 const SEED = {
   theme: "dark",
-  user: { name: "Paul" },
+  lang: "de",
+  user: { name: "" },
   cats: [
     { id: "p1", type: "project",  name: "App entwickeln",  date: "2026-04-30", body: "Architektur-Überlegungen:\n\n→ React + Vite\n→ IndexedDB für Offline\n→ PWA installierbar\n\nMVP Scope:", tags: ["Coding"], relatedId: "a2" },
     { id: "p2", type: "project",  name: "Abschlussarbeit", date: "2026-06-15", body: "", tags: [], relatedId: "a2" },
@@ -438,9 +440,17 @@ function HomeScreen({
   const tabCfg = TABS.find((t) => t.id === tab);
   const tabColor = tabCfg?.color || "#7C83F7";
 
+  const lastTap = useRef(0);
   const handleDoubleTap = useCallback(
     (e) => {
-      if (e.target === e.currentTarget) onAddEntry();
+      if (e.target !== e.currentTarget) return;
+      const now = Date.now();
+      if (now - lastTap.current < 300) {
+        onAddEntry();
+        lastTap.current = 0;
+      } else {
+        lastTap.current = now;
+      }
     },
     [onAddEntry]
   );
@@ -515,7 +525,7 @@ function HomeScreen({
       </div>
 
       {/* Entry list */}
-      <div className="entry-list" onDoubleClick={handleDoubleTap}>
+      <div className="entry-list" onClick={handleDoubleTap}>
         {tabEntries.length === 0 ? (
           <div className="entry-list__empty">
             <div className="entry-list__empty-icon">
@@ -815,7 +825,7 @@ function CatDetailScreen({
       </div>
 
       {/* Content */}
-      <div className="cat-detail__body">
+      <div className="cat-detail__body" onClick={handleDoubleTap}>
         {bm === "canvas" && (
           <textarea
             className="cat-detail__textarea"
@@ -1127,8 +1137,64 @@ function NewCatModal({ type, onSave, onClose, t, CC }) {
   );
 }
 
+/* ── Onboarding Modal ────────────────────────────────────────── */
+function OnboardingModal({ t, onComplete }) {
+  const [step, setStep] = useState(0);
+  const [name, setName] = useState("");
+  const [lang, setLang] = useState("de");
+
+  const finish = () => {
+    if (name.trim()) onComplete(lang, name.trim());
+  };
+
+  return (
+    <div className="onboarding">
+      <div className="onboarding__content">
+        <div className="onboarding__logo">PARA·LIST</div>
+        
+        {step === 0 ? (
+          <div className="onboarding__step">
+            <h2 className="onboarding__title">{t.welcome}</h2>
+            <p className="onboarding__text">{t.onboardingLang}</p>
+            <div className="onboarding__langs">
+              {["de", "en", "es"].map(l => (
+                <button 
+                  key={l}
+                  className={`onboarding__lang-btn ${lang === l ? "onboarding__lang-btn--active" : ""}`}
+                  onClick={() => setLang(l)}
+                >
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+            <button className="onboarding__next" onClick={() => setStep(1)}>{t.getStarted}</button>
+          </div>
+        ) : (
+          <div className="onboarding__step">
+            <h2 className="onboarding__title">{I18N[lang].onboardingName}</h2>
+            <input 
+              autoFocus
+              className="onboarding__input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Name..."
+              onKeyDown={e => e.key === "Enter" && finish()}
+            />
+            <button 
+              className={`onboarding__next ${!name.trim() ? "onboarding__next--disabled" : ""}`}
+              onClick={finish}
+            >
+              {I18N[lang].getStarted}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ── Settings Modal ──────────────────────────────────────────── */
-function SettingsModal({ theme, setTheme, lang, setLang, t, onClose }) {
+function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpdateUser }) {
   return (
     <div className="modal" onClick={onClose}>
       <div className="modal__sheet" onClick={(e) => e.stopPropagation()}>
@@ -1138,6 +1204,17 @@ function SettingsModal({ theme, setTheme, lang, setLang, t, onClose }) {
           <h3 className="modal__title">{t.settings}</h3>
         </div>
         
+        <div className="settings-section">
+          <div className="settings-label">{t.userName}</div>
+          <input 
+            className="modal__input"
+            value={user.name}
+            onChange={(e) => onUpdateUser({ name: e.target.value })}
+            placeholder="Name..."
+            style={{ marginBottom: "16px" }}
+          />
+        </div>
+
         <div className="settings-section">
           <div className="settings-row">
             <span className="settings-label">{t.appearance}</span>
@@ -1375,7 +1452,16 @@ export default function App() {
           setLang={(l) => setState(s => ({ ...s, lang: l }))}
           theme={theme}
           setTheme={(t) => setState(s => ({ ...s, theme: t }))}
+          user={state.user}
+          onUpdateUser={(patch) => setState(s => ({ ...s, user: { ...s.user, ...patch } }))}
           onClose={() => setSettingsOpen(false)}
+        />
+      )}
+
+      {state.user.name === "" && (
+        <OnboardingModal 
+          t={t}
+          onComplete={(l, n) => setState(s => ({ ...s, lang: l, user: { name: n } }))}
         />
       )}
 

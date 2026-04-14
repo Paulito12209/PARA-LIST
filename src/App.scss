@@ -28,6 +28,8 @@
   z-index: 100;
   flex-shrink: 0;
   border-bottom: 1px solid $color-border;
+  border-radius: 0 0 24px 24px;
+  overflow: hidden;
   transition: background $transition-normal;
 
   &--closed {
@@ -306,9 +308,10 @@
 
 // ── Entry List Container ────────────────────────────────────
 .entry-list {
+  flex: 1;
   padding: 0 $spacing-md;
-  padding-bottom: 100px;
-  min-height: 200px;
+  overflow-y: auto;
+  padding-bottom: 110px;
 
   &__empty {
     text-align: center;
@@ -1286,4 +1289,131 @@ z-index: 5;
   background: #ffffff;
   color: #1a1a24;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+// ── Onboarding ──────────────────────────────────────────────
+.onboarding {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  background: #0f0f20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  animation: fade-in 0.4s ease;
+
+  &__content {
+    max-width: 320px;
+    width: 100%;
+  }
+
+  &__logo {
+    font-family: inherit;
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 48px;
+    background: linear-gradient(135deg, #7C83F7, #4F46E5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  &__step {
+    animation: slide-up 0.3s ease;
+  }
+
+  &__title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #fff;
+  }
+
+  &__text {
+    font-size: 14px;
+    color: #5858A0;
+    margin-bottom: 24px;
+  }
+
+  &__langs {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  &__lang-btn {
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1.5px solid #262648;
+    background: transparent;
+    color: #5858A0;
+    font-size: 13px;
+    font-weight: 700;
+    transition: all 0.2s;
+
+    &--active {
+      border-color: #7C83F7;
+      background: rgba(124, 131, 247, 0.1);
+      color: #7C83F7;
+    }
+  }
+
+  &__input {
+    width: 100%;
+    background: #1C1C30;
+    border: 2px solid #262648;
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 18px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: #7C83F7;
+      outline: none;
+    }
+  }
+
+  &__next {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    background: #7C83F7;
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    box-shadow: 0 8px 20px rgba(124, 131, 247, 0.3);
+    transition: all 0.2s;
+
+    &--disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  }
+}
+
+// ── Bookmark Rail Refinement ────────────────────────────────
+.bookmark-rail {
+  &__tab {
+    &--active {
+      width: 52px;
+      box-shadow: -4px 0 15px rgba(0,0,0,0.2);
+    }
+  }
+}
+
+.app.light-theme .onboarding {
+  background: #ffffff;
+  &__title { color: #1a1a24; }
+  &__input { background: #f0f0f5; border-color: #e5e5f0; color: #1a1a24; }
+  &__lang-btn { border-color: #e5e5f0; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

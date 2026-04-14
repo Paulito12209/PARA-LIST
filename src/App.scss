@@ -691,12 +691,6 @@
     pointer-events: all;
   }
 
-  &__delete {
-    @include floating-btn($fab-size-sm, $radius-md + 1px);
-    background: rgba($color-notif-red, 0.12);
-    border: 1px solid rgba($color-notif-red, 0.27);
-  }
-
   &__add {
     @include floating-btn($fab-size, $radius-lg);
     border: none;
@@ -732,6 +726,18 @@
     color: $color-text;
     letter-spacing: -0.5px;
     background: transparent;
+  }
+
+  &__delete-btn {
+    @include floating-btn(32px, $radius-sm + 2px);
+    background: rgba($color-notif-red, 0.12);
+    border: 1px solid rgba($color-notif-red, 0.27);
+    margin-left: auto;
+    flex-shrink: 0;
+    
+    &:hover {
+      background: rgba($color-notif-red, 0.22);
+    }
   }
 
   &__pills {

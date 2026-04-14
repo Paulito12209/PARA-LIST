@@ -655,6 +655,9 @@ function CatDetailScreen({
             onChange={(e) => onUpdate({ name: e.target.value })}
             placeholder="Titel..."
           />
+          <button className="cat-detail__delete-btn" onClick={onDelete}>
+            <Trash2 size={16} color="#F26565" />
+          </button>
         </div>
         <div className="cat-detail__pills">
           <button
@@ -750,9 +753,6 @@ function CatDetailScreen({
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
         <div className="nav-bottom__actions">
-          <button className="nav-bottom__delete" onClick={onDelete}>
-            <Trash2 size={17} color="#F26565" />
-          </button>
           <button
             className="nav-bottom__add"
             onClick={() => {

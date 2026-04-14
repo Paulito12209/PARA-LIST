@@ -49,11 +49,11 @@ const SEED = {
   theme: "dark",
   user: { name: "Paul" },
   cats: [
-    { id: "p1", type: "project",  name: "App entwickeln",  date: "2026-04-30", body: "Architektur-Überlegungen:\n\n→ React + Vite\n→ IndexedDB für Offline\n→ PWA installierbar\n\nMVP Scope:", tags: ["Coding"] },
-    { id: "p2", type: "project",  name: "Abschlussarbeit", date: "2026-06-15", body: "", tags: [] },
-    { id: "a1", type: "area",     name: "Gesundheit",      date: null, body: "", tags: [] },
-    { id: "a2", type: "area",     name: "Studium",         date: null, body: "", tags: [] },
-    { id: "r1", type: "resource", name: "Bücher & Links",  date: null, body: "", tags: [] },
+    { id: "p1", type: "project",  name: "App entwickeln",  date: "2026-04-30", body: "Architektur-Überlegungen:\n\n→ React + Vite\n→ IndexedDB für Offline\n→ PWA installierbar\n\nMVP Scope:", tags: ["Coding"], relatedId: "a2" },
+    { id: "p2", type: "project",  name: "Abschlussarbeit", date: "2026-06-15", body: "", tags: [], relatedId: "a2" },
+    { id: "a1", type: "area",     name: "Gesundheit",      date: null, body: "", tags: [], relatedId: null },
+    { id: "a2", type: "area",     name: "Studium",         date: null, body: "", tags: [], relatedId: null },
+    { id: "r1", type: "resource", name: "Bücher & Links",  date: null, body: "", tags: [], relatedId: "p1" },
   ],
   entries: [
     { id: "e1", type: "task", title: "Wireframes fertigstellen", done: false, note: "", due: "2026-04-13", catId: "p1" },
@@ -642,6 +642,7 @@ function CatDetailScreen({
   t,
   CC,
   cat,
+  allCats,
   entries,
   onUpdate,
   onDelete,
@@ -654,6 +655,14 @@ function CatDetailScreen({
   const CatIcon = CAT_ICONS[cat.type];
   const [bm, setBm] = useState("canvas");
   const [showDate, setShowDate] = useState(false);
+  const [showConnSelect, setShowConnSelect] = useState(false);
+
+  const related = allCats.find(c => c.id === cat.relatedId);
+  const connOptions = allCats.filter(c => {
+    if (c.id === cat.id) return false;
+    if (cat.type === "project") return c.type === "area" || c.type === "resource";
+    return c.type === "project";
+  });
 
   return (
     <div className="cat-detail">
@@ -671,22 +680,41 @@ function CatDetailScreen({
             <Trash2 size={16} color="#F26565" />
           </button>
         </div>
-        <div className="cat-detail__pills">
+        <div className="cat-detail__pills" style={{ position: 'relative' }}>
+          {cat.type === "project" && (
+            <button
+              className="cat-detail__date-pill"
+              onClick={() => setShowDate(!showDate)}
+              style={
+                cat.date
+                  ? {
+                      background: cfg.color + "20",
+                      borderColor: cfg.color + "45",
+                      color: cfg.color,
+                    }
+                  : {}
+              }
+            >
+              {cat.date ? fmtDate(cat.date, t.locale) : t.addDate}
+            </button>
+          )}
+
           <button
             className="cat-detail__date-pill"
-            onClick={() => setShowDate(!showDate)}
+            onClick={() => setShowConnSelect(!showConnSelect)}
             style={
-              cat.date
+              related
                 ? {
-                    background: cfg.color + "20",
-                    borderColor: cfg.color + "45",
-                    color: cfg.color,
+                    background: CC[related.type].color + "20",
+                    borderColor: CC[related.type].color + "45",
+                    color: CC[related.type].color,
                   }
                 : {}
             }
           >
-            {cat.date ? fmtDate(cat.date, t.locale) : "{t.addDate}"}
+            {related ? related.name : t.connectProject}
           </button>
+
           {cat.tags?.map((tag) => (
             <span key={tag} className="cat-detail__tag">
               {tag}
@@ -703,6 +731,41 @@ function CatDetailScreen({
               setShowDate(false);
             }}
           />
+        )}
+        {showConnSelect && (
+          <div className="cat-detail__conn-popup">
+            <div className="cat-detail__conn-list">
+              {connOptions.length === 0 ? (
+                <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
+              ) : (
+                connOptions.map(opt => (
+                  <button
+                    key={opt.id}
+                    className="cat-detail__conn-item"
+                    onClick={() => {
+                      onUpdate({ relatedId: opt.id });
+                      setShowConnSelect(false);
+                    }}
+                  >
+                    <span 
+                      className="cat-detail__conn-dot" 
+                      style={{ background: CC[opt.type].color }} 
+                    />
+                    <span className="cat-detail__conn-name">{opt.name}</span>
+                  </button>
+                ))
+              )}
+            </div>
+            <button
+              className="cat-detail__conn-none"
+              onClick={() => {
+                onUpdate({ relatedId: null });
+                setShowConnSelect(false);
+              }}
+            >
+              {t.noConnection}
+            </button>
+          </div>
         )}
       </div>
 
@@ -1112,7 +1175,7 @@ export default function App() {
       ...s,
       cats: [
         ...s.cats,
-        { id: uid(), type, name, date: null, body: "", tags: [] },
+        { id: uid(), type, name, date: null, body: "", tags: [], relatedId: null },
       ],
     }));
 
@@ -1235,6 +1298,7 @@ export default function App() {
                 t={t}
                 CC={CC}
                 cat={cat}
+                allCats={state.cats}
                 entries={state.entries.filter((e) => e.catId === cat.id)}
                 onUpdate={(p) => updateCat(cat.id, p)}
                 onDelete={() => {

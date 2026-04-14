@@ -39,6 +39,11 @@ export const I18N = {
     task: "Aufgabe", note: "Notiz", calSing: "Termin", mediaSing: "Ressource",
     image: "Bild", video: "Video", audio: "Audio", document: "Dokument", file: "Datei",
     locale: "de-DE",
+    connectProject: "Projekt verknüpfen",
+    inArea: "In Bereich",
+    withResource: "Mit Ressource",
+    relatedProject: "Zugehöriges Projekt",
+    noConnection: "Keine Verknüpfung",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -78,6 +83,11 @@ export const I18N = {
     task: "Task", note: "Note", calSing: "Event", mediaSing: "Resource",
     image: "Image", video: "Video", audio: "Audio", document: "Document", file: "File",
     locale: "en-US",
+    connectProject: "Link Project",
+    inArea: "In Area",
+    withResource: "With Resource",
+    relatedProject: "Related Project",
+    noConnection: "No connection",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -117,6 +127,11 @@ export const I18N = {
     task: "Tarea", note: "Nota", calSing: "Evento", mediaSing: "Recurso",
     image: "Imagen", video: "Video", audio: "Audio", document: "Documento", file: "Archivo",
     locale: "es-ES",
+    connectProject: "Vincular Proyecto",
+    inArea: "En Área",
+    withResource: "Con Recurso",
+    relatedProject: "Proyecto Relacionado",
+    noConnection: "Sin vínculo",
   }
 };
 

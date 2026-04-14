@@ -3,7 +3,8 @@ import { usePersistedState } from "./hooks/useStorage";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar,
-  Link2, Pencil, Settings
+  Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
+  Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
 } from "lucide-react";
 import "./App.scss";
 
@@ -40,6 +41,7 @@ const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
   { id: "tasks",  color: "#38BDF8", Icon: CheckSquare },
   { id: "cal",    color: "#34D399", Icon: Calendar },
+  { id: "media",  color: "#10B981", Icon: Paperclip },
   { id: "link",   color: "#FB923C", Icon: Link2 },
 ];
 
@@ -331,6 +333,55 @@ function CalList({ entries, cats, onDelete }) {
   });
 }
 
+/* ── Media List ──────────────────────────────────────────────── */
+function MediaList({ entries, onDelete }) {
+  const getMediaConfig = (mediaType) => {
+    switch (mediaType) {
+      case "image": return { Icon: ImageIcon, color: "#0D9488", label: "Bild" };
+      case "video": return { Icon: VideoIcon, color: "#EF4444", label: "Video" };
+      case "audio": return { Icon: AudioIcon, color: "#F97316", label: "Audio" };
+      case "document": return { Icon: DocumentIcon, color: "#0078D4", label: "Dokument" };
+      default: return { Icon: Paperclip, color: "#9CA3AF", label: "Datei" };
+    }
+  };
+
+  return entries.map((e) => {
+    const { Icon, color, label } = getMediaConfig(e.mediaType);
+    return (
+      <div key={e.id} className="media-item">
+        <div className="media-item__icon" style={{ background: color + "22", color: color }}>
+          <Icon size={18} />
+        </div>
+        <div className="media-item__body">
+          <div className="media-item__title">{e.title}</div>
+          <div className="media-item__meta">{label}</div>
+        </div>
+        <button className="media-item__delete" onClick={() => onDelete(e.id)}>
+          <Trash2 size={14} color="#5858A0" />
+        </button>
+      </div>
+    );
+  });
+}
+
+/* ── Link List ───────────────────────────────────────────────── */
+function LinkList({ entries, onDelete }) {
+  return entries.map((e) => (
+    <div key={e.id} className="media-item">
+      <div className="media-item__icon" style={{ background: "#FB923C22", color: "#FB923C" }}>
+        <Link2 size={18} />
+      </div>
+      <div className="media-item__body">
+        <div className="media-item__title">{e.title}</div>
+        {e.url && <div className="media-item__meta">{e.url}</div>}
+      </div>
+      <button className="media-item__delete" onClick={() => onDelete(e.id)}>
+        <Trash2 size={14} color="#5858A0" />
+      </button>
+    </div>
+  ));
+}
+
 /* ── Home Screen ─────────────────────────────────────────────── */
 function HomeScreen({
   state,
@@ -584,6 +635,7 @@ function CatDetailScreen({
   onDelete,
   onBack,
   toggleTask,
+  deleteEntry,
   onAddEntry,
 }) {
   const cfg = CC[cat.type];
@@ -657,7 +709,7 @@ function CatDetailScreen({
               entries={entries.filter((e) => e.type === "task")}
               cats={[]}
               onToggle={toggleTask}
-              onDelete={() => {}}
+              onDelete={deleteEntry}
             />
           ))}
         {bm === "cal" &&
@@ -667,14 +719,27 @@ function CatDetailScreen({
             <CalList
               entries={entries.filter((e) => e.type === "calendar")}
               cats={[]}
-              onDelete={() => {}}
+              onDelete={deleteEntry}
             />
           ))}
-        {bm === "link" && (
-          <div className="cat-detail__section-empty">
-            Links & Quellen — kommt bald
-          </div>
-        )}
+        {bm === "media" &&
+          (entries.filter((e) => e.type === "media").length === 0 ? (
+            <div className="cat-detail__section-empty">Keine Ressourcen</div>
+          ) : (
+            <MediaList
+              entries={entries.filter((e) => e.type === "media")}
+              onDelete={deleteEntry}
+            />
+          ))}
+        {bm === "link" &&
+          (entries.filter((e) => e.type === "link").length === 0 ? (
+            <div className="cat-detail__section-empty">Keine Quellen</div>
+          ) : (
+            <LinkList
+              entries={entries.filter((e) => e.type === "link")}
+              onDelete={deleteEntry}
+            />
+          ))}
       </div>
 
       <BookmarkRail active={bm} onSelect={setBm} />
@@ -690,10 +755,19 @@ function CatDetailScreen({
           </button>
           <button
             className="nav-bottom__add"
-            onClick={onAddEntry}
+            onClick={() => {
+              const map = {
+                canvas: "note",
+                tasks: "task",
+                cal: "calendar",
+                media: "media",
+                link: "link"
+              };
+              onAddEntry(map[bm] || "task");
+            }}
             style={{
-              background: cfg.color,
-              boxShadow: `0 8px 24px ${cfg.color}55`,
+              background: BOOKMARKS.find((b) => b.id === bm)?.color || cfg.color,
+              boxShadow: `0 8px 24px ${BOOKMARKS.find((b) => b.id === bm)?.color || cfg.color}55`,
             }}
           >
             <Plus size={22} color="#fff" strokeWidth={2.4} />
@@ -712,19 +786,32 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
   const [date, setDate] = useState(TODAY);
   const [time, setTime] = useState("");
   const [body, setBody] = useState("");
+  const [url, setUrl] = useState("");
+  const [mediaType, setMediaType] = useState("image");
   const [catId, setCatId] = useState(initialCatId || "");
 
   const tc =
-    type === "task" ? "#7C83F7" : type === "note" ? "#F59E0B" : "#38BDF8";
+    type === "task" ? "#7C83F7" : 
+    type === "note" ? "#F59E0B" : 
+    type === "calendar" ? "#38BDF8" : 
+    type === "media" ? "#10B981" : 
+    "#FB923C";
+
   const label =
-    type === "task" ? "Aufgabe" : type === "note" ? "Notiz" : "Termin";
+    type === "task" ? "Aufgabe" : 
+    type === "note" ? "Notiz" : 
+    type === "calendar" ? "Termin" : 
+    type === "media" ? "Ressource" : 
+    "Quelle";
 
   const save = () => {
     if (!title.trim()) return;
     const base = { type, title: title.trim(), catId: catId || null };
     if (type === "task") onSave({ ...base, done: false, note, due: due || null });
     else if (type === "note") onSave({ ...base, body });
-    else onSave({ ...base, date, time });
+    else if (type === "calendar") onSave({ ...base, date, time });
+    else if (type === "media") onSave({ ...base, mediaType });
+    else if (type === "link") onSave({ ...base, url });
   };
 
   return (
@@ -793,6 +880,39 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
               style={{ color: time ? "#EDEEFF" : "#5858A0" }}
             />
           </>
+        )}
+
+        {type === "media" && (
+          <div className="modal__media-grid">
+            {[
+              { id: 'image', Icon: ImageIcon, color: '#0D9488', label: 'Bild' },
+              { id: 'video', Icon: VideoIcon, color: '#EF4444', label: 'Video' },
+              { id: 'audio', Icon: AudioIcon, color: '#F97316', label: 'Audio' },
+              { id: 'document', Icon: DocumentIcon, color: '#0078D4', label: 'Dokument' },
+            ].map(m => (
+              <button 
+                key={m.id}
+                className={`modal__media-grid-btn ${mediaType === m.id ? 'modal__media-grid-btn--active' : ''}`}
+                onClick={() => setMediaType(m.id)}
+                style={{ color: mediaType === m.id ? m.color : '#5858A0' }}
+              >
+                <div className="icon-wrapper" style={{ background: m.color }}>
+                  <m.Icon size={18} />
+                </div>
+                <span>{m.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {type === "link" && (
+          <input
+            className="modal__input"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="https://..."
+            style={{ borderColor: tc + "45" }}
+          />
         )}
 
         <select
@@ -1050,8 +1170,9 @@ export default function App() {
                 }}
                 onBack={pop}
                 toggleTask={toggleTask}
-                onAddEntry={() =>
-                  setCreating({ type: "task", catId: cat.id })
+                deleteEntry={deleteEntry}
+                onAddEntry={(type) =>
+                  setCreating({ type, catId: cat.id })
                 }
               />
             );

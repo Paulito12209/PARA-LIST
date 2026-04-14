@@ -91,6 +91,9 @@
   // Pull-down drawer content
   &__drawer {
     padding: 0 $spacing-md $spacing-xs;
+    border-top: 1px solid rgba($color-border, 0.9);
+    margin-top: $spacing-sm;
+    padding-top: $spacing-sm;
     animation: panel-in 0.2s ease;
   }
 
@@ -170,11 +173,14 @@
 // ── Home Screen ─────────────────────────────────────────────
 .home {
   height: 100%;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   position: relative;
 
   &__content {
     padding: $spacing-md $spacing-md 0;
+    flex-shrink: 0;
   }
 }
 
@@ -309,6 +315,7 @@
 // ── Entry List Container ────────────────────────────────────
 .entry-list {
   flex: 1;
+  min-height: 0;
   padding: 0 $spacing-md;
   overflow-y: auto;
   padding-bottom: 110px;
@@ -604,6 +611,22 @@
   }
 }
 
+.link-item__preview {
+  margin-top: $spacing-xs;
+  border-radius: $radius-md;
+  overflow: hidden;
+  border: 1px solid $color-border;
+  background: $color-card;
+  aspect-ratio: 16 / 9;
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+}
+
 // ── FAB (Floating Action Button) ────────────────────────────
 .fab {
   position: absolute;
@@ -812,7 +835,8 @@
   &__body {
     flex: 1;
     overflow-y: auto;
-    padding: $spacing-md ($bookmark-width + $spacing-xs) 110px $spacing-md;
+    // Reserve enough right gutter for the expanded bookmark rail (52px)
+    padding: $spacing-md ($fab-size + $spacing-sm) 110px $spacing-md;
   }
 
   &__textarea {
@@ -914,23 +938,27 @@
 // ── Bookmark Rail ───────────────────────────────────────────
 .bookmark-rail {
   position: absolute;
-  right: 0;
+  // Slight negative offset removes visible seam to right edge
+  right: -1px;
   top: 50%;
   transform: translateY(-50%
   );
-display: flex;
-flex-direction: column;
-gap: 3px;
-z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  z-index: 5;
 
-&__tab {
-  width: $bookmark-width + $spacing-2xs;
-  height: $spacing-3xl + $spacing-2xs;
-  border-radius: $spacing-sm - 1px 0 0 ($spacing-sm - 1px);
-  border-right: none;
-  @include flex-center;
-  transition: all 0.18s;
-}
+  &__tab {
+    width: $bookmark-width + $spacing-2xs;
+    height: $spacing-3xl + $spacing-2xs;
+    margin: 0;
+    padding: 0;
+    border-radius: $spacing-sm - 1px 0 0 ($spacing-sm - 1px);
+    border-right: none;
+    @include flex-center;
+    transition: all 0.18s;
+  }
 }
 
 // ── Modal Overlay ───────────────────────────────────────────
@@ -1060,7 +1088,7 @@ z-index: 5;
 
   &__submit {
     width: 100%;
-    margin-top: $spacing-md - $spacing-2xs;
+    margin-top: 16px;
     padding: $spacing-sm + 5px;
     border-radius: $radius-md + 1px;
     color: #fff;
@@ -1072,6 +1100,17 @@ z-index: 5;
     &--disabled {
       opacity: 0.45;
     }
+
+    &--danger {
+      background: #E03E3E;
+      color: #fff;
+    }
+
+    &--secondary {
+      background: #262648;
+      color: #fff;
+      margin-top: 16px;
+    }
   }
 
   // New category modal variant
@@ -1079,7 +1118,7 @@ z-index: 5;
     display: flex;
     align-items: center;
     gap: $spacing-sm + $spacing-2xs;
-    margin-bottom: $spacing-md;
+    margin-bottom: 0;
   }
 }
 
@@ -1228,27 +1267,56 @@ z-index: 5;
 
 // ── Settings Styling ───────────────────────────────────────
 .settings-section {
-  padding: 16px 0;
+  padding: 0 !important;
 }
-.settings-row {
+
+.settings-modal .settings-section {
+  padding: 0;
+}
+
+.settings-modal .settings-section + .settings-section {
+  margin-top: 16px;
+}
+.settings-modal .settings-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
+  gap: 8px;
+  padding: 16px 0;
   border-bottom: 1px solid #262648;
 }
 .app.light-theme .settings-row {
   border-bottom-color: #e5e5f0;
 }
-.settings-label {
+.settings-modal .settings-label {
   font-size: 14px;
   font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.settings-modal .modal__input {
+  margin-bottom: 0;
+}
+
+.settings-modal .settings-label + .modal__input {
+  margin-top: 8px;
 }
 .theme-toggle {
   display: flex;
   background: #1C1C30;
   border-radius: 8px;
   padding: 4px;
+}
+.settings-modal .settings-row .settings-label {
+  margin-bottom: 0;
+}
+
+.settings-modal .modal__icon-row {
+  margin-bottom: 0;
+}
+
+.settings-modal .modal__icon-row + .settings-section {
+  margin-top: 8px;
 }
 .app.light-theme .theme-toggle {
   background: #f0f0f5;
@@ -1314,6 +1382,7 @@ z-index: 5;
     font-weight: 800;
     margin-bottom: 48px;
     background: linear-gradient(135deg, #7C83F7, #4F46E5);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -1400,7 +1469,6 @@ z-index: 5;
 .bookmark-rail {
   &__tab {
     &--active {
-      width: 52px;
       box-shadow: -4px 0 15px rgba(0,0,0,0.2);
     }
   }

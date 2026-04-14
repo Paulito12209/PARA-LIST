@@ -24,6 +24,26 @@ const fmtDate = (d, locale) =>
         month: "short",
       });
 
+const getYouTubeVideoId = (rawUrl) => {
+  if (!rawUrl) return null;
+  try {
+    const url = new URL(rawUrl);
+    const host = url.hostname.replace("www.", "");
+
+    if (host === "youtu.be") {
+      return url.pathname.slice(1) || null;
+    }
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      if (url.pathname === "/watch") return url.searchParams.get("v");
+      if (url.pathname.startsWith("/shorts/")) return url.pathname.split("/")[2] || null;
+      if (url.pathname.startsWith("/embed/")) return url.pathname.split("/")[2] || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 /* ── config ──────────────────────────────────────────────────── */
 
 
@@ -51,20 +71,18 @@ const SEED = {
   lang: "de",
   user: { name: "" },
   cats: [
-    { id: "p1", type: "project",  name: "App entwickeln",  date: "2026-04-30", body: "Architektur-Überlegungen:\n\n→ React + Vite\n→ IndexedDB für Offline\n→ PWA installierbar\n\nMVP Scope:", tags: ["Coding"], relatedId: "a2" },
-    { id: "p2", type: "project",  name: "Abschlussarbeit", date: "2026-06-15", body: "", tags: [], relatedId: "a2" },
-    { id: "a1", type: "area",     name: "Gesundheit",      date: null, body: "", tags: [], relatedId: null },
-    { id: "a2", type: "area",     name: "Studium",         date: null, body: "", tags: [], relatedId: null },
-    { id: "r1", type: "resource", name: "Bücher & Links",  date: null, body: "", tags: [], relatedId: "p1" },
+    { id: "p1", type: "project",  name: "Paralist Onboarding", date: "2026-04-30", body: "", tags: ["App"], relatedId: "a1" },
+    { id: "p2", type: "project",  name: "5km Lauf",           date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2" },
+    { id: "a1", type: "area",     name: "Arbeit",            date: null, body: "", tags: [], relatedId: null },
+    { id: "a2", type: "area",     name: "Fitness",           date: null, body: "", tags: [], relatedId: null },
+    { id: "a3", type: "area",     name: "Finanzen",          date: null, body: "", tags: [], relatedId: null },
+    { id: "r1", type: "resource", name: "Serien",            date: null, body: "", tags: [], relatedId: null },
+    { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null },
+    { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3" },
   ],
   entries: [
-    { id: "e1", type: "task", title: "Wireframes fertigstellen", done: false, note: "", due: "2026-04-13", catId: "p1" },
-    { id: "e2", type: "task", title: "Design Review Meeting",    done: false, note: "Mit Lena & Jonas", due: "2026-04-14", catId: "p1" },
-    { id: "e3", type: "task", title: "Einkaufen gehen",          done: true,  note: "", due: null, catId: null },
-    { id: "e4", type: "task", title: "Sport machen",             done: false, note: "", due: "2026-04-14", catId: "a1" },
-    { id: "e5", type: "task", title: "Kapitel 3 schreiben",      done: false, note: "", due: "2026-04-16", catId: "p2" },
-    { id: "f1", type: "note", title: "MVP Feature Liste", body: "→ Command Panel mit Pull-Down\n→ Kategorien (P/A/R)\n→ Aufgaben, Notizen, Kalender\n→ Bookmark Rail", catId: "p1" },
-    { id: "c1", type: "calendar", title: "Design Review", date: "2026-04-14", time: "15:00", catId: "p1" },
+    { id: "e1", type: "task", title: "App kennenlernen", done: false, note: "Onboarding abschließen", due: "2026-04-14", catId: "p1" },
+    { id: "e2", type: "task", title: "Wochenplan erstellen", done: false, note: "", due: "2026-04-14", catId: "a1" },
   ],
 };
 
@@ -87,7 +105,7 @@ function computeNotif(entries) {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Command Panel ───────────────────────────────────────────── */
-function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t, lang }) {
+function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t }) {
   const today = entries.filter(
     (e) =>
       (e.type === "task" && !e.done && (isToday(e.due) || isOld(e.due))) ||
@@ -188,7 +206,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t,
 }
 
 /* ── Task List ───────────────────────────────────────────────── */
-function TaskList({ entries, cats, onToggle, onDelete, t, CC, lang }) {
+function TaskList({ entries, cats, onToggle, onDelete, t, CC }) {
   return entries.map((e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const overdue = isOld(e.due) && !e.done;
@@ -245,7 +263,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, lang }) {
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete, t, CC }) {
+function NoteList({ entries, cats, onDelete, CC }) {
   return entries.map((e) => {
     const cat = cats.find((c) => c.id === e.catId);
     return (
@@ -276,7 +294,7 @@ function NoteList({ entries, cats, onDelete, t, CC }) {
 }
 
 /* ── Calendar List ───────────────────────────────────────────── */
-function CalList({ entries, cats, onDelete, t, CC, lang }) {
+function CalList({ entries, cats, onDelete, t, CC }) {
   return entries.map((e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const past = e.date && e.date < TODAY;
@@ -385,9 +403,11 @@ function MediaList({ entries, cats, onDelete, t, CC }) {
 }
 
 /* ── Link List ───────────────────────────────────────────────── */
-function LinkList({ entries, cats, onDelete, t, CC }) {
+function LinkList({ entries, cats, onDelete, CC }) {
   return entries.map((e) => {
     const cat = cats?.find((c) => c.id === e.catId);
+    const ytId = getYouTubeVideoId(e.url);
+    const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}` : null;
     return (
       <div key={e.id} className="media-item">
         <div className="media-item__icon" style={{ background: "#FB923C22", color: "#FB923C" }}>
@@ -395,6 +415,17 @@ function LinkList({ entries, cats, onDelete, t, CC }) {
         </div>
         <div className="media-item__body">
           <div className="media-item__title">{e.title}</div>
+          {embedUrl && (
+            <div className="link-item__preview">
+              <iframe
+                title={`YouTube preview ${e.title}`}
+                src={embedUrl}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
+          )}
           {e.url && <div className="media-item__meta">{e.url}</div>}
           {cat && CC[cat.type] && (
             <span
@@ -679,6 +710,7 @@ function BookmarkRail({ active, onSelect, baseColor }) {
 function CatDetailScreen({
   t,
   CC,
+  lang,
   cat,
   allCats,
   entries,
@@ -689,13 +721,15 @@ function CatDetailScreen({
   deleteEntry,
   onAddEntry,
 }) {
-  const cfg = CC[cat.type];
-  const CatIcon = CAT_ICONS[cat.type];
+  const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
+  const cfg = CC[safeType];
+  const CatIcon = CAT_ICONS[safeType] || Square;
   const [bm, setBm] = useState("canvas");
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
 
   const related = allCats.find(c => c.id === cat.relatedId);
+  const relatedCfg = related && CC[related.type] ? CC[related.type] : null;
   const connOptions = allCats.filter(c => {
     if (c.id === cat.id) return false;
     if (cat.type === "project") return c.type === "area";
@@ -704,6 +738,30 @@ function CatDetailScreen({
   });
   const resCount = allCats.filter(c => c.type === 'resource' && c.relatedId === cat.id).length;
   const ResIcon = CAT_ICONS.resource;
+  const createEntryFromBookmark = useCallback(() => {
+    const map = {
+      canvas: "note",
+      tasks: "task",
+      cal: "calendar",
+      media: "media",
+      link: "link",
+    };
+    onAddEntry(map[bm] || "task");
+  }, [bm, onAddEntry]);
+  const lastTap = useRef(0);
+  const handleDoubleTap = useCallback(
+    (e) => {
+      if (e.target !== e.currentTarget) return;
+      const now = Date.now();
+      if (now - lastTap.current < 300) {
+        createEntryFromBookmark();
+        lastTap.current = 0;
+      } else {
+        lastTap.current = now;
+      }
+    },
+    [createEntryFromBookmark]
+  );
 
   return (
     <div className="cat-detail">
@@ -744,11 +802,11 @@ function CatDetailScreen({
             className="cat-detail__date-pill"
             onClick={() => setShowConnSelect(!showConnSelect)}
             style={
-              related
+              relatedCfg
                 ? {
-                    background: CC[related.type].color + "20",
-                    borderColor: CC[related.type].color + "45",
-                    color: CC[related.type].color,
+                    background: relatedCfg.color + "20",
+                    borderColor: relatedCfg.color + "45",
+                    color: relatedCfg.color,
                   }
                 : {}
             }
@@ -792,7 +850,7 @@ function CatDetailScreen({
                     >
                       <span 
                         className="cat-detail__conn-dot" 
-                        style={{ background: CC[opt.type].color }} 
+                        style={{ background: (CC[opt.type]?.color || CC.resource.color) }} 
                       />
                       <span className="cat-detail__conn-name">{opt.name}</span>
                     </button>
@@ -887,16 +945,7 @@ function CatDetailScreen({
         <div className="nav-bottom__actions">
           <button
             className="nav-bottom__add"
-            onClick={() => {
-              const map = {
-                canvas: "note",
-                tasks: "task",
-                cal: "calendar",
-                media: "media",
-                link: "link"
-              };
-              onAddEntry(map[bm] || "task");
-            }}
+            onClick={createEntryFromBookmark}
             style={{
               background: BOOKMARKS.find((b) => b.id === bm)?.color || cfg.color,
               boxShadow: `0 8px 24px ${BOOKMARKS.find((b) => b.id === bm)?.color || cfg.color}55`,
@@ -965,7 +1014,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
     else if (type === "note") onSave({ ...base, body });
     else if (type === "calendar") onSave({ ...base, date, time });
     else if (type === "media") onSave({ ...base, mediaType, mediaData: mediaFile });
-    else if (type === "link") onSave({ ...base, url });
+    else if (type === "link") onSave({ ...base, url: url.trim() });
   };
 
   return (
@@ -1197,25 +1246,24 @@ function OnboardingModal({ t, onComplete }) {
 function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpdateUser }) {
   return (
     <div className="modal" onClick={onClose}>
-      <div className="modal__sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="modal__sheet settings-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
         <div className="modal__icon-row">
           <Settings size={20} className="icon-muted" color="currentColor" />
           <h3 className="modal__title">{t.settings}</h3>
         </div>
         
-        <div className="settings-section">
+        <div className="settings-section" style={{ padding: 0 }}>
           <div className="settings-label">{t.userName}</div>
           <input 
             className="modal__input"
             value={user.name}
             onChange={(e) => onUpdateUser({ name: e.target.value })}
             placeholder="Name..."
-            style={{ marginBottom: "16px" }}
           />
         </div>
 
-        <div className="settings-section">
+        <div className="settings-section" style={{ padding: 0 }}>
           <div className="settings-row">
             <span className="settings-label">{t.appearance}</span>
             <div className="theme-toggle">
@@ -1233,8 +1281,10 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
               </button>
             </div>
           </div>
-          
-          <div className="settings-row" style={{ marginTop: 24 }}>
+        </div>
+
+        <div className="settings-section" style={{ padding: 0 }}>
+          <div className="settings-row">
             <span className="settings-label">{t.language}</span>
             <div className="theme-toggle">
               <button 
@@ -1260,9 +1310,20 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
         </div>
 
         <button
-          className="modal__submit"
+          className="modal__submit modal__submit--danger"
+          onClick={() => {
+            if (window.confirm("App wirklich zurücksetzen? Alle Daten gehen verloren.")) {
+              localStorage.clear();
+              window.location.reload();
+            }
+          }}
+        >
+          App vollständig zurücksetzen
+        </button>
+
+        <button
+          className="modal__submit modal__submit--secondary"
           onClick={onClose}
-          style={{ background: "#262648", color: "white", marginTop: "24px" }}
         >
           Schließen
         </button>
@@ -1416,7 +1477,25 @@ export default function App() {
         {cur.view === "catDetail" &&
           (() => {
             const cat = state.cats.find((c) => c.id === cur.catId);
-            if (!cat) return null;
+            if (!cat) {
+              return (
+                <div className="cat-detail">
+                  <div className="cat-detail__header">
+                    <div className="cat-detail__title-row">
+                      <Square size={18} color={CC.resource.color} />
+                      <div className="cat-detail__title-input" style={{ pointerEvents: "none" }}>
+                        Eintrag nicht gefunden
+                      </div>
+                    </div>
+                  </div>
+                  <div className="nav-bottom">
+                    <button className="nav-bottom__back" onClick={pop}>
+                      <ChevronLeft size={20} color="#EDEEFF" />
+                    </button>
+                  </div>
+                </div>
+              );
+            }
             
             // Inclusive filtering: include entries from "child" categories
             const childIds = state.cats.filter(c => c.relatedId === cat.id).map(c => c.id);
@@ -1426,6 +1505,7 @@ export default function App() {
               <CatDetailScreen
                 t={t}
                 CC={CC}
+                lang={lang}
                 cat={cat}
                 allCats={state.cats}
                 entries={inclusiveEntries}

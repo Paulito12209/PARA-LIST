@@ -2,8 +2,8 @@
 // PARA·LIST – Global Styles Entry Point
 // ============================================================
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&display=swap');
+@use './styles/variables';
+@use './styles/reset';
+@use './styles/animations';
 
-@import './styles/variables';
-@import './styles/reset';
-@import './styles/animations';
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&display=swap');

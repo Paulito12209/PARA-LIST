@@ -98,7 +98,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t,
         <div>
           <div className="command-panel__greeting">{t.greeting(new Date().getHours(), user.name)}</div>
           <div className="command-panel__date">
-            {new Date().toLocaleDateString(locale, {
+            {new Date().toLocaleDateString(t.locale, {
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -218,9 +218,9 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, lang }) {
                   overdue ? "task-item__due--overdue" : ""
                 }`}
               >
-                {isToday(e.due) ? t.todayCap : fmtDate(e.due)}
+                {isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}
               </span>
-            , t.locale)}
+            )}
             {cat && (
               <span
                 className="task-item__cat-tag"
@@ -289,7 +289,7 @@ function CalList({ entries, cats, onDelete, t, CC, lang }) {
           <div className="cal-item__date-badge">
             <div className="cal-item__date-month">
               {e.date
-                ? new Date(e.date + "T12:00").toLocaleDateString(locale, {
+                ? new Date(e.date + "T12:00").toLocaleDateString(t.locale, {
                     month: "short",
                   })
                 : ""}
@@ -337,7 +337,18 @@ function MediaList({ entries, onDelete, t }) {
   return entries.map((e) => {
     const { Icon, color, label } = getMediaConfig(e.mediaType);
     return (
-      <div key={e.id} className="media-item">
+      <div 
+        key={e.id} 
+        className="media-item"
+        style={{ cursor: e.mediaData ? 'pointer' : 'default' }}
+        onClick={() => {
+          if (e.mediaData) {
+            const url = URL.createObjectURL(e.mediaData);
+            window.open(url, '_blank');
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          }
+        }}
+      >
         <div className="media-item__icon" style={{ background: color + "22", color: color }}>
           <Icon size={18} />
         </div>
@@ -345,7 +356,13 @@ function MediaList({ entries, onDelete, t }) {
           <div className="media-item__title">{e.title}</div>
           <div className="media-item__meta">{label}</div>
         </div>
-        <button className="media-item__delete" onClick={() => onDelete(e.id)}>
+        <button 
+          className="media-item__delete" 
+          onClick={(ev) => { 
+            ev.stopPropagation(); 
+            onDelete(e.id); 
+          }}
+        >
           <Trash2 size={14} color="#5858A0" />
         </button>
       </div>
@@ -784,6 +801,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
   const [url, setUrl] = useState("");
   const [mediaType, setMediaType] = useState("image");
   const [catId, setCatId] = useState(initialCatId || "");
+  const [mediaFile, setMediaFile] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleMediaGridClick = (mId) => {
@@ -801,6 +819,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
     const file = e.target.files[0];
     if (file) {
       if (!title) setTitle(file.name);
+      setMediaFile(file);
     }
     if (e.target) e.target.value = null;
   };
@@ -825,7 +844,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
     if (type === "task") onSave({ ...base, done: false, note, due: due || null });
     else if (type === "note") onSave({ ...base, body });
     else if (type === "calendar") onSave({ ...base, date, time });
-    else if (type === "media") onSave({ ...base, mediaType });
+    else if (type === "media") onSave({ ...base, mediaType, mediaData: mediaFile });
     else if (type === "link") onSave({ ...base, url });
   };
 

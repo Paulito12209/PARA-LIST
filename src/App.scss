@@ -775,8 +775,7 @@
   &__body {
     flex: 1;
     overflow-y: auto;
-    padding: $spacing-md (
-      $spacing-2xl + $spacing-md - $spacing-2xs) 110px $spacing-md;
+    padding: $spacing-md ($bookmark-width + $spacing-xs) 110px $spacing-md;
   }
 
   &__textarea {
@@ -1051,7 +1050,16 @@ z-index: 5;
     &__header { border-bottom-color: #e5e5f0; }
     &__title-input { color: #1a1a24; }
     &__textarea { color: #1a1a24; }
-    &__date-pill { background: #ffffff; border-color: #e5e5f0; }
+    &__date-pill { 
+      background: #ffffff; 
+      border-color: #e5e5f0;
+      color: #5858A0;
+      &[style*="color"] { background: rgba(var(--brand-rgb), 0.1) !important; }
+    }
+    &__tag {
+      background: #e5e5f0;
+      color: #5858A0;
+    }
   }
 
   .modal {

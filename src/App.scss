@@ -706,8 +706,7 @@
   animation: slide-in-right $transition-normal;
 
   &__header {
-    padding: $spacing-md + $spacing-2xs (
-      $spacing-2xl + $spacing-2xs) $spacing-md - $spacing-2xs $spacing-md;
+    padding: $spacing-md + $spacing-2xs $spacing-md $spacing-md - $spacing-2xs $spacing-md;
     border-bottom: 1px solid $color-border;
   }
 

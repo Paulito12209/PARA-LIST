@@ -256,7 +256,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 $spacing-md;
+    padding: 0;
     margin-bottom: $spacing-sm;
   }
 
@@ -901,4 +901,120 @@ z-index: 5;
   to {
     transform: rotate(360deg);
   }
+}
+
+// ── Light Theme Overrides ──────────────────────────────────
+.app.light-theme {
+  background: #f7f7f9;
+  color: #1a1a24;
+
+  .command-panel {
+    border-bottom-color: #e5e5f0;
+    &--closed { background: #ffffff; }
+    &--open { background: #f0f0f5; }
+    &__greeting { color: #1a1a24; }
+    &__drawer-item { 
+      background: #ffffff; 
+      border-color: #e5e5f0;
+    }
+    &__drawer-title { color: #1a1a24; }
+    &__drawer-empty { color: #5858A0; }
+    &__bell { background: #f7f7f9; border-color: #e5e5f0; }
+  }
+
+  .list-section__label { color: #1a1a24; }
+
+  .list-switcher {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    &__btn { color: #8e8eb2; }
+    &__btn--active { color: white; }
+  }
+
+  .task-item, .note-item, .cal-item {
+    background: #ffffff;
+    border: 1px solid #e5e5f0;
+    
+    &__title { color: #1a1a24; }
+    &__checkbox { border-color: #d1d1e0; }
+  }
+
+  .cat-list {
+    &__header { border-bottom-color: #e5e5f0; }
+    &__title { color: #1a1a24; }
+    &__item { background: #ffffff; border: 1px solid #e5e5f0; }
+    &__item-name { color: #1a1a24; }
+  }
+
+  .cat-detail {
+    &__header { border-bottom-color: #e5e5f0; }
+    &__title-input { color: #1a1a24; }
+    &__textarea { color: #1a1a24; }
+    &__date-pill { background: #ffffff; border-color: #e5e5f0; }
+  }
+
+  .modal {
+    &__sheet { background: #ffffff; border-color: #e5e5f0; }
+    &__title { color: #1a1a24; }
+    &__input, &__textarea, &__select, &__time-input, &__date-input {
+      color: #1a1a24;
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+    }
+    .icon-muted { color: #5858A0; }
+  }
+
+  .nav-bottom__back {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    svg { stroke: #5858A0; }
+  }
+}
+
+// ── Settings Styling ───────────────────────────────────────
+.settings-section {
+  padding: 16px 0;
+}
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #262648;
+}
+.app.light-theme .settings-row {
+  border-bottom-color: #e5e5f0;
+}
+.settings-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+.theme-toggle {
+  display: flex;
+  background: #1C1C30;
+  border-radius: 8px;
+  padding: 4px;
+}
+.app.light-theme .theme-toggle {
+  background: #f0f0f5;
+}
+.theme-toggle__btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5858A0;
+  border: none;
+  background: transparent;
+  transition: all 0.2s ease;
+
+  &--active {
+    background: #262648;
+    color: #EDEEFF;
+  }
+}
+.app.light-theme .theme-toggle__btn--active {
+  background: #ffffff;
+  color: #1a1a24;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }

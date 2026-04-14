@@ -3,7 +3,7 @@ import { usePersistedState } from "./hooks/useStorage";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar,
-  Link2, Pencil
+  Link2, Pencil, Settings
 } from "lucide-react";
 import "./App.scss";
 
@@ -55,6 +55,7 @@ const CAT_ICONS = {
 
 /* ── seed data ───────────────────────────────────────────────── */
 const SEED = {
+  theme: "dark",
   user: { name: "Paul" },
   cats: [
     { id: "p1", type: "project",  name: "App entwickeln",  date: "2026-04-30", body: "Architektur-Überlegungen:\n\n→ React + Vite\n→ IndexedDB für Offline\n→ PWA installierbar\n\nMVP Scope:", tags: ["Coding"] },
@@ -93,7 +94,7 @@ function computeNotif(entries) {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Command Panel ───────────────────────────────────────────── */
-function CommandPanel({ user, notif, entries, open, onToggle }) {
+function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings }) {
   const today = entries.filter(
     (e) =>
       (e.type === "task" && !e.done && (isToday(e.due) || isOld(e.due))) ||
@@ -113,23 +114,31 @@ function CommandPanel({ user, notif, entries, open, onToggle }) {
             })}
           </div>
         </div>
-        <button
-          className={`command-panel__bell ${notif ? "command-panel__bell--active" : ""}`}
-          onClick={onToggle}
-          style={
-            notif
-              ? { background: notif.color + "22", borderColor: notif.color + "55" }
-              : {}
-          }
-        >
-          <Bell size={17} color={notif ? notif.color : "#5858A0"} />
-          {notif && (
-            <span
-              className="command-panel__bell-dot"
-              style={{ background: notif.color }}
-            />
-          )}
-        </button>
+        <div className="command-panel__actions" style={{ display: 'flex', gap: '8px' }}>
+          <button
+            className={`command-panel__bell ${notif ? "command-panel__bell--active" : ""}`}
+            onClick={onToggle}
+            style={
+              notif
+                ? { background: notif.color + "22", borderColor: notif.color + "55" }
+                : {}
+            }
+          >
+            <Bell size={17} color={notif ? notif.color : "currentColor"} className="icon-muted" />
+            {notif && (
+              <span
+                className="command-panel__bell-dot"
+                style={{ background: notif.color }}
+              />
+            )}
+          </button>
+          <button
+            className="command-panel__bell"
+            onClick={onOpenSettings}
+          >
+            <Settings size={17} className="icon-muted" color="currentColor" />
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -853,6 +862,49 @@ function NewCatModal({ type, onSave, onClose }) {
   );
 }
 
+/* ── Settings Modal ──────────────────────────────────────────── */
+function SettingsModal({ theme, setTheme, onClose }) {
+  return (
+    <div className="modal" onClick={onClose}>
+      <div className="modal__sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="modal__handle" />
+        <div className="modal__icon-row">
+          <Settings size={20} className="icon-muted" color="currentColor" />
+          <h3 className="modal__title">Einstellungen</h3>
+        </div>
+        
+        <div className="settings-section">
+          <div className="settings-row">
+            <span className="settings-label">Erscheinungsbild</span>
+            <div className="theme-toggle">
+              <button 
+                className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
+                onClick={() => setTheme("dark")}
+              >
+                Dunkel
+              </button>
+              <button 
+                className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
+                onClick={() => setTheme("light")}
+              >
+                Hell
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button
+          className="modal__submit"
+          onClick={onClose}
+          style={{ background: "#262648", color: "white", marginTop: "24px" }}
+        >
+          Schließen
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════
    APP ROOT
    ════════════════════════════════════════════════════════════════ */
@@ -861,8 +913,11 @@ export default function App() {
   const [stack, setStack] = useState([{ view: "home" }]);
   const [tab, setTab] = useState("tasks");
   const [panelOpen, setPanelOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [creating, setCreating] = useState(null);
   const [newCatType, setNewCatType] = useState(null);
+
+  const theme = state.theme || "dark";
 
   const push = (v) => setStack((s) => [...s, v]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
@@ -933,7 +988,7 @@ export default function App() {
 
   return (
     <div
-      className="app"
+      className={`app ${theme === 'light' ? 'light-theme' : ''}`}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -943,6 +998,7 @@ export default function App() {
         entries={state.entries}
         open={panelOpen}
         onToggle={() => setPanelOpen((o) => !o)}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <div className="main-content">
@@ -1001,6 +1057,14 @@ export default function App() {
             );
           })()}
       </div>
+
+      {settingsOpen && (
+        <SettingsModal
+          theme={theme}
+          setTheme={(t) => setState(s => ({ ...s, theme: t }))}
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
 
       {creating && (
         <CreateModal

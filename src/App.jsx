@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, Check,
@@ -12,30 +13,18 @@ import "./App.scss";
 const uid = () => Math.random().toString(36).slice(2, 9);
 const TODAY = new Date().toISOString().slice(0, 10);
 const H = new Date().getHours();
-const greet = (n) =>
-  (H < 12 ? "Guten Morgen" : H < 18 ? "Guten Tag" : "Guten Abend") + `, ${n}`;
 const isOld = (d) => d && d < TODAY;
 const isToday = (d) => d === TODAY;
-const fmtDate = (d) =>
+const fmtDate = (d, locale) =>
   !d
     ? ""
-    : new Date(d + "T12:00").toLocaleDateString("de-DE", {
+    : new Date(d + "T12:00").toLocaleDateString(locale, {
         day: "numeric",
         month: "short",
       });
 
 /* ── config ──────────────────────────────────────────────────── */
-const CC = {
-  project:  { label: "Projekte",   sing: "Projekt",   color: "#E03E3E", dim: "#1D0A0A" },
-  area:     { label: "Bereiche",   sing: "Bereich",   color: "#D09020", dim: "#1D1508" },
-  resource: { label: "Ressourcen", sing: "Ressource", color: "#30A060", dim: "#081408" },
-};
 
-const TABS = [
-  { id: "tasks",    label: "Aufgaben", color: "#7C83F7", Icon: CheckSquare },
-  { id: "notes",    label: "Notizen",  color: "#F59E0B", Icon: Pencil },
-  { id: "calendar", label: "Kalender", color: "#38BDF8", Icon: Calendar },
-];
 
 const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
@@ -96,7 +85,7 @@ function computeNotif(entries) {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Command Panel ───────────────────────────────────────────── */
-function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings }) {
+function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t, lang }) {
   const today = entries.filter(
     (e) =>
       (e.type === "task" && !e.done && (isToday(e.due) || isOld(e.due))) ||
@@ -107,9 +96,9 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings }) 
     <div className={`command-panel command-panel--${open ? "open" : "closed"}`}>
       <div className="command-panel__header">
         <div>
-          <div className="command-panel__greeting">{greet(user.name)}</div>
+          <div className="command-panel__greeting">{t.greeting(new Date().getHours(), user.name)}</div>
           <div className="command-panel__date">
-            {new Date().toLocaleDateString("de-DE", {
+            {new Date().toLocaleDateString(locale, {
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -147,7 +136,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings }) 
         <div className="command-panel__drawer">
           {today.length === 0 ? (
             <div className="command-panel__drawer-empty">
-              Keine offenen Einträge für heute 🎉
+              {t.emptyDrawer}
             </div>
           ) : (
             today.slice(0, 5).map((e) => (
@@ -173,10 +162,10 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings }) 
                 <span className="command-panel__drawer-title">{e.title}</span>
                 <span className="command-panel__drawer-meta">
                   {e.type === "calendar"
-                    ? e.time + " Uhr"
+                    ? e.time + (t.oclock ? " " + t.oclock : "")
                     : isOld(e.due)
-                    ? "überfällig"
-                    : "heute"}
+                    ? t.overdue
+                    : t.today}
                 </span>
               </div>
             ))
@@ -197,7 +186,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings }) 
 }
 
 /* ── Task List ───────────────────────────────────────────────── */
-function TaskList({ entries, cats, onToggle, onDelete }) {
+function TaskList({ entries, cats, onToggle, onDelete, t, CC, lang }) {
   return entries.map((e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const overdue = isOld(e.due) && !e.done;
@@ -229,9 +218,9 @@ function TaskList({ entries, cats, onToggle, onDelete }) {
                   overdue ? "task-item__due--overdue" : ""
                 }`}
               >
-                {isToday(e.due) ? "Heute" : fmtDate(e.due)}
+                {isToday(e.due) ? t.todayCap : fmtDate(e.due)}
               </span>
-            )}
+            , t.locale)}
             {cat && (
               <span
                 className="task-item__cat-tag"
@@ -254,7 +243,7 @@ function TaskList({ entries, cats, onToggle, onDelete }) {
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete }) {
+function NoteList({ entries, cats, onDelete, t, CC }) {
   return entries.map((e) => {
     const cat = cats.find((c) => c.id === e.catId);
     return (
@@ -285,7 +274,7 @@ function NoteList({ entries, cats, onDelete }) {
 }
 
 /* ── Calendar List ───────────────────────────────────────────── */
-function CalList({ entries, cats, onDelete }) {
+function CalList({ entries, cats, onDelete, t, CC, lang }) {
   return entries.map((e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const past = e.date && e.date < TODAY;
@@ -300,7 +289,7 @@ function CalList({ entries, cats, onDelete }) {
           <div className="cal-item__date-badge">
             <div className="cal-item__date-month">
               {e.date
-                ? new Date(e.date + "T12:00").toLocaleDateString("de-DE", {
+                ? new Date(e.date + "T12:00").toLocaleDateString(locale, {
                     month: "short",
                   })
                 : ""}
@@ -334,14 +323,14 @@ function CalList({ entries, cats, onDelete }) {
 }
 
 /* ── Media List ──────────────────────────────────────────────── */
-function MediaList({ entries, onDelete }) {
+function MediaList({ entries, onDelete, t }) {
   const getMediaConfig = (mediaType) => {
     switch (mediaType) {
-      case "image": return { Icon: ImageIcon, color: "#0D9488", label: "Bild" };
-      case "video": return { Icon: VideoIcon, color: "#EF4444", label: "Video" };
-      case "audio": return { Icon: AudioIcon, color: "#F97316", label: "Audio" };
-      case "document": return { Icon: DocumentIcon, color: "#0078D4", label: "Dokument" };
-      default: return { Icon: Paperclip, color: "#9CA3AF", label: "Datei" };
+      case "image": return { Icon: ImageIcon, color: "#0D9488", label: t.image };
+      case "video": return { Icon: VideoIcon, color: "#EF4444", label: t.video };
+      case "audio": return { Icon: AudioIcon, color: "#F97316", label: t.audio };
+      case "document": return { Icon: DocumentIcon, color: "#0078D4", label: t.document };
+      default: return { Icon: Paperclip, color: "#9CA3AF", label: t.file };
     }
   };
 
@@ -365,7 +354,7 @@ function MediaList({ entries, onDelete }) {
 }
 
 /* ── Link List ───────────────────────────────────────────────── */
-function LinkList({ entries, onDelete }) {
+function LinkList({ entries, onDelete, t }) {
   return entries.map((e) => (
     <div key={e.id} className="media-item">
       <div className="media-item__icon" style={{ background: "#FB923C22", color: "#FB923C" }}>
@@ -384,6 +373,10 @@ function LinkList({ entries, onDelete }) {
 
 /* ── Home Screen ─────────────────────────────────────────────── */
 function HomeScreen({
+  t,
+  CC,
+  TABS,
+  lang,
   state,
   tab,
   setTab,
@@ -490,7 +483,7 @@ function HomeScreen({
         ) : (
           <>
             {tab === "tasks" && (
-              <TaskList
+              <TaskList t={t} CC={CC} lang={lang}
                 entries={tabEntries}
                 cats={cats}
                 onToggle={toggleTask}
@@ -498,14 +491,14 @@ function HomeScreen({
               />
             )}
             {tab === "notes" && (
-              <NoteList
+              <NoteList t={t} CC={CC}
                 entries={tabEntries}
                 cats={cats}
                 onDelete={deleteEntry}
               />
             )}
             {tab === "calendar" && (
-              <CalList
+              <CalList t={t} CC={CC} lang={lang}
                 entries={tabEntries}
                 cats={cats}
                 onDelete={deleteEntry}
@@ -531,7 +524,7 @@ function HomeScreen({
 }
 
 /* ── Category List Screen ────────────────────────────────────── */
-function CatListScreen({ type, cats, onOpen, onAdd, onBack }) {
+function CatListScreen({ type, cats, onOpen, onAdd, onBack, t, CC }) {
   const cfg = CC[type];
   const CatIcon = CAT_ICONS[type];
 
@@ -545,9 +538,9 @@ function CatListScreen({ type, cats, onOpen, onAdd, onBack }) {
       <div className="cat-list__body">
         {cats.length === 0 ? (
           <div className="cat-list__empty">
-            Noch keine {cfg.label} erstellt.
+            {t.noCats(cfg.label).split("\n")[0]}
             <br />
-            Tippe auf + um zu starten.
+            {t.noCats(cfg.label).split("\n")[1]}
           </div>
         ) : (
           cats.map((cat) => (
@@ -565,7 +558,7 @@ function CatListScreen({ type, cats, onOpen, onAdd, onBack }) {
               <div className="cat-list__item-info">
                 <div className="cat-list__item-name">{cat.name}</div>
                 {cat.date && (
-                  <div className="cat-list__item-date">{fmtDate(cat.date)}</div>
+                  <div className="cat-list__item-date">{fmtDate(cat.date, t.locale)}</div>
                 )}
               </div>
               <ChevronLeft
@@ -629,6 +622,8 @@ function BookmarkRail({ active, onSelect }) {
 
 /* ── Category Detail Screen ──────────────────────────────────── */
 function CatDetailScreen({
+  t,
+  CC,
   cat,
   entries,
   onUpdate,
@@ -673,7 +668,7 @@ function CatDetailScreen({
                 : {}
             }
           >
-            {cat.date ? fmtDate(cat.date) : "+ Datum"}
+            {cat.date ? fmtDate(cat.date, t.locale) : "{t.addDate}"}
           </button>
           {cat.tags?.map((tag) => (
             <span key={tag} className="cat-detail__tag">
@@ -701,15 +696,15 @@ function CatDetailScreen({
             className="cat-detail__textarea"
             value={cat.body}
             onChange={(e) => onUpdate({ body: e.target.value })}
-            placeholder="Schreib hier deine Gedanken, Ideen und Notizen..."
+            placeholder={t.writeThoughts}
           />
         )}
         {bm === "tasks" &&
           (entries.filter((e) => e.type === "task").length === 0 ? (
-            <div className="cat-detail__section-empty">Keine Aufgaben</div>
+            <div className="cat-detail__section-empty">{t.noTasks}</div>
           ) : (
-            <TaskList
-              entries={entries.filter((e) => e.type === "task")}
+            <TaskList t={t} CC={CC} lang={lang}
+                entries={entries.filter((e) => e.type === "task")}
               cats={[]}
               onToggle={toggleTask}
               onDelete={deleteEntry}
@@ -717,9 +712,9 @@ function CatDetailScreen({
           ))}
         {bm === "cal" &&
           (entries.filter((e) => e.type === "calendar").length === 0 ? (
-            <div className="cat-detail__section-empty">Keine Termine</div>
+            <div className="cat-detail__section-empty">{t.noCal}</div>
           ) : (
-            <CalList
+            <CalList t={t} CC={CC} lang={lang}
               entries={entries.filter((e) => e.type === "calendar")}
               cats={[]}
               onDelete={deleteEntry}
@@ -727,18 +722,18 @@ function CatDetailScreen({
           ))}
         {bm === "media" &&
           (entries.filter((e) => e.type === "media").length === 0 ? (
-            <div className="cat-detail__section-empty">Keine Ressourcen</div>
+            <div className="cat-detail__section-empty">{t.noMedia}</div>
           ) : (
-            <MediaList
+            <MediaList t={t}
               entries={entries.filter((e) => e.type === "media")}
               onDelete={deleteEntry}
             />
           ))}
         {bm === "link" &&
           (entries.filter((e) => e.type === "link").length === 0 ? (
-            <div className="cat-detail__section-empty">Keine Quellen</div>
+            <div className="cat-detail__section-empty">{t.noLink}</div>
           ) : (
-            <LinkList
+            <LinkList t={t}
               entries={entries.filter((e) => e.type === "link")}
               onDelete={deleteEntry}
             />
@@ -779,7 +774,7 @@ function CatDetailScreen({
 }
 
 /* ── Create Entry Modal ──────────────────────────────────────── */
-function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
+function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [due, setDue] = useState("");
@@ -818,7 +813,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
     "#FB923C";
 
   const label =
-    type === "task" ? "Aufgabe" : 
+    type === "task" ? t.task : 
     type === "note" ? "Notiz" : 
     type === "calendar" ? "Termin" : 
     type === "media" ? "Ressource" : 
@@ -840,7 +835,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
         <div className="modal__handle" />
 
         <div className="modal__header">
-          <h3 className="modal__title">Neue {label}</h3>
+          <h3 className="modal__title">{t.newLabel(label)}</h3>
           <button className="modal__close" onClick={onClose}>
             <X size={18} color="#5858A0" />
           </button>
@@ -851,7 +846,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
           autoFocus
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Titel…"
+          placeholder={t.titlePlaceholder}
           onKeyDown={(e) => e.key === "Enter" && save()}
           style={{ borderColor: tc + "45" }}
         />
@@ -862,7 +857,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
               className="modal__input"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Notiz hinzufügen…"
+              placeholder={t.addNotePlaceholder}
             />
             <input
               type="date"
@@ -879,7 +874,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
             className="modal__textarea"
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Notiz schreiben…"
+            placeholder={t.writeNotePlaceholder}
             rows={4}
           />
         )}
@@ -942,7 +937,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
           onChange={(e) => setCatId(e.target.value)}
           style={{ color: catId ? "#EDEEFF" : "#5858A0" }}
         >
-          <option value="">Kein Projekt / Bereich</option>
+          <option value="">{t.noProject}</option>
           {cats.map((c) => (
             <option key={c.id} value={c.id}>
               {CC[c.type].sing}: {c.name}
@@ -965,7 +960,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
 }
 
 /* ── New Category Modal ──────────────────────────────────────── */
-function NewCatModal({ type, onSave, onClose }) {
+function NewCatModal({ type, onSave, onClose, t, CC }) {
   const [name, setName] = useState("");
   const cfg = CC[type];
   const CatIcon = CAT_ICONS[type];
@@ -976,14 +971,14 @@ function NewCatModal({ type, onSave, onClose }) {
         <div className="modal__handle" />
         <div className="modal__icon-row">
           <CatIcon size={20} color={cfg.color} />
-          <h3 className="modal__title">Neues {cfg.sing}</h3>
+          <h3 className="modal__title">{t.newSing(cfg.sing)}</h3>
         </div>
         <input
           className="modal__input modal__input--title"
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={`${cfg.sing} benennen…`}
+          placeholder={t.namePlaceholder(cfg.sing)}
           onKeyDown={(e) =>
             e.key === "Enter" && name.trim() && onSave(name.trim())
           }
@@ -1004,31 +999,55 @@ function NewCatModal({ type, onSave, onClose }) {
 }
 
 /* ── Settings Modal ──────────────────────────────────────────── */
-function SettingsModal({ theme, setTheme, onClose }) {
+function SettingsModal({ theme, setTheme, lang, setLang, t, onClose }) {
   return (
     <div className="modal" onClick={onClose}>
       <div className="modal__sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
         <div className="modal__icon-row">
           <Settings size={20} className="icon-muted" color="currentColor" />
-          <h3 className="modal__title">Einstellungen</h3>
+          <h3 className="modal__title">{t.settings}</h3>
         </div>
         
         <div className="settings-section">
           <div className="settings-row">
-            <span className="settings-label">Erscheinungsbild</span>
+            <span className="settings-label">{t.appearance}</span>
             <div className="theme-toggle">
               <button 
                 className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
                 onClick={() => setTheme("dark")}
               >
-                Dunkel
+                {t.dark}
               </button>
               <button 
                 className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
                 onClick={() => setTheme("light")}
               >
-                Hell
+                {t.light}
+              </button>
+            </div>
+          </div>
+          
+          <div className="settings-row" style={{ marginTop: 24 }}>
+            <span className="settings-label">{t.language}</span>
+            <div className="theme-toggle">
+              <button 
+                className={`theme-toggle__btn ${lang === "de" ? "theme-toggle__btn--active" : ""}`}
+                onClick={() => setLang("de")}
+              >
+                DE
+              </button>
+              <button 
+                className={`theme-toggle__btn ${lang === "en" ? "theme-toggle__btn--active" : ""}`}
+                onClick={() => setLang("en")}
+              >
+                EN
+              </button>
+              <button 
+                className={`theme-toggle__btn ${lang === "es" ? "theme-toggle__btn--active" : ""}`}
+                onClick={() => setLang("es")}
+              >
+                ES
               </button>
             </div>
           </div>
@@ -1059,6 +1078,10 @@ export default function App() {
   const [newCatType, setNewCatType] = useState(null);
 
   const theme = state.theme || "dark";
+  const lang = state.lang || "de";
+  const t = I18N[lang];
+  const CC = getCC(t);
+  const TABS = getTABS(t);
 
   const push = (v) => setStack((s) => [...s, v]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
@@ -1134,6 +1157,8 @@ export default function App() {
       onTouchEnd={onTouchEnd}
     >
       <CommandPanel
+        t={t}
+        lang={lang}
         user={state.user}
         notif={notif}
         entries={state.entries}
@@ -1145,6 +1170,10 @@ export default function App() {
       <div className="main-content">
         {cur.view === "home" && (
           <HomeScreen
+            t={t}
+            CC={CC}
+            TABS={TABS}
+            lang={lang}
             state={state}
             tab={tab}
             setTab={setTab}
@@ -1168,6 +1197,8 @@ export default function App() {
 
         {cur.view === "catList" && (
           <CatListScreen
+            t={t}
+            CC={CC}
             type={cur.type}
             cats={state.cats.filter((c) => c.type === cur.type)}
             onOpen={(cat) => push({ view: "catDetail", catId: cat.id })}
@@ -1182,11 +1213,13 @@ export default function App() {
             if (!cat) return null;
             return (
               <CatDetailScreen
+                t={t}
+                CC={CC}
                 cat={cat}
                 entries={state.entries.filter((e) => e.catId === cat.id)}
                 onUpdate={(p) => updateCat(cat.id, p)}
                 onDelete={() => {
-                  if (window.confirm(`"${cat.name}" wirklich löschen?`))
+                  if (window.confirm(t.confirmDelete(cat.name)))
                     deleteCat(cat.id);
                 }}
                 onBack={pop}
@@ -1202,6 +1235,9 @@ export default function App() {
 
       {settingsOpen && (
         <SettingsModal
+          t={t}
+          lang={lang}
+          setLang={(l) => setState(s => ({ ...s, lang: l }))}
           theme={theme}
           setTheme={(t) => setState(s => ({ ...s, theme: t }))}
           onClose={() => setSettingsOpen(false)}
@@ -1210,6 +1246,8 @@ export default function App() {
 
       {creating && (
         <CreateModal
+          t={t}
+          CC={CC}
           type={creating.type}
           cats={state.cats}
           initialCatId={creating.catId}
@@ -1223,6 +1261,8 @@ export default function App() {
 
       {newCatType && (
         <NewCatModal
+          t={t}
+          CC={CC}
           type={newCatType}
           onSave={(name) => {
             addCat(newCatType, name);

@@ -747,6 +747,7 @@
     display: flex;
     gap: $spacing-sm - 1px;
     flex-wrap: wrap;
+    position: relative;
   }
 
   &__date-pill {
@@ -759,6 +760,17 @@
     border: 1px solid $color-border;
     color: $color-muted;
     transition: all $transition-fast;
+  }
+
+  &__res-count {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-pill;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid transparent;
   }
 
   &__tag {

@@ -662,9 +662,12 @@ function CatDetailScreen({
   const related = allCats.find(c => c.id === cat.relatedId);
   const connOptions = allCats.filter(c => {
     if (c.id === cat.id) return false;
-    if (cat.type === "project") return c.type === "area" || c.type === "resource";
-    return c.type === "project";
+    if (cat.type === "project") return c.type === "area";
+    if (cat.type === "area") return c.type === "project";
+    return c.type === "project" || c.type === "area";
   });
+  const resCount = allCats.filter(c => c.type === 'resource' && c.relatedId === cat.id).length;
+  const ResIcon = CAT_ICONS.resource;
 
   return (
     <div className="cat-detail">
@@ -682,7 +685,7 @@ function CatDetailScreen({
             <Trash2 size={16} color="#F26565" />
           </button>
         </div>
-        <div className="cat-detail__pills" style={{ position: 'relative' }}>
+        <div className="cat-detail__pills">
           {cat.type === "project" && (
             <button
               className="cat-detail__date-pill"
@@ -714,14 +717,63 @@ function CatDetailScreen({
                 : {}
             }
           >
-            {related ? related.name : (cat.type === 'project' ? t.connectAreaResource : t.connectProject)}
+            {related ? related.name : (cat.type === 'project' ? t.connectArea : cat.type === 'area' ? t.connectProject : t.connectSelection)}
           </button>
+
+          {resCount > 0 && (cat.type === 'project' || cat.type === 'area') && (
+            <div 
+              className="cat-detail__res-count"
+              style={{ 
+                background: CC.resource.color + "18", 
+                borderColor: CC.resource.color + "45",
+                color: CC.resource.color 
+              }}
+            >
+              <ResIcon size={12} strokeWidth={2.5} />
+              <span>{resCount}</span>
+            </div>
+          )}
 
           {cat.tags?.map((tag) => (
             <span key={tag} className="cat-detail__tag">
               {tag}
             </span>
           ))}
+          {showConnSelect && (
+            <div className="cat-detail__conn-popup">
+              <div className="cat-detail__conn-list">
+                {connOptions.length === 0 ? (
+                  <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
+                ) : (
+                  connOptions.map(opt => (
+                    <button
+                      key={opt.id}
+                      className="cat-detail__conn-item"
+                      onClick={() => {
+                        onUpdate({ relatedId: opt.id });
+                        setShowConnSelect(false);
+                      }}
+                    >
+                      <span 
+                        className="cat-detail__conn-dot" 
+                        style={{ background: CC[opt.type].color }} 
+                      />
+                      <span className="cat-detail__conn-name">{opt.name}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+              <button
+                className="cat-detail__conn-none"
+                onClick={() => {
+                  onUpdate({ relatedId: null });
+                  setShowConnSelect(false);
+                }}
+              >
+                {t.noConnection}
+              </button>
+            </div>
+          )}
         </div>
         {showDate && (
           <input
@@ -733,41 +785,6 @@ function CatDetailScreen({
               setShowDate(false);
             }}
           />
-        )}
-        {showConnSelect && (
-          <div className="cat-detail__conn-popup">
-            <div className="cat-detail__conn-list">
-              {connOptions.length === 0 ? (
-                <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
-              ) : (
-                connOptions.map(opt => (
-                  <button
-                    key={opt.id}
-                    className="cat-detail__conn-item"
-                    onClick={() => {
-                      onUpdate({ relatedId: opt.id });
-                      setShowConnSelect(false);
-                    }}
-                  >
-                    <span 
-                      className="cat-detail__conn-dot" 
-                      style={{ background: CC[opt.type].color }} 
-                    />
-                    <span className="cat-detail__conn-name">{opt.name}</span>
-                  </button>
-                ))
-              )}
-            </div>
-            <button
-              className="cat-detail__conn-none"
-              onClick={() => {
-                onUpdate({ relatedId: null });
-                setShowConnSelect(false);
-              }}
-            >
-              {t.noConnection}
-            </button>
-          </div>
         )}
       </div>
 

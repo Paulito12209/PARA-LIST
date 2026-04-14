@@ -862,7 +862,7 @@ z-index: 5;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: $spacing-sm;
-  margin-bottom: $spacing-md;
+  margin: $spacing-md 0;
 
   &-btn {
     display: flex;
@@ -1033,7 +1033,7 @@ z-index: 5;
     &__btn--active { color: white; }
   }
 
-  .task-item, .note-item, .cal-item {
+  .task-item, .note-item, .cal-item, .media-item {
     background: #ffffff;
     border: 1px solid #e5e5f0;
     
@@ -1070,6 +1070,24 @@ z-index: 5;
     background: #ffffff;
     border-color: #e5e5f0;
     svg { stroke: #5858A0; }
+  }
+
+  .category-card {
+    &--project { background: rgba(#E03E3E, 0.1); border-color: rgba(#E03E3E, 0.2); }
+    &--area { background: rgba(#D09020, 0.1); border-color: rgba(#D09020, 0.2); }
+    &--resource { background: rgba(#30A060, 0.1); border-color: rgba(#30A060, 0.2); }
+    &__count { background: #ffffff; }
+    &__add-btn { background: #ffffff; }
+  }
+
+  .modal__media-grid-btn {
+    background: #f7f7f9;
+    border-color: #e5e5f0;
+    span { color: #1a1a24; }
+    &--active {
+      background: #ffffff;
+      border-color: currentColor;
+    }
   }
 }
 
@@ -1110,9 +1128,26 @@ z-index: 5;
   background: transparent;
   transition: all 0.2s ease;
 
+  &:hover {
+    background: #262648;
+    color: #EDEEFF;
+  }
+
   &--active {
     background: #262648;
     color: #EDEEFF;
+  }
+}
+
+.app.light-theme .theme-toggle__btn {
+  &:hover {
+    background: #ffffff;
+    color: #1a1a24;
+  }
+  &--active {
+    background: #ffffff;
+    color: #1a1a24;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
   }
 }
 .app.light-theme .theme-toggle__btn--active {

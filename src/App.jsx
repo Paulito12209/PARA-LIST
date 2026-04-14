@@ -789,6 +789,26 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
   const [url, setUrl] = useState("");
   const [mediaType, setMediaType] = useState("image");
   const [catId, setCatId] = useState(initialCatId || "");
+  const fileInputRef = useRef(null);
+
+  const handleMediaGridClick = (mId) => {
+    setMediaType(mId);
+    if (fileInputRef.current) {
+      if (mId === 'image') fileInputRef.current.accept = 'image/*';
+      else if (mId === 'video') fileInputRef.current.accept = 'video/*';
+      else if (mId === 'audio') fileInputRef.current.accept = 'audio/*';
+      else if (mId === 'document') fileInputRef.current.accept = '.pdf,.doc,.docx,.txt,*/*';
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (!title) setTitle(file.name);
+    }
+    if (e.target) e.target.value = null;
+  };
 
   const tc =
     type === "task" ? "#7C83F7" : 
@@ -884,6 +904,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
 
         {type === "media" && (
           <div className="modal__media-grid">
+            <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
             {[
               { id: 'image', Icon: ImageIcon, color: '#0D9488', label: 'Bild' },
               { id: 'video', Icon: VideoIcon, color: '#EF4444', label: 'Video' },
@@ -893,7 +914,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose }) {
               <button 
                 key={m.id}
                 className={`modal__media-grid-btn ${mediaType === m.id ? 'modal__media-grid-btn--active' : ''}`}
-                onClick={() => setMediaType(m.id)}
+                onClick={() => handleMediaGridClick(m.id)}
                 style={{ color: mediaType === m.id ? m.color : '#5858A0' }}
               >
                 <div className="icon-wrapper" style={{ background: m.color }}>

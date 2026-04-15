@@ -20,7 +20,7 @@ export const I18N = {
     addNotePlaceholder: "Notiz hinzufügen…",
     writeNotePlaceholder: "Notiz schreiben…",
     linkPlaceholder: "https://...",
-    noProject: "Kein Projekt / Arbeitsbereich",
+    noProject: "Kein Projekt / Arbeitsbereich / Ressource",
     createBtn: "Erstellen",
     namePlaceholder: (sing) => `${sing} benennen…`,
     settings: "Einstellungen",

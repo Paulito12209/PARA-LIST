@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import {
@@ -61,7 +61,9 @@ const getTaskGroup = (due, locale) => {
     if (mDiff === 1) {
       right = "nächsten Monat";
     } else {
-      right = d.toLocaleDateString(locale, { month: 'long' });
+      const monthStr = d.toLocaleDateString(locale, { month: 'long' }).toUpperCase();
+      const yearStr = d.getFullYear() !== t.getFullYear() ? " '" + String(d.getFullYear()).slice(-2) : "";
+      right = monthStr + yearStr;
     }
   }
 
@@ -109,6 +111,8 @@ const CAT_ICONS = {
   resource: Square,
 };
 
+const ID_BIRTHDAYS = "res-birthdays";
+
 /* ── seed data ───────────────────────────────────────────────── */
 const SEED = {
   theme: "dark",
@@ -123,6 +127,7 @@ const SEED = {
     { id: "r1", type: "resource", name: "Serien",            date: null, body: "", tags: [], relatedId: null },
     { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null },
     { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3" },
+    { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null },
   ],
   entries: [
     { id: "e1", type: "task", title: "App kennenlernen", done: false, note: "Onboarding abschließen", due: "2026-04-14", catId: "p1" },
@@ -326,6 +331,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color }) 
                 }`}
               >
                 {isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}
+                {e.time && ` · ${e.time} ${t.oclock}`}
               </span>
             )}
             {cat && CC[cat.type] && (
@@ -695,6 +701,30 @@ function HomeScreen({
   const tabColor = tabCfg?.color || "#7C83F7";
 
   const lastTap = useRef(0);
+  const touchStartX = useRef(0);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const dx = touchEndX - touchStartX.current;
+    
+    if (Math.abs(dx) > 60) {
+      const tabOrder = TABS.map(t => t.id);
+      const currentIndex = tabOrder.indexOf(tab);
+      
+      if (dx > 0 && currentIndex > 0) {
+        // Swipe nach rechts -> Vorheriger Tab
+        setTab(tabOrder[currentIndex - 1]);
+      } else if (dx < 0 && currentIndex < tabOrder.length - 1) {
+        // Swipe nach links -> Nächster Tab
+        setTab(tabOrder[currentIndex + 1]);
+      }
+    }
+  };
+
   const handleDoubleTap = useCallback(
     (e) => {
       if (e.target !== e.currentTarget) return;
@@ -779,7 +809,12 @@ function HomeScreen({
       </div>
 
       {/* Entry list */}
-      <div className="entry-list" onClick={handleDoubleTap}>
+      <div 
+        className="entry-list" 
+        onClick={handleDoubleTap}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {tabEntries.length === 0 ? (
           <div className="entry-list__empty">
             <div className="entry-list__empty-icon">
@@ -1380,6 +1415,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
   const [catIds, setCatIds] = useState(initialCatId ? [initialCatId] : []);
   const [catDropOpen, setCatDropOpen] = useState(false);
   const [mediaFile, setMediaFile] = useState(null);
+  const [isBirthday, setIsBirthday] = useState(false);
   const fileInputRef = useRef(null);
 
   // Toggle: Kategorie hinzufügen/entfernen
@@ -1429,10 +1465,16 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
     const ids = catIds.length > 0 ? catIds : [null];
     // Pro ausgewählter Kategorie einen Eintrag erstellen
     const entries = ids.map(cid => {
-      const base = { type, title: title.trim(), catId: cid };
-      if (type === "task") return { ...base, done: false, note, due: due || null };
+      let finalCid = cid;
+      if (type === "calendar" && isBirthday) {
+        // Automatische Verknüpfung mit Geburtstage-Ressource
+        finalCid = ID_BIRTHDAYS;
+      }
+
+      const base = { type, title: title.trim(), catId: finalCid };
+      if (type === "task") return { ...base, done: false, note, due: due || null, time: time || null };
       if (type === "note") return { ...base, body };
-      if (type === "calendar") return { ...base, date, time };
+      if (type === "calendar") return { ...base, date, time, isBirthday };
       if (type === "media") return { ...base, mediaType, mediaData: mediaFile };
       if (type === "link") return { ...base, url: url.trim() };
       return base;
@@ -1470,13 +1512,22 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
               onChange={(e) => setNote(e.target.value)}
               placeholder={t.addNotePlaceholder}
             />
-            <input
-              type="date"
-              className="modal__date-input"
-              value={due}
-              onChange={(e) => setDue(e.target.value)}
-              style={{ color: due ? "#EDEEFF" : "#5858A0" }}
-            />
+            <div className="modal__input-row">
+              <input
+                type="date"
+                className="modal__date-input"
+                value={due}
+                onChange={(e) => setDue(e.target.value)}
+                style={{ color: due ? "#EDEEFF" : "#5858A0" }}
+              />
+              <input
+                type="time"
+                className="modal__time-input"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                style={{ color: time ? "#EDEEFF" : "#5858A0" }}
+              />
+            </div>
           </>
         )}
 
@@ -1492,19 +1543,33 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
 
         {type === "calendar" && (
           <>
-            <input
-              type="date"
-              className="modal__date-input"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-            <input
-              type="time"
-              className="modal__time-input"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              style={{ color: time ? "#EDEEFF" : "#5858A0" }}
-            />
+            <div className="modal__input-row">
+              <input
+                type="date"
+                className="modal__date-input"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <input
+                type="time"
+                className="modal__time-input"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                style={{ color: time ? "#EDEEFF" : "#5858A0" }}
+              />
+            </div>
+            <div className="modal__toggle-row">
+              <label htmlFor="isBirthday">Geburtstag</label>
+              <label className="modal__switch">
+                <input 
+                  type="checkbox" 
+                  id="isBirthday" 
+                  checked={isBirthday} 
+                  onChange={(e) => setIsBirthday(e.target.checked)}
+                />
+                <span className="modal__slider"></span>
+              </label>
+            </div>
           </>
         )}
 
@@ -1799,6 +1864,18 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
    ════════════════════════════════════════════════════════════════ */
 export default function App() {
   const [state, setState, isLoaded] = usePersistedState(SEED);
+  useEffect(() => {
+    if (isLoaded && !state.cats.find(c => c.id === ID_BIRTHDAYS)) {
+      setState(s => ({
+        ...s,
+        cats: [
+          ...s.cats,
+          { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null }
+        ]
+      }));
+    }
+  }, [isLoaded, state.cats, setState]);
+
   const [stack, setStack] = useState([{ view: "home" }]);
   const [tab, setTab] = useState("tasks");
   const [panelOpen, setPanelOpen] = useState(false);
@@ -1987,7 +2064,14 @@ export default function App() {
             
             // Inclusive filtering: include entries from "child" categories
             const childIds = state.cats.filter(c => c.relatedId === cat.id).map(c => c.id);
-            const inclusiveEntries = state.entries.filter(e => e.catId === cat.id || childIds.includes(e.catId));
+            const inclusiveEntries = state.entries.filter(e => {
+              const isBaseEntry = e.catId === cat.id || childIds.includes(e.catId);
+              // Wenn wir in der "Geburtstage" Ressource sind, zeigen wir alle Geburtstage an
+              if (cat.id === ID_BIRTHDAYS) {
+                return isBaseEntry || (e.type === "calendar" && e.isBirthday);
+              }
+              return isBaseEntry;
+            });
             
             return (
               <CatDetailScreen

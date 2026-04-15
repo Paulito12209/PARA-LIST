@@ -1273,6 +1273,69 @@
   }
 
   // Multi-Select Dropdown für Kategorien
+  &__toggle-row {
+    margin-top: $spacing-sm + 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba($color-dim, 0.4);
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    border: 1px solid $color-border;
+    transition: all $transition-fast;
+
+    label {
+      font-size: 14px;
+      color: $color-text;
+      font-weight: 500;
+    }
+  }
+
+  &__switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+
+      &:checked+.modal__slider {
+        background-color: #38BDF8;
+      }
+
+      &:checked+.modal__slider:before {
+        transform: translateX(16px);
+      }
+    }
+  }
+
+  &__slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #262648;
+    transition: .3s;
+    border-radius: 34px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+  }
+
   &__multi-select {
     margin-top: $spacing-sm + 1px;
   }
@@ -1347,6 +1410,19 @@
   &__multi-select-name {
     flex: 1;
     @include text-truncate;
+  }
+
+  &__input-row {
+    display: flex;
+    gap: $spacing-sm;
+    width: 100%;
+    margin-top: $spacing-sm + 1px;
+
+    & > * {
+      flex: 1;
+      width: 0; // Force equal width
+      margin-top: 0 !important;
+    }
   }
 
   &__date-input,
@@ -1621,6 +1697,23 @@
       background: #f7f7f9;
       border-color: #e5e5f0;
       color-scheme: light;
+    }
+
+    &__toggle-row {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+
+      label {
+        color: #1a1a24;
+      }
+    }
+
+    &__slider {
+      background-color: #e5e5f0;
+
+      &:before {
+        background-color: #ffffff;
+      }
     }
 
     &__multi-select-btn {

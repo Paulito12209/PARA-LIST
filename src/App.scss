@@ -61,7 +61,7 @@
 
   &__greeting {
     font-family: $font-heading;
-    font-size: 19px;
+    font-size: ($spacing-md + $spacing-xs);
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.5px;
@@ -351,7 +351,7 @@
 
   &__label {
     font-family: $font-heading;
-    font-size: 14px;
+    font-size: $spacing-md;
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.3px;
@@ -878,7 +878,7 @@
     border: 1px solid rgba($color-notif-red, 0.27);
     margin-left: auto;
     flex-shrink: 0;
-    
+
     &:hover {
       background: rgba($color-notif-red, 0.22);
     }
@@ -933,7 +933,8 @@
     flex: 1;
     overflow-y: auto;
     // Rechts: 24px Rail + 16px Abstand = 40px, unten: 16px
-    padding: $spacing-md ($bookmark-width + $spacing-md) $spacing-md $spacing-md;
+    padding: $spacing-md (
+      $bookmark-width + $spacing-md) $spacing-md $spacing-md;
   }
 
   &__textarea {
@@ -958,78 +959,86 @@
   // Floating connection pop-up
   &__conn-popup {
     position: absolute;
-    top: calc(100% + 8px);
-    left: 0;
-    width: 200px;
-    background: $color-surface;
-    border: 1px solid $color-border;
-    border-radius: $radius-lg;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-    z-index: 150;
-    overflow: hidden;
-    animation: slide-up-small 0.2s ease-out;
-  }
+    top: calc(100% + 8px
+    );
+  left: 0;
+  width: 200px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 150;
+  overflow: hidden;
+  animation: slide-up-small 0.2s ease-out;
+}
 
-  &__conn-list {
-    display: flex;
-    flex-direction: column;
-    max-height: 240px;
-    overflow-y: auto;
-    padding: $spacing-xs;
-  }
+&__conn-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: $spacing-xs;
+}
 
-  &__conn-item {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-sm $spacing-md;
-    border-radius: $radius-md;
-    text-align: left;
-    transition: background $transition-fast;
-    color: $color-text;
+&__conn-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  text-align: left;
+  transition: background $transition-fast;
+  color: $color-text;
 
-    &:hover {
-      background: $color-hover;
-    }
-  }
-
-  &__conn-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  &__conn-name {
-    font-size: 13px;
-    font-weight: 500;
-    @include text-truncate;
-  }
-
-  &__conn-empty {
-    padding: $spacing-md;
-    text-align: center;
-    color: $color-muted;
-    font-size: 12px;
-  }
-
-  &__conn-none {
-    width: 100%;
-    padding: $spacing-sm;
-    border-top: 1px solid $color-border;
-    font-size: 11px;
-    color: $color-muted;
-    transition: color $transition-fast;
-
-    &:hover {
-      color: $color-text;
-    }
+  &:hover {
+    background: $color-hover;
   }
 }
 
+&__conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+&__conn-name {
+  font-size: 13px;
+  font-weight: 500;
+  @include text-truncate;
+}
+
+&__conn-empty {
+  padding: $spacing-md;
+  text-align: center;
+  color: $color-muted;
+  font-size: 12px;
+}
+
+&__conn-none {
+  width: 100%;
+  padding: $spacing-sm;
+  border-top: 1px solid $color-border;
+  font-size: 11px;
+  color: $color-muted;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+}
+
 @keyframes slide-up-small {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // ── Bookmark Rail ───────────────────────────────────────────
@@ -1038,8 +1047,7 @@
   // Slight negative offset removes visible seam to right edge
   right: -1px;
   top: 50%;
-  transform: translateY(-50%
-  );
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1183,47 +1191,47 @@
     margin-bottom: $spacing-md;
   }
 
-.modal__media-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: $spacing-sm;
-  margin: $spacing-md 0;
+  .modal__media-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-sm;
+    margin: $spacing-md 0;
 
-  &-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    border: 1px solid $color-border;
-    border-radius: $radius-md;
-    padding: $spacing-sm $spacing-2xs;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &--active {
-      border-color: currentColor;
-      background: $color-surface;
-    }
-
-    .icon-wrapper {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+    &-btn {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin-bottom: $spacing-2xs;
-      color: white;
-    }
+      background: transparent;
+      border: 1px solid $color-border;
+      border-radius: $radius-md;
+      padding: $spacing-sm $spacing-2xs;
+      cursor: pointer;
+      transition: all $transition-fast;
 
-    span {
-      font-size: 11px;
-      color: $color-text;
-      font-weight: 500;
+      &--active {
+        border-color: currentColor;
+        background: $color-surface;
+      }
+
+      .icon-wrapper {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: $spacing-2xs;
+        color: white;
+      }
+
+      span {
+        font-size: 11px;
+        color: $color-text;
+        font-weight: 500;
+      }
     }
   }
-}
 
   &__title {
     font-family: $font-heading;
@@ -1340,6 +1348,7 @@
     flex: 1;
     @include text-truncate;
   }
+
   &__date-input,
   &__time-input {
     @include input-base;
@@ -1424,54 +1433,117 @@
 
   .command-panel {
     border-bottom-color: #e5e5f0;
-    &--closed { background: #ffffff; }
-    &--open { background: #f0f0f5; }
-    &__greeting { color: #1a1a24; }
-    &__drawer-item { 
-      background: #ffffff; 
+
+    &--closed {
+      background: #ffffff;
+    }
+
+    &--open {
+      background: #f0f0f5;
+    }
+
+    &__greeting {
+      color: #1a1a24;
+    }
+
+    &__drawer-item {
+      background: #ffffff;
       border-color: #e5e5f0;
     }
-    &__drawer-title { color: #1a1a24; }
-    &__drawer-empty { color: #5858A0; }
-    &__bell { background: #f7f7f9; border-color: #e5e5f0; }
+
+    &__drawer-title {
+      color: #1a1a24;
+    }
+
+    &__drawer-empty {
+      color: #5858A0;
+    }
+
+    &__bell {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+    }
   }
 
-  .list-section__label { color: #1a1a24; }
+  .list-section__label {
+    color: #1a1a24;
+  }
 
   .list-switcher {
     background: #ffffff;
     border-color: #e5e5f0;
-    &__btn { color: #8e8eb2; }
-    &__btn--active { color: white; }
+
+    &__btn {
+      color: #8e8eb2;
+    }
+
+    &__btn--active {
+      color: white;
+    }
   }
 
-  .task-group-header__left { color: #1a1a24; }
+  .task-group-header__left {
+    color: #1a1a24;
+  }
 
-  .task-item, .note-item, .cal-item, .media-item {
+  .task-item,
+  .note-item,
+  .cal-item,
+  .media-item {
     background: #ffffff;
     border: 1px solid #e5e5f0;
-    
-    &__title { color: #1a1a24; }
-    &__checkbox { border-color: #d1d1e0; }
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__checkbox {
+      border-color: #d1d1e0;
+    }
   }
 
   .cat-list {
-    &__header { border-bottom-color: #e5e5f0; }
-    &__title { color: #1a1a24; }
-    &__item { background: #ffffff; border: 1px solid #e5e5f0; }
-    &__item-name { color: #1a1a24; }
+    &__header {
+      border-bottom-color: #e5e5f0;
+    }
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__item {
+      background: #ffffff;
+      border: 1px solid #e5e5f0;
+    }
+
+    &__item-name {
+      color: #1a1a24;
+    }
   }
 
   .cat-detail {
-    &__header { border-bottom-color: #e5e5f0; }
-    &__title-input { color: #1a1a24; }
-    &__textarea { color: #1a1a24; }
-    &__date-pill { 
-      background: #ffffff; 
+    &__header {
+      border-bottom-color: #e5e5f0;
+    }
+
+    &__title-input {
+      color: #1a1a24;
+    }
+
+    &__textarea {
+      color: #1a1a24;
+    }
+
+    &__date-pill {
+      background: #ffffff;
       border-color: #e5e5f0;
       color: #5858A0;
-      &[style*="color"] { background: rgba(var(--brand-rgb), 0.1) !important; }
+
+      &[style*="color"] {
+        background: rgba(var(--brand-rgb), 0.1) !important;
+      }
     }
+
     &__tag {
       background: #e5e5f0;
       color: #5858A0;
@@ -1482,15 +1554,27 @@
       border-color: #e5e5f0;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
     }
+
     &__conn-item {
       color: #1a1a24;
-      &:hover { background: #f0f0f5; }
+
+      &:hover {
+        background: #f0f0f5;
+      }
     }
+
     &__conn-none {
       border-top-color: #e5e5f0;
-      &:hover { color: #1a1a24; }
+
+      &:hover {
+        color: #1a1a24;
+      }
     }
-    &__conn-empty { color: #5858A0; }
+
+    &__conn-empty {
+      color: #5858A0;
+    }
+
     &__date-input {
       color-scheme: light;
       color: #1a1a24;
@@ -1500,14 +1584,26 @@
   }
 
   .modal {
-    &__sheet { background: #ffffff; border-color: #e5e5f0; }
-    &__title { color: #1a1a24; }
-    &__input, &__textarea, &__select, &__time-input, &__date-input {
+    &__sheet {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__input,
+    &__textarea,
+    &__select,
+    &__time-input,
+    &__date-input {
       color: #1a1a24;
       background: #f7f7f9;
       border-color: #e5e5f0;
       color-scheme: light;
     }
+
     &__multi-select-btn {
       background: #f7f7f9;
       border-color: #e5e5f0;
@@ -1517,32 +1613,62 @@
         color: #1a1a24;
       }
     }
+
     &__multi-select-list {
       background: #ffffff;
       border-color: #e5e5f0;
     }
+
     &__multi-select-item {
       color: #1a1a24;
-      &:hover, &--selected { background: #f0f0f5; }
+
+      &:hover,
+      &--selected {
+        background: #f0f0f5;
+      }
     }
+
     &__multi-select-check {
       border-color: #d1d1e0;
     }
-    .icon-muted { color: #5858A0; }
+
+    .icon-muted {
+      color: #5858A0;
+    }
   }
 
   .nav-bottom__back {
     background: #ffffff;
     border-color: #e5e5f0;
-    svg { stroke: #5858A0; }
+
+    svg {
+      stroke: #5858A0;
+    }
   }
 
   .category-card {
-    &--project { background: rgba(#E03E3E, 0.1); border-color: rgba(#E03E3E, 0.2); }
-    &--area { background: rgba(#D09020, 0.1); border-color: rgba(#D09020, 0.2); }
-    &--resource { background: rgba(#30A060, 0.1); border-color: rgba(#30A060, 0.2); }
-    &__count { background: #ffffff; }
-    &__add-btn { background: #ffffff; }
+    &--project {
+      background: rgba(#E03E3E, 0.1);
+      border-color: rgba(#E03E3E, 0.2);
+    }
+
+    &--area {
+      background: rgba(#D09020, 0.1);
+      border-color: rgba(#D09020, 0.2);
+    }
+
+    &--resource {
+      background: rgba(#30A060, 0.1);
+      border-color: rgba(#30A060, 0.2);
+    }
+
+    &__count {
+      background: #ffffff;
+    }
+
+    &__add-btn {
+      background: #ffffff;
+    }
   }
 
   // Ressource Sub-Tabs: Farbanpassung für hellen Hintergrund
@@ -1584,16 +1710,19 @@
     }
 
     &__count {
+
       // Notizen-Badge in sattem Goldton
       &--notes {
         background: rgba(#F59E0B, 0.14);
         color: #b87a00;
       }
+
       // Ressourcen-Badge in sattem Grünton
       &--res {
         background: rgba(#10B981, 0.14);
         color: #0a8a5e;
       }
+
       // Medien-Badge in tiefem Magenta-Rosa
       &--media {
         background: rgba(#EC4899, 0.14);
@@ -1605,7 +1734,11 @@
   .modal__media-grid-btn {
     background: #f7f7f9;
     border-color: #e5e5f0;
-    span { color: #1a1a24; }
+
+    span {
+      color: #1a1a24;
+    }
+
     &--active {
       background: #ffffff;
       border-color: currentColor;
@@ -1622,9 +1755,10 @@
   padding: 0;
 }
 
-.settings-modal .settings-section + .settings-section {
+.settings-modal .settings-section+.settings-section {
   margin-top: 16px;
 }
+
 .settings-modal .settings-row {
   display: flex;
   justify-content: space-between;
@@ -1633,9 +1767,11 @@
   padding: 16px 0;
   border-bottom: 1px solid #262648;
 }
+
 .app.light-theme .settings-row {
   border-bottom-color: #e5e5f0;
 }
+
 .settings-modal .settings-label {
   font-size: 14px;
   font-weight: 500;
@@ -1646,15 +1782,17 @@
   margin-bottom: 0;
 }
 
-.settings-modal .settings-label + .modal__input {
+.settings-modal .settings-label+.modal__input {
   margin-top: 8px;
 }
+
 .theme-toggle {
   display: flex;
   background: #1C1C30;
   border-radius: 8px;
   padding: 4px;
 }
+
 .settings-modal .settings-row .settings-label {
   margin-bottom: 0;
 }
@@ -1663,12 +1801,14 @@
   margin-bottom: 0;
 }
 
-.settings-modal .modal__icon-row + .settings-section {
+.settings-modal .modal__icon-row+.settings-section {
   margin-top: 8px;
 }
+
 .app.light-theme .theme-toggle {
   background: #f0f0f5;
 }
+
 .theme-toggle__btn {
   padding: 6px 12px;
   border-radius: 6px;
@@ -1695,17 +1835,20 @@
     background: #ffffff;
     color: #1a1a24;
   }
+
   &--active {
     background: #ffffff;
     color: #1a1a24;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 }
+
 .app.light-theme .theme-toggle__btn--active {
   background: #ffffff;
   color: #1a1a24;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
 // ── Onboarding ──────────────────────────────────────────────
 .onboarding {
   position: absolute;
@@ -1817,19 +1960,35 @@
 .bookmark-rail {
   &__tab {
     &--active {
-      box-shadow: -4px 0 15px rgba(0,0,0,0.2);
+      box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
     }
   }
 }
 
 .app.light-theme .onboarding {
   background: #ffffff;
-  &__title { color: #1a1a24; }
-  &__input { background: #f0f0f5; border-color: #e5e5f0; color: #1a1a24; }
-  &__lang-btn { border-color: #e5e5f0; }
+
+  &__title {
+    color: #1a1a24;
+  }
+
+  &__input {
+    background: #f0f0f5;
+    border-color: #e5e5f0;
+    color: #1a1a24;
+  }
+
+  &__lang-btn {
+    border-color: #e5e5f0;
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }

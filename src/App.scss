@@ -962,6 +962,56 @@
   }
 }
 
+// ── Ressource Sub-Tabs (Notizen / Medien) ──────────────────
+.res-sub-tabs {
+  display: flex;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-md;
+  background: $color-card;
+  border-radius: $radius-pill;
+  padding: $spacing-2xs;
+  border: 1px solid $color-border;
+
+  &__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-pill;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: $font-body;
+    color: $color-muted;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all $transition-fast;
+    cursor: pointer;
+
+    // Notizen-Tab: Gelb/Gold (Notiz-Farbe)
+    &--active-notes {
+      background: rgba(#F59E0B, 0.15);
+      color: #F59E0B;
+      border-color: rgba(#F59E0B, 0.35);
+      box-shadow: 0 0 12px rgba(#F59E0B, 0.12);
+    }
+
+    // Medien-Tab: Grün (Ressource-Farbe)
+    &--active-media {
+      background: rgba(#10B981, 0.15);
+      color: #10B981;
+      border-color: rgba(#10B981, 0.35);
+      box-shadow: 0 0 12px rgba(#10B981, 0.12);
+    }
+
+    &:hover:not(&--active-notes):not(&--active-media) {
+      color: $color-text;
+      background: $color-hover;
+    }
+  }
+}
+
 // ── Modal Overlay ───────────────────────────────────────────
 .modal {
   position: absolute;

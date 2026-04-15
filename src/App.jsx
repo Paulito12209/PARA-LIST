@@ -50,7 +50,7 @@ const getYouTubeVideoId = (rawUrl) => {
 const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
   { id: "tasks",  color: "#7C83F7", Icon: CheckCircle2 },
-  { id: "cal",    color: "#1E40AF", Icon: Calendar },
+  { id: "cal",    color: "#3B82F6", Icon: Calendar },
   { id: "media",  color: "#10B981", Icon: Paperclip },
   { id: "link",   color: "#FB923C", Icon: Link2 },
 ];
@@ -727,6 +727,8 @@ function CatDetailScreen({
   const [bm, setBm] = useState("canvas");
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
+  // Sub-Tab für das Ressource-Lesezeichen: "notes" oder "media"
+  const [resSubTab, setResSubTab] = useState("notes");
 
   const related = allCats.find(c => c.id === cat.relatedId);
   const relatedCfg = related && CC[related.type] ? CC[related.type] : null;
@@ -738,16 +740,37 @@ function CatDetailScreen({
   });
   const resCount = allCats.filter(c => c.type === 'resource' && c.relatedId === cat.id).length;
   const ResIcon = CAT_ICONS.resource;
-  const createEntryFromBookmark = useCallback(() => {
+
+  // Mapping: Bookmark → Entry-Typ (inkl. Sub-Tab bei Ressource)
+  const getEntryTypeFromBookmark = useCallback(() => {
+    if (bm === "media") {
+      return resSubTab === "notes" ? "note" : "media";
+    }
     const map = {
       canvas: "note",
       tasks: "task",
       cal: "calendar",
-      media: "media",
       link: "link",
     };
-    onAddEntry(map[bm] || "task");
-  }, [bm, onAddEntry]);
+    return map[bm] || "task";
+  }, [bm, resSubTab]);
+
+  // Mapping: Entry-Typ → FAB-Farbe
+  const getFabColor = useCallback(() => {
+    const entryType = getEntryTypeFromBookmark();
+    const colorMap = {
+      note: "#F59E0B",
+      task: "#7C83F7",
+      calendar: "#1E40AF",
+      media: "#10B981",
+      link: "#FB923C",
+    };
+    return colorMap[entryType] || cfg.color;
+  }, [getEntryTypeFromBookmark, cfg.color]);
+
+  const createEntryFromBookmark = useCallback(() => {
+    onAddEntry(getEntryTypeFromBookmark());
+  }, [getEntryTypeFromBookmark, onAddEntry]);
   const lastTap = useRef(0);
   const handleDoubleTap = useCallback(
     (e) => {
@@ -913,16 +936,53 @@ function CatDetailScreen({
               onDelete={deleteEntry}
             />
           ))}
-        {bm === "media" &&
-          (entries.filter((e) => e.type === "media").length === 0 ? (
-            <div className="cat-detail__section-empty">{t.noMedia}</div>
-          ) : (
-            <MediaList t={t} CC={CC}
-              entries={entries.filter((e) => e.type === "media")}
-              cats={allCats}
-              onDelete={deleteEntry}
-            />
-          ))}
+        {bm === "media" && (
+          <>
+            {/* Sub-Tab-Leiste: Notizen / Medien */}
+            <div className="res-sub-tabs">
+              <button
+                className={`res-sub-tabs__btn ${resSubTab === "notes" ? "res-sub-tabs__btn--active-notes" : ""}`}
+                onClick={() => setResSubTab("notes")}
+              >
+                <Pencil size={14} />
+                <span>{t.notes}</span>
+              </button>
+              <button
+                className={`res-sub-tabs__btn ${resSubTab === "media" ? "res-sub-tabs__btn--active-media" : ""}`}
+                onClick={() => setResSubTab("media")}
+              >
+                <Paperclip size={14} />
+                <span>{t.media}</span>
+              </button>
+            </div>
+
+            {/* Notizen-Ansicht */}
+            {resSubTab === "notes" && (
+              entries.filter((e) => e.type === "note").length === 0 ? (
+                <div className="cat-detail__section-empty">{t.notes}: {t.noMedia}</div>
+              ) : (
+                <NoteList t={t} CC={CC}
+                  entries={entries.filter((e) => e.type === "note")}
+                  cats={allCats}
+                  onDelete={deleteEntry}
+                />
+              )
+            )}
+
+            {/* Medien-Ansicht */}
+            {resSubTab === "media" && (
+              entries.filter((e) => e.type === "media").length === 0 ? (
+                <div className="cat-detail__section-empty">{t.noMedia}</div>
+              ) : (
+                <MediaList t={t} CC={CC}
+                  entries={entries.filter((e) => e.type === "media")}
+                  cats={allCats}
+                  onDelete={deleteEntry}
+                />
+              )
+            )}
+          </>
+        )}
         {bm === "link" &&
           (entries.filter((e) => e.type === "link").length === 0 ? (
             <div className="cat-detail__section-empty">{t.noLink}</div>
@@ -947,8 +1007,8 @@ function CatDetailScreen({
             className="nav-bottom__add"
             onClick={createEntryFromBookmark}
             style={{
-              background: BOOKMARKS.find((b) => b.id === bm)?.color || cfg.color,
-              boxShadow: `0 8px 24px ${BOOKMARKS.find((b) => b.id === bm)?.color || cfg.color}55`,
+              background: getFabColor(),
+              boxShadow: `0 8px 24px ${getFabColor()}55`,
             }}
           >
             <Plus size={22} color="#fff" strokeWidth={2.4} />

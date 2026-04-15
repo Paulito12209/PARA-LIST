@@ -24,6 +24,50 @@ const fmtDate = (d, locale) =>
         month: "short",
       });
 
+const getTaskGroup = (due, locale) => {
+  if (!due) return null;
+  const d = new Date(due + "T12:00");
+  const t = new Date(TODAY + "T12:00");
+  const diffDays = Math.round((d - t) / (1000 * 60 * 60 * 24));
+  if (diffDays <= 0) return null; 
+
+  const weekday = d.toLocaleDateString(locale, { weekday: 'short' }).substring(0, 2);
+  const day = String(d.getDate()).padStart(2, '0'); 
+  const left = `${weekday}., ${day}`;
+
+  const getMonday = (date) => {
+    const dt = new Date(date);
+    const day = dt.getDay() || 7; 
+    dt.setDate(dt.getDate() - day + 1);
+    dt.setHours(0,0,0,0);
+    return dt;
+  };
+
+  const tMonday = getMonday(t);
+  const dMonday = getMonday(d);
+  const weekDiff = Math.round((dMonday - tMonday) / 604800000);
+
+  let right = "";
+  if (diffDays === 1) {
+    right = "morgen";
+  } else if (diffDays === 2) {
+    right = "übermorgen";
+  } else if (weekDiff === 0) {
+    right = "diese Woche";
+  } else if (weekDiff === 1) {
+    right = "nächste Woche";
+  } else {
+    const mDiff = (d.getFullYear() - t.getFullYear()) * 12 + (d.getMonth() - t.getMonth());
+    if (mDiff === 1) {
+      right = "nächsten Monat";
+    } else {
+      right = d.toLocaleDateString(locale, { month: 'long' });
+    }
+  }
+
+  return { left, right, sortKey: d.getTime() };
+};
+
 const getYouTubeVideoId = (rawUrl) => {
   if (!rawUrl) return null;
   try {
@@ -206,8 +250,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t 
 }
 
 /* ── Task List ───────────────────────────────────────────────── */
-function TaskList({ entries, cats, onToggle, onDelete, t, CC }) {
-  return entries.map((e) => {
+function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color }) {
+  const renderItem = (e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const overdue = isOld(e.due) && !e.done;
     return (
@@ -259,12 +303,54 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC }) {
         </button>
       </div>
     );
+  };
+
+  if (!grouped) {
+    return entries.map(renderItem);
+  }
+
+  const todayTasks = [];
+  const groupedTasks = new Map();
+
+  entries.forEach((e) => {
+    if (!e.due || isToday(e.due) || isOld(e.due)) {
+      todayTasks.push(e);
+    } else {
+      const g = getTaskGroup(e.due, t.locale);
+      const key = `${g.left}|${g.right}`;
+      if (!groupedTasks.has(key)) {
+        groupedTasks.set(key, { ...g, items: [] });
+      }
+      groupedTasks.get(key).items.push(e);
+    }
   });
+
+  const futureGroups = Array.from(groupedTasks.values());
+  futureGroups.sort((a, b) => a.sortKey - b.sortKey);
+  futureGroups.forEach((g) => {
+    g.items.sort((a, b) => new Date(a.due) - new Date(b.due));
+  });
+
+  return (
+    <>
+      {todayTasks.map(renderItem)}
+      {futureGroups.map((g, i) => (
+        <div key={i} className="task-group">
+          <div className="task-group-header">
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__line" style={color ? { background: color } : {}} />
+            <span className="task-group-header__right">{g.right}</span>
+          </div>
+          {g.items.map(renderItem)}
+        </div>
+      ))}
+    </>
+  );
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete, CC }) {
-  return entries.map((e) => {
+function NoteList({ entries, cats, onDelete, CC, grouped, color, t }) {
+  const renderItem = (e) => {
     const cat = cats.find((c) => c.id === e.catId);
     return (
       <div key={e.id} className="note-item">
@@ -290,12 +376,55 @@ function NoteList({ entries, cats, onDelete, CC }) {
         )}
       </div>
     );
+  };
+
+  if (!grouped) {
+    return entries.map(renderItem);
+  }
+
+  const todayTasks = [];
+  const groupedTasks = new Map();
+
+  entries.forEach((e) => {
+    const d = e.due || e.date;
+    if (!d || isToday(d) || isOld(d)) {
+      todayTasks.push(e);
+    } else {
+      const g = getTaskGroup(d, t.locale);
+      const key = `${g.left}|${g.right}`;
+      if (!groupedTasks.has(key)) {
+        groupedTasks.set(key, { ...g, items: [] });
+      }
+      groupedTasks.get(key).items.push(e);
+    }
   });
+
+  const futureGroups = Array.from(groupedTasks.values());
+  futureGroups.sort((a, b) => a.sortKey - b.sortKey);
+  futureGroups.forEach((g) => {
+    g.items.sort((a, b) => new Date(a.due || a.date) - new Date(b.due || b.date));
+  });
+
+  return (
+    <>
+      {todayTasks.map(renderItem)}
+      {futureGroups.map((g, i) => (
+        <div key={i} className="task-group">
+          <div className="task-group-header">
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__line" style={color ? { background: color } : {}} />
+            <span className="task-group-header__right">{g.right}</span>
+          </div>
+          {g.items.map(renderItem)}
+        </div>
+      ))}
+    </>
+  );
 }
 
 /* ── Calendar List ───────────────────────────────────────────── */
-function CalList({ entries, cats, onDelete, t, CC }) {
-  return entries.map((e) => {
+function CalList({ entries, cats, onDelete, t, CC, grouped, color }) {
+  const renderItem = (e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const past = e.date && e.date < TODAY;
     return (
@@ -339,7 +468,50 @@ function CalList({ entries, cats, onDelete, t, CC }) {
         )}
       </div>
     );
+  };
+
+  if (!grouped) {
+    return entries.map(renderItem);
+  }
+
+  const todayTasks = [];
+  const groupedTasks = new Map();
+
+  entries.forEach((e) => {
+    const d = e.date;
+    if (!d || isToday(d) || isOld(d)) {
+      todayTasks.push(e);
+    } else {
+      const g = getTaskGroup(d, t.locale);
+      const key = `${g.left}|${g.right}`;
+      if (!groupedTasks.has(key)) {
+        groupedTasks.set(key, { ...g, items: [] });
+      }
+      groupedTasks.get(key).items.push(e);
+    }
   });
+
+  const futureGroups = Array.from(groupedTasks.values());
+  futureGroups.sort((a, b) => a.sortKey - b.sortKey);
+  futureGroups.forEach((g) => {
+    g.items.sort((a, b) => new Date(a.date) - new Date(b.date));
+  });
+
+  return (
+    <>
+      {todayTasks.map(renderItem)}
+      {futureGroups.map((g, i) => (
+        <div key={i} className="task-group">
+          <div className="task-group-header">
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__line" style={color ? { background: color } : {}} />
+            <span className="task-group-header__right">{g.right}</span>
+          </div>
+          {g.items.map(renderItem)}
+        </div>
+      ))}
+    </>
+  );
 }
 
 /* ── Media List ──────────────────────────────────────────────── */
@@ -463,11 +635,19 @@ function HomeScreen({
   deleteEntry,
 }) {
   const { entries, cats } = state;
-  const tabEntries = entries.filter(
-    (e) =>
-      e.type ===
-      (tab === "calendar" ? "calendar" : tab === "notes" ? "note" : "task")
-  );
+  const tabEntries = entries.filter((e) => {
+    if (tab === "calendar") {
+      return e.type === "calendar" && (!e.date || !isOld(e.date));
+    }
+    if (tab === "notes") {
+      return e.type === "note";
+    }
+    if (tab === "tasks") {
+      const isOverdue = e.type === "task" && !e.done && isOld(e.due);
+      return e.type === "task" && !isOverdue;
+    }
+    return false;
+  });
   const tabCfg = TABS.find((t) => t.id === tab);
   const tabColor = tabCfg?.color || "#7C83F7";
 
@@ -572,6 +752,8 @@ function HomeScreen({
                 cats={cats}
                 onToggle={toggleTask}
                 onDelete={deleteEntry}
+                grouped={true}
+                color={tabColor}
               />
             )}
             {tab === "notes" && (
@@ -579,6 +761,8 @@ function HomeScreen({
                 entries={tabEntries}
                 cats={cats}
                 onDelete={deleteEntry}
+                grouped={true}
+                color={tabColor}
               />
             )}
             {tab === "calendar" && (
@@ -586,6 +770,8 @@ function HomeScreen({
                 entries={tabEntries}
                 cats={cats}
                 onDelete={deleteEntry}
+                grouped={true}
+                color={tabColor}
               />
             )}
           </>

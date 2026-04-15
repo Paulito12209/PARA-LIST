@@ -334,6 +334,34 @@
   }
 }
 
+// ── Task Group Header ───────────────────────────────────────
+.task-group-header {
+  display: flex;
+  align-items: center;
+  margin: $spacing-md 0 $spacing-sm 0;
+  gap: $spacing-sm;
+
+  &__left {
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-text;
+  }
+
+  &__line {
+    flex: 1;
+    height: 1px;
+    background: $color-border;
+  }
+
+  &__right {
+    font-size: 11px;
+    font-weight: 500;
+    color: $color-muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+}
+
 // ── Task Item ───────────────────────────────────────────────
 .task-item {
   display: flex;
@@ -1348,6 +1376,8 @@
     &__btn { color: #8e8eb2; }
     &__btn--active { color: white; }
   }
+
+  .task-group-header__left { color: #1a1a24; }
 
   .task-item, .note-item, .cal-item, .media-item {
     background: #ffffff;

@@ -1446,6 +1446,21 @@
       color: #1a1a24;
     }
 
+    &__drawer {
+      border-top-color: #e5e5f0;
+    }
+
+    &__tab {
+      background: #e5e5f0;
+      color: #5858A0;
+
+      &--active {
+        background: #ffffff;
+        color: #1a1a24;
+        border-color: #d1d1e0;
+      }
+    }
+
     &__drawer-item {
       background: #ffffff;
       border-color: #e5e5f0;
@@ -1462,6 +1477,10 @@
     &__bell {
       background: #f7f7f9;
       border-color: #e5e5f0;
+    }
+
+    &__handle-bar {
+      background: #d1d1e0;
     }
   }
 

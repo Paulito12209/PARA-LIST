@@ -149,12 +149,26 @@ function computeNotif(entries) {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Command Panel ───────────────────────────────────────────── */
-function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t }) {
-  const today = entries.filter(
+function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t }) {
+  const [subTab, setSubTab] = useState("today");
+
+  const todayEntries = entries.filter(
     (e) =>
-      (e.type === "task" && !e.done && (isToday(e.due) || isOld(e.due))) ||
+      (e.type === "task" && !e.done && isToday(e.due)) ||
       (e.type === "calendar" && isToday(e.date))
   );
+
+  const overdueEntries = entries.filter(
+    (e) =>
+      (e.type === "task" && !e.done && isOld(e.due)) ||
+      (e.type === "calendar" && isOld(e.date))
+  ).sort((a, b) => {
+    const dA = new Date((a.due || a.date) + "T12:00");
+    const dB = new Date((b.due || b.date) + "T12:00");
+    return dB - dA;
+  });
+
+  const activeEntries = subTab === "today" ? todayEntries : overdueEntries;
 
   return (
     <div className={`command-panel command-panel--${open ? "open" : "closed"}`}>
@@ -198,42 +212,71 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, t 
 
       {open && (
         <div className="command-panel__drawer">
-          {today.length === 0 ? (
-            <div className="command-panel__drawer-empty">
-              {t.emptyDrawer}
-            </div>
-          ) : (
-            today.slice(0, 5).map((e) => (
-              <div
-                key={e.id}
-                className={`command-panel__drawer-item ${
-                  e.type === "task" && isOld(e.due)
-                    ? "command-panel__drawer-item--overdue"
-                    : ""
-                }`}
-              >
-                <span
-                  className="command-panel__drawer-dot"
-                  style={{
-                    background:
-                      e.type === "calendar"
-                        ? "#38BDF8"
-                        : isOld(e.due)
-                        ? NOTIF_RED
-                        : "#7C83F7",
-                  }}
-                />
-                <span className="command-panel__drawer-title">{e.title}</span>
-                <span className="command-panel__drawer-meta">
-                  {e.type === "calendar"
-                    ? e.time + (t.oclock ? " " + t.oclock : "")
-                    : isOld(e.due)
-                    ? t.overdue
-                    : t.today}
-                </span>
+          <div className="command-panel__tabs">
+            <button
+              className={`command-panel__tab ${subTab === "today" ? "command-panel__tab--active" : ""}`}
+              onClick={() => setSubTab("today")}
+            >
+              Heute <span className="command-panel__badge">{todayEntries.length}</span>
+            </button>
+            <button
+              className={`command-panel__tab ${subTab === "overdue" ? "command-panel__tab--active" : ""}`}
+              onClick={() => setSubTab("overdue")}
+            >
+              Überfällig <span className="command-panel__badge">{overdueEntries.length}</span>
+            </button>
+          </div>
+
+          <div className="command-panel__list">
+            {activeEntries.length === 0 ? (
+              <div className="command-panel__drawer-empty">
+                {subTab === "today" ? "Keine Einträge für heute" : "Keine überfälligen Einträge"}
               </div>
-            ))
-          )}
+            ) : (
+              activeEntries.map((e) => {
+                const d = e.due || e.date;
+                return (
+                  <div
+                    key={e.id}
+                    className={`command-panel__drawer-item ${
+                      isOld(d) ? "command-panel__drawer-item--overdue" : ""
+                    }`}
+                  >
+                    <span
+                      className="command-panel__drawer-dot"
+                      style={{
+                        background:
+                          e.type === "calendar"
+                            ? "#38BDF8"
+                            : isOld(d)
+                            ? NOTIF_RED
+                            : "#7C83F7",
+                      }}
+                    />
+                    <div className="command-panel__drawer-info">
+                      <div className="command-panel__drawer-title">{e.title}</div>
+                      <div className="command-panel__drawer-meta">
+                        {e.type === "calendar"
+                          ? e.time + (t.oclock ? " " + t.oclock : "")
+                          : isOld(d)
+                          ? fmtDate(d, t.locale)
+                          : t.todayCap}
+                      </div>
+                    </div>
+                    <button
+                      className="command-panel__drawer-delete"
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        onDelete(e.id);
+                      }}
+                    >
+                      <Trash2 size={14} color="#5858A0" />
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       )}
 
@@ -1818,12 +1861,26 @@ export default function App() {
 
   /* ── swipe-back gesture ────────────────────────────────────── */
   const touchX = useRef(0);
+  const touchY = useRef(0);
   const onTouchStart = (e) => {
     touchX.current = e.touches[0].clientX;
+    touchY.current = e.touches[0].clientY;
   };
   const onTouchEnd = (e) => {
     const dx = e.changedTouches[0].clientX - touchX.current;
-    if (dx > 75 && touchX.current < 45 && stack.length > 1) pop();
+    const dy = e.changedTouches[0].clientY - touchY.current;
+    if (dx > 75 && touchX.current < 45 && stack.length > 1) {
+      pop();
+      return;
+    }
+
+    if (dy > 80 && Math.abs(dx) < 50 && !panelOpen) {
+      // Check if scroll container is at top
+      const scrollEl = document.querySelector('.entry-list');
+      if (cur.view === "home" && (!scrollEl || scrollEl.scrollTop <= 0)) {
+        setPanelOpen(true);
+      }
+    }
   };
 
   /* ── loading state ─────────────────────────────────────────── */
@@ -1851,6 +1908,7 @@ export default function App() {
         open={panelOpen}
         onToggle={() => setPanelOpen((o) => !o)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onDelete={deleteEntry}
       />
 
       <div className="main-content">
@@ -1864,8 +1922,12 @@ export default function App() {
             tab={tab}
             setTab={setTab}
             onOpenCatType={(type) => push({ view: "catList", type })}
-            onAddCat={(type) => setNewCatType(type)}
-            onAddEntry={() =>
+            onAddCat={(type) => {
+              setPanelOpen(false);
+              setNewCatType(type);
+            }}
+            onAddEntry={() => {
+              setPanelOpen(false);
               setCreating({
                 type:
                   tab === "tasks"
@@ -1874,8 +1936,8 @@ export default function App() {
                     ? "note"
                     : "calendar",
                 catId: null,
-              })
-            }
+              });
+            }}
             toggleTask={toggleTask}
             deleteEntry={deleteEntry}
           />

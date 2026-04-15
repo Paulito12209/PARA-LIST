@@ -38,6 +38,10 @@
 
   &--open {
     background: $color-hover;
+    height: calc(100vh - 90px);
+    height: calc(100dvh - 90px);
+    display: flex;
+    flex-direction: column;
   }
 
   &__header {
@@ -95,6 +99,51 @@
     margin-top: $spacing-sm;
     padding-top: $spacing-sm;
     animation: panel-in 0.2s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  &__tabs {
+    display: flex;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__tab {
+    flex: 1;
+    padding: 8px;
+    border-radius: $radius-sm;
+    background: rgba($color-dim, 0.5);
+    color: $color-muted;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    &--active {
+      background: $color-card;
+      color: $color-text;
+      border: 1px solid $color-border;
+    }
+  }
+
+  &__badge {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 9px;
+    padding: 2px 6px;
+    font-size: 10px;
+    color: currentColor;
+  }
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: $spacing-sm;
   }
 
   &__drawer-item {
@@ -130,6 +179,17 @@
     font-size: 11px;
     color: $color-muted;
     flex-shrink: 0;
+  }
+
+  &__drawer-delete {
+    padding: $spacing-xs;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+    margin-left: auto;
+
+    &:hover {
+      opacity: 0.7;
+    }
   }
 
   &__drawer-empty {

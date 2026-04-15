@@ -44,6 +44,14 @@
     flex-direction: column;
   }
 
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 90;
+    backdrop-filter: blur(2px);
+    animation: fade-in 0.2s ease;
+  }
+
   &__header {
     display: flex;
     align-items: center;
@@ -722,7 +730,7 @@
   right: $spacing-md + $spacing-xs;
   @include floating-btn($fab-size, $radius-lg);
   border: none;
-  z-index: 5;
+  z-index: 95;
 
   svg {
     display: block;

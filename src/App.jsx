@@ -1911,6 +1911,13 @@ export default function App() {
         onDelete={deleteEntry}
       />
 
+      {panelOpen && (
+        <div
+          className="command-panel__backdrop"
+          onClick={() => setPanelOpen(false)}
+        />
+      )}
+
       <div className="main-content">
         {cur.view === "home" && (
           <HomeScreen

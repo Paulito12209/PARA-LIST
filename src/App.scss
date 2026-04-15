@@ -1433,6 +1433,50 @@
     &__add-btn { background: #ffffff; }
   }
 
+  // Ressource Sub-Tabs: Farbanpassung für hellen Hintergrund
+  .res-sub-tabs {
+    background: #ffffff;
+    border-color: #e5e5f0;
+
+    &__btn {
+      color: #8e8eb2;
+
+      // Notizen-Tab: Helleres Gelb/Gold für Light Mode
+      &--active-notes {
+        background: rgba(#F59E0B, 0.12);
+        color: #b87a00;
+        border-color: rgba(#F59E0B, 0.30);
+        box-shadow: 0 0 10px rgba(#F59E0B, 0.08);
+      }
+
+      // Medien-Tab: Helleres Grün für Light Mode
+      &--active-media {
+        background: rgba(#10B981, 0.12);
+        color: #0a8a5e;
+        border-color: rgba(#10B981, 0.30);
+        box-shadow: 0 0 10px rgba(#10B981, 0.08);
+      }
+
+      &:hover:not(&--active-notes):not(&--active-media) {
+        color: #1a1a24;
+        background: #f0f0f5;
+      }
+    }
+
+    &__count {
+      // Notizen-Badge in sattem Goldton
+      &--notes {
+        background: rgba(#F59E0B, 0.14);
+        color: #b87a00;
+      }
+      // Medien-Badge in sattem Grünton
+      &--media {
+        background: rgba(#10B981, 0.14);
+        color: #0a8a5e;
+      }
+    }
+  }
+
   .modal__media-grid-btn {
     background: #f7f7f9;
     border-color: #e5e5f0;

@@ -720,6 +720,7 @@ function CatDetailScreen({
   toggleTask,
   deleteEntry,
   onAddEntry,
+  onOpenCat,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -727,8 +728,10 @@ function CatDetailScreen({
   const [bm, setBm] = useState("canvas");
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
-  // Sub-Tab für das Ressource-Lesezeichen: "notes" oder "media"
-  const [resSubTab, setResSubTab] = useState("notes");
+  // Ob Projekt/Arbeitsbereich → 3 Sub-Tabs (resources, notes, media), sonst nur 2 (notes, media)
+  const isProjectOrArea = cat.type === "project" || cat.type === "area";
+  // Sub-Tab für das Ressource-Lesezeichen
+  const [resSubTab, setResSubTab] = useState(isProjectOrArea ? "resources" : "notes");
 
   // Refs für Click-Outside-Erkennung
   const connPopupRef = useRef(null);
@@ -747,7 +750,9 @@ function CatDetailScreen({
     if (cat.type === "area") return c.type === "project";
     return c.type === "project" || c.type === "area";
   });
-  const resCount = allCats.filter(c => c.type === 'resource' && c.relatedId === cat.id).length;
+  // Verknüpfte Ressourcen berechnen (Ressourcen, deren relatedId auf dieses Element zeigt)
+  const linkedResources = allCats.filter(c => c.type === 'resource' && c.relatedId === cat.id);
+  const resCount = linkedResources.length;
   const ResIcon = CAT_ICONS.resource;
 
   // Anzahl der Notizen und Medien für Sub-Tab-Badges
@@ -804,22 +809,28 @@ function CatDetailScreen({
     onAddEntry(getEntryTypeFromBookmark());
   }, [getEntryTypeFromBookmark, onAddEntry]);
 
-  // Swipe-Handler für Sub-Tab-Wechsel (wiederverwendbar für andere Bookmarks)
+  // Swipe-Handler für Sub-Tab-Wechsel (3 Tabs bei Projekt/Bereich, 2 bei Ressource)
+  const subTabOrder = isProjectOrArea
+    ? ["resources", "notes", "media"]
+    : ["notes", "media"];
   const onSubTabTouchStart = useCallback((e) => {
     subTabTouchX.current = e.touches[0].clientX;
   }, []);
   const onSubTabTouchEnd = useCallback((e) => {
     const dx = e.changedTouches[0].clientX - subTabTouchX.current;
     if (Math.abs(dx) > 60) {
-      if (dx > 0) {
-        // Links nach rechts → zum ersten Tab (Notizen)
-        setResSubTab("notes");
-      } else {
-        // Rechts nach links → zum zweiten Tab (Medien)
-        setResSubTab("media");
-      }
+      setResSubTab(prev => {
+        const idx = subTabOrder.indexOf(prev);
+        if (dx > 0) {
+          // Swipe rechts → vorheriger Tab
+          return subTabOrder[Math.max(0, idx - 1)];
+        } else {
+          // Swipe links → nächster Tab
+          return subTabOrder[Math.min(subTabOrder.length - 1, idx + 1)];
+        }
+      });
     }
-  }, []);
+  }, [subTabOrder]);
 
   const lastTap = useRef(0);
   const handleDoubleTap = useCallback(
@@ -996,8 +1007,21 @@ function CatDetailScreen({
             onTouchEnd={onSubTabTouchEnd}
             style={{ flex: 1 }}
           >
-            {/* Sub-Tab-Leiste: Notizen / Medien */}
+            {/* Sub-Tab-Leiste: Ressourcen (nur bei Projekt/Bereich) / Notizen / Medien */}
             <div className="res-sub-tabs">
+              {/* Ressourcen-Tab: nur bei Projekt oder Arbeitsbereich sichtbar */}
+              {isProjectOrArea && (
+                <button
+                  className={`res-sub-tabs__btn ${resSubTab === "resources" ? "res-sub-tabs__btn--active-res" : ""}`}
+                  onClick={() => setResSubTab("resources")}
+                >
+                  <Square size={14} />
+                  <span>{t.linkedRes}</span>
+                  {resCount > 0 && (
+                    <span className="res-sub-tabs__count res-sub-tabs__count--res">{resCount}</span>
+                  )}
+                </button>
+              )}
               <button
                 className={`res-sub-tabs__btn ${resSubTab === "notes" ? "res-sub-tabs__btn--active-notes" : ""}`}
                 onClick={() => setResSubTab("notes")}
@@ -1019,6 +1043,36 @@ function CatDetailScreen({
                 )}
               </button>
             </div>
+
+            {/* Verknüpfte Ressourcen-Ansicht (nur bei Projekt/Bereich) */}
+            {resSubTab === "resources" && isProjectOrArea && (
+              linkedResources.length === 0 ? (
+                <div className="cat-detail__section-empty">{t.noLinkedRes}</div>
+              ) : (
+                linkedResources.map((res) => (
+                  <button
+                    key={res.id}
+                    className="cat-list__item"
+                    onClick={() => onOpenCat && onOpenCat(res)}
+                  >
+                    <div
+                      className="cat-list__item-icon"
+                      style={{ background: CC.resource.color + "22" }}
+                    >
+                      <Square size={18} color={CC.resource.color} />
+                    </div>
+                    <div className="cat-list__item-info">
+                      <div className="cat-list__item-name">{res.name}</div>
+                    </div>
+                    <ChevronLeft
+                      size={16}
+                      color="#5858A0"
+                      style={{ transform: "rotate(180deg)" }}
+                    />
+                  </button>
+                ))
+              )
+            )}
 
             {/* Notizen-Ansicht */}
             {resSubTab === "notes" && (
@@ -1699,6 +1753,7 @@ export default function App() {
                 onAddEntry={(type) =>
                   setCreating({ type, catId: cat.id })
                 }
+                onOpenCat={(resCat) => push({ view: "catDetail", catId: resCat.id })}
               />
             );
           })()}

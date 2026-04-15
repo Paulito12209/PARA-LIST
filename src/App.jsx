@@ -730,6 +730,15 @@ function CatDetailScreen({
   // Sub-Tab für das Ressource-Lesezeichen: "notes" oder "media"
   const [resSubTab, setResSubTab] = useState("notes");
 
+  // Refs für Click-Outside-Erkennung
+  const connPopupRef = useRef(null);
+  const connPillRef = useRef(null);
+  const dateInputRef = useRef(null);
+  const datePillRef = useRef(null);
+
+  // Swipe-Refs für Sub-Tab-Wechsel (wiederverwendbar)
+  const subTabTouchX = useRef(0);
+
   const related = allCats.find(c => c.id === cat.relatedId);
   const relatedCfg = related && CC[related.type] ? CC[related.type] : null;
   const connOptions = allCats.filter(c => {
@@ -740,6 +749,29 @@ function CatDetailScreen({
   });
   const resCount = allCats.filter(c => c.type === 'resource' && c.relatedId === cat.id).length;
   const ResIcon = CAT_ICONS.resource;
+
+  // Anzahl der Notizen und Medien für Sub-Tab-Badges
+  const noteCount = entries.filter(e => e.type === "note").length;
+  const mediaCount = entries.filter(e => e.type === "media").length;
+
+  // Click-Outside: Popups schließen wenn außerhalb geklickt wird
+  const handleClickOutside = useCallback((e) => {
+    // Connection-Popup schließen
+    if (showConnSelect &&
+        connPopupRef.current && !connPopupRef.current.contains(e.target) &&
+        connPillRef.current && !connPillRef.current.contains(e.target)) {
+      setShowConnSelect(false);
+    }
+    // Datum-Picker schließen
+    if (showDate &&
+        dateInputRef.current && !dateInputRef.current.contains(e.target) &&
+        datePillRef.current && !datePillRef.current.contains(e.target)) {
+      setShowDate(false);
+    }
+  }, [showConnSelect, showDate]);
+
+  // Event-Listener für Click-Outside
+  // (useRef + useCallback statt useEffect, da wir den Handler auf dem cat-detail div setzen)
 
   // Mapping: Bookmark → Entry-Typ (inkl. Sub-Tab bei Ressource)
   const getEntryTypeFromBookmark = useCallback(() => {
@@ -771,6 +803,24 @@ function CatDetailScreen({
   const createEntryFromBookmark = useCallback(() => {
     onAddEntry(getEntryTypeFromBookmark());
   }, [getEntryTypeFromBookmark, onAddEntry]);
+
+  // Swipe-Handler für Sub-Tab-Wechsel (wiederverwendbar für andere Bookmarks)
+  const onSubTabTouchStart = useCallback((e) => {
+    subTabTouchX.current = e.touches[0].clientX;
+  }, []);
+  const onSubTabTouchEnd = useCallback((e) => {
+    const dx = e.changedTouches[0].clientX - subTabTouchX.current;
+    if (Math.abs(dx) > 60) {
+      if (dx > 0) {
+        // Links nach rechts → zum ersten Tab (Notizen)
+        setResSubTab("notes");
+      } else {
+        // Rechts nach links → zum zweiten Tab (Medien)
+        setResSubTab("media");
+      }
+    }
+  }, []);
+
   const lastTap = useRef(0);
   const handleDoubleTap = useCallback(
     (e) => {
@@ -787,7 +837,7 @@ function CatDetailScreen({
   );
 
   return (
-    <div className="cat-detail">
+    <div className="cat-detail" onClick={handleClickOutside}>
       {/* Header */}
       <div className="cat-detail__header">
         <div className="cat-detail__title-row">
@@ -805,8 +855,9 @@ function CatDetailScreen({
         <div className="cat-detail__pills">
           {cat.type === "project" && (
             <button
+              ref={datePillRef}
               className="cat-detail__date-pill"
-              onClick={() => setShowDate(!showDate)}
+              onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
               style={
                 cat.date
                   ? {
@@ -822,8 +873,9 @@ function CatDetailScreen({
           )}
 
           <button
+            ref={connPillRef}
             className="cat-detail__date-pill"
-            onClick={() => setShowConnSelect(!showConnSelect)}
+            onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
             style={
               relatedCfg
                 ? {
@@ -857,7 +909,7 @@ function CatDetailScreen({
             </span>
           ))}
           {showConnSelect && (
-            <div className="cat-detail__conn-popup">
+            <div className="cat-detail__conn-popup" ref={connPopupRef} onClick={(e) => e.stopPropagation()}>
               <div className="cat-detail__conn-list">
                 {connOptions.length === 0 ? (
                   <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
@@ -894,9 +946,11 @@ function CatDetailScreen({
         </div>
         {showDate && (
           <input
+            ref={dateInputRef}
             type="date"
             className="cat-detail__date-input"
             value={cat.date || ""}
+            onClick={(e) => e.stopPropagation()}
             onChange={(e) => {
               onUpdate({ date: e.target.value });
               setShowDate(false);
@@ -937,7 +991,11 @@ function CatDetailScreen({
             />
           ))}
         {bm === "media" && (
-          <>
+          <div
+            onTouchStart={onSubTabTouchStart}
+            onTouchEnd={onSubTabTouchEnd}
+            style={{ flex: 1 }}
+          >
             {/* Sub-Tab-Leiste: Notizen / Medien */}
             <div className="res-sub-tabs">
               <button
@@ -946,13 +1004,19 @@ function CatDetailScreen({
               >
                 <Pencil size={14} />
                 <span>{t.notes}</span>
+                {noteCount > 0 && (
+                  <span className="res-sub-tabs__count res-sub-tabs__count--notes">{noteCount}</span>
+                )}
               </button>
               <button
                 className={`res-sub-tabs__btn ${resSubTab === "media" ? "res-sub-tabs__btn--active-media" : ""}`}
                 onClick={() => setResSubTab("media")}
               >
                 <Paperclip size={14} />
-                <span>{t.media}</span>
+                <span>{t.mediaTab}</span>
+                {mediaCount > 0 && (
+                  <span className="res-sub-tabs__count res-sub-tabs__count--media">{mediaCount}</span>
+                )}
               </button>
             </div>
 
@@ -981,7 +1045,7 @@ function CatDetailScreen({
                 />
               )
             )}
-          </>
+          </div>
         )}
         {bm === "link" &&
           (entries.filter((e) => e.type === "link").length === 0 ? (
@@ -1029,9 +1093,18 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
   const [mediaType, setMediaType] = useState("image");
-  const [catId, setCatId] = useState(initialCatId || "");
+  // Multi-Auswahl: Array von ausgewählten Kategorie-IDs
+  const [catIds, setCatIds] = useState(initialCatId ? [initialCatId] : []);
+  const [catDropOpen, setCatDropOpen] = useState(false);
   const [mediaFile, setMediaFile] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Toggle: Kategorie hinzufügen/entfernen
+  const toggleCat = (id) => {
+    setCatIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
 
   const handleMediaGridClick = (mId) => {
     setMediaType(mId);
@@ -1069,12 +1142,19 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
 
   const save = () => {
     if (!title.trim()) return;
-    const base = { type, title: title.trim(), catId: catId || null };
-    if (type === "task") onSave({ ...base, done: false, note, due: due || null });
-    else if (type === "note") onSave({ ...base, body });
-    else if (type === "calendar") onSave({ ...base, date, time });
-    else if (type === "media") onSave({ ...base, mediaType, mediaData: mediaFile });
-    else if (type === "link") onSave({ ...base, url: url.trim() });
+    // Mindestens das aktuelle Projekt oder keine Zuordnung
+    const ids = catIds.length > 0 ? catIds : [null];
+    // Pro ausgewählter Kategorie einen Eintrag erstellen
+    const entries = ids.map(cid => {
+      const base = { type, title: title.trim(), catId: cid };
+      if (type === "task") return { ...base, done: false, note, due: due || null };
+      if (type === "note") return { ...base, body };
+      if (type === "calendar") return { ...base, date, time };
+      if (type === "media") return { ...base, mediaType, mediaData: mediaFile };
+      if (type === "link") return { ...base, url: url.trim() };
+      return base;
+    });
+    onSave(entries);
   };
 
   return (
@@ -1179,19 +1259,58 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
           />
         )}
 
-        <select
-          className="modal__select"
-          value={catId}
-          onChange={(e) => setCatId(e.target.value)}
-          style={{ color: catId ? "#EDEEFF" : "#5858A0" }}
-        >
-          <option value="">{t.noProject}</option>
-          {cats.map((c) => (
-            <option key={c.id} value={c.id}>
-              {CC[c.type].sing}: {c.name}
-            </option>
-          ))}
-        </select>
+        {/* Multi-Select Dropdown für Kategorien */}
+        {(() => {
+          const selectedNames = cats.filter(c => catIds.includes(c.id)).map(c => c.name);
+          const summary = selectedNames.length === 0
+            ? t.noProject
+            : selectedNames.length <= 2
+              ? selectedNames.join(", ")
+              : `${selectedNames.slice(0, 2).join(", ")} +${selectedNames.length - 2}`;
+
+          return (
+            <div className="modal__multi-select" style={{ position: "relative" }}>
+              <button
+                className={`modal__multi-select-btn ${catIds.length > 0 ? "modal__multi-select-btn--has-selection" : ""}`}
+                onClick={() => setCatDropOpen(!catDropOpen)}
+                type="button"
+              >
+                <span>{summary}</span>
+                <ChevronLeft
+                  size={14}
+                  style={{ transform: catDropOpen ? "rotate(90deg)" : "rotate(-90deg)", transition: "transform 0.2s" }}
+                  color="#5858A0"
+                />
+              </button>
+              {catDropOpen && (
+                <div className="modal__multi-select-list">
+                  {cats.map((c) => {
+                    const isSelected = catIds.includes(c.id);
+                    const chipColor = CC[c.type]?.color || "#5858A0";
+                    const CIcon = CAT_ICONS[c.type];
+                    return (
+                      <button
+                        key={c.id}
+                        className={`modal__multi-select-item ${isSelected ? "modal__multi-select-item--selected" : ""}`}
+                        onClick={() => toggleCat(c.id)}
+                        type="button"
+                      >
+                        <span
+                          className="modal__multi-select-check"
+                          style={isSelected ? { background: chipColor, borderColor: chipColor } : {}}
+                        >
+                          {isSelected && <Check size={10} color="#fff" strokeWidth={3} />}
+                        </span>
+                        {CIcon && <CIcon size={14} color={chipColor} strokeWidth={2.5} />}
+                        <span className="modal__multi-select-name">{CC[c.type].sing}: {c.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         <button
           className={`modal__submit ${
@@ -1612,8 +1731,9 @@ export default function App() {
           type={creating.type}
           cats={state.cats}
           initialCatId={creating.catId}
-          onSave={(e) => {
-            addEntry(e);
+          onSave={(entries) => {
+            // Mehrere Einträge auf einmal speichern (Multi-Select)
+            entries.forEach(e => addEntry(e));
             setCreating(null);
           }}
           onClose={() => setCreating(null)}

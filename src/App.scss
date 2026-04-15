@@ -1010,6 +1010,31 @@
       background: $color-hover;
     }
   }
+
+  // Anzahl-Badge im Sub-Tab
+  &__count {
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: $radius-pill;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+
+    // Notizen-Anzahl in Gelb/Gold
+    &--notes {
+      background: rgba(#F59E0B, 0.18);
+      color: #F59E0B;
+    }
+
+    // Medien-Anzahl in Grün
+    &--media {
+      background: rgba(#10B981, 0.18);
+      color: #10B981;
+    }
+  }
 }
 
 // ── Modal Overlay ───────────────────────────────────────────
@@ -1129,6 +1154,82 @@
     cursor: pointer;
   }
 
+  // Multi-Select Dropdown für Kategorien
+  &__multi-select {
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__multi-select-btn {
+    @include input-base;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: 100%;
+    color: $color-muted;
+
+    &--has-selection {
+      color: $color-text;
+    }
+  }
+
+  &__multi-select-list {
+    position: absolute;
+    bottom: calc(100% + #{$spacing-xs});
+    left: 0;
+    right: 0;
+    max-height: 180px;
+    overflow-y: auto;
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: $spacing-2xs;
+    z-index: 10;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  &__multi-select-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-sm + 2px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: $color-text;
+    font-size: 13px;
+    font-family: $font-body;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+
+    &--selected {
+      background: $color-hover;
+    }
+  }
+
+  &__multi-select-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 2px solid $color-dim;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+  }
+
+  &__multi-select-name {
+    flex: 1;
+    @include text-truncate;
+  }
   &__date-input,
   &__time-input {
     @include input-base;
@@ -1278,6 +1379,12 @@
       &:hover { color: #1a1a24; }
     }
     &__conn-empty { color: #5858A0; }
+    &__date-input {
+      color-scheme: light;
+      color: #1a1a24;
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+    }
   }
 
   .modal {
@@ -1287,6 +1394,27 @@
       color: #1a1a24;
       background: #f7f7f9;
       border-color: #e5e5f0;
+      color-scheme: light;
+    }
+    &__multi-select-btn {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+      color: #8e8eb2;
+
+      &--has-selection {
+        color: #1a1a24;
+      }
+    }
+    &__multi-select-list {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+    &__multi-select-item {
+      color: #1a1a24;
+      &:hover, &--selected { background: #f0f0f5; }
+    }
+    &__multi-select-check {
+      border-color: #d1d1e0;
     }
     .icon-muted { color: #5858A0; }
   }

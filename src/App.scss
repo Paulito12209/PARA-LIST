@@ -997,20 +997,20 @@
       box-shadow: 0 0 12px rgba(#F59E0B, 0.12);
     }
 
-    // Ressourcen-Tab: Dunkelgrün (Resource-Farbe)
+    // Ressourcen-Tab: Kräftiges Grün (altes Medien-Grün)
     &--active-res {
-      background: rgba(#30A060, 0.15);
-      color: #30A060;
-      border-color: rgba(#30A060, 0.35);
-      box-shadow: 0 0 12px rgba(#30A060, 0.12);
-    }
-
-    // Medien-Tab: Grün (Ressource-Farbe)
-    &--active-media {
       background: rgba(#10B981, 0.15);
       color: #10B981;
       border-color: rgba(#10B981, 0.35);
       box-shadow: 0 0 12px rgba(#10B981, 0.12);
+    }
+
+    // Medien-Tab: Cool Magenta-Rosa
+    &--active-media {
+      background: rgba(#EC4899, 0.15);
+      color: #EC4899;
+      border-color: rgba(#EC4899, 0.35);
+      box-shadow: 0 0 12px rgba(#EC4899, 0.12);
     }
 
     &:hover:not(&--active-notes):not(&--active-media):not(&--active-res) {
@@ -1039,14 +1039,14 @@
 
     // Ressourcen-Anzahl
     &--res {
-      background: rgba(#30A060, 0.18);
-      color: #30A060;
-    }
-
-    // Medien-Anzahl in Grün
-    &--media {
       background: rgba(#10B981, 0.18);
       color: #10B981;
+    }
+
+    // Medien-Anzahl in Magenta-Rosa
+    &--media {
+      background: rgba(#EC4899, 0.18);
+      color: #EC4899;
     }
   }
 }
@@ -1463,15 +1463,23 @@
         box-shadow: 0 0 10px rgba(#F59E0B, 0.08);
       }
 
-      // Medien-Tab: Helleres Grün für Light Mode
-      &--active-media {
+      // Ressourcen-Tab: Helleres Grün für Light Mode
+      &--active-res {
         background: rgba(#10B981, 0.12);
         color: #0a8a5e;
         border-color: rgba(#10B981, 0.30);
         box-shadow: 0 0 10px rgba(#10B981, 0.08);
       }
 
-      &:hover:not(&--active-notes):not(&--active-media) {
+      // Medien-Tab: Cooles Magenta-Rosa für Light Mode
+      &--active-media {
+        background: rgba(#EC4899, 0.12);
+        color: #be185d;
+        border-color: rgba(#EC4899, 0.30);
+        box-shadow: 0 0 10px rgba(#EC4899, 0.08);
+      }
+
+      &:hover:not(&--active-notes):not(&--active-media):not(&--active-res) {
         color: #1a1a24;
         background: #f0f0f5;
       }
@@ -1483,10 +1491,15 @@
         background: rgba(#F59E0B, 0.14);
         color: #b87a00;
       }
-      // Medien-Badge in sattem Grünton
-      &--media {
+      // Ressourcen-Badge in sattem Grünton
+      &--res {
         background: rgba(#10B981, 0.14);
         color: #0a8a5e;
+      }
+      // Medien-Badge in tiefem Magenta-Rosa
+      &--media {
+        background: rgba(#EC4899, 0.14);
+        color: #be185d;
       }
     }
   }

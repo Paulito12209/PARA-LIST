@@ -836,8 +836,8 @@
   &__body {
     flex: 1;
     overflow-y: auto;
-    // Reserve enough right gutter for the expanded bookmark rail (52px)
-    padding: $spacing-md ($fab-size + $spacing-sm) 110px $spacing-md;
+    // Rechts: 24px Rail + 16px Abstand = 40px, unten: 16px
+    padding: $spacing-md ($bookmark-width + $spacing-md) $spacing-md $spacing-md;
   }
 
   &__textarea {
@@ -951,7 +951,7 @@
   z-index: 5;
 
   &__tab {
-    width: $bookmark-width + $spacing-2xs;
+    width: $bookmark-width;
     height: $spacing-3xl + $spacing-2xs;
     margin: 0;
     padding: 0;

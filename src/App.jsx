@@ -3,7 +3,7 @@ import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, Check,
-  Bell, Trash2, X, FileText, CheckSquare, Calendar,
+  Bell, Trash2, X, FileText, CheckSquare, Calendar, Home,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
   CheckCircle2,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
@@ -1029,6 +1029,7 @@ function CatDetailScreen({
   onUpdate,
   onDelete,
   onBack,
+  onHome,
   toggleTask,
   deleteEntry,
   onAddEntry,
@@ -1437,16 +1438,25 @@ function CatDetailScreen({
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
         <div className="nav-bottom__actions">
-          <button
-            className="nav-bottom__add"
-            onClick={createEntryFromBookmark}
-            style={{
-              background: getFabColor(),
-              boxShadow: `0 8px 24px ${getFabColor()}55`,
-            }}
-          >
-            <Plus size={22} color="#fff" strokeWidth={2.4} />
-          </button>
+          {bm === "canvas" ? (
+            <button
+              className="nav-bottom__back"
+              onClick={onHome}
+            >
+              <Home size={20} color="#EDEEFF" />
+            </button>
+          ) : (
+            <button
+              className="nav-bottom__add"
+              onClick={createEntryFromBookmark}
+              style={{
+                background: getFabColor(),
+                boxShadow: `0 8px 24px ${getFabColor()}55`,
+              }}
+            >
+              <Plus size={22} color="#fff" strokeWidth={2.4} />
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -2390,6 +2400,7 @@ export default function App() {
                     deleteCat(cat.id);
                 }}
                 onBack={pop}
+                onHome={() => setStack([{ view: "home" }])}
                 toggleTask={toggleTask}
                 deleteEntry={deleteEntry}
                 onAddEntry={(type) =>

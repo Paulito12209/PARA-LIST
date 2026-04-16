@@ -728,7 +728,7 @@
   position: absolute;
   bottom: $spacing-lg;
   right: $spacing-md + $spacing-xs;
-  @include floating-btn($fab-size, $radius-lg);
+  @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
   border: none;
   z-index: 95;
 
@@ -836,7 +836,7 @@
   }
 
   &__add {
-    @include floating-btn($fab-size, $radius-lg);
+    @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
     border: none;
     pointer-events: all;
   }

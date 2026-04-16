@@ -1724,7 +1724,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
           </div>
         </div>
       </div>
-      <div className="cat-detail__body" style={{ paddingBottom: '100px' }}>
+      <div className="cat-detail__body" style={{ paddingBottom: '100px', paddingRight: '16px' }}>
         {archiveEntries.length === 0 ? (
           <div className="cat-detail__section-empty">Keine archivierten Einträge</div>
         ) : (

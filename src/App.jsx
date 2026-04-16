@@ -134,18 +134,24 @@ const ArchiveIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) =
   </svg>
 );
 
+const BookmarkIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} width={size} height={size}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+  </svg>
+);
+
 const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
   { id: "tasks",  color: "#7C83F7", Icon: CheckCircle2 },
   { id: "cal",    color: "#3B82F6", Icon: Calendar },
   { id: "media",  color: "#10B981", Icon: Paperclip },
-  { id: "link",   color: "#FB923C", Icon: Link2 },
+  { id: "link",   color: "#7C3AED", Icon: BookmarkIcon },
   { id: "tags",   color: "#EC4899", Icon: TagIcon },
 ];
 
 const NOTIF_RED = "#F26565";
 const NOTIF_NAVY = "#1E40AF";
-const NOTIF_VIOL = "#7C3AED";
+const NOTIF_VIOL = "#7C83F7";
 
 const CAT_ICONS = {
   project:  Circle,
@@ -797,8 +803,8 @@ function LinkList({ entries, cats, onDelete, CC }) {
     const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}` : null;
     return (
       <div key={e.id} className="media-item">
-        <div className="media-item__icon" style={{ background: "#FB923C22", color: "#FB923C" }}>
-          <Link2 size={18} />
+        <div className="media-item__icon" style={{ background: "#7C3AED22", color: "#7C3AED" }}>
+          <BookmarkIcon size={18} />
         </div>
         <div className="media-item__body">
           <div className="media-item__title">{e.title}</div>
@@ -1274,7 +1280,7 @@ function CatDetailScreen({
       task: "#7C83F7",
       calendar: "#1E40AF",
       media: "#10B981",
-      link: "#FB923C",
+      link: "#7C3AED",
       tags: "#EC4899",
     };
     return colorMap[entryType] || cfg.color;
@@ -2024,7 +2030,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
     type === "note" ? "#F59E0B" : 
     type === "calendar" ? "#38BDF8" : 
     type === "media" ? "#10B981" : 
-    "#FB923C";
+    "#7C3AED";
 
   const label =
     type === "task" ? t.task : 

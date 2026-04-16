@@ -53,6 +53,30 @@ const fmtDate = (d, locale) =>
         month: "short",
       });
 
+const fmtRelative = (ts, locale) => {
+  if (!ts) return "";
+  const now = Date.now();
+  const diff = now - ts;
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return "gerade eben";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h`;
+  
+  const d = new Date(ts);
+  const t = new Date();
+  t.setHours(0,0,0,0);
+  const d0 = new Date(ts);
+  d0.setHours(0,0,0,0);
+  
+  if (t.getTime() === d0.getTime()) return "heute";
+  t.setDate(t.getDate() - 1);
+  if (t.getTime() === d0.getTime()) return "gestern";
+  
+  return d.toLocaleDateString(locale, { day: "numeric", month: "short" });
+};
+
 const getTaskGroup = (due, locale, hideDayNumber = false) => {
   if (!due) return null;
   const d = new Date(due + "T12:00");
@@ -317,7 +341,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                       style={{
                         background:
                           e.type === "calendar"
-                            ? "#38BDF8"
+                            ? "#1D4ED8"
                             : isOld(d)
                             ? NOTIF_RED
                             : "#7C83F7",
@@ -362,10 +386,57 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
   );
 }
 
+/* ── Entry Meta Tags ─────────────────────────────────────────── */
+function EntryMetaTags({ entry, cats, CC }) {
+  const ids = entry.catIds || (entry.catId ? [entry.catId] : []);
+  if (ids.length === 0) return null;
+
+  const linked = cats.filter((c) => ids.includes(c.id));
+  const projs = linked.filter((c) => c.type === "project");
+  const areas = linked.filter((c) => c.type === "area");
+  const res   = linked.filter((c) => c.type === "resource");
+
+  return (
+    <div className="task-item__meta-tags">
+      {projs.map((p) => (
+        <span
+          key={p.id}
+          className="task-item__cat-tag"
+          style={{ color: CC.project.color, background: CC.project.color + "18" }}
+        >
+          {p.name}
+        </span>
+      ))}
+      {areas.length > 0 && (
+        <span
+          className="task-item__cat-tag"
+          style={{ color: CC.area.color, background: CC.area.color + "18" }}
+        >
+          {areas[0].name}{areas.length > 1 ? ` +${areas.length - 1}` : ""}
+        </span>
+      )}
+      {res.length > 0 && (
+        <span
+          className="task-item__cat-tag"
+          style={{
+            color: CC.resource.color,
+            background: CC.resource.color + "18",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "3px",
+          }}
+        >
+          <Square size={10} color={CC.resource.color} strokeWidth={2.5} />
+          {res.length}
+        </span>
+      )}
+    </div>
+  );
+}
+
 /* ── Task List ───────────────────────────────────────────────── */
 function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, onOpenEntry }) {
   const renderItem = (e) => {
-    const cat = cats.find((c) => c.id === e.catId);
     const overdue = isOld(e.due) && !e.done;
     return (
       <div
@@ -392,25 +463,13 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
           <div className="task-item__meta">
             {e.due && (
               <span
-                className={`task-item__due ${
-                  overdue ? "task-item__due--overdue" : ""
-                }`}
+                className={`task-item__due ${overdue ? "task-item__due--overdue" : ""}`}
               >
                 {isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}
                 {e.time && ` · ${e.time} ${t.oclock}`}
               </span>
             )}
-            {cat && CC[cat.type] && (
-              <span
-                className="task-item__cat-tag"
-                style={{
-                  color: CC[cat.type].color,
-                  background: CC[cat.type].color + "18",
-                }}
-              >
-                {cat.name}
-              </span>
-            )}
+            <EntryMetaTags entry={e} cats={cats} CC={CC} />
           </div>
         </div>
         <button className="task-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
@@ -540,7 +599,6 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
   };
 
   const renderItem = (e) => {
-    const cat = cats.find((c) => c.id === e.catId);
     return (
       <div 
         key={e.id} 
@@ -564,17 +622,12 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
             <Trash2 size={14} color="#5858A0" />
           </button>
         </div>
-        {cat && CC[cat.type] && (
-          <span
-            className="note-item__cat-tag"
-            style={{
-              color: CC[cat.type].color,
-              background: CC[cat.type].color + "18",
-            }}
-          >
-            {cat.name}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+          <span className="task-item__due" style={{ marginTop: 0 }}>
+            {fmtRelative(e.createdAt, t.locale)}
           </span>
-        )}
+          <EntryMetaTags entry={e} cats={cats} CC={CC} />
+        </div>
       </div>
     );
   };
@@ -656,7 +709,6 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
 /* ── Calendar List ───────────────────────────────────────────── */
 function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }) {
   const renderItem = (e) => {
-    const cat = cats.find((c) => c.id === e.catId);
     const past = e.date && e.date < TODAY;
     return (
       <div
@@ -682,22 +734,12 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }
           <div className="cal-item__info">
             <div className="cal-item__title">{e.title}</div>
             {e.time && <div className="cal-item__time">{e.time} Uhr</div>}
+            <EntryMetaTags entry={e} cats={cats} CC={CC} />
           </div>
           <button className="cal-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
             <Trash2 size={14} color="#5858A0" />
           </button>
         </div>
-        {cat && CC[cat.type] && (
-          <span
-            className="cal-item__cat-tag"
-            style={{
-              color: CC[cat.type].color,
-              background: CC[cat.type].color + "18",
-            }}
-          >
-            {cat.name}
-          </span>
-        )}
       </div>
     );
   };
@@ -760,7 +802,6 @@ function MediaList({ entries, cats, onDelete, t, CC }) {
 
   return entries.map((e) => {
     const { Icon, color, label } = getMediaConfig(e.mediaType);
-    const cat = cats?.find((c) => c.id === e.catId);
     return (
       <div 
         key={e.id} 
@@ -780,17 +821,7 @@ function MediaList({ entries, cats, onDelete, t, CC }) {
         <div className="media-item__body">
           <div className="media-item__title">{e.title}</div>
           <div className="media-item__meta">{label}</div>
-          {cat && CC[cat.type] && (
-            <span
-              className="media-item__cat-tag"
-              style={{
-                color: CC[cat.type].color,
-                background: CC[cat.type].color + "18",
-              }}
-            >
-              {cat.name}
-            </span>
-          )}
+          <EntryMetaTags entry={e} cats={cats} CC={CC} />
         </div>
         <button 
           className="media-item__delete" 
@@ -809,7 +840,6 @@ function MediaList({ entries, cats, onDelete, t, CC }) {
 /* ── Link List ───────────────────────────────────────────────── */
 function LinkList({ entries, cats, onDelete, CC }) {
   return entries.map((e) => {
-    const cat = cats?.find((c) => c.id === e.catId);
     const ytId = getYouTubeVideoId(e.url);
     const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}` : null;
     return (
@@ -831,17 +861,7 @@ function LinkList({ entries, cats, onDelete, CC }) {
             </div>
           )}
           {e.url && <div className="media-item__meta">{e.url}</div>}
-          {cat && CC[cat.type] && (
-            <span
-              className="media-item__cat-tag"
-              style={{
-                color: CC[cat.type].color,
-                background: CC[cat.type].color + "18",
-              }}
-            >
-              {cat.name}
-            </span>
-          )}
+          <EntryMetaTags entry={e} cats={cats} CC={CC} />
         </div>
         <button className="media-item__delete" onClick={() => onDelete(e.id)}>
           <Trash2 size={14} color="#5858A0" />
@@ -1909,22 +1929,35 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
           </button>
         </div>
         <div className="cat-detail__pills">
-          <button
-            ref={connPillRef}
-            className="cat-detail__date-pill"
-            onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
-            style={
-              cat && CC[cat.type]
-                ? {
-                    background: CC[cat.type].color + "20",
-                    borderColor: CC[cat.type].color + "45",
-                    color: CC[cat.type].color,
+            {(() => {
+              const selectedCats = allCats.filter(c => (entry.catIds || []).includes(c.id));
+              const summary = selectedCats.length === 0
+                ? t.connectSelection
+                : selectedCats.length === 1
+                  ? selectedCats[0].name
+                  : `${selectedCats[0].name} +${selectedCats.length - 1}`;
+              
+              const activeCat = selectedCats[0] || cat;
+
+              return (
+                <button
+                  ref={connPillRef}
+                  className="cat-detail__date-pill"
+                  onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+                  style={
+                    activeCat && CC[activeCat.type]
+                      ? {
+                          background: CC[activeCat.type].color + "20",
+                          borderColor: CC[activeCat.type].color + "45",
+                          color: CC[activeCat.type].color,
+                        }
+                      : {}
                   }
-                : {}
-            }
-          >
-            {cat ? cat.name : t.connectSelection}
-          </button>
+                >
+                  {summary}
+                </button>
+              );
+            })()}
           
           {(entry.type === "task" || entry.type === "calendar") && (
             <button
@@ -1977,28 +2010,38 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
                 {allCats.length === 0 ? (
                   <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
                 ) : (
-                  allCats.map(opt => (
-                    <button
-                      key={opt.id}
-                      className="cat-detail__conn-item"
-                      onClick={() => {
-                        onUpdate({ catId: opt.id });
-                        setShowConnSelect(false);
-                      }}
-                    >
-                      <span 
-                        className="cat-detail__conn-dot" 
-                        style={{ background: (CC[opt.type]?.color || CC.resource.color) }} 
-                      />
-                      <span className="cat-detail__conn-name">{opt.name}</span>
-                    </button>
-                  ))
+                  allCats.map(opt => {
+                    const isSelected = (entry.catIds || []).includes(opt.id);
+                    return (
+                      <button
+                        key={opt.id}
+                        className={`cat-detail__conn-item ${isSelected ? 'cat-detail__conn-item--selected' : ''}`}
+                        onClick={() => {
+                          const nextIds = isSelected
+                            ? (entry.catIds || []).filter(id => id !== opt.id)
+                            : [...(entry.catIds || []), opt.id];
+                          onUpdate({ catIds: nextIds, catId: nextIds[0] || null });
+                        }}
+                      >
+                        <span 
+                          className="cat-detail__conn-dot" 
+                          style={{ 
+                            background: (CC[opt.type]?.color || CC.resource.color),
+                            border: isSelected ? '2px solid #fff' : 'none',
+                            boxShadow: isSelected ? '0 0 0 1px ' + (CC[opt.type]?.color || CC.resource.color) : 'none'
+                          }} 
+                        />
+                        <span className="cat-detail__conn-name" style={{ fontWeight: isSelected ? 600 : 400 }}>{opt.name}</span>
+                        {isSelected && <Check size={12} color={CC[opt.type]?.color} style={{ marginLeft: 'auto' }} />}
+                      </button>
+                    );
+                  })
                 )}
               </div>
               <button
                 className="cat-detail__conn-none"
                 onClick={() => {
-                  onUpdate({ catId: null });
+                  onUpdate({ catIds: [], catId: null });
                   setShowConnSelect(false);
                 }}
               >
@@ -2135,25 +2178,30 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
 
   const save = () => {
     if (!title.trim()) return;
-    // Mindestens das aktuelle Projekt oder keine Zuordnung
-    const ids = catIds.length > 0 ? catIds : [null];
-    // Pro ausgewählter Kategorie einen Eintrag erstellen
-    const entries = ids.map(cid => {
-      let finalCid = cid;
-      if (type === "calendar" && isBirthday) {
-        // Automatische Verknüpfung mit Geburtstage-Ressource
-        finalCid = ID_BIRTHDAYS;
-      }
+    
+    // Wir erstellen nur noch EINEN Eintrag mit allen ausgewählten Kategorien
+    let finalCatIds = catIds.length > 0 ? catIds : [];
+    
+    if (type === "calendar" && isBirthday) {
+      // Automatische Verknüpfung mit Geburtstage-Ressource
+      finalCatIds = [ID_BIRTHDAYS];
+    }
 
-      const base = { type, title: title.trim(), catId: finalCid };
-      if (type === "task") return { ...base, done: false, note, due: due || null, time: time || null };
-      if (type === "note") return { ...base, body };
-      if (type === "calendar") return { ...base, date, time, isBirthday };
-      if (type === "media") return { ...base, mediaType, mediaData: mediaFile };
-      if (type === "link") return { ...base, url: url.trim() };
-      return base;
-    });
-    onSave(entries);
+    const entry = { 
+      type, 
+      title: title.trim(), 
+      catIds: finalCatIds,
+      // Abwärtskompatibilität: catId ist die erste ID im Array
+      catId: finalCatIds[0] || null 
+    };
+
+    if (type === "task") Object.assign(entry, { done: false, note, due: due || null, time: time || null });
+    if (type === "note") Object.assign(entry, { body });
+    if (type === "calendar") Object.assign(entry, { date, time, isBirthday });
+    if (type === "media") Object.assign(entry, { mediaType, mediaData: mediaFile });
+    if (type === "link") Object.assign(entry, { url: url.trim() });
+    
+    onSave(entry);
   };
 
   return (
@@ -2701,6 +2749,15 @@ export default function App() {
           nextState.tags = Array.from(tagMap.values());
           dirty = true;
         }
+        if (!nextState.entries) nextState.entries = [];
+        nextState.entries = nextState.entries.map(e => {
+          if (!e.catIds) {
+            dirty = true;
+            return { ...e, catIds: e.catId ? [e.catId] : [] };
+          }
+          return e;
+        });
+
         return dirty ? nextState : s;
       });
     }
@@ -2815,7 +2872,7 @@ export default function App() {
   const addEntry = (entry) =>
     setState((s) => ({
       ...s,
-      entries: [...s.entries, { id: uid(), ...entry }],
+      entries: [...s.entries, { id: uid(), createdAt: Date.now(), ...entry }],
     }));
 
   const toggleTask = (id) =>
@@ -2829,7 +2886,17 @@ export default function App() {
   const updateEntry = (id, patch) =>
     setState((s) => ({
       ...s,
-      entries: s.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+      entries: s.entries.map((e) => {
+        if (e.id === id) {
+          const next = { ...e, ...patch };
+          // Falls catId (alt) gesetzt wird, in catIds überführen
+          if (patch.catId !== undefined) {
+            next.catIds = patch.catId ? [patch.catId] : [];
+          }
+          return next;
+        }
+        return e;
+      }),
     }));
 
   const deleteEntry = (id) =>
@@ -3022,7 +3089,8 @@ export default function App() {
             // Inclusive filtering: include entries from "child" categories
             const childIds = state.cats.filter(c => c.relatedId === cat.id).map(c => c.id);
             const inclusiveEntries = state.entries.filter(e => {
-              const isBaseEntry = e.catId === cat.id || childIds.includes(e.catId);
+              const ids = e.catIds || (e.catId ? [e.catId] : []);
+              const isBaseEntry = ids.includes(cat.id) || ids.some(id => childIds.includes(id));
               // Wenn wir in der "Geburtstage" Ressource sind, zeigen wir alle Geburtstage an
               if (cat.id === ID_BIRTHDAYS) {
                 return isBaseEntry || (e.type === "calendar" && e.isBirthday);
@@ -3140,9 +3208,8 @@ export default function App() {
           type={creating.type}
           cats={state.cats}
           initialCatId={creating.catId}
-          onSave={(entries) => {
-            // Mehrere Einträge auf einmal speichern (Multi-Select)
-            entries.forEach(e => addEntry(e));
+          onSave={(entry) => {
+            addEntry(entry);
             setCreating(null);
           }}
           onClose={() => setCreating(null)}

@@ -502,6 +502,14 @@
     }
   }
 
+  &__meta-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    margin-top: $spacing-xs;
+    align-items: center;
+  }
+
   &__cat-tag {
     font-size: 10px;
     font-weight: 600;
@@ -628,6 +636,9 @@
 
   &__info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 
   &__title {
@@ -639,7 +650,6 @@
   &__time {
     font-size: 11px;
     color: $color-calendar;
-    margin-top: $spacing-2xs;
   }
 
   &__delete {

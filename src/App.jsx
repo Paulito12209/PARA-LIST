@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import {
-  Circle, Triangle, Square, Plus, ChevronLeft, ChevronDown, ChevronUp, Check,
+  Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
   CheckCircle2, Archive, ArchiveRestore,
@@ -2432,89 +2432,116 @@ function OnboardingModal({ t, onComplete }) {
 
 /* ── Settings Modal ──────────────────────────────────────────── */
 function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpdateUser }) {
+  const [view, setView] = useState("main"); // "main" | "profile"
+
   return (
     <div className="modal" onClick={onClose}>
-      <div className="modal__sheet settings-modal" onClick={(e) => e.stopPropagation()}>
+      <div className={`modal__sheet settings-modal ${view === "profile" ? "settings-modal--profile" : ""}`} onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
-        <div className="modal__icon-row">
-          <Settings size={20} className="icon-muted" color="currentColor" />
-          <h3 className="modal__title">{t.settings}</h3>
-        </div>
         
-        <div className="settings-section" style={{ padding: 0 }}>
-          <div className="settings-label">{t.userName}</div>
-          <input 
-            className="modal__input"
-            value={user.name}
-            onChange={(e) => onUpdateUser({ name: e.target.value })}
-            placeholder="Name..."
-          />
-        </div>
-
-        <div className="settings-section" style={{ padding: 0 }}>
-          <div className="settings-row">
-            <span className="settings-label">{t.appearance}</span>
-            <div className="theme-toggle">
-              <button 
-                className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
-                onClick={() => setTheme("dark")}
-              >
-                {t.dark}
-              </button>
-              <button 
-                className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
-                onClick={() => setTheme("light")}
-              >
-                {t.light}
-              </button>
-            </div>
+        <div className="modal__header">
+          {view === "profile" && (
+            <button className="settings-modal__back" onClick={() => setView("main")}>
+              <ChevronLeft size={20} color="#5858A0" />
+            </button>
+          )}
+          <div className="modal__icon-row">
+            {view === "main" && <Settings size={20} className="icon-muted" color="currentColor" />}
+            <h3 className="modal__title">{view === "main" ? t.settings : t.personalData}</h3>
           </div>
+          <button className="modal__close" onClick={onClose}>
+            <X size={18} color="#5858A0" />
+          </button>
         </div>
 
-        <div className="settings-section" style={{ padding: 0 }}>
-          <div className="settings-row">
-            <span className="settings-label">{t.language}</span>
-            <div className="theme-toggle">
-              <button 
-                className={`theme-toggle__btn ${lang === "de" ? "theme-toggle__btn--active" : ""}`}
-                onClick={() => setLang("de")}
-              >
-                DE
-              </button>
-              <button 
-                className={`theme-toggle__btn ${lang === "en" ? "theme-toggle__btn--active" : ""}`}
-                onClick={() => setLang("en")}
-              >
-                EN
-              </button>
-              <button 
-                className={`theme-toggle__btn ${lang === "es" ? "theme-toggle__btn--active" : ""}`}
-                onClick={() => setLang("es")}
-              >
-                ES
-              </button>
+        {view === "main" ? (
+          <div className="settings-modal__content">
+            {/* Apple-style Profile Row */}
+            <button className="profile-row" onClick={() => setView("profile")}>
+              <div className="profile-row__avatar">
+                {user.name ? user.name.charAt(0).toUpperCase() : "P"}
+              </div>
+              <div className="profile-row__info">
+                <div className="profile-row__name">{user.name || "User"}</div>
+                <div className="profile-row__sub">{t.personalData}</div>
+              </div>
+              <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" />
+            </button>
+
+            <div className="settings-section">
+              <div className="settings-label">{t.userName}</div>
+              <input 
+                className="modal__input"
+                value={user.name}
+                onChange={(e) => onUpdateUser({ name: e.target.value })}
+                placeholder="Name..."
+              />
             </div>
+
+            <div className="settings-section">
+              <div className="settings-row">
+                <span className="settings-label">{t.appearance}</span>
+                <div className="theme-toggle">
+                  <button 
+                    className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
+                    onClick={() => setTheme("dark")}
+                  >
+                    {t.dark}
+                  </button>
+                  <button 
+                    className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
+                    onClick={() => setTheme("light")}
+                  >
+                    {t.light}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="settings-section">
+              <div className="settings-row">
+                <span className="settings-label">{t.language}</span>
+                <div className="theme-toggle">
+                  {["de", "en", "es"].map(l => (
+                    <button 
+                      key={l}
+                      className={`theme-toggle__btn ${lang === l ? "theme-toggle__btn--active" : ""}`}
+                      onClick={() => setLang(l)}
+                    >
+                      {l.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button
+              className="modal__submit modal__submit--secondary"
+              onClick={onClose}
+              style={{ marginTop: '24px' }}
+            >
+              {t.closeBtn}
+            </button>
           </div>
-        </div>
-
-        <button
-          className="modal__submit modal__submit--danger"
-          onClick={() => {
-            if (window.confirm("App wirklich zurücksetzen? Alle Daten gehen verloren.")) {
-              localStorage.clear();
-              window.location.reload();
-            }
-          }}
-        >
-          App vollständig zurücksetzen
-        </button>
-
-        <button
-          className="modal__submit modal__submit--secondary"
-          onClick={onClose}
-        >
-          Schließen
-        </button>
+        ) : (
+          <div className="settings-modal__content settings-modal__content--sub">
+             <div className="settings-group">
+                <div className="settings-group__title">{t.dataSection}</div>
+                <button
+                  className="settings-item settings-item--danger"
+                  onClick={() => {
+                    if (window.confirm(t.deleteConfirm)) {
+                      localStorage.clear();
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  <div className="settings-item__label">{t.deleteApp}</div>
+                  <Trash2 size={16} />
+                </button>
+             </div>
+          </div>
+        )}
       </div>
     </div>
   );

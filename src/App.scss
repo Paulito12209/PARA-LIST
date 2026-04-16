@@ -2166,6 +2166,165 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
+// Profile Row (Apple Style)
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #1C1C30;
+  border: 1px solid #262648;
+  border-radius: 16px;
+  width: 100%;
+  text-align: left;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+    background: #262648;
+  }
+
+  &__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7C83F7, #4F46E5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(124, 131, 247, 0.3);
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__name {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: #5858A0;
+    margin-top: 2px;
+  }
+
+  &__chevron {
+    opacity: 0.5;
+  }
+}
+
+.app.light-theme .profile-row {
+  background: #ffffff;
+  border-color: #e5e5f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  &__name {
+    color: #1a1a24;
+  }
+
+  &__avatar {
+    box-shadow: 0 4px 12px rgba(124, 131, 247, 0.2);
+  }
+
+  &:active {
+    background: #f0f0f5;
+  }
+}
+
+// Settings Modal Navigation & Sub-views
+.settings-modal {
+  &__back {
+    position: absolute;
+    left: 16px;
+    top: 20px;
+    z-index: 10;
+    padding: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  &__content {
+    &--sub {
+      animation: slide-in-right 0.3s ease;
+    }
+  }
+}
+
+.settings-group {
+  margin-top: 24px;
+
+  &__title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #5858A0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 16px;
+    margin-bottom: 8px;
+  }
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px;
+  background: #1C1C30;
+  border: 1px solid #262648;
+  border-radius: 12px;
+  text-align: left;
+  transition: all 0.2s;
+
+  &__label {
+    font-size: 15px;
+    font-weight: 500;
+    color: white;
+  }
+
+  &--danger {
+    color: #F26565;
+    background: rgba(242, 101, 101, 0.1);
+    border-color: rgba(242, 101, 101, 0.2);
+
+    .settings-item__label {
+      color: #F26565;
+    }
+  }
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.99);
+  }
+}
+
+.app.light-theme .settings-item {
+  background: #ffffff;
+  border-color: #e5e5f0;
+  
+  &__label {
+    color: #1a1a24;
+  }
+
+  &--danger {
+    background: rgba(242, 101, 101, 0.08);
+    border-color: rgba(242, 101, 101, 0.15);
+    
+    .settings-item__label {
+      color: #ef4444;
+    }
+  }
+}
+
 // ── Onboarding ──────────────────────────────────────────────
 .onboarding {
   position: absolute;

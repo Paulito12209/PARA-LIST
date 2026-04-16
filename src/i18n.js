@@ -51,6 +51,10 @@ export const I18N = {
     onboardingName: "Wie ist dein Name?",
     userName: "Dein Name",
     getStarted: "Loslegen",
+    personalData: "Persönliche Daten",
+    dataSection: "Daten",
+    deleteApp: "App vollständig löschen",
+    deleteConfirm: "Möchtest du wirklich alle Daten löschen? Dies kann nicht rückgängig gemacht werden.",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -102,6 +106,10 @@ export const I18N = {
     onboardingName: "What's your name?",
     userName: "Your Name",
     getStarted: "Get Started",
+    personalData: "Personal Data",
+    dataSection: "Data",
+    deleteApp: "Delete App completely",
+    deleteConfirm: "Are you sure you want to delete all data? This cannot be undone.",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -153,6 +161,10 @@ export const I18N = {
     onboardingName: "¿Cómo te llamas?",
     userName: "Tu Nombre",
     getStarted: "Empezar",
+    personalData: "Datos personales",
+    dataSection: "Datos",
+    deleteApp: "Eliminar aplicación por completo",
+    deleteConfirm: "¿Estás seguro de que quieres eliminar todos los datos? Esto no se kann deshacer.",
   }
 };
 

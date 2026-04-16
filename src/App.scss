@@ -235,7 +235,7 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  padding-top: 74px; // Offset for closed command panel
+  padding-top: 80px; // Offset to clear the closed command panel handle (increased from 74px)
 }
 
 // ── Home Screen ─────────────────────────────────────────────
@@ -765,11 +765,11 @@
   animation: slide-in-right $transition-normal;
 
   &__header {
-    padding: $spacing-md + $spacing-xs $spacing-md $spacing-md;
+    padding: 8px $spacing-md;
     border-bottom: 1px solid $color-border;
     display: flex;
     align-items: center;
-    gap: $spacing-sm + $spacing-xs;
+    gap: $spacing-md;
   }
 
   &__title {
@@ -778,6 +778,23 @@
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.5px;
+  }
+
+  &__archive-btn {
+    margin-left: auto;
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    transition: all $transition-fast;
+    color: #9CA3AF;
+    opacity: 0.6;
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
   }
 
   &__body {
@@ -891,7 +908,7 @@
       background: $color-hover;
       box-shadow: 0 0 0 3px rgba(#10B981, 0.12);
     }
-    
+
     &::placeholder {
       color: rgba($color-text, 0.6); // Sichtbarkeit im Dark Mode erhöht
     }
@@ -987,23 +1004,43 @@
     background: transparent;
   }
 
-  &__delete-btn {
-    @include floating-btn(32px, $radius-sm + 2px);
-    background: rgba($color-notif-red, 0.12);
-    border: 1px solid rgba($color-notif-red, 0.27);
-    margin-left: auto;
-    flex-shrink: 0;
 
-    &:hover {
-      background: rgba($color-notif-red, 0.22);
-    }
-  }
 
   &__pills {
     display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-sm;
+    position: relative;
+    padding: 0; // Removed to control gaps via button height
+  }
+
+  &__pills-group {
+    display: flex;
     gap: $spacing-sm - 1px;
     flex-wrap: wrap;
-    position: relative;
+    align-items: center;
+    padding: $spacing-xs 0; // Keep some spacing for the tags
+  }
+
+  &__archive-toggle {
+    background: transparent;
+    @include flex-center;
+    width: 32px;
+    height: 34px; // 18px icon + 8px top + 8px bottom = 34px
+    transition: all $transition-fast;
+    opacity: 0.6;
+    flex-shrink: 0;
+    margin-right: -8px; // Nudge right to align with Trash button's visual edge
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    &--active {
+      opacity: 1;
+    }
   }
 
   &__date-pill {
@@ -1533,7 +1570,7 @@
     width: 100%;
     margin-top: $spacing-sm + 1px;
 
-    & > * {
+    &>* {
       flex: 1;
       width: 0; // Force equal width
       margin-top: 0 !important;
@@ -2006,6 +2043,22 @@
     &:hover {
       background: #f0f0f5;
       color: #10B981;
+    }
+  }
+
+  .cat-list__archive-btn {
+    color: #5858A0;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .cat-detail__archive-toggle {
+    color: #5858A0;
+
+    &--active {
+      opacity: 1;
     }
   }
 }

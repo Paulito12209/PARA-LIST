@@ -5,7 +5,7 @@ import {
   Circle, Triangle, Square, Plus, ChevronLeft, ChevronDown, ChevronUp, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
-  CheckCircle2,
+  CheckCircle2, Archive, ArchiveRestore,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
 } from "lucide-react";
 import "./App.scss";
@@ -167,15 +167,15 @@ const SEED = {
   lang: "de",
   user: { name: "" },
   cats: [
-    { id: "p1", type: "project",  name: "Paralist Onboarding", date: "2026-04-30", body: "", tags: ["App"], relatedId: "a1" },
-    { id: "p2", type: "project",  name: "5km Lauf",           date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2" },
-    { id: "a1", type: "area",     name: "Arbeit",            date: null, body: "", tags: [], relatedId: null },
-    { id: "a2", type: "area",     name: "Fitness",           date: null, body: "", tags: [], relatedId: null },
-    { id: "a3", type: "area",     name: "Finanzen",          date: null, body: "", tags: [], relatedId: null },
-    { id: "r1", type: "resource", name: "Serien",            date: null, body: "", tags: [], relatedId: null },
-    { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null },
-    { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3" },
-    { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null },
+    { id: "p1", type: "project",  name: "Paralist Onboarding", date: "2026-04-30", body: "", tags: ["App"], relatedId: "a1", archived: false },
+    { id: "p2", type: "project",  name: "5km Lauf",           date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2", archived: false },
+    { id: "a1", type: "area",     name: "Arbeit",            date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "a2", type: "area",     name: "Fitness",           date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "a3", type: "area",     name: "Finanzen",          date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "r1", type: "resource", name: "Serien",            date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3", archived: false },
+    { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
     { id: "e1", type: "task", title: "App kennenlernen", done: false, note: "Onboarding abschließen", due: "2026-04-14", catId: "p1" },
@@ -937,7 +937,7 @@ function HomeScreen({
           {["project", "area", "resource"].map((type) => {
             const cfg = CC[type];
             const CatIcon = CAT_ICONS[type];
-            const count = cats.filter((c) => c.type === type).length;
+            const count = cats.filter((c) => c.type === type && !c.archived).length;
             return (
               <div key={type} className={`category-card category-card--${type}`}>
                 <button
@@ -1081,7 +1081,7 @@ function HomeScreen({
 }
 
 /* ── Category List Screen ────────────────────────────────────── */
-function CatListScreen({ type, cats, onOpen, onAdd, onBack, t, CC }) {
+function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
   const cfg = CC[type];
   const CatIcon = CAT_ICONS[type];
 
@@ -1090,6 +1090,12 @@ function CatListScreen({ type, cats, onOpen, onAdd, onBack, t, CC }) {
       <div className="cat-list__header">
         <CatIcon size={22} color={cfg.color} />
         <h2 className="cat-list__title">{cfg.label}</h2>
+        <button 
+          className="cat-list__archive-btn" 
+          onClick={() => onOpenArchive(type)}
+        >
+          <ArchiveIcon size={18} color="#9CA3AF" />
+        </button>
       </div>
 
       <div className="cat-list__body">
@@ -1355,6 +1361,7 @@ function CatDetailScreen({
           </button>
         </div>
         <div className="cat-detail__pills">
+          <div className="cat-detail__pills-group">
           {cat.type === "project" && (
             <button
               ref={datePillRef}
@@ -1410,6 +1417,14 @@ function CatDetailScreen({
               {tag}
             </span>
           ))}
+          </div>
+
+          <button 
+            className={`cat-detail__archive-toggle ${cat.archived ? 'cat-detail__archive-toggle--active' : ''}`}
+            onClick={() => onUpdate({ archived: !cat.archived })}
+          >
+            {cat.archived ? <ArchiveRestore size={18} color={cfg.color} /> : <Archive size={18} color="#5858A0" />}
+          </button>
           {showConnSelect && (
             <div className="cat-detail__conn-popup" ref={connPopupRef} onClick={(e) => e.stopPropagation()}>
               <div className="cat-detail__conn-list">
@@ -1739,35 +1754,65 @@ function CatDetailScreen({
 }
 
 /* ── Archive Screen ────────────────────────────────────────────── */
-function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, toggleTask, onOpenEntry, onRestoreNote }) {
-  const archiveEntries = entries.filter(e => {
-    if (tab === "tasks") return e.type === "task" && e.done;
-    if (tab === "calendar") return e.type === "calendar" && isOld(e.date);
-    if (tab === "notes") return e.type === "note" && e.archived;
-    return false;
-  });
+function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, toggleTask, onOpenEntry, onRestoreNote, onOpenCat }) {
+  const isCatTab = ["project", "area", "resource"].includes(tab);
 
-  const tabCfg = getTABS(t).find(x => x.id === tab);
-  const title = tab === "tasks" ? "Erledigte Aufgaben" : tab === "calendar" ? "Vergangene Termine" : "Archivierte Notizen";
+  const archiveItems = isCatTab
+    ? cats.filter(c => c.type === tab && c.archived)
+    : entries.filter(e => {
+        if (tab === "tasks") return e.type === "task" && e.done;
+        if (tab === "calendar") return e.type === "calendar" && isOld(e.date);
+        if (tab === "notes") return e.type === "note" && e.archived;
+        return false;
+      });
+
+  const tabCfg = isCatTab ? CC[tab] : getTABS(t).find(x => x.id === tab);
+  const title = isCatTab 
+    ? `Archivierte ${tabCfg.label}` 
+    : tab === "tasks" ? "Erledigte Aufgaben" : tab === "calendar" ? "Vergangene Termine" : "Archivierte Notizen";
+  const CatIcon = isCatTab ? CAT_ICONS[tab] : null;
 
   return (
     <div className="cat-detail">
       <div className="cat-detail__header">
         <div className="cat-detail__title-row">
-          <ArchiveIcon size={18} color={tabCfg?.color || "#EDEEFF"} />
+          {isCatTab ? <CatIcon size={18} color={tabCfg.color} /> : <ArchiveIcon size={18} color={tabCfg?.color || "#EDEEFF"} />}
           <div className="cat-detail__title-input" style={{ pointerEvents: "none" }}>
             {title}
           </div>
         </div>
       </div>
-      <div className="cat-detail__body" style={{ paddingBottom: '100px', paddingRight: '16px' }}>
-        {archiveEntries.length === 0 ? (
+      <div className="cat-detail__body" style={{ padding: '16px', paddingBottom: '100px' }}>
+        {archiveItems.length === 0 ? (
           <div className="cat-detail__section-empty">Keine archivierten Einträge</div>
         ) : (
           <>
+            {isCatTab && (
+              <div className="cat-list__archive-items" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {archiveItems.map((cat) => (
+                  <button
+                    key={cat.id}
+                    className="cat-list__item"
+                    onClick={() => onOpenCat(cat)}
+                  >
+                    <div className="cat-list__item-icon">
+                      <CatIcon size={18} color={tabCfg.color} />
+                    </div>
+                    <div className="cat-list__item-info">
+                      <div className="cat-list__item-name">{cat.name}</div>
+                    </div>
+                    <ChevronLeft
+                      size={16}
+                      color="#5858A0"
+                      style={{ transform: "rotate(180deg)" }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
             {tab === "tasks" && (
               <TaskList t={t} CC={CC} lang={lang}
-                entries={archiveEntries}
+                entries={archiveItems}
                 cats={cats}
                 onToggle={toggleTask}
                 onDelete={onDelete}
@@ -1776,7 +1821,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
             )}
             {tab === "calendar" && (
               <CalList t={t} CC={CC} lang={lang}
-                entries={archiveEntries}
+                entries={archiveItems}
                 cats={cats}
                 onDelete={onDelete}
                 onOpenEntry={onOpenEntry}
@@ -1784,7 +1829,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
             )}
             {tab === "notes" && (
               <NoteList t={t} CC={CC}
-                entries={archiveEntries}
+                entries={archiveItems}
                 cats={cats}
                 onDelete={onDelete}
                 onOpenEntry={onOpenEntry}
@@ -2570,7 +2615,7 @@ export default function App() {
       ...s,
       cats: [
         ...s.cats,
-        { id: uid(), type, name, date: null, body: "", tags: [], relatedId: null },
+        { id: uid(), type, name, date: null, body: "", tags: [], relatedId: null, archived: false },
       ],
     }));
 
@@ -2744,6 +2789,7 @@ export default function App() {
             toggleTask={toggleTask}
             onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
             onRestoreNote={(id) => updateEntry(id, { archived: false })}
+            onOpenCat={(c) => push({ view: "catDetail", catId: c.id })}
           />
         )}
 
@@ -2752,10 +2798,11 @@ export default function App() {
             t={t}
             CC={CC}
             type={cur.type}
-            cats={state.cats.filter((c) => c.type === cur.type)}
+            cats={state.cats.filter((c) => c.type === cur.type && !c.archived)}
             onOpen={(cat) => push({ view: "catDetail", catId: cat.id })}
             onAdd={() => setNewCatType(cur.type)}
             onBack={pop}
+            onOpenArchive={(type) => push({ view: "archive", tab: type })}
           />
         )}
 

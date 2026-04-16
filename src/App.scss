@@ -848,6 +848,102 @@
     border: 1px solid $color-border;
   }
 
+  &__res-search {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    pointer-events: all;
+    z-index: 10;
+  }
+
+  &__res-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__res-search-icon {
+    position: absolute;
+    left: $spacing-md;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  &__res-search-input {
+    width: 100%;
+    height: $spacing-3xl; // 48px, identisch mit Back- und FAB-Button
+    padding: 0 $spacing-md 0 calc($spacing-md + 22px);
+    border: 1px solid $color-border;
+    border-radius: $radius-md + $spacing-2xs; // Identischer Radius wie Buttons
+    background: $color-surface;
+    color: $color-text;
+    font-size: 13px;
+    font-family: $font-body;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transition: all $transition-normal;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(#10B981, 0.5);
+      background: $color-hover;
+      box-shadow: 0 0 0 3px rgba(#10B981, 0.12);
+    }
+    
+    &::placeholder {
+      color: rgba($color-text, 0.6); // Sichtbarkeit im Dark Mode erhöht
+    }
+  }
+
+  &__res-search-results {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    min-width: 220px;
+    max-height: 220px;
+    overflow-y: auto;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    padding: $spacing-xs;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    animation: slide-up-small 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &__res-search-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + 2px;
+    padding: $spacing-sm + 2px $spacing-md;
+    border-radius: $radius-md;
+    background: transparent;
+    border: none;
+    color: $color-text;
+    text-align: left;
+    transition: all $transition-fast;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(#10B981, 0.1);
+      color: #10B981;
+    }
+
+    span {
+      font-size: 13.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
   &__actions {
     display: flex;
     gap: $spacing-sm + 1px;
@@ -1877,6 +1973,39 @@
     &--active {
       background: #ffffff;
       border-color: currentColor;
+    }
+  }
+
+  // Suchfeld Light Mode Overrides
+  .nav-bottom__res-search-input {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #1a1a24;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+
+    &::placeholder {
+      color: #8e8eb2;
+    }
+
+    &:focus {
+      background: #ffffff;
+      border-color: rgba(#10B981, 0.4);
+      box-shadow: 0 0 0 3px rgba(#10B981, 0.08);
+    }
+  }
+
+  .nav-bottom__res-search-results {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-bottom__res-search-item {
+    color: #1a1a24;
+
+    &:hover {
+      background: #f0f0f5;
+      color: #10B981;
     }
   }
 }

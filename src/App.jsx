@@ -3,7 +3,7 @@ import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, ChevronDown, ChevronUp, Check,
-  Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2,
+  Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
   CheckCircle2,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
@@ -1200,6 +1200,7 @@ function CatDetailScreen({
   onCreateTag,
   onUpdateTag,
   onDeleteTag,
+  onLinkResource,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -1208,10 +1209,13 @@ function CatDetailScreen({
   const [tagSort, setTagSort] = useState({ by: 'date', desc: true });
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
-  // Ob Projekt/Arbeitsbereich → 3 Sub-Tabs (resources, notes, media), sonst nur 2 (notes, media)
+  const [resSearch, setResSearch] = useState("");
+
+  // Alle Ordner (inkl. Ressourcen) haben 3 Sub-Tabs im Media/Ressourcen Lesezeichen
   const isProjectOrArea = cat.type === "project" || cat.type === "area";
-  // Sub-Tab für das Ressource-Lesezeichen
-  const [resSubTab, setResSubTab] = useState(isProjectOrArea ? "resources" : "notes");
+  
+  // Sub-Tab für das Ressource-Lesezeichen (standardmäßig "resources")
+  const [resSubTab, setResSubTab] = useState("resources");
 
   // Refs für Click-Outside-Erkennung
   const connPopupRef = useRef(null);
@@ -1297,10 +1301,8 @@ function CatDetailScreen({
     onAddEntry(getEntryTypeFromBookmark());
   }, [getEntryTypeFromBookmark, bm, onAddEntry, onCreateTag]);
 
-  // Swipe-Handler für Sub-Tab-Wechsel (3 Tabs bei Projekt/Bereich, 2 bei Ressource)
-  const subTabOrder = isProjectOrArea
-    ? ["resources", "notes", "media"]
-    : ["notes", "media"];
+  // Swipe-Handler für Sub-Tab-Wechsel (3 Tabs bei Projekt/Bereich/Ressource)
+  const subTabOrder = ["resources", "notes", "media"];
   const onSubTabTouchStart = useCallback((e) => {
     subTabTouchX.current = e.touches[0].clientX;
   }, []);
@@ -1497,21 +1499,18 @@ function CatDetailScreen({
             onTouchEnd={onSubTabTouchEnd}
             style={{ flex: 1 }}
           >
-            {/* Sub-Tab-Leiste: Ressourcen (nur bei Projekt/Bereich) / Notizen / Medien */}
+            {/* Sub-Tab-Leiste: Ressourcen / Notizen / Medien */}
             <div className="res-sub-tabs">
-              {/* Ressourcen-Tab: nur bei Projekt oder Arbeitsbereich sichtbar */}
-              {isProjectOrArea && (
-                <button
-                  className={`res-sub-tabs__btn ${resSubTab === "resources" ? "res-sub-tabs__btn--active-res" : ""}`}
-                  onClick={() => setResSubTab("resources")}
-                >
-                  <Square size={14} />
-                  <span>{t.linkedRes}</span>
-                  {resCount > 0 && (
-                    <span className="res-sub-tabs__count res-sub-tabs__count--res">{resCount}</span>
-                  )}
-                </button>
-              )}
+              <button
+                className={`res-sub-tabs__btn ${resSubTab === "resources" ? "res-sub-tabs__btn--active-res" : ""}`}
+                onClick={() => setResSubTab("resources")}
+              >
+                <Square size={14} />
+                <span>{t.linkedRes}</span>
+                {resCount > 0 && (
+                  <span className="res-sub-tabs__count res-sub-tabs__count--res">{resCount}</span>
+                )}
+              </button>
               <button
                 className={`res-sub-tabs__btn ${resSubTab === "notes" ? "res-sub-tabs__btn--active-notes" : ""}`}
                 onClick={() => setResSubTab("notes")}
@@ -1534,8 +1533,8 @@ function CatDetailScreen({
               </button>
             </div>
 
-            {/* Verknüpfte Ressourcen-Ansicht (nur bei Projekt/Bereich) */}
-            {resSubTab === "resources" && isProjectOrArea && (
+            {/* Verknüpfte Ressourcen-Ansicht */}
+            {resSubTab === "resources" && (
               linkedResources.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noLinkedRes}</div>
               ) : (
@@ -1672,10 +1671,46 @@ function CatDetailScreen({
       <BookmarkRail active={bm} onSelect={setBm} baseColor={cfg.color} />
 
       {/* Bottom nav */}
-      <div className="nav-bottom">
+      <div className="nav-bottom" style={{ position: "relative" }}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
+        
+        {/* Suchfeld für Ressourcen-Verknüpfungen (Nur im "resources" Sub-Tab sichtbar) */}
+        {bm === "media" && resSubTab === "resources" && (
+          <div className="nav-bottom__res-search">
+            <div className="nav-bottom__res-search-container">
+              <Search className="nav-bottom__res-search-icon" size={16} color={CC.resource.color} />
+              <input
+                type="text"
+                className="nav-bottom__res-search-input"
+                value={resSearch}
+                onChange={(e) => setResSearch(e.target.value)}
+                placeholder="Ressourcen suchen..."
+              />
+            </div>
+            {resSearch.trim() && (
+              <div className="nav-bottom__res-search-results">
+                {allCats
+                  .filter(c => c.type === 'resource' && c.id !== cat.id && c.relatedId !== cat.id && c.name.toLowerCase().includes(resSearch.toLowerCase()))
+                  .map(res => (
+                    <button
+                      key={res.id}
+                      className="nav-bottom__res-search-item"
+                      onClick={() => {
+                        onLinkResource(res.id);
+                        setResSearch("");
+                      }}
+                    >
+                      <Square size={14} color={CC.resource.color} />
+                      <span>{res.name}</span>
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="nav-bottom__actions">
           {bm === "canvas" ? (
             <button
@@ -2778,6 +2813,7 @@ export default function App() {
                 onUpdateTag={updateGlobalTag}
                 onDeleteTag={deleteGlobalTag}
                 onUpdate={(p) => updateCat(cat.id, p)}
+                onLinkResource={(resourceId) => updateCat(resourceId, { relatedId: cat.id })}
                 onDelete={() => {
                   if (window.confirm(t.confirmDelete(cat.name)))
                     deleteCat(cat.id);

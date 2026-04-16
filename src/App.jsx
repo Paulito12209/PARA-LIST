@@ -285,12 +285,17 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             )}
           </button>
           <button
-            className="command-panel__bell"
+            className="command-panel__bell command-panel__profile-btn"
             onClick={onOpenSettings}
-            style={user.avatar ? { padding: 0, overflow: 'hidden' } : {}}
+            style={user.avatar ? { padding: 0 } : {}}
           >
             {user.avatar ? (
-              <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div className="command-panel__profile-avatar">
+                <img src={user.avatar} alt="Avatar" />
+                <div className="command-panel__profile-hover">
+                  <Settings size={18} color="#fff" />
+                </div>
+              </div>
             ) : (
               <Settings size={17} className="icon-muted" color="currentColor" />
             )}
@@ -960,7 +965,7 @@ function HomeScreen({
   );
 
   return (
-    <div className={`home ${tab === 'calendar' ? 'home--calendar' : ''}`}>
+    <div className={`home home--${tab}`}>
       <div className="home__content">
         {/* Category cards */}
         <div className="category-grid">

@@ -100,6 +100,48 @@
     border: 2px solid $color-hover;
   }
 
+  &__profile-btn {
+    overflow: hidden;
+
+    @media (hover: hover) {
+      &:hover {
+        .command-panel__profile-hover {
+          opacity: 1;
+        }
+        .command-panel__profile-avatar img {
+          filter: blur(2px) brightness(0.8);
+        }
+      }
+    }
+  }
+
+  &__profile-avatar {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border-radius: inherit;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter $transition-fast;
+    }
+  }
+
+  &__profile-hover {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity $transition-fast;
+    border-radius: inherit;
+    z-index: 2;
+  }
+
   // Pull-down drawer content
   &__drawer {
     padding: 0 $spacing-md $spacing-xs;
@@ -240,7 +282,33 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  padding-top: 80px; // Offset to clear the closed command panel handle (increased from 74px)
+  padding-top: 80px;
+
+  // Tab-spezifischer Hintergrundverlauf — reicht bis hinter das Command Panel
+  &--tasks::before,
+  &--notes::before,
+  &--calendar::before {
+    content: "";
+    position: absolute;
+    top: -80px; // Beginnt hinter dem Command Panel
+    left: 0;
+    right: 0;
+    height: 340px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  &--calendar::before {
+    background: linear-gradient(180deg, rgba($color-calendar, 0.08) 0%, rgba($color-calendar, 0) 100%);
+  }
+
+  &--tasks::before {
+    background: linear-gradient(180deg, rgba($color-task, 0.08) 0%, rgba($color-task, 0) 100%);
+  }
+
+  &--notes::before {
+    background: linear-gradient(180deg, rgba($color-note, 0.08) 0%, rgba($color-note, 0) 100%);
+  }
 }
 
 // ── Home Screen ─────────────────────────────────────────────
@@ -250,20 +318,6 @@
   flex-direction: column;
   overflow: hidden;
   position: relative;
-
-  &--calendar {
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 240px;
-      background: linear-gradient(180deg, rgba($color-calendar, 0.08) 0%, rgba($color-calendar, 0) 100%);
-      pointer-events: none;
-      z-index: 0;
-    }
-  }
 
   &__content {
     padding: $spacing-md $spacing-md 0;

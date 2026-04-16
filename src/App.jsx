@@ -2681,7 +2681,10 @@ export default function App() {
             toggleTask={toggleTask}
             deleteEntry={deleteEntry}
             onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
-            onOpenArchive={(currentTab) => push({ view: "archive", tab: currentTab })}
+            onOpenArchive={(currentTab) => {
+              setPanelOpen(false);
+              push({ view: "archive", tab: currentTab });
+            }}
             onArchiveEntry={(id) => updateEntry(id, { archived: true })}
           />
         )}

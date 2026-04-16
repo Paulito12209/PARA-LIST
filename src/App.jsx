@@ -1419,6 +1419,22 @@ function CatDetailScreen({
 
 /* ── Entry Detail Screen ─────────────────────────────────────── */
 function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDelete, onBack }) {
+  const [showConnSelect, setShowConnSelect] = useState(false);
+  const [showDate, setShowDate] = useState(false);
+  
+  const connPopupRef = useRef(null);
+  const connPillRef = useRef(null);
+  const dateInputRef = useRef(null);
+  const datePillRef = useRef(null);
+
+  const handleClickOutside = useCallback((e) => {
+    if (showConnSelect && connPopupRef.current && !connPopupRef.current.contains(e.target) && connPillRef.current && !connPillRef.current.contains(e.target)) {
+      setShowConnSelect(false);
+    }
+    if (showDate && dateInputRef.current && !dateInputRef.current.contains(e.target) && datePillRef.current && !datePillRef.current.contains(e.target)) {
+      setShowDate(false);
+    }
+  }, [showConnSelect, showDate]);
   const typeIcon = {
     task: CheckCircle2,
     note: FileText,
@@ -1435,7 +1451,7 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
   const alpha = theme === 'light' ? "0C" : "18";
 
   return (
-    <div className="cat-detail">
+    <div className="cat-detail" onClick={handleClickOutside}>
       {/* Header */}
       <div className="cat-detail__header" style={{ background: cfgColor + alpha }}>
         <div className="cat-detail__title-row">
@@ -1451,28 +1467,106 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
           </button>
         </div>
         <div className="cat-detail__pills">
-          {cat && CC[cat.type] && (
-            <span
-              className="cat-detail__tag"
-              style={{
-                color: CC[cat.type].color,
-                background: CC[cat.type].color + "18",
-              }}
+          <button
+            ref={connPillRef}
+            className="cat-detail__date-pill"
+            onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+            style={
+              cat && CC[cat.type]
+                ? {
+                    background: CC[cat.type].color + "20",
+                    borderColor: CC[cat.type].color + "45",
+                    color: CC[cat.type].color,
+                  }
+                : {}
+            }
+          >
+            {cat ? cat.name : t.connectSelection}
+          </button>
+          
+          {(entry.type === "task" || entry.type === "calendar") && (
+            <button
+              ref={datePillRef}
+              className="cat-detail__date-pill"
+              onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
+              style={
+                (entry.due || entry.date)
+                  ? {
+                      background: cfgColor + "20",
+                      borderColor: cfgColor + "45",
+                      color: cfgColor,
+                    }
+                  : {}
+              }
             >
-              {cat.name}
-            </span>
+              {(entry.due || entry.date) ? fmtDate((entry.due || entry.date), t.locale) : t.addDate}
+            </button>
           )}
-          {entry.type === "task" && entry.due && (
-            <span className="cat-detail__tag">
-              {fmtDate(entry.due, t.locale)}
-            </span>
-          )}
-          {entry.type === "calendar" && entry.date && (
-            <span className="cat-detail__tag">
-              {fmtDate(entry.date, t.locale)}
-            </span>
+
+          {/* Connection Popup */}
+          {showConnSelect && (
+            <div className="cat-detail__conn-popup" ref={connPopupRef} onClick={(e) => e.stopPropagation()}>
+              <div className="cat-detail__conn-list">
+                {allCats.length === 0 ? (
+                  <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
+                ) : (
+                  allCats.map(opt => (
+                    <button
+                      key={opt.id}
+                      className="cat-detail__conn-item"
+                      onClick={() => {
+                        onUpdate({ catId: opt.id });
+                        setShowConnSelect(false);
+                      }}
+                    >
+                      <span 
+                        className="cat-detail__conn-dot" 
+                        style={{ background: (CC[opt.type]?.color || CC.resource.color) }} 
+                      />
+                      <span className="cat-detail__conn-name">{opt.name}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+              <button
+                className="cat-detail__conn-none"
+                onClick={() => {
+                  onUpdate({ catId: null });
+                  setShowConnSelect(false);
+                }}
+              >
+                {t.noConnection}
+              </button>
+            </div>
           )}
         </div>
+        
+        {/* Date/Time Popup */}
+        {(entry.type === "task" || entry.type === "calendar") && showDate && (
+          <div ref={dateInputRef} onClick={(e) => e.stopPropagation()} style={{ paddingTop: '8px', zIndex: 10 }}>
+            <div className="modal__input-row">
+              <input
+                type="date"
+                className="modal__date-input"
+                style={{ marginTop: 0 }}
+                value={entry.due || entry.date || ""}
+                onChange={(e) => {
+                  const patch = entry.type === "task" ? { due: e.target.value } : { date: e.target.value };
+                  onUpdate(patch);
+                }}
+              />
+              <input
+                type="time"
+                className="modal__time-input"
+                style={{ marginTop: 0 }}
+                value={entry.time || ""}
+                onChange={(e) => {
+                  onUpdate({ time: e.target.value });
+                }}
+              />
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Content */}

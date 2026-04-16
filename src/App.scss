@@ -251,9 +251,25 @@
   overflow: hidden;
   position: relative;
 
+  &--calendar {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 240px;
+      background: linear-gradient(180deg, rgba($color-calendar, 0.08) 0%, rgba($color-calendar, 0) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+  }
+
   &__content {
     padding: $spacing-md $spacing-md 0;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
   }
 }
 
@@ -480,41 +496,51 @@
 
   &__meta {
     display: flex;
-    gap: $spacing-xs + $spacing-2xs;
-    margin-top: $spacing-2xs;
+    gap: 6px;
+    margin-top: $spacing-xs + 2px;
     align-items: center;
     flex-wrap: wrap;
+  }
+
+  /* nicht mehr gerendert, aber als Fallback beibehalten */
+  &__meta-tags {
+    display: contents;
   }
 
   &__due {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
     font-size: 10px;
+    line-height: 1;
     font-weight: 600;
-    color: $color-calendar;
-    background: rgba($color-calendar, 0.12);
-    border: 1px solid rgba($color-calendar, 0.25);
-    padding: 1px 7px;
+    color: #1D4ED8;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    padding: 0 8px;
     border-radius: $radius-pill;
+    vertical-align: middle;
 
     &--overdue {
-      color: $color-notif-red;
-      background: rgba($color-notif-red, 0.12);
-      border-color: rgba($color-notif-red, 0.25);
+      color: #DC2626;
+      background: #FEE2E2;
+      border-color: #FCA5A5;
     }
   }
 
-  &__meta-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-xs;
-    margin-top: $spacing-xs;
-    align-items: center;
-  }
 
   &__cat-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
     font-size: 10px;
+    line-height: 1;
     font-weight: 600;
     border-radius: $radius-pill;
-    padding: 1px 6px;
+    padding: 0 8px;
+    vertical-align: middle;
   }
 
   &__delete {
@@ -577,12 +603,16 @@
   }
 
   &__cat-tag {
-    display: inline-block;
-    margin-top: $spacing-sm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
     font-size: 10px;
+    line-height: 1;
     font-weight: 600;
     border-radius: $radius-pill;
-    padding: 2px 7px;
+    padding: 0 8px;
+    vertical-align: middle;
   }
 }
 
@@ -652,6 +682,14 @@
     color: $color-calendar;
   }
 
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    margin-top: $spacing-xs;
+  }
+
   &__delete {
     opacity: 0.35;
     transition: opacity $transition-fast;
@@ -662,12 +700,16 @@
   }
 
   &__cat-tag {
-    display: inline-block;
-    margin-top: $spacing-sm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
     font-size: 10px;
+    line-height: 1;
     font-weight: 600;
     border-radius: $radius-pill;
-    padding: 2px 7px;
+    padding: 0 8px;
+    vertical-align: middle;
   }
 }
 
@@ -712,12 +754,16 @@
   }
 
   &__cat-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
     font-size: 10px;
+    line-height: 1;
     font-weight: 600;
     border-radius: $radius-pill;
-    padding: 1px 6px;
-    display: inline-block;
-    margin-top: $spacing-xs;
+    padding: 0 8px;
+    vertical-align: middle;
   }
 
   &__delete {
@@ -860,15 +906,17 @@
   }
 
   &__item-date {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
     font-size: 10px;
     font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
     color: $color-calendar;
     background: rgba($color-calendar, 0.12);
     border: 1px solid rgba($color-calendar, 0.25);
-    padding: 1px 7px;
-    border-radius: $radius-pill;
     margin-top: $spacing-2xs;
-    display: inline-block;
   }
 }
 
@@ -1017,6 +1065,12 @@
   &__header {
     padding: $spacing-md + $spacing-2xs $spacing-md $spacing-md - $spacing-2xs $spacing-md;
     border-bottom: 1px solid $color-border;
+    transition: background $transition-normal;
+  }
+
+  &--calendar>&__header {
+    background: linear-gradient(135deg, rgba($color-calendar, 0.1) 0%, rgba($color-calendar, 0.04) 100%);
+    border-bottom-color: rgba($color-calendar, 0.2);
   }
 
   &__title-row {
@@ -1090,14 +1144,19 @@
 
 
   &__date-pill {
-    padding: $spacing-xs $spacing-sm + $spacing-2xs;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    padding: 0 10px;
     border-radius: $radius-pill;
-    font-size: 11px;
+    font-size: 10px;
+    line-height: 1;
     font-weight: 600;
     font-family: $font-body;
-    background: rgba($color-calendar, 0.12);
-    border: 1px solid rgba($color-calendar, 0.25);
-    color: $color-calendar;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1D4ED8;
     transition: all $transition-fast;
   }
 
@@ -1113,10 +1172,15 @@
   }
 
   &__tag {
-    padding: $spacing-xs $spacing-sm + $spacing-2xs;
-    border-radius: $radius-pill;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
     font-size: 10px;
+    line-height: 1;
     font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
     background: $color-dim;
     color: $color-muted;
   }
@@ -1922,7 +1986,7 @@
         color: #5858A0;
         opacity: 0.5;
       }
-      
+
       &:focus::-webkit-datetime-edit,
       &[value]:not([value=""])::-webkit-datetime-edit {
         opacity: 1;

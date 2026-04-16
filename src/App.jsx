@@ -397,7 +397,7 @@ function EntryMetaTags({ entry, cats, CC }) {
   const res   = linked.filter((c) => c.type === "resource");
 
   return (
-    <div className="task-item__meta-tags">
+    <>
       {projs.map((p) => (
         <span
           key={p.id}
@@ -421,16 +421,13 @@ function EntryMetaTags({ entry, cats, CC }) {
           style={{
             color: CC.resource.color,
             background: CC.resource.color + "18",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "3px",
           }}
         >
-          <Square size={10} color={CC.resource.color} strokeWidth={2.5} />
+          <Square size={10} color={CC.resource.color} strokeWidth={2.5} style={{ marginRight: 3 }} />
           {res.length}
         </span>
       )}
-    </div>
+    </>
   );
 }
 
@@ -622,7 +619,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
             <Trash2 size={14} color="#5858A0" />
           </button>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
           <span className="task-item__due" style={{ marginTop: 0 }}>
             {fmtRelative(e.createdAt, t.locale)}
           </span>
@@ -734,7 +731,9 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }
           <div className="cal-item__info">
             <div className="cal-item__title">{e.title}</div>
             {e.time && <div className="cal-item__time">{e.time} Uhr</div>}
-            <EntryMetaTags entry={e} cats={cats} CC={CC} />
+            <div className="cal-item__tags">
+              <EntryMetaTags entry={e} cats={cats} CC={CC} />
+            </div>
           </div>
           <button className="cal-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
             <Trash2 size={14} color="#5858A0" />
@@ -961,7 +960,7 @@ function HomeScreen({
   );
 
   return (
-    <div className="home">
+    <div className={`home ${tab === 'calendar' ? 'home--calendar' : ''}`}>
       <div className="home__content">
         {/* Category cards */}
         <div className="category-grid">
@@ -1908,14 +1907,22 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
   const TypeIcon = typeIcon;
   const cfgColor = entry.type === "task" ? "#7C83F7" : 
     entry.type === "note" ? "#F59E0B" : 
-    entry.type === "calendar" ? "#38BDF8" : "#9CA3AF";
+    entry.type === "calendar" ? "#1D4ED8" : "#9CA3AF";
 
   const alpha = theme === 'light' ? "0C" : "18";
 
   return (
     <div className="cat-detail" onClick={handleClickOutside}>
       {/* Header */}
-      <div className="cat-detail__header" style={{ background: cfgColor + alpha }}>
+      <div
+        className="cat-detail__header"
+        style={{
+          background: entry.type === "calendar"
+            ? "linear-gradient(135deg, rgba(29,78,216,0.10) 0%, rgba(29,78,216,0.03) 100%)"
+            : cfgColor + alpha,
+          borderBottomColor: entry.type === "calendar" ? "rgba(29,78,216,0.18)" : undefined,
+        }}
+      >
         <div className="cat-detail__title-row">
           <TypeIcon size={18} color={cfgColor} />
           <input
@@ -1929,6 +1936,23 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
           </button>
         </div>
         <div className="cat-detail__pills">
+            {/* 1. Datumspille (Aufgabe / Kalender / Notiz-Erstellung) — kommt zuerst */}
+            {(entry.type === "task" || entry.type === "calendar") && (
+              <button
+                ref={datePillRef}
+                className="cat-detail__date-pill"
+                onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
+              >
+                {(entry.due || entry.date) ? fmtDate((entry.due || entry.date), t.locale) : t.addDate}
+              </button>
+            )}
+            {entry.type === "note" && entry.createdAt && (
+              <span className="cat-detail__date-pill" style={{ cursor: 'default' }}>
+                {fmtRelative(entry.createdAt, t.locale)}
+              </span>
+            )}
+
+            {/* 2. PARA-Kategorie-Tag — kommt nach dem Datum */}
             {(() => {
               const selectedCats = allCats.filter(c => (entry.catIds || []).includes(c.id));
               const summary = selectedCats.length === 0
@@ -1947,8 +1971,8 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
                   style={
                     activeCat && CC[activeCat.type]
                       ? {
-                          background: CC[activeCat.type].color + "20",
-                          borderColor: CC[activeCat.type].color + "45",
+                          background: CC[activeCat.type].color + "18",
+                          borderColor: CC[activeCat.type].color + "60",
                           color: CC[activeCat.type].color,
                         }
                       : {}
@@ -1958,25 +1982,6 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
                 </button>
               );
             })()}
-          
-          {(entry.type === "task" || entry.type === "calendar") && (
-            <button
-              ref={datePillRef}
-              className="cat-detail__date-pill"
-              onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
-              style={
-                (entry.due || entry.date)
-                  ? {
-                      background: cfgColor + "20",
-                      borderColor: cfgColor + "45",
-                      color: cfgColor,
-                    }
-                  : {}
-              }
-            >
-              {(entry.due || entry.date) ? fmtDate((entry.due || entry.date), t.locale) : t.addDate}
-            </button>
-          )}
 
           {entry.type === "calendar" && (
             <button

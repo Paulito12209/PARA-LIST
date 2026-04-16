@@ -68,6 +68,7 @@ $color-resource-dim:#081408;
 $color-task:     #7C83F7;
 $color-note:     #F59E0B;
 $color-calendar: #1D4ED8;
+$color-calendar-pastel: #F0F9FF; // Sehr helles Pastell-Blau für Hintergründe (Kalender-Header & Pillen)
 
 // ── Colors – Notifications ──────────────────────────────────
 $color-notif-red:    #F26565;
@@ -105,6 +106,7 @@ $color-bm-link:   #7C3AED;
   --color-task:     #{$color-task};
   --color-note:     #{$color-note};
   --color-calendar: #{$color-calendar};
+  --color-calendar-pastel: #{$color-calendar-pastel};
 
   // Notifications
   --color-notif-red:    #{$color-notif-red};

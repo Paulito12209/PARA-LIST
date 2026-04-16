@@ -2746,6 +2746,32 @@ export default function App() {
 
   const push = (v) => setStack((s) => [...s, v]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
+
+  // Hilfsfunktion zur Ermittlung der Anzahl archivierter Elemente für einen Tab
+  const getArchiveCount = (archiveTab) => {
+    const isCatTab = ["project", "area", "resource"].includes(archiveTab);
+    if (isCatTab) {
+      return state.cats.filter(c => c.type === archiveTab && c.archived).length;
+    }
+    if (archiveTab === "tasks") return state.entries.filter(e => e.type === "task" && e.done).length;
+    if (archiveTab === "calendar") return state.entries.filter(e => e.type === "calendar" && isOld(e.date)).length;
+    if (archiveTab === "notes") return state.entries.filter(e => e.type === "note" && e.archived).length;
+    return 0;
+  };
+
+  // Smarte Zurück-Logik: Überspringt das Archiv, wenn es nach dem Dearchivieren leer ist
+  const handleSmartBack = () => {
+    const prev = stack[stack.length - 2];
+    if (prev && prev.view === "archive") {
+      const count = getArchiveCount(prev.tab || tab);
+      if (count === 0) {
+        setStack(s => s.length > 2 ? s.slice(0, -2) : [{ view: "home" }]);
+        return;
+      }
+    }
+    pop();
+  };
+
   const cur = stack[stack.length - 1];
 
   /* ── mutations ─────────────────────────────────────────────── */
@@ -3005,7 +3031,7 @@ export default function App() {
                   if (window.confirm(t.confirmDelete(cat.name)))
                     deleteCat(cat.id);
                 }}
-                onBack={pop}
+                onBack={handleSmartBack}
                 onHome={() => setStack([{ view: "home" }])}
                 toggleTask={toggleTask}
                 deleteEntry={deleteEntry}
@@ -3056,7 +3082,7 @@ export default function App() {
                   deleteEntry(entry.id);
                   pop();
                 }}
-                onBack={pop}
+                onBack={handleSmartBack}
               />
             );
           })()}

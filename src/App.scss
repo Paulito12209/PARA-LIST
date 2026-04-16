@@ -1023,7 +1023,9 @@
     padding: $spacing-xs 0; // Keep some spacing for the tags
   }
 
-  &__archive-toggle {
+  &__archive-toggle,
+  &__delete-btn,
+  &__birthday-toggle {
     background: transparent;
     @include flex-center;
     width: 32px;
@@ -1031,7 +1033,9 @@
     transition: all $transition-fast;
     opacity: 0.6;
     flex-shrink: 0;
-    margin-right: -8px; // Nudge right to align with Trash button's visual edge
+    margin-right: -8px; // Nudge right to align with visual edge
+    border: none;
+    cursor: pointer;
 
     &:hover {
       opacity: 1;
@@ -1042,6 +1046,16 @@
       opacity: 1;
     }
   }
+
+  &__delete-btn {
+    margin-left: auto;
+  }
+
+  &__birthday-toggle {
+    margin-left: auto;
+    border-radius: 50%;
+  }
+
 
   &__date-pill {
     padding: $spacing-xs $spacing-sm + $spacing-2xs;

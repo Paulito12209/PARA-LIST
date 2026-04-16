@@ -1770,6 +1770,11 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
         if (tab === "calendar") return e.type === "calendar" && isOld(e.date);
         if (tab === "notes") return e.type === "note" && e.archived;
         return false;
+      }).sort((a, b) => {
+        if (tab === "calendar") {
+          return new Date(b.date + "T12:00") - new Date(a.date + "T12:00");
+        }
+        return 0;
       });
 
   const tabCfg = isCatTab ? CC[tab] : getTABS(t).find(x => x.id === tab);
@@ -1941,19 +1946,10 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
 
           {entry.type === "calendar" && (
             <button
+              className="cat-detail__birthday-toggle"
               onClick={() => onUpdate({ isBirthday: !entry.isBirthday })}
               style={{
-                marginLeft: "auto",
                 background: entry.isBirthday ? "rgba(255, 255, 255, 0.15)" : "transparent",
-                border: "none",
-                borderRadius: "50%",
-                padding: "6px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                opacity: entry.isBirthday ? 1 : 0.4,
-                transition: "all 0.2s"
               }}
               title="Als Geburtstag markieren"
             >
@@ -2010,13 +2006,15 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
             </div>
           )}
 
-          <button 
-            className={`cat-detail__archive-toggle ${entry.archived ? 'cat-detail__archive-toggle--active' : ''}`}
-            onClick={() => onUpdate({ archived: !entry.archived })}
-            style={{ marginLeft: 'auto' }}
-          >
-            {entry.archived ? <ArchiveRestore size={18} color={cfgColor} /> : <Archive size={18} color="#5858A0" />}
-          </button>
+          {entry.type !== "calendar" && (
+            <button 
+              className={`cat-detail__archive-toggle ${entry.archived ? 'cat-detail__archive-toggle--active' : ''}`}
+              onClick={() => onUpdate({ archived: !entry.archived })}
+              style={{ marginLeft: 'auto' }}
+            >
+              {entry.archived ? <ArchiveRestore size={18} color={cfgColor} /> : <Archive size={18} color="#5858A0" />}
+            </button>
+          )}
         </div>
         
         {/* Date/Time Popup */}

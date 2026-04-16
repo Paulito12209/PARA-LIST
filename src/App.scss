@@ -2197,6 +2197,13 @@
     font-size: 24px;
     font-weight: 700;
     box-shadow: 0 4px 12px rgba(124, 131, 247, 0.3);
+    overflow: hidden; // Für das Bild
+  }
+
+  &__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   &__info {
@@ -2241,6 +2248,16 @@
 
 // Settings Modal Navigation & Sub-views
 .settings-modal {
+  max-height: 95dvh !important;
+  overflow: hidden !important; // Header fixieren, nur Content scrollt
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0 !important; // Padding unten entfernen, damit Button nicht abgeschnitten wird
+  
+  @media (max-width: 480px) {
+    height: 95dvh;
+  }
+
   &__back {
     position: absolute;
     left: 16px;
@@ -2253,6 +2270,11 @@
   }
 
   &__content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
     &--sub {
       animation: slide-in-right 0.3s ease;
     }

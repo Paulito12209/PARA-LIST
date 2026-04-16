@@ -257,8 +257,13 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
           <button
             className="command-panel__bell"
             onClick={onOpenSettings}
+            style={user.avatar ? { padding: 0, overflow: 'hidden' } : {}}
           >
-            <Settings size={17} className="icon-muted" color="currentColor" />
+            {user.avatar ? (
+              <img src={user.avatar} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <Settings size={17} className="icon-muted" color="currentColor" />
+            )}
           </button>
         </div>
       </div>
@@ -2003,6 +2008,14 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
               </button>
             </div>
           )}
+
+          <button 
+            className={`cat-detail__archive-toggle ${entry.archived ? 'cat-detail__archive-toggle--active' : ''}`}
+            onClick={() => onUpdate({ archived: !entry.archived })}
+            style={{ marginLeft: 'auto' }}
+          >
+            {entry.archived ? <ArchiveRestore size={18} color={cfgColor} /> : <Archive size={18} color="#5858A0" />}
+          </button>
         </div>
         
         {/* Date/Time Popup */}
@@ -2435,6 +2448,18 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
   const [view, setView] = useState("main"); // "main" | "profile" | "feedback"
   const [feedbackType, setFeedbackType] = useState("bug");
   const [feedbackText, setFeedbackText] = useState("");
+  const fileInputRef = useRef(null);
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onUpdateUser({ avatar: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const sendFeedback = () => {
     const subject = `Feedback: ${feedbackType === "bug" ? "Bug" : feedbackType === "feature" ? "Feature" : "Verbesserung"}`;
@@ -2470,15 +2495,29 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
         {view === "main" ? (
           <div className="settings-modal__content">
             {/* Apple-style Profile Row */}
-            <button className="profile-row" onClick={() => setView("profile")}>
+            <button className="profile-row" onClick={() => fileInputRef.current?.click()}>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleAvatarChange} 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+              />
               <div className="profile-row__avatar">
-                {user.name ? user.name.charAt(0).toUpperCase() : "P"}
+                {user.avatar ? (
+                  <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
+                ) : (
+                  user.name ? user.name.charAt(0).toUpperCase() : "P"
+                )}
               </div>
               <div className="profile-row__info">
                 <div className="profile-row__name">{user.name || "User"}</div>
                 <div className="profile-row__sub">{t.personalData}</div>
               </div>
-              <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" />
+              <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" onClick={(e) => {
+                e.stopPropagation();
+                setView("profile");
+              }} />
             </button>
 
             <div className="settings-section">

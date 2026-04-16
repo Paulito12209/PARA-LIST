@@ -2432,22 +2432,35 @@ function OnboardingModal({ t, onComplete }) {
 
 /* ── Settings Modal ──────────────────────────────────────────── */
 function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpdateUser }) {
-  const [view, setView] = useState("main"); // "main" | "profile"
+  const [view, setView] = useState("main"); // "main" | "profile" | "feedback"
+  const [feedbackType, setFeedbackType] = useState("bug");
+  const [feedbackText, setFeedbackText] = useState("");
+
+  const sendFeedback = () => {
+    const subject = `Feedback: ${feedbackType === "bug" ? "Bug" : feedbackType === "feature" ? "Feature" : "Verbesserung"}`;
+    const mailto = `mailto:kontakt@paulangeles.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(feedbackText)}`;
+    window.location.href = mailto;
+  };
+
+  const currentTitle = 
+    view === "main" ? t.settings : 
+    view === "profile" ? t.personalData : 
+    t.feedback;
 
   return (
     <div className="modal" onClick={onClose}>
-      <div className={`modal__sheet settings-modal ${view === "profile" ? "settings-modal--profile" : ""}`} onClick={(e) => e.stopPropagation()}>
+      <div className={`modal__sheet settings-modal ${view !== "main" ? "settings-modal--sub" : ""}`} onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
         
         <div className="modal__header">
-          {view === "profile" && (
+          {view !== "main" && (
             <button className="settings-modal__back" onClick={() => setView("main")}>
               <ChevronLeft size={20} color="#5858A0" />
             </button>
           )}
           <div className="modal__icon-row">
             {view === "main" && <Settings size={20} className="icon-muted" color="currentColor" />}
-            <h3 className="modal__title">{view === "main" ? t.settings : t.personalData}</h3>
+            <h3 className="modal__title">{currentTitle}</h3>
           </div>
           <button className="modal__close" onClick={onClose}>
             <X size={18} color="#5858A0" />
@@ -2515,6 +2528,21 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
               </div>
             </div>
 
+            {/* Feedback Section */}
+            <div className="settings-section">
+              <div className="settings-row">
+                <span className="settings-label">{t.feedback}</span>
+                <button 
+                  className="feedback-trigger-btn"
+                  onClick={() => setView("feedback")}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" style={{ width: 18, height: 18 }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
             <button
               className="modal__submit modal__submit--secondary"
               onClick={onClose}
@@ -2523,7 +2551,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
               {t.closeBtn}
             </button>
           </div>
-        ) : (
+        ) : view === "profile" ? (
           <div className="settings-modal__content settings-modal__content--sub">
              <div className="settings-group">
                 <div className="settings-group__title">{t.dataSection}</div>
@@ -2540,6 +2568,51 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                   <Trash2 size={16} />
                 </button>
              </div>
+          </div>
+        ) : (
+          <div className="settings-modal__content settings-modal__content--sub">
+            <div className="feedback-form">
+              <div className="feedback-types">
+                {[
+                  { id: "bug", label: t.bug, desc: t.bugDesc },
+                  { id: "improvement", label: t.improvement, desc: t.improvementDesc },
+                  { id: "feature", label: t.feature, desc: t.featureDesc }
+                ].map(type => (
+                  <button 
+                    key={type.id}
+                    className={`feedback-type-btn ${feedbackType === type.id ? "feedback-type-btn--active" : ""}`}
+                    onClick={() => setFeedbackType(type.id)}
+                  >
+                    {type.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="feedback-callout">
+                {feedbackType === "bug" && t.bugDesc}
+                {feedbackType === "improvement" && t.improvementDesc}
+                {feedbackType === "feature" && t.featureDesc}
+              </div>
+
+              <div className="feedback-textarea-group">
+                <label className="feedback-label">{t.feedbackQuestion}</label>
+                <textarea 
+                  className="modal__textarea"
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  placeholder="..."
+                  rows={6}
+                />
+              </div>
+
+              <button 
+                className={`modal__submit ${!feedbackText.trim() ? "modal__submit--disabled" : ""}`}
+                onClick={sendFeedback}
+                style={{ background: "#7C83F7" }}
+              >
+                {t.send}
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -2325,6 +2325,109 @@
   }
 }
 
+// Feedback Styles
+.feedback-trigger-btn {
+  @include flex-center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba($color-task, 0.12);
+  border: 1px solid rgba($color-task, 0.25);
+  color: $color-task;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.9);
+    background: rgba($color-task, 0.2);
+  }
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.feedback-types {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 12px;
+}
+
+.feedback-type-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #5858A0;
+  transition: all 0.2s;
+
+  &--active {
+    background: #7C83F7;
+    color: white;
+    box-shadow: 0 2px 8px rgba(124, 131, 247, 0.3);
+  }
+}
+
+.feedback-callout {
+  background: rgba($color-task, 0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #8E8EB2;
+  border: 1px solid rgba($color-task, 0.15);
+  line-height: 1.4;
+  animation: fade-in 0.3s ease;
+}
+
+.feedback-textarea-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feedback-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #EDEEFF;
+  margin-left: 4px;
+}
+
+.app.light-theme {
+  .feedback-trigger-btn {
+    background: rgba(#7C83F7, 0.08);
+    border-color: rgba(#7C83F7, 0.2);
+  }
+
+  .feedback-types {
+    background: #f0f0f5;
+  }
+
+  .feedback-type-btn {
+    color: #5858A0;
+    &--active {
+      background: #7C83F7;
+      color: white;
+    }
+  }
+
+  .feedback-callout {
+    background: rgba(#7C83F7, 0.05);
+    border-color: #e5e5f0;
+    color: #5858A0;
+  }
+
+  .feedback-label {
+    color: #1a1a24;
+  }
+}
+
 // ── Onboarding ──────────────────────────────────────────────
 .onboarding {
   position: absolute;

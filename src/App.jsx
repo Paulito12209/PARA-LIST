@@ -2,8 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import {
-  Circle, Triangle, Square, Plus, ChevronLeft, Check,
-  Bell, Trash2, X, FileText, CheckSquare, Calendar, Home,
+  Circle, Triangle, Square, Plus, ChevronLeft, ChevronDown, ChevronUp, Check,
+  Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
   CheckCircle2,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
@@ -121,12 +121,20 @@ const getYouTubeVideoId = (rawUrl) => {
 /* ── config ──────────────────────────────────────────────────── */
 
 
+const TagIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} className="lucide lucide-tag">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
+  </svg>
+);
+
 const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
   { id: "tasks",  color: "#7C83F7", Icon: CheckCircle2 },
   { id: "cal",    color: "#3B82F6", Icon: Calendar },
   { id: "media",  color: "#10B981", Icon: Paperclip },
   { id: "link",   color: "#FB923C", Icon: Link2 },
+  { id: "tags",   color: "#EC4899", Icon: TagIcon },
 ];
 
 const NOTIF_RED = "#F26565";
@@ -1035,11 +1043,16 @@ function CatDetailScreen({
   onAddEntry,
   onOpenCat,
   onOpenEntry,
+  tags,
+  onCreateTag,
+  onUpdateTag,
+  onDeleteTag,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
   const CatIcon = CAT_ICONS[safeType] || Square;
   const [bm, setBm] = useState("canvas");
+  const [tagSort, setTagSort] = useState({ by: 'date', desc: true });
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
   // Ob Projekt/Arbeitsbereich → 3 Sub-Tabs (resources, notes, media), sonst nur 2 (notes, media)
@@ -1115,13 +1128,21 @@ function CatDetailScreen({
       calendar: "#1E40AF",
       media: "#10B981",
       link: "#FB923C",
+      tags: "#EC4899",
     };
     return colorMap[entryType] || cfg.color;
   }, [getEntryTypeFromBookmark, cfg.color]);
 
   const createEntryFromBookmark = useCallback(() => {
+    if (bm === "tags") {
+      const name = window.prompt("Neues Tag (Label) erstellen:");
+      if (name && name.trim()) {
+        onCreateTag(name.trim());
+      }
+      return;
+    }
     onAddEntry(getEntryTypeFromBookmark());
-  }, [getEntryTypeFromBookmark, onAddEntry]);
+  }, [getEntryTypeFromBookmark, bm, onAddEntry, onCreateTag]);
 
   // Swipe-Handler für Sub-Tab-Wechsel (3 Tabs bei Projekt/Bereich, 2 bei Ressource)
   const subTabOrder = isProjectOrArea
@@ -1428,6 +1449,71 @@ function CatDetailScreen({
               onDelete={deleteEntry}
             />
           ))}
+        {bm === "tags" && (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div className="res-sub-tabs" style={{ marginBottom: "16px" }}>
+              <button
+                className={`res-sub-tabs__btn ${tagSort.by === 'date' ? 'res-sub-tabs__btn--active-res' : ''}`}
+                onClick={() => setTagSort(prev => ({ by: 'date', desc: prev.by === 'date' ? !prev.desc : true }))}
+              >
+                <span>Erstellungsdatum</span>
+                {tagSort.by === 'date' && (tagSort.desc ? <ChevronDown size={14}/> : <ChevronUp size={14}/>)}
+              </button>
+              <button
+                className={`res-sub-tabs__btn ${tagSort.by === 'alpha' ? 'res-sub-tabs__btn--active-res' : ''}`}
+                onClick={() => setTagSort(prev => ({ by: 'alpha', desc: prev.by === 'alpha' ? !prev.desc : false }))}
+              >
+                <span>Alphabetisch</span>
+                {tagSort.by === 'alpha' && (tagSort.desc ? <ChevronDown size={14}/> : <ChevronUp size={14}/>)}
+              </button>
+            </div>
+            {(() => {
+              const sortedTags = [...(tags || [])].sort((a, b) => {
+                if (tagSort.by === 'date') {
+                  const da = new Date(a.createdAt || 0).getTime();
+                  const db = new Date(b.createdAt || 0).getTime();
+                  return tagSort.desc ? db - da : da - db;
+                } else {
+                  const cmp = a.name.localeCompare(b.name);
+                  return tagSort.desc ? -cmp : cmp;
+                }
+              });
+              if (sortedTags.length === 0) {
+                return <div className="cat-detail__section-empty">Keine Tags vorhanden</div>;
+              }
+              return (
+                <div className="tag-list" style={{ overflowY: 'auto' }}>
+                  {sortedTags.map(tag => (
+                    <div key={tag.id} className="media-item">
+                      <div className="media-item__icon" style={{ background: "#EC489922", color: "#EC4899" }}>
+                        <TagIcon size={18} />
+                      </div>
+                      <div className="media-item__body">
+                        <div className="media-item__title">{tag.name}</div>
+                        {tag.createdAt && <div className="media-item__meta">{fmtDate(tag.createdAt.split("T")[0], t.locale)}</div>}
+                      </div>
+                      <button className="media-item__delete" onClick={() => {
+                        const newName = window.prompt("Tag umbenennen:", tag.name);
+                        if (newName && newName.trim() && newName.trim() !== tag.name) {
+                          onUpdateTag(tag.id, newName.trim());
+                        }
+                      }}>
+                        <Edit2 size={14} color="#5858A0" />
+                      </button>
+                      <button className="media-item__delete" onClick={() => {
+                        if (window.confirm(`Tag "${tag.name}" löschen?`)) {
+                          onDeleteTag(tag.id);
+                        }
+                      }}>
+                        <Trash2 size={14} color="#F26565" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       <BookmarkRail active={bm} onSelect={setBm} baseColor={cfg.color} />
@@ -2142,16 +2228,71 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
 export default function App() {
   const [state, setState, isLoaded] = usePersistedState(SEED);
   useEffect(() => {
-    if (isLoaded && !state.cats.find(c => c.id === ID_BIRTHDAYS)) {
-      setState(s => ({
-        ...s,
-        cats: [
-          ...s.cats,
-          { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null }
-        ]
-      }));
+    if (isLoaded) {
+      setState(s => {
+        let dirty = false;
+        const nextState = { ...s };
+        if (!nextState.cats.find(c => c.id === ID_BIRTHDAYS)) {
+          nextState.cats = [
+            ...nextState.cats,
+            { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null }
+          ];
+          dirty = true;
+        }
+        if (!nextState.tags) {
+          const tagMap = new Map();
+          nextState.cats.forEach(c => c.tags?.forEach(t => {
+            if (!tagMap.has(t)) tagMap.set(t, { id: uid(), name: t, createdAt: new Date().toISOString() });
+          }));
+          nextState.tags = Array.from(tagMap.values());
+          dirty = true;
+        }
+        return dirty ? nextState : s;
+      });
     }
-  }, [isLoaded, state.cats, setState]);
+  }, [isLoaded, setState]);
+
+  const updateGlobalTag = (id, newName) => {
+    setState((s) => {
+      const tag = s.tags?.find(t => t.id === id);
+      if (!tag) return s;
+      const oldName = tag.name;
+      const nextTags = s.tags.map(t => t.id === id ? { ...t, name: newName } : t);
+      const nextCats = s.cats.map(c => {
+        if (c.tags && c.tags.includes(oldName)) {
+          return { ...c, tags: c.tags.map(old => old === oldName ? newName : old) };
+        }
+        return c;
+      });
+      return { ...s, tags: nextTags, cats: nextCats };
+    });
+  };
+
+  const deleteGlobalTag = (id) => {
+    setState((s) => {
+      const tag = s.tags?.find(t => t.id === id);
+      if (!tag) return s;
+      const oldName = tag.name;
+      const nextTags = s.tags.filter(t => t.id !== id);
+      const nextCats = s.cats.map(c => {
+        if (c.tags && c.tags.includes(oldName)) {
+          return { ...c, tags: c.tags.filter(old => old !== oldName) };
+        }
+        return c;
+      });
+      return { ...s, tags: nextTags, cats: nextCats };
+    });
+  };
+
+  const createGlobalTag = (name) => {
+    setState((s) => {
+      if (s.tags && s.tags.find(t => t.name.toLowerCase() === name.toLowerCase())) {
+        return s; // already exists
+      }
+      const newTag = { id: uid(), name, createdAt: new Date().toISOString() };
+      return { ...s, tags: [...(s.tags || []), newTag] };
+    });
+  };
 
   const [stack, setStack] = useState([{ view: "home" }]);
   const [tab, setTab] = useState("tasks");
@@ -2394,6 +2535,10 @@ export default function App() {
                 cat={cat}
                 allCats={state.cats}
                 entries={inclusiveEntries}
+                tags={state.tags}
+                onCreateTag={createGlobalTag}
+                onUpdateTag={updateGlobalTag}
+                onDeleteTag={deleteGlobalTag}
                 onUpdate={(p) => updateCat(cat.id, p)}
                 onDelete={() => {
                   if (window.confirm(t.confirmDelete(cat.name)))

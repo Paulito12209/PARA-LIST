@@ -2219,16 +2219,36 @@ export default function App() {
   const onTouchEnd = (e) => {
     const dx = e.changedTouches[0].clientX - touchX.current;
     const dy = e.changedTouches[0].clientY - touchY.current;
+    
+    // Swipe back to previous view
     if (dx > 75 && touchX.current < 45 && stack.length > 1) {
       pop();
       return;
     }
 
+    // Swipe down to open command panel
     if (dy > 80 && Math.abs(dx) < 50 && !panelOpen) {
-      // Check if scroll container is at top
-      const scrollEl = document.querySelector('.entry-list');
-      if (cur.view === "home" && (!scrollEl || scrollEl.scrollTop <= 0)) {
+      // Find the active scroll container based on view
+      let scrollEl;
+      if (cur.view === "home") scrollEl = document.querySelector('.entry-list');
+      else if (cur.view === "catList") scrollEl = document.querySelector('.cat-list__body');
+      else if (cur.view === "catDetail" || cur.view === "entryDetail") scrollEl = document.querySelector('.cat-detail__body');
+
+      if (!scrollEl || scrollEl.scrollTop <= 0) {
         setPanelOpen(true);
+      }
+    }
+
+    // Swipe up to close command panel
+    if (dy < -60 && Math.abs(dx) < 50 && panelOpen) {
+      const isBackdrop = e.target.classList.contains('command-panel__backdrop');
+      const inList = e.target.closest('.command-panel__list');
+      const listEl = document.querySelector('.command-panel__list');
+      
+      // Close if swipe up happens outside of the list (e.g. on backdrop, handle, header), 
+      // or if there is no list, or if the list is completely scrolled to the bottom.
+      if (isBackdrop || !inList || !listEl || listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight <= 1) {
+        setPanelOpen(false);
       }
     }
   };

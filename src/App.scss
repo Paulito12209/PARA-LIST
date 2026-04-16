@@ -2197,13 +2197,30 @@
     font-size: 24px;
     font-weight: 700;
     box-shadow: 0 4px 12px rgba(124, 131, 247, 0.3);
-    overflow: hidden; // Für das Bild
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+
+    &:hover .profile-row__avatar-overlay {
+      opacity: 1;
+    }
   }
 
   &__avatar-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  &__avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
   }
 
   &__info {
@@ -2260,8 +2277,8 @@
 
   &__back {
     position: absolute;
-    left: 16px;
-    top: 20px;
+    left: 12px;
+    top: 24px;
     z-index: 10;
     padding: 8px;
     background: transparent;
@@ -2274,6 +2291,7 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    padding: 0 16px;
 
     &--sub {
       animation: slide-in-right 0.3s ease;
@@ -2290,7 +2308,7 @@
     color: #5858A0;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-left: 16px;
+    margin-left: 0;
     margin-bottom: 8px;
   }
 }

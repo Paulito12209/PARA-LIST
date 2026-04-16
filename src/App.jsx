@@ -2495,30 +2495,36 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
         {view === "main" ? (
           <div className="settings-modal__content">
             {/* Apple-style Profile Row */}
-            <button className="profile-row" onClick={() => fileInputRef.current?.click()}>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleAvatarChange} 
-                accept="image/*" 
-                style={{ display: 'none' }} 
-              />
-              <div className="profile-row__avatar">
+            <div className="profile-row" onClick={() => setView("profile")}>
+              <div 
+                className="profile-row__avatar" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  fileInputRef.current?.click();
+                }}
+              >
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleAvatarChange} 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                />
                 {user.avatar ? (
                   <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
                 ) : (
                   user.name ? user.name.charAt(0).toUpperCase() : "P"
                 )}
+                <div className="profile-row__avatar-overlay">
+                  <ImageIcon size={14} color="white" />
+                </div>
               </div>
               <div className="profile-row__info">
                 <div className="profile-row__name">{user.name || "User"}</div>
                 <div className="profile-row__sub">{t.personalData}</div>
               </div>
-              <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" onClick={(e) => {
-                e.stopPropagation();
-                setView("profile");
-              }} />
-            </button>
+              <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" />
+            </div>
 
             <div className="settings-section">
               <div className="settings-label">{t.userName}</div>

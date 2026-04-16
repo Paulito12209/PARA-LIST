@@ -2476,20 +2476,24 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
     <div className="modal" onClick={onClose}>
       <div className={`modal__sheet settings-modal ${view !== "main" ? "settings-modal--sub" : ""}`} onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
-        
         <div className="modal__header">
-          {view !== "main" && (
-            <button className="settings-modal__back" onClick={() => setView("main")}>
-              <ChevronLeft size={20} color="#5858A0" />
-            </button>
-          )}
-          <div className="modal__icon-row">
-            {view === "main" && <Settings size={20} className="icon-muted" color="currentColor" />}
-            <h3 className="modal__title">{currentTitle}</h3>
+          <div className="modal__header-left">
+            {view !== "main" ? (
+              <button className="settings-modal__back-inline" onClick={() => setView("main")}>
+                <ChevronLeft size={20} color="#5858A0" />
+              </button>
+            ) : (
+              <Settings size={20} className="icon-muted" color="currentColor" />
+            )}
           </div>
-          <button className="modal__close" onClick={onClose}>
-            <X size={18} color="#5858A0" />
-          </button>
+          
+          <h3 className="modal__title">{currentTitle}</h3>
+
+          <div className="modal__header-right">
+            <button className="modal__close" onClick={onClose}>
+              <X size={18} color="#5858A0" />
+            </button>
+          </div>
         </div>
 
         {view === "main" ? (

@@ -1337,10 +1337,20 @@
   }
 
   &__header {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
     align-items: center;
-    margin-bottom: $spacing-md;
+    // margin-bottom: $spacing-md;
+    text-align: center;
+    min-height: 44px;
+  }
+
+  &__header-left,
+  &__header-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
   }
 
   .modal__media-grid {
@@ -1390,6 +1400,11 @@
     font-size: 17px;
     font-weight: 700;
     color: $color-text;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
   }
 
   &__close {
@@ -2270,20 +2285,24 @@
   display: flex;
   flex-direction: column;
   padding-bottom: 0 !important; // Padding unten entfernen, damit Button nicht abgeschnitten wird
-  
+
   @media (max-width: 480px) {
     height: 95dvh;
   }
 
-  &__back {
-    position: absolute;
-    left: 12px;
-    top: 24px;
-    z-index: 10;
-    padding: 8px;
+  &__back-inline {
     background: transparent;
     border: none;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin-right: 4px;
+    transition: transform 0.2s ease;
+
+    &:active {
+      transform: translateX(-2px);
+    }
   }
 
   &__content {
@@ -2291,7 +2310,7 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    padding: 0 16px;
+    // Padding kommt vom modal__sheet (16px)
 
     &--sub {
       animation: slide-in-right 0.3s ease;
@@ -2350,7 +2369,7 @@
 .app.light-theme .settings-item {
   background: #ffffff;
   border-color: #e5e5f0;
-  
+
   &__label {
     color: #1a1a24;
   }
@@ -2358,7 +2377,7 @@
   &--danger {
     background: rgba(242, 101, 101, 0.08);
     border-color: rgba(242, 101, 101, 0.15);
-    
+
     .settings-item__label {
       color: #ef4444;
     }
@@ -2451,6 +2470,7 @@
 
   .feedback-type-btn {
     color: #5858A0;
+
     &--active {
       background: #7C83F7;
       color: white;

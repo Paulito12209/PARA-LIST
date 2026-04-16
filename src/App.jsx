@@ -154,7 +154,7 @@ function computeNotif(entries) {
    ════════════════════════════════════════════════════════════════ */
 
 /* ── Command Panel ───────────────────────────────────────────── */
-function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t }) {
+function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t, onOpenEntry }) {
   const [subTab, setSubTab] = useState("today");
 
   const todayEntries = entries.filter(
@@ -246,6 +246,12 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                     className={`command-panel__drawer-item ${
                       isOld(d) ? "command-panel__drawer-item--overdue" : ""
                     }`}
+                    onClick={() => {
+                      if (onOpenEntry) {
+                        onOpenEntry(e);
+                        onToggle();
+                      }
+                    }}
                   >
                     <span
                       className="command-panel__drawer-dot"
@@ -298,7 +304,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
 }
 
 /* ── Task List ───────────────────────────────────────────────── */
-function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color }) {
+function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, onOpenEntry }) {
   const renderItem = (e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const overdue = isOld(e.due) && !e.done;
@@ -306,12 +312,13 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color }) 
       <div
         key={e.id}
         className={`task-item ${e.done ? "task-item--done" : ""}`}
+        onClick={() => onOpenEntry && onOpenEntry(e)}
       >
         <button
           className={`task-item__checkbox ${
             e.done ? "task-item__checkbox--checked" : ""
           }`}
-          onClick={() => onToggle(e.id)}
+          onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
         >
           {e.done && <Check size={10} color="#fff" strokeWidth={2.5} />}
         </button>
@@ -347,7 +354,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color }) 
             )}
           </div>
         </div>
-        <button className="task-item__delete" onClick={() => onDelete(e.id)}>
+        <button className="task-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
           <Trash2 size={14} color="#5858A0" />
         </button>
       </div>
@@ -398,17 +405,17 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color }) 
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete, CC, grouped, color, t }) {
+function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry }) {
   const renderItem = (e) => {
     const cat = cats.find((c) => c.id === e.catId);
     return (
-      <div key={e.id} className="note-item">
+      <div key={e.id} className="note-item" onClick={() => onOpenEntry && onOpenEntry(e)}>
         <div className="note-item__header">
           <div className="note-item__body">
             <div className="note-item__title">{e.title}</div>
             {e.body && <div className="note-item__excerpt">{e.body}</div>}
           </div>
-          <button className="note-item__delete" onClick={() => onDelete(e.id)}>
+          <button className="note-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
             <Trash2 size={14} color="#5858A0" />
           </button>
         </div>
@@ -472,7 +479,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t }) {
 }
 
 /* ── Calendar List ───────────────────────────────────────────── */
-function CalList({ entries, cats, onDelete, t, CC, grouped, color }) {
+function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }) {
   const renderItem = (e) => {
     const cat = cats.find((c) => c.id === e.catId);
     const past = e.date && e.date < TODAY;
@@ -482,6 +489,7 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color }) {
         className={`cal-item ${isToday(e.date) ? "cal-item--today" : ""} ${
           past ? "cal-item--past" : ""
         }`}
+        onClick={() => onOpenEntry && onOpenEntry(e)}
       >
         <div className="cal-item__row">
           <div className="cal-item__date-badge">
@@ -500,7 +508,7 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color }) {
             <div className="cal-item__title">{e.title}</div>
             {e.time && <div className="cal-item__time">{e.time} Uhr</div>}
           </div>
-          <button className="cal-item__delete" onClick={() => onDelete(e.id)}>
+          <button className="cal-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
             <Trash2 size={14} color="#5858A0" />
           </button>
         </div>
@@ -682,6 +690,7 @@ function HomeScreen({
   onAddEntry,
   toggleTask,
   deleteEntry,
+  onOpenEntry,
 }) {
   const { entries, cats } = state;
   const tabEntries = entries.filter((e) => {
@@ -832,6 +841,7 @@ function HomeScreen({
                 onDelete={deleteEntry}
                 grouped={true}
                 color={tabColor}
+                onOpenEntry={onOpenEntry}
               />
             )}
             {tab === "notes" && (
@@ -841,6 +851,7 @@ function HomeScreen({
                 onDelete={deleteEntry}
                 grouped={true}
                 color={tabColor}
+                onOpenEntry={onOpenEntry}
               />
             )}
             {tab === "calendar" && (
@@ -850,6 +861,7 @@ function HomeScreen({
                 onDelete={deleteEntry}
                 grouped={true}
                 color={tabColor}
+                onOpenEntry={onOpenEntry}
               />
             )}
           </>
@@ -985,6 +997,7 @@ function CatDetailScreen({
   deleteEntry,
   onAddEntry,
   onOpenCat,
+  onOpenEntry,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -1253,6 +1266,7 @@ function CatDetailScreen({
               cats={allCats}
               onToggle={toggleTask}
               onDelete={deleteEntry}
+              onOpenEntry={onOpenEntry}
             />
           ))}
         {bm === "cal" &&
@@ -1263,6 +1277,7 @@ function CatDetailScreen({
               entries={entries.filter((e) => e.type === "calendar")}
               cats={allCats}
               onDelete={deleteEntry}
+              onOpenEntry={onOpenEntry}
             />
           ))}
         {bm === "media" && (
@@ -1347,6 +1362,7 @@ function CatDetailScreen({
                   entries={entries.filter((e) => e.type === "note")}
                   cats={allCats}
                   onDelete={deleteEntry}
+                  onOpenEntry={onOpenEntry}
                 />
               )
             )}
@@ -1396,6 +1412,93 @@ function CatDetailScreen({
             <Plus size={22} color="#fff" strokeWidth={2.4} />
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Entry Detail Screen ─────────────────────────────────────── */
+function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDelete, onBack }) {
+  const typeIcon = {
+    task: CheckCircle2,
+    note: FileText,
+    calendar: Calendar,
+    media: Paperclip,
+    link: Link2,
+  }[entry.type] || FileText;
+  
+  const TypeIcon = typeIcon;
+  const cfgColor = entry.type === "task" ? "#7C83F7" : 
+    entry.type === "note" ? "#F59E0B" : 
+    entry.type === "calendar" ? "#38BDF8" : "#9CA3AF";
+
+  const alpha = theme === 'light' ? "0C" : "18";
+
+  return (
+    <div className="cat-detail">
+      {/* Header */}
+      <div className="cat-detail__header" style={{ background: cfgColor + alpha }}>
+        <div className="cat-detail__title-row">
+          <TypeIcon size={18} color={cfgColor} />
+          <input
+            className="cat-detail__title-input"
+            value={entry.title}
+            onChange={(e) => onUpdate({ title: e.target.value })}
+            placeholder="Titel..."
+          />
+          <button className="cat-detail__delete-btn" onClick={onDelete}>
+            <Trash2 size={16} color="#F26565" />
+          </button>
+        </div>
+        <div className="cat-detail__pills">
+          {cat && CC[cat.type] && (
+            <span
+              className="cat-detail__tag"
+              style={{
+                color: CC[cat.type].color,
+                background: CC[cat.type].color + "18",
+              }}
+            >
+              {cat.name}
+            </span>
+          )}
+          {entry.type === "task" && entry.due && (
+            <span className="cat-detail__tag">
+              {fmtDate(entry.due, t.locale)}
+            </span>
+          )}
+          {entry.type === "calendar" && entry.date && (
+            <span className="cat-detail__tag">
+              {fmtDate(entry.date, t.locale)}
+            </span>
+          )}
+        </div>
+      </div>
+      
+      {/* Content */}
+      <div className="cat-detail__body" style={{ flex: 1 }}>
+        {entry.type === "note" && (
+          <textarea
+            className="cat-detail__textarea"
+            value={entry.body || ""}
+            onChange={(e) => onUpdate({ body: e.target.value })}
+            placeholder={t.writeNotePlaceholder}
+          />
+        )}
+        {entry.type === "task" && (
+           <textarea
+             className="cat-detail__textarea"
+             value={entry.note || ""}
+             onChange={(e) => onUpdate({ note: e.target.value })}
+             placeholder={t.addNotePlaceholder}
+           />
+        )}
+      </div>
+
+      <div className="nav-bottom">
+        <button className="nav-bottom__back" onClick={onBack}>
+          <ChevronLeft size={20} color="#EDEEFF" />
+        </button>
       </div>
     </div>
   );
@@ -1928,6 +2031,12 @@ export default function App() {
       ),
     }));
 
+  const updateEntry = (id, patch) =>
+    setState((s) => ({
+      ...s,
+      entries: s.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+    }));
+
   const deleteEntry = (id) =>
     setState((s) => ({
       ...s,
@@ -2024,6 +2133,7 @@ export default function App() {
             }}
             toggleTask={toggleTask}
             deleteEntry={deleteEntry}
+            onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
           />
         )}
 
@@ -2093,6 +2203,50 @@ export default function App() {
                   setCreating({ type, catId: cat.id })
                 }
                 onOpenCat={(resCat) => push({ view: "catDetail", catId: resCat.id })}
+                onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
+              />
+            );
+          })()}
+
+        {cur.view === "entryDetail" &&
+          (() => {
+            const entry = state.entries.find((e) => e.id === cur.entryId);
+            if (!entry) {
+              return (
+                <div className="cat-detail">
+                  <div className="cat-detail__header">
+                    <div className="cat-detail__title-row">
+                      <FileText size={18} color="#5858A0" />
+                      <div className="cat-detail__title-input" style={{ pointerEvents: "none" }}>
+                        Eintrag nicht gefunden
+                      </div>
+                    </div>
+                  </div>
+                  <div className="nav-bottom">
+                    <button className="nav-bottom__back" onClick={pop}>
+                      <ChevronLeft size={20} color="#EDEEFF" />
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+            
+            const cat = state.cats.find(c => c.id === entry.catId);
+            
+            return (
+              <EntryDetailScreen
+                t={t}
+                CC={CC}
+                theme={theme}
+                entry={entry}
+                cat={cat}
+                allCats={state.cats}
+                onUpdate={(p) => updateEntry(entry.id, p)}
+                onDelete={() => {
+                  deleteEntry(entry.id);
+                  pop();
+                }}
+                onBack={pop}
               />
             );
           })()}

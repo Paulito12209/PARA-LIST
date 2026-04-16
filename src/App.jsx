@@ -5,7 +5,7 @@ import {
   Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
-  CheckCircle2, Archive, ArchiveRestore,
+  CheckCircle2, Archive, ArchiveRestore, Moon, Sun,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
 } from "lucide-react";
 import "./App.scss";
@@ -2537,13 +2537,17 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                   <button 
                     className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
                     onClick={() => setTheme("dark")}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
+                    <Moon size={14} />
                     {t.dark}
                   </button>
                   <button 
                     className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
                     onClick={() => setTheme("light")}
+                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                   >
+                    <Sun size={14} />
                     {t.light}
                   </button>
                 </div>

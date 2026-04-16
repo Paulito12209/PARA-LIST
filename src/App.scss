@@ -515,6 +515,12 @@
   border-radius: $radius-md + 1px;
   @include card-base;
   margin-bottom: $spacing-xs + $spacing-2xs;
+  transition: opacity 0.2s, transform 0.2s;
+
+  &--dragging {
+    opacity: 0.4;
+    transform: scale(0.98);
+  }
 
   &__header {
     display: flex;
@@ -731,6 +737,19 @@
   @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
   border: none;
   z-index: 95;
+
+  svg {
+    display: block;
+  }
+}
+
+.fab-archive {
+  position: absolute;
+  bottom: $spacing-lg;
+  left: $spacing-md + $spacing-xs;
+  @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
+  z-index: 95;
+  transition: all $transition-normal;
 
   svg {
     display: block;

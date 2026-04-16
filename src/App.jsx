@@ -128,6 +128,12 @@ const TagIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
   </svg>
 );
 
+const ArchiveIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} width={size} height={size}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
+  </svg>
+);
+
 const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
   { id: "tasks",  color: "#7C83F7", Icon: CheckCircle2 },
@@ -441,11 +447,97 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry }) {
+function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry, onArchiveEntry }) {
+  const [draggedEntry, setDraggedEntry] = useState(null);
+  const [clonePos, setClonePos] = useState({ x: 0, y: 0 });
+  const pressTimer = useRef(null);
+  const startPos = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (draggedEntry) {
+      const onMove = (e) => {
+        if (e.cancelable) e.preventDefault();
+        const cx = e.clientX ?? (e.touches && e.touches[0].clientX);
+        const cy = e.clientY ?? (e.touches && e.touches[0].clientY);
+        setClonePos({ x: cx, y: cy });
+      };
+      const onUp = (e) => {
+        const cx = e.clientX ?? (e.changedTouches && e.changedTouches[0].clientX);
+        const cy = e.clientY ?? (e.changedTouches && e.changedTouches[0].clientY);
+        document.body.style.userSelect = '';
+        const cloneEl = document.getElementById('drag-clone');
+        if (cloneEl) cloneEl.style.display = 'none';
+        
+        const target = document.elementFromPoint(cx, cy);
+        if (target && target.closest('.fab-archive')) {
+           if (onArchiveEntry) onArchiveEntry(draggedEntry.id);
+        }
+        
+        setDraggedEntry(null);
+      };
+      window.addEventListener('pointermove', onMove, { passive: false });
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onUp);
+      return () => {
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+        window.removeEventListener('touchmove', onMove);
+        window.removeEventListener('touchend', onUp);
+      };
+    }
+  }, [draggedEntry, onArchiveEntry]);
+
+  const handlePointerDown = (e, entry) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (!onArchiveEntry) return; // Only enable if we can archive
+    const cx = e.clientX ?? e.touches?.[0]?.clientX;
+    const cy = e.clientY ?? e.touches?.[0]?.clientY;
+    startPos.current = { x: cx, y: cy };
+    pressTimer.current = setTimeout(() => {
+       setDraggedEntry(entry);
+       setClonePos({ x: cx, y: cy });
+       document.body.style.userSelect = 'none';
+       if (navigator.vibrate) navigator.vibrate(50);
+    }, 400); 
+  };
+
+  const handlePointerMove = (e) => {
+    if (!draggedEntry && pressTimer.current) {
+      const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+      const dx = Math.abs(cx - startPos.current.x);
+      const dy = Math.abs(cy - startPos.current.y);
+      if (dx > 10 || dy > 10) {
+        clearTimeout(pressTimer.current);
+        pressTimer.current = null;
+      }
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  };
+
   const renderItem = (e) => {
     const cat = cats.find((c) => c.id === e.catId);
     return (
-      <div key={e.id} className="note-item" onClick={() => onOpenEntry && onOpenEntry(e)}>
+      <div 
+        key={e.id} 
+        className={`note-item ${draggedEntry?.id === e.id ? 'note-item--dragging' : ''}`} 
+        onClick={() => {
+          if (draggedEntry?.id === e.id) return; 
+          onOpenEntry && onOpenEntry(e);
+        }}
+        onPointerDown={(ev) => handlePointerDown(ev, e)}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        style={{ touchAction: draggedEntry?.id === e.id ? 'none' : 'auto' }}
+      >
         <div className="note-item__header">
           <div className="note-item__body">
             <div className="note-item__title">{e.title}</div>
@@ -510,6 +602,36 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry 
           {g.items.map(renderItem)}
         </div>
       ))}
+      
+      {draggedEntry && (
+        <div
+          id="drag-clone"
+          className="note-item"
+          style={{
+            position: 'fixed',
+            pointerEvents: 'none',
+            zIndex: 9999,
+            left: clonePos.x,
+            top: clonePos.y,
+            transform: 'translate(-50%, -50%)',
+            width: '280px',
+            opacity: 0.9,
+            background: 'var(--color-card, #1E1E2C)',
+            border: '1px solid var(--color-border, #333344)',
+            boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
+            padding: '12px 14px',
+            borderRadius: '16px'
+          }}
+        >
+          <div className="note-item__header">
+            <div className="note-item__body">
+              <div className="note-item__title" style={{ fontSize: '14px', fontWeight: 600 }}>{draggedEntry.title}</div>
+              {draggedEntry.body && <div className="note-item__excerpt" style={{ fontSize: '12px', opacity: 0.7 }}>{draggedEntry.body}</div>}
+            </div>
+            <div style={{ opacity: 0.5 }}>...</div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
@@ -727,6 +849,8 @@ function HomeScreen({
   toggleTask,
   deleteEntry,
   onOpenEntry,
+  onOpenArchive,
+  onArchiveEntry,
 }) {
   const { entries, cats } = state;
   const tabEntries = entries.map((e) => {
@@ -742,14 +866,21 @@ function HomeScreen({
       return e.type === "calendar" && (!e.date || !isOld(e.date));
     }
     if (tab === "notes") {
-      return e.type === "note";
+      return e.type === "note" && !e.archived;
     }
     if (tab === "tasks") {
       const isOverdue = e.type === "task" && !e.done && isOld(e.due);
-      return e.type === "task" && !isOverdue;
+      return e.type === "task" && !isOverdue && !e.done;
     }
     return false;
   });
+
+  const showArchiveButton = () => {
+    if (tab === "tasks") return entries.some((e) => e.type === "task" && e.done);
+    if (tab === "calendar") return entries.some((e) => e.type === "calendar" && isOld(e.date));
+    if (tab === "notes") return entries.some((e) => e.type === "note");
+    return false;
+  };
   const tabCfg = TABS.find((t) => t.id === tab);
   const tabColor = tabCfg?.color || "#7C83F7";
 
@@ -896,6 +1027,7 @@ function HomeScreen({
                 grouped={true}
                 color={tabColor}
                 onOpenEntry={onOpenEntry}
+                onArchiveEntry={onArchiveEntry}
               />
             )}
             {tab === "calendar" && (
@@ -911,6 +1043,21 @@ function HomeScreen({
           </>
         )}
       </div>
+
+      {showArchiveButton() && (
+        <button
+          className="fab-archive"
+          onClick={() => onOpenArchive(tab)}
+          style={{
+            background: "#9CA3AF22",
+            border: "1px solid #9CA3AF55",
+            color: "#9CA3AF",
+            boxShadow: "0 8px 24px #9CA3AF22",
+          }}
+        >
+          <ArchiveIcon size={22} color="#9CA3AF" strokeWidth={2} />
+        </button>
+      )}
 
       {/* FAB */}
       <button
@@ -1544,6 +1691,70 @@ function CatDetailScreen({
             </button>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Archive Screen ────────────────────────────────────────────── */
+function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, toggleTask, onOpenEntry, onRestoreNote }) {
+  const archiveEntries = entries.filter(e => {
+    if (tab === "tasks") return e.type === "task" && e.done;
+    if (tab === "calendar") return e.type === "calendar" && isOld(e.date);
+    if (tab === "notes") return e.type === "note" && e.archived;
+    return false;
+  });
+
+  const tabCfg = getTABS(t).find(x => x.id === tab);
+  const title = tab === "tasks" ? "Erledigte Aufgaben" : tab === "calendar" ? "Vergangene Termine" : "Archivierte Notizen";
+
+  return (
+    <div className="cat-detail">
+      <div className="cat-detail__header">
+        <div className="cat-detail__title-row">
+          <ArchiveIcon size={18} color={tabCfg?.color || "#EDEEFF"} />
+          <div className="cat-detail__title-input" style={{ pointerEvents: "none" }}>
+            {title}
+          </div>
+        </div>
+      </div>
+      <div className="cat-detail__body" style={{ paddingBottom: '100px' }}>
+        {archiveEntries.length === 0 ? (
+          <div className="cat-detail__section-empty">Keine archivierten Einträge</div>
+        ) : (
+          <>
+            {tab === "tasks" && (
+              <TaskList t={t} CC={CC} lang={lang}
+                entries={archiveEntries}
+                cats={cats}
+                onToggle={toggleTask}
+                onDelete={onDelete}
+                onOpenEntry={onOpenEntry}
+              />
+            )}
+            {tab === "calendar" && (
+              <CalList t={t} CC={CC} lang={lang}
+                entries={archiveEntries}
+                cats={cats}
+                onDelete={onDelete}
+                onOpenEntry={onOpenEntry}
+              />
+            )}
+            {tab === "notes" && (
+              <NoteList t={t} CC={CC}
+                entries={archiveEntries}
+                cats={cats}
+                onDelete={onDelete}
+                onOpenEntry={onOpenEntry}
+              />
+            )}
+          </>
+        )}
+      </div>
+      <div className="nav-bottom">
+        <button className="nav-bottom__back" onClick={onBack}>
+          <ChevronLeft size={20} color="#EDEEFF" />
+        </button>
       </div>
     </div>
   );
@@ -2470,6 +2681,24 @@ export default function App() {
             toggleTask={toggleTask}
             deleteEntry={deleteEntry}
             onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
+            onOpenArchive={(currentTab) => push({ view: "archive", tab: currentTab })}
+            onArchiveEntry={(id) => updateEntry(id, { archived: true })}
+          />
+        )}
+        
+        {cur.view === "archive" && (
+          <ArchiveScreen
+            t={t}
+            CC={CC}
+            lang={lang}
+            entries={state.entries}
+            cats={state.cats}
+            tab={cur.tab || tab}
+            onDelete={deleteEntry}
+            onBack={pop}
+            toggleTask={toggleTask}
+            onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
+            onRestoreNote={(id) => updateEntry(id, { archived: false })}
           />
         )}
 

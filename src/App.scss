@@ -1868,6 +1868,17 @@
       background: #f7f7f9;
       border-color: #e5e5f0;
       color-scheme: light;
+
+      &::-webkit-datetime-edit {
+        color: #5858A0;
+        opacity: 0.5;
+      }
+      
+      &:focus::-webkit-datetime-edit,
+      &[value]:not([value=""])::-webkit-datetime-edit {
+        opacity: 1;
+        color: #1a1a24;
+      }
     }
 
     &__toggle-row {

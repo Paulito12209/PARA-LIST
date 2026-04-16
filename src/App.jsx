@@ -52,16 +52,17 @@ const fmtDate = (d, locale) =>
         month: "short",
       });
 
-const getTaskGroup = (due, locale) => {
+const getTaskGroup = (due, locale, hideDayNumber = false) => {
   if (!due) return null;
   const d = new Date(due + "T12:00");
   const t = new Date(TODAY + "T12:00");
   const diffDays = Math.round((d - t) / (1000 * 60 * 60 * 24));
   if (diffDays <= 0) return null; 
 
-  const weekday = d.toLocaleDateString(locale, { weekday: 'short' }).substring(0, 2);
+  let weekday = d.toLocaleDateString(locale, { weekday: 'short' });
+  if (weekday.length > 3) weekday = weekday.substring(0, 2);
   const day = String(d.getDate()).padStart(2, '0'); 
-  const left = `${weekday}., ${day}`;
+  const left = hideDayNumber ? `${weekday}.` : `${weekday}., ${day}`;
 
   const getMonday = (date) => {
     const dt = new Date(date);
@@ -708,7 +709,7 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }
     if (!d || isToday(d) || isOld(d)) {
       todayTasks.push(e);
     } else {
-      const g = getTaskGroup(d, t.locale);
+      const g = getTaskGroup(d, t.locale, true);
       const key = `${g.left}|${g.right}`;
       if (!groupedTasks.has(key)) {
         groupedTasks.set(key, { ...g, items: [] });
@@ -2162,10 +2163,13 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
         <div className="modal__handle" />
 
         <div className="modal__header">
+          <div className="modal__header-left" />
           <h3 className="modal__title">{t.newLabel(label)}</h3>
-          <button className="modal__close" onClick={onClose}>
-            <X size={18} color="#5858A0" />
-          </button>
+          <div className="modal__header-right">
+            <button className="modal__close" onClick={onClose}>
+              <X size={18} color="#5858A0" />
+            </button>
+          </div>
         </div>
 
         <input

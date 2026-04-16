@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
+import { useInactivity } from "./hooks/useInactivity";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
@@ -1088,6 +1089,7 @@ function HomeScreen({
 
 /* ── Category List Screen ────────────────────────────────────── */
 function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
+  const fabVisible = useInactivity(5000);
   const cfg = CC[type];
   const CatIcon = CAT_ICONS[type];
 
@@ -1140,7 +1142,7 @@ function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC
         )}
       </div>
 
-      <div className="nav-bottom">
+      <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
@@ -1218,6 +1220,7 @@ function CatDetailScreen({
   const cfg = CC[safeType];
   const CatIcon = CAT_ICONS[safeType] || Square;
   const [bm, setBm] = useState("canvas");
+  const fabVisible = useInactivity(5000);
   const [tagSort, setTagSort] = useState({ by: 'date', desc: true });
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
@@ -1693,7 +1696,7 @@ function CatDetailScreen({
       <BookmarkRail active={bm} onSelect={setBm} baseColor={cfg.color} />
 
       {/* Bottom nav */}
-      <div className="nav-bottom" style={{ position: "relative" }}>
+      <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`} style={{ position: "relative" }}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
@@ -1762,6 +1765,7 @@ function CatDetailScreen({
 /* ── Archive Screen ────────────────────────────────────────────── */
 function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, toggleTask, onOpenEntry, onRestoreNote, onOpenCat }) {
   const isCatTab = ["project", "area", "resource"].includes(tab);
+  const fabVisible = useInactivity(5000);
 
   const archiveItems = isCatTab
     ? cats.filter(c => c.type === tab && c.archived)
@@ -1849,7 +1853,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
           </>
         )}
       </div>
-      <div className="nav-bottom">
+      <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
@@ -1860,6 +1864,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
 
 /* ── Entry Detail Screen ─────────────────────────────────────── */
 function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDelete, onBack }) {
+  const fabVisible = useInactivity(5000);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showDate, setShowDate] = useState(false);
   
@@ -2065,7 +2070,7 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
         )}
       </div>
 
-      <div className="nav-bottom">
+      <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
@@ -2862,7 +2867,15 @@ export default function App() {
       let scrollEl;
       if (cur.view === "home") scrollEl = document.querySelector('.entry-list');
       else if (cur.view === "catList") scrollEl = document.querySelector('.cat-list__body');
-      else if (cur.view === "catDetail" || cur.view === "entryDetail") scrollEl = document.querySelector('.cat-detail__body');
+      else if (cur.view === "catDetail" || cur.view === "entryDetail") {
+        scrollEl = document.querySelector('.cat-detail__body');
+        // Wenn in den Detail-Screens eine Textarea vorhanden ist, darf das Panel nur öffnen,
+        // wenn die Textarea bereits ganz oben (am Limit) ist.
+        const textarea = e.target.closest('.cat-detail__textarea');
+        if (textarea && textarea.scrollTop > 0) {
+          return;
+        }
+      }
 
       if (!scrollEl || scrollEl.scrollTop <= 0) {
         setPanelOpen(true);

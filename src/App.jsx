@@ -163,7 +163,7 @@ const ID_BIRTHDAYS = "res-birthdays";
 
 /* ── seed data ───────────────────────────────────────────────── */
 const SEED = {
-  theme: "dark",
+  theme: "light",
   lang: "de",
   user: { name: "" },
   cats: [
@@ -1015,7 +1015,7 @@ function HomeScreen({
             <div className="entry-list__empty-icon" style={{ display: 'flex', justifyContent: 'center' }}>
               {tabCfg && <tabCfg.Icon size={28} color={tabColor} strokeWidth={1.5} />}
             </div>
-            Keine {tabCfg?.label} · Doppeltippe zum Erstellen
+            {t.noEntries(tabCfg?.label)}
           </div>
         ) : (
           <>
@@ -2404,8 +2404,8 @@ function OnboardingModal({ t, onComplete }) {
         
         {step === 0 ? (
           <div className="onboarding__step">
-            <h2 className="onboarding__title">{t.welcome}</h2>
-            <p className="onboarding__text">{t.onboardingLang}</p>
+            <h2 className="onboarding__title">{I18N[lang].welcome}</h2>
+            <p className="onboarding__text">{I18N[lang].onboardingLang}</p>
             <div className="onboarding__langs">
               {["de", "en", "es"].map(l => (
                 <button 
@@ -2413,11 +2413,11 @@ function OnboardingModal({ t, onComplete }) {
                   className={`onboarding__lang-btn ${lang === l ? "onboarding__lang-btn--active" : ""}`}
                   onClick={() => setLang(l)}
                 >
-                  {l.toUpperCase()}
+                  {l === "de" ? "🇩🇪" : l === "en" ? "🇬🇧" : "🇪🇸"}
                 </button>
               ))}
             </div>
-            <button className="onboarding__next" onClick={() => setStep(1)}>{t.getStarted}</button>
+            <button className="onboarding__next" onClick={() => setStep(1)}>{I18N[lang].getStarted}</button>
           </div>
         ) : (
           <div className="onboarding__step">
@@ -2560,7 +2560,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                       className={`theme-toggle__btn ${lang === l ? "theme-toggle__btn--active" : ""}`}
                       onClick={() => setLang(l)}
                     >
-                      {l.toUpperCase()}
+                      {l === "de" ? "🇩🇪" : l === "en" ? "🇬🇧" : "🇪🇸"}
                     </button>
                   ))}
                 </div>
@@ -2738,7 +2738,7 @@ export default function App() {
   const [creating, setCreating] = useState(null);
   const [newCatType, setNewCatType] = useState(null);
 
-  const theme = state.theme || "dark";
+  const theme = state.theme || "light";
   const lang = state.lang || "de";
   const t = I18N[lang];
   const CC = getCC(t);

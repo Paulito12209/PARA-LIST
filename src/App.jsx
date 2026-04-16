@@ -2279,6 +2279,7 @@ export default function App() {
         onToggle={() => setPanelOpen((o) => !o)}
         onOpenSettings={() => setSettingsOpen(true)}
         onDelete={deleteEntry}
+        onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
       />
 
       {panelOpen && (

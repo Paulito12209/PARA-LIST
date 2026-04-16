@@ -88,12 +88,16 @@ const getTaskGroup = (due, locale, hideDayNumber = false) => {
     right = "nächste Woche";
   } else {
     const mDiff = (d.getFullYear() - t.getFullYear()) * 12 + (d.getMonth() - t.getMonth());
-    if (mDiff === 1) {
+    if (d.getFullYear() > t.getFullYear()) {
+      right = d.getFullYear().toString();
+    } else if (mDiff === 0) {
+      // Wenn im laufenden Monat aber nicht in dieser/nächster Woche
+      right = I18N[locale.slice(0,2)]?.thisMonth || "Dieser Monat";
+    } else if (mDiff === 1) {
       right = "nächsten Monat";
     } else {
       const monthStr = d.toLocaleDateString(locale, { month: 'long' }).toUpperCase();
-      const yearStr = d.getFullYear() !== t.getFullYear() ? " '" + String(d.getFullYear()).slice(-2) : "";
-      right = monthStr + yearStr;
+      right = monthStr;
     }
   }
 
@@ -427,7 +431,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
     if (!e.due || isToday(e.due) || isOld(e.due)) {
       todayTasks.push(e);
     } else {
-      const g = getTaskGroup(e.due, t.locale);
+      const g = getTaskGroup(e.due, t.locale, true);
       const key = `${g.left}|${g.right}`;
       if (!groupedTasks.has(key)) {
         groupedTasks.set(key, { ...g, items: [] });
@@ -587,7 +591,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
     if (!d || isToday(d) || isOld(d)) {
       todayTasks.push(e);
     } else {
-      const g = getTaskGroup(d, t.locale);
+      const g = getTaskGroup(d, t.locale, true);
       const key = `${g.left}|${g.right}`;
       if (!groupedTasks.has(key)) {
         groupedTasks.set(key, { ...g, items: [] });
@@ -1376,15 +1380,7 @@ function CatDetailScreen({
               ref={datePillRef}
               className="cat-detail__date-pill"
               onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
-              style={
-                cat.date
-                  ? {
-                      background: cfg.color + "20",
-                      borderColor: cfg.color + "45",
-                      color: cfg.color,
-                    }
-                  : {}
-              }
+              style={!cat.date ? {} : {}} 
             >
               {cat.date ? fmtDate(cat.date, t.locale) : t.addDate}
             </button>

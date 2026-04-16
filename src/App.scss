@@ -184,8 +184,13 @@
   }
 
   &__drawer-meta {
-    font-size: 11px;
-    color: $color-muted;
+    font-size: 10px;
+    font-weight: 600;
+    color: $color-calendar;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.25);
+    padding: 1px 7px;
+    border-radius: $radius-pill;
     flex-shrink: 0;
   }
 
@@ -482,12 +487,18 @@
   }
 
   &__due {
-    font-size: 11px;
-    color: $color-muted;
+    font-size: 10px;
+    font-weight: 600;
+    color: $color-calendar;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.25);
+    padding: 1px 7px;
+    border-radius: $radius-pill;
 
     &--overdue {
       color: $color-notif-red;
-      font-weight: 600;
+      background: rgba($color-notif-red, 0.12);
+      border-color: rgba($color-notif-red, 0.25);
     }
   }
 
@@ -732,8 +743,8 @@
 // ── FAB (Floating Action Button) ────────────────────────────
 .fab {
   position: absolute;
-  bottom: $spacing-lg;
-  right: $spacing-md + $spacing-xs;
+  bottom: $spacing-md;
+  right: $spacing-md;
   @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
   border: none;
   z-index: 95;
@@ -745,8 +756,8 @@
 
 .fab-archive {
   position: absolute;
-  bottom: $spacing-lg;
-  left: $spacing-md + $spacing-xs;
+  bottom: $spacing-md;
+  left: $spacing-md;
   @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
   z-index: 95;
   transition: all $transition-normal;
@@ -839,19 +850,25 @@
   }
 
   &__item-date {
-    font-size: 11px;
-    color: $color-muted;
+    font-size: 10px;
+    font-weight: 600;
+    color: $color-calendar;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.25);
+    padding: 1px 7px;
+    border-radius: $radius-pill;
     margin-top: $spacing-2xs;
+    display: inline-block;
   }
 }
 
 // ── Bottom Navigation (Back + Action) ───────────────────────
 .nav-bottom {
   position: absolute;
-  bottom: $spacing-lg;
+  bottom: $spacing-md;
   left: 0;
   right: 0;
-  padding: 0 $spacing-md + $spacing-xs;
+  padding: 0 $spacing-md;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1068,9 +1085,9 @@
     font-size: 11px;
     font-weight: 600;
     font-family: $font-body;
-    background: $color-dim;
-    border: 1px solid $color-border;
-    color: $color-muted;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.25);
+    color: $color-calendar;
     transition: all $transition-fast;
   }
 
@@ -1221,8 +1238,7 @@
   position: absolute;
   // Slight negative offset removes visible seam to right edge
   right: -1px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 112px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

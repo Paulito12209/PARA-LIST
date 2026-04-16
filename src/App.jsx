@@ -1272,8 +1272,9 @@ function CatDetailScreen({
       tasks: "task",
       cal: "calendar",
       link: "link",
+      tags: "tags",
     };
-    return map[bm] || "task";
+    return map[bm] || "note";
   }, [bm, resSubTab]);
 
   // Mapping: Entry-Typ → FAB-Farbe

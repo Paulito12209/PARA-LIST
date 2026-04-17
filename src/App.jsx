@@ -198,13 +198,20 @@ const SEED = {
   user: { name: "" },
   cats: [
     { id: "p1", type: "project",  name: "Onboarding App", date: "2026-04-30", body: "", tags: ["App"], relatedId: "a1", archived: false },
-    { id: "p2", type: "project",  name: "Diesen Monat 4x ins Gym", date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2", archived: false },
+    { id: "p2", type: "project",  name: "Nächsten Monat 4x ins Gym", date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2", archived: false },
+    { id: "p3", type: "project",  name: "Aufgeräumte Wohnung", date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a1", type: "area",     name: "Arbeit",            date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a2", type: "area",     name: "Fitness",           date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a3", type: "area",     name: "Finanzen",          date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "a4", type: "area",     name: "Familie",           date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "a5", type: "area",     name: "Freunde",           date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "a6", type: "area",     name: "Ernährung",         date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "a7", type: "area",     name: "Studium",           date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r1", type: "resource", name: "Serien",            date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3", archived: false },
+    { id: "r4", type: "resource", name: "Wunschliste",       date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "r5", type: "resource", name: "PARA-Methode",      date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
@@ -213,6 +220,7 @@ const SEED = {
     { id: "e3", type: "task", title: "Swipe nach links & erstelle eine Notiz", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e4", type: "task", title: "Erstelle dein Geburtstag im Kalender", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e5", type: "task", title: "Ändere dein Profilbild in den Einstellungen", done: false, note: "", due: TODAY, catId: "p1" },
+    { id: "e-para-vid", type: "link", title: "Vorstellung der PARA-Methode", url: "https://www.youtube.com/watch?v=8sdnM-vdqvI", catId: "r5" },
   ],
 };
 
@@ -525,7 +533,7 @@ function EntryMetaTags({ entry, cats, CC }) {
           }}
         >
           <Square size={10} color={CC.resource.color} strokeWidth={2.5} style={{ marginRight: 3 }} />
-          {res[0].name.slice(0, 10)}{res[0].name.length > 10 ? '...' : ''}{res.length > 1 ? ` +${res.length - 1}` : ""}
+          {res[0].name.trim()}{res.length > 1 ? ` +${res.length - 1}` : ""}
         </span>
       )}
     </>
@@ -937,12 +945,26 @@ function LinkList({ entries, cats, onDelete, CC }) {
     const ytId = getYouTubeVideoId(e.url);
     const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}` : null;
     return (
-      <div key={e.id} className="media-item">
-        <div className="media-item__icon" style={{ background: "#7C3AED22", color: "#7C3AED" }}>
-          <BookmarkIcon size={18} />
+      <div key={e.id} className="media-item media-item--link">
+        <div className="media-item__header-row">
+          <div className="media-item__title-box">
+             <div className="media-item__icon-mini" style={{ color: "#7C3AED" }}>
+               <BookmarkIcon size={14} />
+             </div>
+             <div className="media-item__title">{e.title}</div>
+          </div>
+          <button 
+            className="media-item__delete" 
+            onClick={(ev) => {
+              ev.stopPropagation();
+              onDelete(e.id);
+            }}
+          >
+            <Trash2 size={14} color="#5858A0" />
+          </button>
         </div>
-        <div className="media-item__body">
-          <div className="media-item__title">{e.title}</div>
+        
+        <div className="media-item__content">
           {embedUrl && (
             <div className="link-item__preview">
               <iframe
@@ -954,12 +976,11 @@ function LinkList({ entries, cats, onDelete, CC }) {
               />
             </div>
           )}
-          {e.url && <div className="media-item__meta">{e.url}</div>}
-          <EntryMetaTags entry={e} cats={cats} CC={CC} />
+          <div className="media-item__footer-meta">
+            {e.url && <div className="media-item__meta">{e.url}</div>}
+            <EntryMetaTags entry={e} cats={cats} CC={CC} />
+          </div>
         </div>
-        <button className="media-item__delete" onClick={() => onDelete(e.id)}>
-          <Trash2 size={14} color="#5858A0" />
-        </button>
       </div>
     );
   });

@@ -3098,7 +3098,7 @@ export default function App() {
         />
       )}
 
-      <div className="main-content">
+      <div className={`main-content ${cur.view === "home" ? `main-content--${tab}` : ""}`}>
         {cur.view === "home" && (
           <HomeScreen
             t={t}

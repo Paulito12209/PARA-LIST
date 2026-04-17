@@ -108,6 +108,7 @@
         .command-panel__profile-hover {
           opacity: 1;
         }
+
         .command-panel__profile-avatar img {
           filter: blur(2px) brightness(0.8);
         }
@@ -304,7 +305,7 @@
     top: -80px; // Beginnt hinter dem Command Panel
     left: 0;
     right: 0;
-    height: 340px;
+    bottom: 0; // Reicht bis ganz nach unten
     pointer-events: none;
     z-index: 0;
   }
@@ -472,7 +473,7 @@
   min-height: 0;
   padding: 0 $spacing-md;
   overflow-y: auto;
-  padding-bottom: 110px;
+  padding-bottom: 0px;
 
   &__empty {
     text-align: center;
@@ -830,7 +831,7 @@
       font: inherit;
       color: inherit;
       outline: none;
-      
+
       &:focus {
         background: rgba(#5858A0, 0.05);
         border-radius: 4px;

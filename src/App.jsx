@@ -197,8 +197,8 @@ const SEED = {
   lang: "de",
   user: { name: "" },
   cats: [
-    { id: "p1", type: "project",  name: "Paralist Onboarding", date: "2026-04-30", body: "", tags: ["App"], relatedId: "a1", archived: false },
-    { id: "p2", type: "project",  name: "5km Lauf",           date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2", archived: false },
+    { id: "p1", type: "project",  name: "Onboarding App", date: "2026-04-30", body: "", tags: ["App"], relatedId: "a1", archived: false },
+    { id: "p2", type: "project",  name: "Diesen Monat 4x ins Gym", date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2", archived: false },
     { id: "a1", type: "area",     name: "Arbeit",            date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a2", type: "area",     name: "Fitness",           date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a3", type: "area",     name: "Finanzen",          date: null, body: "", tags: [], relatedId: null, archived: false },
@@ -208,8 +208,11 @@ const SEED = {
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
-    { id: "e1", type: "task", title: "App kennenlernen", done: false, note: "Onboarding abschließen", due: "2026-04-14", catId: "p1" },
-    { id: "e2", type: "task", title: "Wochenplan erstellen", done: false, note: "", due: "2026-04-14", catId: "a1" },
+    { id: "e1", type: "task", title: "Aufgabe erledigen: Checkbox abhaken", done: false, note: "Onboarding abschließen", due: TODAY, catId: "p1" },
+    { id: "e2", type: "task", title: "Aufgabe löschen: Nach links ziehen", done: false, note: "", due: TODAY, catId: "p1" },
+    { id: "e3", type: "task", title: "Swipe nach links & erstelle eine Notiz", done: false, note: "", due: TODAY, catId: "p1" },
+    { id: "e4", type: "task", title: "Erstelle dein Geburtstag im Kalender", done: false, note: "", due: TODAY, catId: "p1" },
+    { id: "e5", type: "task", title: "Ändere dein Profilbild in den Einstellungen", done: false, note: "", due: TODAY, catId: "p1" },
   ],
 };
 
@@ -230,6 +233,100 @@ function computeNotif(entries) {
 /* ════════════════════════════════════════════════════════════════
    COMPONENTS
    ════════════════════════════════════════════════════════════════ */
+
+function SwipeToDelete({ children, onDelete }) {
+  const [swiping, setSwiping] = useState(false);
+  const [offsetX, setOffsetX] = useState(0);
+  const pressTimer = useRef(null);
+  const startPos = useRef({ x: 0, y: 0 });
+  const isHeld = useRef(false);
+
+  const handlePointerDown = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const cx = e.clientX ?? e.touches?.[0]?.clientX;
+    const cy = e.clientY ?? e.touches?.[0]?.clientY;
+    startPos.current = { x: cx, y: cy };
+    isHeld.current = false;
+    
+    pressTimer.current = setTimeout(() => {
+       isHeld.current = true;
+       setSwiping(true);
+       if (navigator.vibrate) navigator.vibrate(20);
+    }, 200); 
+  };
+
+  const handlePointerMove = (e) => {
+    if (!pressTimer.current && !isHeld.current) return;
+    const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+    const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+    const dx = cx - startPos.current.x;
+    const dy = cy - startPos.current.y;
+
+    if (!isHeld.current) {
+      if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+        clearTimeout(pressTimer.current);
+        pressTimer.current = null;
+      }
+    } else {
+      if (e.cancelable) e.preventDefault();
+      if (dx < 0) {
+         setOffsetX(dx);
+      } else {
+         setOffsetX(0);
+      }
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (pressTimer.current) {
+      clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+    if (isHeld.current) {
+      if (offsetX < -100) {
+        onDelete();
+      } else {
+        setOffsetX(0);
+      }
+      setSwiping(false);
+      isHeld.current = false;
+    }
+  };
+
+  return (
+    <div style={{ position: 'relative', overflow: 'visible', marginBottom: '8px' }}>
+      <div style={{
+          position: 'absolute', inset: 0, background: '#DC2626', borderRadius: '12px',
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '20px',
+          zIndex: 0, marginBottom: '6px'
+      }}>
+          <Trash2 color="#fff" size={20} />
+      </div>
+      <div 
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        style={{
+          transform: `translateX(${offsetX}px)`,
+          transition: swiping ? 'none' : 'transform 0.2s',
+          touchAction: swiping ? 'none' : 'pan-y',
+          position: 'relative',
+          zIndex: 1,
+          willChange: 'transform'
+        }}
+        onClick={(e) => {
+           if (Math.abs(offsetX) > 5) {
+               e.stopPropagation();
+               e.preventDefault();
+           }
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 /* ── Command Panel ───────────────────────────────────────────── */
 function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t, onOpenEntry }) {
@@ -403,15 +500,14 @@ function EntryMetaTags({ entry, cats, CC }) {
 
   return (
     <>
-      {projs.map((p) => (
+      {projs.length > 0 && (
         <span
-          key={p.id}
           className="task-item__cat-tag"
           style={{ color: CC.project.color, background: CC.project.color + "18" }}
         >
-          {p.name}
+          {projs[0].name}{projs.length > 1 ? ` +${projs.length - 1}` : ""}
         </span>
-      ))}
+      )}
       {areas.length > 0 && (
         <span
           className="task-item__cat-tag"
@@ -429,7 +525,7 @@ function EntryMetaTags({ entry, cats, CC }) {
           }}
         >
           <Square size={10} color={CC.resource.color} strokeWidth={2.5} style={{ marginRight: 3 }} />
-          {res.length}
+          {res[0].name.slice(0, 10)}{res[0].name.length > 10 ? '...' : ''}{res.length > 1 ? ` +${res.length - 1}` : ""}
         </span>
       )}
     </>
@@ -441,43 +537,41 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
   const renderItem = (e) => {
     const overdue = isOld(e.due) && !e.done;
     return (
-      <div
-        key={e.id}
-        className={`task-item ${e.done ? "task-item--done" : ""}`}
-        onClick={() => onOpenEntry && onOpenEntry(e)}
-      >
-        <button
-          className={`task-item__checkbox ${
-            e.done ? "task-item__checkbox--checked" : ""
-          }`}
-          onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
+      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
+        <div
+          className={`task-item ${e.done ? "task-item--done" : ""}`}
+          onClick={() => onOpenEntry && onOpenEntry(e)}
         >
-          {e.done && <Check size={10} color="#fff" strokeWidth={2.5} />}
-        </button>
-        <div className="task-item__body">
-          <div
-            className={`task-item__title ${
-              e.done ? "task-item__title--done" : ""
+          <div className="task-item__body">
+            <div
+              className={`task-item__title ${
+                e.done ? "task-item__title--done" : ""
+              }`}
+            >
+              {e.title}
+            </div>
+            <div className="task-item__meta">
+              {e.due && (
+                <span
+                  className={`task-item__due ${overdue ? "task-item__due--overdue" : ""}`}
+                >
+                  {isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}
+                  {e.time && ` · ${e.time} ${t.oclock}`}
+                </span>
+              )}
+              <EntryMetaTags entry={e} cats={cats} CC={CC} />
+            </div>
+          </div>
+          <button
+            className={`task-item__checkbox ${
+              e.done ? "task-item__checkbox--checked" : ""
             }`}
+            onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
           >
-            {e.title}
-          </div>
-          <div className="task-item__meta">
-            {e.due && (
-              <span
-                className={`task-item__due ${overdue ? "task-item__due--overdue" : ""}`}
-              >
-                {isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}
-                {e.time && ` · ${e.time} ${t.oclock}`}
-              </span>
-            )}
-            <EntryMetaTags entry={e} cats={cats} CC={CC} />
-          </div>
+            {e.done && <Check size={10} color="#fff" strokeWidth={2.5} />}
+          </button>
         </div>
-        <button className="task-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
-          <Trash2 size={14} color="#5858A0" />
-        </button>
-      </div>
+      </SwipeToDelete>
     );
   };
 
@@ -602,35 +696,33 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
 
   const renderItem = (e) => {
     return (
-      <div 
-        key={e.id} 
-        className={`note-item ${draggedEntry?.id === e.id ? 'note-item--dragging' : ''}`} 
-        onClick={() => {
-          if (draggedEntry?.id === e.id) return; 
-          onOpenEntry && onOpenEntry(e);
-        }}
-        onPointerDown={(ev) => handlePointerDown(ev, e)}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
-        style={{ touchAction: draggedEntry?.id === e.id ? 'none' : 'auto' }}
-      >
-        <div className="note-item__header">
-          <div className="note-item__body">
-            <div className="note-item__title">{e.title}</div>
-            {e.body && <div className="note-item__excerpt">{e.body}</div>}
+      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
+        <div 
+          className={`note-item ${draggedEntry?.id === e.id ? 'note-item--dragging' : ''}`} 
+          onClick={() => {
+            if (draggedEntry?.id === e.id) return; 
+            onOpenEntry && onOpenEntry(e);
+          }}
+          onPointerDown={(ev) => handlePointerDown(ev, e)}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          style={{ touchAction: draggedEntry?.id === e.id ? 'none' : 'auto' }}
+        >
+          <div className="note-item__header">
+            <div className="note-item__body">
+              <div className="note-item__title">{e.title}</div>
+              {e.body && <div className="note-item__excerpt">{e.body}</div>}
+            </div>
           </div>
-          <button className="note-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
-            <Trash2 size={14} color="#5858A0" />
-          </button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
+            <span className="task-item__due" style={{ marginTop: 0 }}>
+              {fmtRelative(e.createdAt, t.locale)}
+            </span>
+            <EntryMetaTags entry={e} cats={cats} CC={CC} />
+          </div>
         </div>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
-          <span className="task-item__due" style={{ marginTop: 0 }}>
-            {fmtRelative(e.createdAt, t.locale)}
-          </span>
-          <EntryMetaTags entry={e} cats={cats} CC={CC} />
-        </div>
-      </div>
+      </SwipeToDelete>
     );
   };
 
@@ -713,38 +805,36 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }
   const renderItem = (e) => {
     const past = e.date && e.date < TODAY;
     return (
-      <div
-        key={e.id}
-        className={`cal-item ${isToday(e.date) ? "cal-item--today" : ""} ${
-          past ? "cal-item--past" : ""
-        }`}
-        onClick={() => onOpenEntry && onOpenEntry(e)}
-      >
-        <div className="cal-item__row">
-          <div className="cal-item__date-badge">
-            <div className="cal-item__date-month">
-              {e.date
-                ? new Date(e.date + "T12:00").toLocaleDateString(t.locale, {
-                    month: "short",
-                  })
-                : ""}
+      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
+        <div
+          className={`cal-item ${isToday(e.date) ? "cal-item--today" : ""} ${
+            past ? "cal-item--past" : ""
+          }`}
+          onClick={() => onOpenEntry && onOpenEntry(e)}
+        >
+          <div className="cal-item__row">
+            <div className="cal-item__date-badge">
+              <div className="cal-item__date-month">
+                {e.date
+                  ? new Date(e.date + "T12:00").toLocaleDateString(t.locale, {
+                      month: "short",
+                    })
+                  : ""}
+              </div>
+              <div className="cal-item__date-day">
+                {e.date ? new Date(e.date + "T12:00").getDate() : ""}
+              </div>
             </div>
-            <div className="cal-item__date-day">
-              {e.date ? new Date(e.date + "T12:00").getDate() : ""}
+            <div className="cal-item__info">
+              <div className="cal-item__title">{e.title}</div>
+              {e.time && <div className="cal-item__time">{e.time} Uhr</div>}
+              <div className="cal-item__tags">
+                <EntryMetaTags entry={e} cats={cats} CC={CC} />
+              </div>
             </div>
           </div>
-          <div className="cal-item__info">
-            <div className="cal-item__title">{e.title}</div>
-            {e.time && <div className="cal-item__time">{e.time} Uhr</div>}
-            <div className="cal-item__tags">
-              <EntryMetaTags entry={e} cats={cats} CC={CC} />
-            </div>
-          </div>
-          <button className="cal-item__delete" onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); }}>
-            <Trash2 size={14} color="#5858A0" />
-          </button>
         </div>
-      </div>
+      </SwipeToDelete>
     );
   };
 
@@ -1252,6 +1342,7 @@ function CatDetailScreen({
   const [tagSort, setTagSort] = useState({ by: 'date', desc: true });
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
+  const [showTagSelect, setShowTagSelect] = useState(false);
   const [resSearch, setResSearch] = useState("");
 
   // Alle Ordner (inkl. Ressourcen) haben 3 Sub-Tabs im Media/Ressourcen Lesezeichen
@@ -1265,6 +1356,8 @@ function CatDetailScreen({
   const connPillRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
+  const tagPopupRef = useRef(null);
+  const tagTriggerRef = useRef(null);
 
   // Swipe-Refs für Sub-Tab-Wechsel (wiederverwendbar)
   const subTabTouchX = useRef(0);
@@ -1300,7 +1393,13 @@ function CatDetailScreen({
         datePillRef.current && !datePillRef.current.contains(e.target)) {
       setShowDate(false);
     }
-  }, [showConnSelect, showDate]);
+    // Tag-Popup schließen
+    if (showTagSelect &&
+        tagPopupRef.current && !tagPopupRef.current.contains(e.target) &&
+        tagTriggerRef.current && !tagTriggerRef.current.contains(e.target)) {
+      setShowTagSelect(false);
+    }
+  }, [showConnSelect, showDate, showTagSelect]);
 
   // Event-Listener für Click-Outside
   // (useRef + useCallback statt useEffect, da wir den Handler auf dem cat-detail div setzen)
@@ -1441,11 +1540,33 @@ function CatDetailScreen({
             </div>
           )}
 
-          {cat.tags?.map((tag) => (
-            <span key={tag} className="cat-detail__tag">
-              {tag}
-            </span>
-          ))}
+          <div 
+            style={{ display: "flex", gap: "6px", alignItems: "center", cursor: "pointer" }}
+            ref={tagTriggerRef}
+            onClick={(e) => { e.stopPropagation(); setShowTagSelect(!showTagSelect); }}
+          >
+            {(() => {
+              const selectedTags = cat.tags || [];
+              if (selectedTags.length === 0) return null;
+              if (selectedTags.length === 1) {
+                return (
+                  <span className="cat-detail__tag">
+                    {selectedTags[0]}
+                  </span>
+                );
+              }
+              return (
+                <span className="cat-detail__tag">
+                  {selectedTags[0]} +{selectedTags.length - 1}
+                </span>
+              );
+            })()}
+            {(!cat.tags || cat.tags.length === 0) && (
+              <span className="cat-detail__tag" style={{ background: "transparent", border: "1px dashed #5858A066", opacity: 0.8 }}>
+                + Tag
+              </span>
+            )}
+          </div>
           </div>
 
           <button 
@@ -1487,6 +1608,39 @@ function CatDetailScreen({
               >
                 {t.noConnection}
               </button>
+            </div>
+          )}
+          {showTagSelect && (
+            <div className="cat-detail__conn-popup" ref={tagPopupRef} onClick={(e) => e.stopPropagation()} style={{ left: "auto", right: 0 }}>
+              <div className="cat-detail__conn-list">
+                {(!tags || tags.length === 0) ? (
+                  <div className="cat-detail__conn-empty">Keine Tags</div>
+                ) : (
+                  tags.map(tag => {
+                    const isSelected = (cat.tags || []).includes(tag.name);
+                    return (
+                      <button
+                        key={tag.id}
+                        className="cat-detail__conn-item"
+                        onClick={() => {
+                          const currentTags = cat.tags || [];
+                          if (isSelected) {
+                            onUpdate({ tags: currentTags.filter(t => t !== tag.name) });
+                          } else {
+                            onUpdate({ tags: [...currentTags, tag.name] });
+                          }
+                        }}
+                        style={{ display: 'flex', justifyContent: 'space-between' }}
+                      >
+                        <span className="cat-detail__conn-name" style={{ color: isSelected ? CC.resource.color : 'inherit', fontWeight: isSelected ? 600 : 400 }}>
+                          {tag.name}
+                        </span>
+                        {isSelected && <Check size={14} color={CC.resource.color} />}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -2671,9 +2825,15 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                 <div className="settings-group__title">{t.dataSection}</div>
                 <button
                   className="settings-item settings-item--danger"
-                  onClick={() => {
+                  onClick={async () => {
                     if (window.confirm(t.deleteConfirm)) {
                       localStorage.clear();
+                      try {
+                        const { clear } = await import('idb-keyval');
+                        await clear();
+                      } catch (e) {
+                        console.error('Failed to clear idb', e);
+                      }
                       window.location.reload();
                     }
                   }}

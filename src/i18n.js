@@ -9,7 +9,7 @@ export const I18N = {
     todayCap: "Heute",
     thisMonth: "Dieser Monat",
     oclock: "Uhr",
-    noEntries: (label) => `Keine ${label} · Bitte 2x tippen`,
+    noEntries: (label) => label === "Kalender" ? "Leerer Kalender - Bitte hier 2x tippen" : `Keine ${label} · Bitte 2x tippen`,
     noTasks: "Keine Aufgaben",
     noCal: "Keine Termine",
     noMedia: "Keine Ressourcen",

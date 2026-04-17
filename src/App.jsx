@@ -630,100 +630,27 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
 
 /* ── Note List ───────────────────────────────────────────────── */
 function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry, onArchiveEntry }) {
-  const [draggedEntry, setDraggedEntry] = useState(null);
-  const [clonePos, setClonePos] = useState({ x: 0, y: 0 });
-  const pressTimer = useRef(null);
-  const startPos = useRef({ x: 0, y: 0 });
-
-  useEffect(() => {
-    if (draggedEntry) {
-      const onMove = (e) => {
-        if (e.cancelable) e.preventDefault();
-        const cx = e.clientX ?? (e.touches && e.touches[0].clientX);
-        const cy = e.clientY ?? (e.touches && e.touches[0].clientY);
-        setClonePos({ x: cx, y: cy });
-      };
-      const onUp = (e) => {
-        const cx = e.clientX ?? (e.changedTouches && e.changedTouches[0].clientX);
-        const cy = e.clientY ?? (e.changedTouches && e.changedTouches[0].clientY);
-        document.body.style.userSelect = '';
-        const cloneEl = document.getElementById('drag-clone');
-        if (cloneEl) cloneEl.style.display = 'none';
-        
-        const target = document.elementFromPoint(cx, cy);
-        if (target && target.closest('.fab-archive')) {
-           if (onArchiveEntry) onArchiveEntry(draggedEntry.id);
-        }
-        
-        setDraggedEntry(null);
-      };
-      window.addEventListener('pointermove', onMove, { passive: false });
-      window.addEventListener('pointerup', onUp);
-      window.addEventListener('touchmove', onMove, { passive: false });
-      window.addEventListener('touchend', onUp);
-      return () => {
-        window.removeEventListener('pointermove', onMove);
-        window.removeEventListener('pointerup', onUp);
-        window.removeEventListener('touchmove', onMove);
-        window.removeEventListener('touchend', onUp);
-      };
-    }
-  }, [draggedEntry, onArchiveEntry]);
-
-  const handlePointerDown = (e, entry) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
-    if (!onArchiveEntry) return; // Only enable if we can archive
-    const cx = e.clientX ?? e.touches?.[0]?.clientX;
-    const cy = e.clientY ?? e.touches?.[0]?.clientY;
-    startPos.current = { x: cx, y: cy };
-    pressTimer.current = setTimeout(() => {
-       setDraggedEntry(entry);
-       setClonePos({ x: cx, y: cy });
-       document.body.style.userSelect = 'none';
-       if (navigator.vibrate) navigator.vibrate(50);
-    }, 400); 
-  };
-
-  const handlePointerMove = (e) => {
-    if (!draggedEntry && pressTimer.current) {
-      const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-      const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
-      const dx = Math.abs(cx - startPos.current.x);
-      const dy = Math.abs(cy - startPos.current.y);
-      if (dx > 10 || dy > 10) {
-        clearTimeout(pressTimer.current);
-        pressTimer.current = null;
-      }
-    }
-  };
-
-  const handlePointerUp = () => {
-    if (pressTimer.current) {
-      clearTimeout(pressTimer.current);
-      pressTimer.current = null;
-    }
-  };
-
   const renderItem = (e) => {
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div 
-          className={`note-item ${draggedEntry?.id === e.id ? 'note-item--dragging' : ''}`} 
-          onClick={() => {
-            if (draggedEntry?.id === e.id) return; 
-            onOpenEntry && onOpenEntry(e);
-          }}
-          onPointerDown={(ev) => handlePointerDown(ev, e)}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
-          style={{ touchAction: draggedEntry?.id === e.id ? 'none' : 'auto' }}
+          className="note-item" 
+          onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="note-item__header">
             <div className="note-item__body">
               <div className="note-item__title">{e.title}</div>
               {e.body && <div className="note-item__excerpt">{e.body}</div>}
             </div>
+            <button
+               className="note-item__archive-btn"
+               onClick={(ev) => {
+                 ev.stopPropagation();
+                 onArchiveEntry && onArchiveEntry(e.id);
+               }}
+            >
+               <Archive size={16} />
+            </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
             <span className="task-item__due" style={{ marginTop: 0 }}>
@@ -776,36 +703,6 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
           {g.items.map(renderItem)}
         </div>
       ))}
-      
-      {draggedEntry && (
-        <div
-          id="drag-clone"
-          className="note-item"
-          style={{
-            position: 'fixed',
-            pointerEvents: 'none',
-            zIndex: 9999,
-            left: clonePos.x,
-            top: clonePos.y,
-            transform: 'translate(-50%, -50%)',
-            width: '280px',
-            opacity: 0.9,
-            background: 'var(--color-card, #1E1E2C)',
-            border: '1px solid var(--color-border, #333344)',
-            boxShadow: '0 12px 24px rgba(0,0,0,0.3)',
-            padding: '12px 14px',
-            borderRadius: '16px'
-          }}
-        >
-          <div className="note-item__header">
-            <div className="note-item__body">
-              <div className="note-item__title" style={{ fontSize: '14px', fontWeight: 600 }}>{draggedEntry.title}</div>
-              {draggedEntry.body && <div className="note-item__excerpt" style={{ fontSize: '12px', opacity: 0.7 }}>{draggedEntry.body}</div>}
-            </div>
-            <div style={{ opacity: 0.5 }}>...</div>
-          </div>
-        </div>
-      )}
     </>
   );
 }

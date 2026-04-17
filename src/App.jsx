@@ -207,11 +207,12 @@ const SEED = {
     { id: "a5", type: "area",     name: "Freunde",           date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a6", type: "area",     name: "Ernährung",         date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a7", type: "area",     name: "Studium",           date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "a8", type: "area",     name: "Organisation",      date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r1", type: "resource", name: "Serien",            date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3", archived: false },
     { id: "r4", type: "resource", name: "Wunschliste",       date: null, body: "", tags: [], relatedId: null, archived: false },
-    { id: "r5", type: "resource", name: "PARA-Methode",      date: null, body: "", tags: [], relatedId: null, archived: false },
+    { id: "r5", type: "resource", name: "PARA-Methode",      date: null, body: "", tags: ["Produktivität"], relatedId: "a8", archived: false },
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [

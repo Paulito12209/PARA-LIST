@@ -212,7 +212,7 @@ const SEED = {
     { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3", archived: false },
     { id: "r4", type: "resource", name: "Wunschliste",       date: null, body: "", tags: [], relatedId: null, archived: false },
-    { id: "r5", type: "resource", name: "PARA-Methode",      date: null, body: "", tags: ["Produktivität"], relatedId: "a8", archived: false },
+    { id: "r5", type: "resource", name: "PARA-Methode",      date: null, body: "Stöbert rechts durch die 6 Lesezeichen, um mehr Kontext zur PARA-Methode zu entdecken.", tags: ["Produktivität"], relatedId: "a8", archived: false },
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
@@ -221,6 +221,7 @@ const SEED = {
     { id: "e3", type: "task", title: "Swipe nach links & erstelle eine Notiz", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e4", type: "task", title: "Erstelle dein Geburtstag im Kalender", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e5", type: "task", title: "Ändere dein Profilbild in den Einstellungen", done: false, note: "", due: TODAY, catId: "p1" },
+    { id: "e6", type: "task", title: "Klicke auf Ressourcen & öffne 'PARA-Methode'", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e-para-vid", type: "link", title: "Vorstellung der PARA-Methode", url: "https://www.youtube.com/watch?v=8sdnM-vdqvI", catId: "r5" },
   ],
 };

@@ -1519,6 +1519,11 @@ function CatDetailScreen({
         </div>
         <div className="cat-detail__pills">
           <div className="cat-detail__pills-group">
+          {cat.type === "resource" && cat.createdAt && (
+            <div className="cat-detail__date-pill cat-detail__date-pill--static">
+              {fmtDate(cat.createdAt.split("T")[0], t.locale)}
+            </div>
+          )}
           {cat.type === "project" && (
             <button
               ref={datePillRef}
@@ -1861,17 +1866,17 @@ function CatDetailScreen({
                         <TagIcon size={18} />
                       </div>
                       <div className="media-item__body">
-                        <div className="media-item__title">{tag.name}</div>
+                        <input 
+                          className="media-item__title media-item__title--input" 
+                          value={tag.name}
+                          onChange={(e) => onUpdateTag(tag.id, e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") e.target.blur();
+                          }}
+                          placeholder="..."
+                        />
                         {tag.createdAt && <div className="media-item__meta">{fmtDate(tag.createdAt.split("T")[0], t.locale)}</div>}
                       </div>
-                      <button className="media-item__delete" onClick={() => {
-                        const newName = window.prompt("Tag umbenennen:", tag.name);
-                        if (newName && newName.trim() && newName.trim() !== tag.name) {
-                          onUpdateTag(tag.id, newName.trim());
-                        }
-                      }}>
-                        <Edit2 size={14} color="#5858A0" />
-                      </button>
                       <button className="media-item__delete" onClick={() => {
                         if (window.confirm(`Tag "${tag.name}" löschen?`)) {
                           onDeleteTag(tag.id);
@@ -2949,6 +2954,14 @@ export default function App() {
           return e;
         });
 
+        nextState.cats = nextState.cats.map(c => {
+          if (!c.createdAt) {
+            dirty = true;
+            return { ...c, createdAt: new Date().toISOString() };
+          }
+          return c;
+        });
+
         return dirty ? nextState : s;
       });
     }
@@ -3045,7 +3058,7 @@ export default function App() {
       ...s,
       cats: [
         ...s.cats,
-        { id: uid(), type, name, date: null, body: "", tags: [], relatedId: null, archived: false },
+        { id: uid(), type, name, date: null, body: "", tags: [], relatedId: null, archived: false, createdAt: new Date().toISOString() },
       ],
     }));
 

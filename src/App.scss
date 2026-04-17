@@ -809,6 +809,22 @@
     font-weight: 500;
     color: $color-text;
     @include text-truncate;
+
+    &--input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font: inherit;
+      color: inherit;
+      outline: none;
+      
+      &:focus {
+        background: rgba(#5858A0, 0.05);
+        border-radius: 4px;
+      }
+    }
   }
 
   &__meta {
@@ -1273,6 +1289,13 @@
     border: 1px solid #BFDBFE;
     color: #1D4ED8;
     transition: all $transition-fast;
+
+    &--static {
+      cursor: default;
+      pointer-events: none;
+      background: rgba($color-calendar, 0.08);
+      border-color: rgba($color-calendar, 0.2);
+    }
   }
 
   &__res-count {

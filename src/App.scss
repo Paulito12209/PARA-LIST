@@ -56,12 +56,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: $spacing-md $spacing-md $spacing-sm;
+    padding: $spacing-md $spacing-md $spacing-2xs;
   }
 
   &__greeting {
     font-family: $font-heading;
-    font-size: ($spacing-md + $spacing-xs);
+    // font-size: ($spacing-md + $spacing-xs);
+    font-size: $spacing-lg;
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.5px;
@@ -355,7 +356,7 @@
 
   &__categories-title {
     font-family: $font-heading;
-    font-size: $spacing-md;
+    font-size: $spacing-md+4px;
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.3px;
@@ -504,7 +505,7 @@
 
   &__label {
     font-family: $font-heading;
-    font-size: $spacing-md;
+    font-size: $spacing-md+4px;
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.3px;
@@ -564,33 +565,11 @@
   gap: $spacing-sm;
 
   &__left {
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 500; // Nicht fett
     color: $color-muted; // Gleiche Farbe wie im Kommandopanel
     text-transform: none;
     letter-spacing: 0.1px;
-  }
-
-  &__line {
-    flex: 1;
-    height: 1px;
-    border-top: 1.5px dashed rgba($color-muted, 0.2); // Leicht dezentere Linie
-  }
-
-  &__right {
-    font-size: 12px;
-    font-weight: 500;
-    color: $color-muted;
-    text-transform: none;
-    letter-spacing: 0.1px;
-  }
-
-  &--today {
-
-    .task-group-header__line,
-    .task-group-header__right {
-      display: none; // Nur "Heute" anzeigen
-    }
   }
 }
 

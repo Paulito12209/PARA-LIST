@@ -637,9 +637,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header">
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__line" style={color ? { color: color } : {}} />
-            <span className="task-group-header__right">{g.right}</span>
+            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
           </div>
           {g.items.map(renderItem)}
         </div>
@@ -718,9 +716,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
       {futureGroups.map((g, i) => (
         <div key={i} className="task-group">
           <div className="task-group-header">
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__line" style={color ? { background: color } : {}} />
-            <span className="task-group-header__right">{g.right}</span>
+            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
           </div>
           {g.items.map(renderItem)}
         </div>
@@ -802,9 +798,7 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
       {futureGroups.map((g, i) => (
         <div key={i} className="task-group">
           <div className="task-group-header">
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__line" style={color ? { background: color } : {}} />
-            <span className="task-group-header__right">{g.right}</span>
+            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
           </div>
           {g.items.map(renderItem)}
         </div>

@@ -352,12 +352,39 @@ function SwipeToDelete({ children, onDelete }) {
 /* ── Command Panel ───────────────────────────────────────────── */
 function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t, onOpenEntry }) {
   const [subTab, setSubTab] = useState("today");
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const dx = touchEndX - touchStartX.current;
+    const dy = touchEndY - touchStartY.current;
+
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      e.stopPropagation();
+      if (dx > 0 && subTab === "overdue") {
+        setSubTab("today");
+        if (navigator.vibrate) navigator.vibrate(10);
+      } else if (dx < 0 && subTab === "today") {
+        setSubTab("overdue");
+        if (navigator.vibrate) navigator.vibrate(10);
+      }
+    }
+  };
 
   const todayEntries = entries.filter(
     (e) =>
       (e.type === "task" && !e.done && isToday(e.due)) ||
       (e.type === "calendar" && isToday(e.date))
   );
+
+
 
   const overdueEntries = entries.filter(
     (e) =>
@@ -372,7 +399,13 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
   const activeEntries = subTab === "today" ? todayEntries : overdueEntries;
 
   return (
-    <div className={`command-panel command-panel--${open ? "open" : "closed"}`}>
+    <div 
+      className={`command-panel command-panel--${open ? "open" : "closed"}`}
+      onTouchStart={open ? handleTouchStart : undefined}
+      onTouchEnd={open ? handleTouchEnd : undefined}
+    >
+
+
       <div className="command-panel__header">
         <div>
           <div className="command-panel__greeting">{t.greeting(new Date().getHours(), user.name)}</div>
@@ -422,7 +455,12 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
       </div>
 
       {open && (
-        <div className="command-panel__drawer">
+        <div 
+          className="command-panel__drawer"
+          style={{ touchAction: 'pan-y' }}
+        >
+
+
           <div className="command-panel__tabs">
             <button
               className={`command-panel__tab ${subTab === "today" ? "command-panel__tab--active" : ""}`}
@@ -438,7 +476,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             </button>
           </div>
 
-          <div className="command-panel__list">
+          <div className="command-panel__list" key={subTab}>
+
             {activeEntries.length === 0 ? (
               <div className="command-panel__drawer-empty">
                 {subTab === "today" ? "Keine Einträge für heute" : "Keine überfälligen Einträge"}
@@ -950,7 +989,10 @@ function HomeScreen({
   onOpenEntry,
   onOpenArchive,
   onArchiveEntry,
+  panelOpen,
 }) {
+
+
   const { entries, cats } = state;
   const tabEntries = entries.map((e) => {
     if (e.type === "calendar" && e.isBirthday) {
@@ -994,7 +1036,8 @@ function HomeScreen({
     const touchEndX = e.changedTouches[0].clientX;
     const dx = touchEndX - touchStartX.current;
     
-    if (Math.abs(dx) > 60) {
+    if (Math.abs(dx) > 60 && !panelOpen) {
+
       const tabOrder = TABS.map(t => t.id);
       const currentIndex = tabOrder.indexOf(tab);
       
@@ -3125,7 +3168,8 @@ export default function App() {
     const dy = e.changedTouches[0].clientY - touchY.current;
     
     // Swipe back to previous view
-    if (dx > 75 && touchX.current < 45 && stack.length > 1) {
+    if (dx > 75 && touchX.current < 45 && stack.length > 1 && !panelOpen) {
+
       pop();
       return;
     }
@@ -3211,6 +3255,8 @@ export default function App() {
             state={state}
             tab={tab}
             setTab={setTab}
+            panelOpen={panelOpen}
+
             onOpenCatType={(type) => push({ view: "catList", type })}
             onAddCat={(type) => {
               setPanelOpen(false);

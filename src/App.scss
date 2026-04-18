@@ -196,6 +196,8 @@
     flex: 1;
     overflow-y: auto;
     padding-bottom: $spacing-sm;
+    animation: fade-in 0.25s ease-out;
+    will-change: opacity, transform;
   }
 
   &__drawer-item {

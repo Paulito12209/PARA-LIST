@@ -3112,6 +3112,18 @@
   }
 }
 
+// Prevent Safari auto-zoom on mobile/touch devices (fonts < 16px trigger zoom)
+@media (hover: none) and (pointer: coarse) {
+  .modal__input,
+  .modal__textarea,
+  .modal__select,
+  .nav-bottom__res-search-input,
+  .cat-detail__date-input,
+  .onboarding__input {
+    font-size: 16px !important;
+  }
+}
+
 // ── Archive Items (Screenshot 2 Look) ───────────────────────
 .task-item--archive,
 .cal-item--archive,

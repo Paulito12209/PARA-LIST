@@ -41,6 +41,15 @@ button {
   color: inherit;
 }
 
+// Prevent iPhone auto-zoom on input focus (Safari zooms when font-size < 16px)
+@media (hover: none) and (pointer: coarse) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
 button {
   cursor: pointer;
   

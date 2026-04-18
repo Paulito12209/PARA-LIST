@@ -418,7 +418,8 @@
 .category-card {
   display: flex;
   flex-direction: column;
-  border-radius: $radius-lg;
+  width: 100%;
+  border-radius: $radius-md;
   border: 1px solid transparent;
   padding: $spacing-xs;
   transition: transform $transition-fast, opacity $transition-fast;
@@ -440,6 +441,7 @@
 
   &__main {
     flex: 1;
+    width: 100%;
     padding: $spacing-sm - $spacing-2xs + 12px $spacing-2xs;
     display: flex;
     flex-direction: column;
@@ -475,9 +477,10 @@
   }
 
   &__add-btn {
+    width: 100%;
     height: 48px;
     margin-top: $spacing-xs;
-    border-radius: $radius-md;
+    border-radius: $radius-sm+4px;
     padding: $spacing-sm - 2px;
     @include flex-center;
     border: 1px solid transparent;
@@ -616,8 +619,22 @@
   align-items: center;
   justify-content: space-between; // Links/Rechts Split
   padding: 0 $spacing-md 0 $spacing-sm; // Rechts-Padding hinzugefügt
-  margin: $spacing-sm 0; 
+  margin: $spacing-sm 0;
   gap: $spacing-sm;
+  position: relative;
+
+  // Unterbrochene Top-Border
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, $color-muted 0%, $color-muted 12%, transparent 12%, transparent 88%, $color-muted 88%, $color-muted 100%);
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
 
   &__left,
   &__right {
@@ -626,6 +643,10 @@
     color: $color-muted;
     text-transform: none;
     letter-spacing: 0.1px;
+    position: relative;
+    z-index: 1;
+    background: $color-bg;
+    padding: 0 $spacing-xs;
   }
 }
 
@@ -647,7 +668,26 @@
   transition: opacity 0.2s;
 
   &--done {
-    opacity: 0.45;
+    background: #FFFFFF !important;
+    border: 1px solid rgba(124, 131, 247, 0.2) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .task-item__title {
+      color: #1a202c !important;
+      opacity: 0.8;
+    }
+
+    .task-item__due,
+    .task-item__cat-tag,
+    .task-item__meta {
+      color: #4a5568 !important;
+      opacity: 0.7;
+
+      span,
+      div {
+        color: inherit !important;
+      }
+    }
   }
 
   &__checkbox {
@@ -1122,7 +1162,13 @@
   position: absolute;
   bottom: $spacing-md;
   right: $spacing-md;
-  @include floating-btn($spacing-3xl, $radius-lg);
+  width: $spacing-3xl;
+  height: $spacing-3xl;
+  border-radius: $radius-md+2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   border: none;
   z-index: 95;
 
@@ -1135,7 +1181,13 @@
   position: absolute;
   bottom: $spacing-md;
   left: $spacing-md;
-  @include floating-btn($spacing-3xl, $radius-lg);
+  width: $spacing-3xl;
+  height: $spacing-3xl;
+  border-radius: $radius-md+2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   z-index: 95;
   transition: all $transition-normal;
 
@@ -1709,7 +1761,23 @@
       box-shadow: 0 0 12px rgba(#EC4899, 0.12);
     }
 
-    &:hover:not(&--active-notes):not(&--active-media):not(&--active-res) {
+    // Aufgaben - Offen Tab: Grau (inaktiv aussehend)
+    &--active-open {
+      background: rgba(#8B8BA8, 0.12);
+      color: #8B8BA8;
+      border-color: rgba(#8B8BA8, 0.2);
+      box-shadow: 0 0 8px rgba(#8B8BA8, 0.08);
+    }
+
+    // Aufgaben - Erledigt Tab: Grün
+    &--active-completed {
+      background: rgba(#10B981, 0.15);
+      color: #10B981;
+      border-color: rgba(#10B981, 0.35);
+      box-shadow: 0 0 12px rgba(#10B981, 0.12);
+    }
+
+    &:hover:not(&--active-notes):not(&--active-media):not(&--active-res):not(&--active-open):not(&--active-completed) {
       color: $color-text;
       background: $color-hover;
     }
@@ -1743,6 +1811,18 @@
     &--media {
       background: rgba(#EC4899, 0.18);
       color: #EC4899;
+    }
+
+    // Aufgaben - Offen Count: Grau
+    &--open {
+      background: rgba(#8B8BA8, 0.18);
+      color: #8B8BA8;
+    }
+
+    // Aufgaben - Erledigt Count: Grün
+    &--completed {
+      background: rgba(#10B981, 0.18);
+      color: #10B981;
     }
   }
 }

@@ -1419,6 +1419,7 @@ function CatDetailScreen({
   
   // Sub-Tab für das Ressource-Lesezeichen (standardmäßig "resources")
   const [resSubTab, setResSubTab] = useState("resources");
+  const [taskSubTab, setTaskSubTab] = useState("open");
 
   // Refs für Click-Outside-Erkennung
   const connPopupRef = useRef(null);
@@ -1514,25 +1515,39 @@ function CatDetailScreen({
   }, [getEntryTypeFromBookmark, bm, onAddEntry, onCreateTag]);
 
   // Swipe-Handler für Sub-Tab-Wechsel (3 Tabs bei Projekt/Bereich/Ressource)
-  const subTabOrder = ["resources", "notes", "media"];
+  const resSubTabOrder = ["resources", "notes", "media"];
+  const taskSubTabOrder = ["open", "completed"];
   const onSubTabTouchStart = useCallback((e) => {
     subTabTouchX.current = e.touches[0].clientX;
   }, []);
   const onSubTabTouchEnd = useCallback((e) => {
     const dx = e.changedTouches[0].clientX - subTabTouchX.current;
     if (Math.abs(dx) > 60) {
-      setResSubTab(prev => {
-        const idx = subTabOrder.indexOf(prev);
-        if (dx > 0) {
-          // Swipe rechts → vorheriger Tab
-          return subTabOrder[Math.max(0, idx - 1)];
-        } else {
-          // Swipe links → nächster Tab
-          return subTabOrder[Math.min(subTabOrder.length - 1, idx + 1)];
-        }
-      });
+      if (bm === "media") {
+        setResSubTab(prev => {
+          const idx = resSubTabOrder.indexOf(prev);
+          if (dx > 0) {
+            // Swipe rechts → vorheriger Tab
+            return resSubTabOrder[Math.max(0, idx - 1)];
+          } else {
+            // Swipe links → nächster Tab
+            return resSubTabOrder[Math.min(resSubTabOrder.length - 1, idx + 1)];
+          }
+        });
+      } else if (bm === "tasks") {
+        setTaskSubTab(prev => {
+          const idx = taskSubTabOrder.indexOf(prev);
+          if (dx > 0) {
+            // Swipe rechts → vorheriger Tab
+            return taskSubTabOrder[Math.max(0, idx - 1)];
+          } else {
+            // Swipe links → nächster Tab
+            return taskSubTabOrder[Math.min(taskSubTabOrder.length - 1, idx + 1)];
+          }
+        });
+      }
     }
-  }, [subTabOrder]);
+  }, [resSubTabOrder, taskSubTabOrder, bm]);
 
   const lastTap = useRef(0);
   const handleDoubleTap = useCallback(
@@ -1744,18 +1759,65 @@ function CatDetailScreen({
             placeholder={t.writeThoughts}
           />
         )}
-        {bm === "tasks" &&
-          (entries.filter((e) => e.type === "task").length === 0 ? (
-            <div className="cat-detail__section-empty">{t.noTasks}</div>
-          ) : (
-            <TaskList t={t} CC={CC} lang={lang}
-                entries={entries.filter((e) => e.type === "task")}
-              cats={allCats}
-              onToggle={toggleTask}
-              onDelete={deleteEntry}
-              onOpenEntry={onOpenEntry}
-            />
-          ))}
+        {bm === "tasks" && (
+          <div
+            onTouchStart={onSubTabTouchStart}
+            onTouchEnd={onSubTabTouchEnd}
+            style={{ flex: 1 }}
+          >
+            {/* Sub-Tab-Leiste: Offen / Erledigt */}
+            <div className="res-sub-tabs">
+              <button
+                className={`res-sub-tabs__btn ${taskSubTab === "open" ? "res-sub-tabs__btn--active-open" : ""}`}
+                onClick={() => setTaskSubTab("open")}
+              >
+                <CheckCircle2 size={14} />
+                <span>{t.open || "Offen"}</span>
+                {entries.filter((e) => e.type === "task" && !e.done).length > 0 && (
+                  <span className="res-sub-tabs__count res-sub-tabs__count--open">{entries.filter((e) => e.type === "task" && !e.done).length}</span>
+                )}
+              </button>
+              <button
+                className={`res-sub-tabs__btn ${taskSubTab === "completed" ? "res-sub-tabs__btn--active-completed" : ""}`}
+                onClick={() => setTaskSubTab("completed")}
+              >
+                <CheckCircle2 size={14} />
+                <span>{t.completed || "Erledigt"}</span>
+                {entries.filter((e) => e.type === "task" && e.done).length > 0 && (
+                  <span className="res-sub-tabs__count res-sub-tabs__count--completed">{entries.filter((e) => e.type === "task" && e.done).length}</span>
+                )}
+              </button>
+            </div>
+
+            {/* Task-Listen basierend auf Sub-Tab */}
+            {taskSubTab === "open" && (
+              entries.filter((e) => e.type === "task" && !e.done).length === 0 ? (
+                <div className="cat-detail__section-empty">{t.noTasks}</div>
+              ) : (
+                <TaskList t={t} CC={CC} lang={lang}
+                  entries={entries.filter((e) => e.type === "task" && !e.done)}
+                  cats={allCats}
+                  onToggle={toggleTask}
+                  onDelete={deleteEntry}
+                  onOpenEntry={onOpenEntry}
+                />
+              )
+            )}
+            {taskSubTab === "completed" && (
+              entries.filter((e) => e.type === "task" && e.done).length === 0 ? (
+                <div className="cat-detail__section-empty">{t.noCompletedTasks || "Keine erledigten Aufgaben"}</div>
+              ) : (
+                <TaskList t={t} CC={CC} lang={lang}
+                  entries={entries.filter((e) => e.type === "task" && e.done)}
+                  cats={allCats}
+                  onToggle={toggleTask}
+                  onDelete={deleteEntry}
+                  onOpenEntry={onOpenEntry}
+                />
+              )
+            )}
+          </div>
+        )}
         {bm === "cal" &&
           (entries.filter((e) => e.type === "calendar").length === 0 ? (
             <div className="cat-detail__section-empty">{t.noCal}</div>

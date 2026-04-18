@@ -628,20 +628,24 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
     <>
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header task-group-header--today">
+          <div className="task-group-header task-group-header--today" style={{ display: 'none' }}>
             <span className="task-group-header__left">Heute</span>
           </div>
           {todayTasks.map(renderItem)}
         </div>
       )}
-      {futureGroups.map((g, i) => (
+      {futureGroups.map((g, i) => {
+        const isFirstOverall = todayTasks.length === 0 && i === 0;
+        return (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header">
-            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
-          </div>
+          {!isFirstOverall && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
-      ))}
+      )})}
     </>
   );
 }
@@ -713,14 +717,18 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
   return (
     <>
       {todayTasks.map(renderItem)}
-      {futureGroups.map((g, i) => (
+      {futureGroups.map((g, i) => {
+        const isFirstOverall = todayTasks.length === 0 && i === 0;
+        return (
         <div key={i} className="task-group">
-          <div className="task-group-header">
-            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
-          </div>
+          {!isFirstOverall && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
-      ))}
+      )})}
     </>
   );
 }
@@ -795,14 +803,18 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
   return (
     <>
       {todayTasks.map(renderItem)}
-      {futureGroups.map((g, i) => (
+      {futureGroups.map((g, i) => {
+        const isFirstOverall = todayTasks.length === 0 && i === 0;
+        return (
         <div key={i} className="task-group">
-          <div className="task-group-header">
-            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
-          </div>
+          {!isFirstOverall && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
-      ))}
+      )})}
     </>
   );
 }
@@ -992,6 +1004,25 @@ function HomeScreen({
     [onAddEntry]
   );
 
+  const firstGroupLabel = (() => {
+    if (!tabEntries || tabEntries.length === 0) return null;
+    let hasToday = false;
+    const futureDates = [];
+    tabEntries.forEach(e => {
+       const d = e.due || e.date;
+       if (!d || isToday(d) || isOld(d)) hasToday = true;
+       else futureDates.push(d);
+    });
+    if (hasToday) return "Heute";
+    if (futureDates.length > 0) {
+       futureDates.sort((a,b) => new Date(a) - new Date(b));
+       const d = futureDates[0];
+       const g = getTaskGroup(d, t.locale, true);
+       return g.right ? `${g.left} ・ ${g.right}` : g.left;
+    }
+    return null;
+  })();
+
   return (
     <div className={`home home--${tab}`}>
       <div className="home__categories-container">
@@ -1020,7 +1051,7 @@ function HomeScreen({
                     >
                       {/* Icon mit integrierter Anzahl */}
                       <div className="category-card__icon-wrap">
-                        <CatIcon size={36} color={cfg.color} strokeWidth={2} />
+                        <CatIcon size={48} color={cfg.color} strokeWidth={2} />
                         <span className="category-card__icon-count" style={{ color: cfg.color }}>
                           {count}
                         </span>
@@ -1052,7 +1083,12 @@ function HomeScreen({
       <div className="home__list-container">
         {/* List section header: label left + switcher icons center */}
         <div className="list-section__header">
-          <span className="list-section__label">{tabCfg?.label}</span>
+          <div className="list-section__header-left">
+            <span className="list-section__label">{tabCfg?.label}</span>
+            {firstGroupLabel && (
+              <span className="list-section__date">{firstGroupLabel}</span>
+            )}
+          </div>
           <div className="list-switcher">
             {TABS.map((t) => {
               const TabIcon = t.Icon;

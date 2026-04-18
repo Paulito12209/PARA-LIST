@@ -496,11 +496,28 @@
   position: relative;
 
   &__header {
+    height: 44px;
     display: flex;
-    align-items: center;
+    align-items: start;
     justify-content: space-between;
     padding: 0;
-    // margin-bottom: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__header-left {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm+4px;
+  }
+
+  &__date {
+    font-size: 10px;
+    font-weight: 500; // Nicht fett
+    color: $color-muted;
+    text-transform: none;
+    letter-spacing: 0.1px;
+    line-height: 1;
+    display: block;
   }
 
   &__label {
@@ -509,6 +526,8 @@
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.3px;
+    line-height: 1;
+    display: block;
   }
 }
 
@@ -684,7 +703,7 @@
 
   // Styles für die Startseite (Home)
   &--home {
-    background: #EDEFFE !important;
+    background: $color-bg !important;
     border-color: rgba(124, 131, 247, 0.2) !important;
 
     .task-item__title {
@@ -777,7 +796,7 @@
   }
 
   &--home {
-    background: #FEF9C3 !important; // Pastellgelb
+    background: $color-bg !important;
     border-color: rgba(245, 158, 11, 0.2) !important;
 
     .note-item__title {
@@ -897,7 +916,7 @@
   }
 
   &--home {
-    background: #E2E7FA !important;
+    background: $color-bg !important;
     border-color: rgba(29, 78, 216, 0.2) !important;
 
     .cal-item__title {
@@ -2075,6 +2094,12 @@
 .app.light-theme {
   background: #f7f7f9;
   color: #1a1a24;
+
+  .task-item--home,
+  .note-item--home,
+  .cal-item--home {
+    background: #f7f7f9 !important;
+  }
 
   .command-panel {
     border-bottom-color: #e5e5f0;

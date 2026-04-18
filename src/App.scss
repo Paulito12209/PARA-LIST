@@ -349,7 +349,7 @@
     // Unterkante = exakte Bildschirmmitte (50dvh), Start = 80px (Kommandopanel)
     // → Höhe = 50dvh - 80px
     height: calc(50dvh - 80px);
-    padding: $spacing-lg $spacing-md $spacing-md;
+    padding: $spacing-lg $spacing-md;
     flex-shrink: 0;
     position: relative;
     z-index: 1;
@@ -506,13 +506,13 @@
   position: relative;
 
   &__header {
-    height: 40px;
+    height: 24px;
     display: flex;
     align-items: center;
     /* Zentriert Icons relativ zum Header-Block */
     justify-content: space-between;
     padding: 0 $spacing-md;
-    // margin-bottom: $spacing-sm;
+    margin-bottom: $spacing-sm;
   }
 
   &__header-left {
@@ -555,7 +555,7 @@
   /* Pillen-Rahmen entfernt */
 
   &__btn {
-    @include floating-btn(32px, $radius-pill);
+    @include floating-btn(24px, $radius-pill);
     transition: all $transition-fast;
     color: $color-muted;
 
@@ -574,7 +574,21 @@
   overflow-y: auto;
   border-top-left-radius: $radius-xl;
   border-top-right-radius: $radius-xl;
-  border-top: 1px solid $color-border;
+  background: $color-surface;
+  border-top: 1.5px solid $color-border 0.2; // Basis-Stärke leicht erhöht für Themen-Farbe
+
+  // Themen-spezifische Border-Farben
+  .main-content--tasks & {
+    border-top-color: $color-task;
+  }
+
+  .main-content--notes & {
+    border-top-color: $color-note;
+  }
+
+  .main-content--calendar & {
+    border-top-color: $color-calendar;
+  }
 
   &__empty {
     flex: 1;
@@ -2113,6 +2127,10 @@
 .app.light-theme {
   background: #f7f7f9;
   color: #1a1a24;
+
+  .entry-list {
+    background: #ffffff;
+  }
 
   .task-item--home,
   .note-item--home,

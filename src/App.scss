@@ -273,7 +273,10 @@
   &__handle {
     display: flex;
     justify-content: center;
+    align-items: center;
     cursor: pointer;
+    position: relative;
+    z-index: 10;
 
     &--closed {
       padding: $spacing-xs 0 $spacing-sm;
@@ -289,6 +292,14 @@
     height: 4px;
     border-radius: $spacing-2xs;
     background: $color-dim;
+    transition: all $transition-normal;
+  }
+
+  &__profile-btn--sticky {
+    position: absolute;
+    right: $spacing-md;
+    bottom: $spacing-md;
+    animation: fade-in 0.3s ease;
   }
 }
 
@@ -338,7 +349,7 @@
     // Unterkante = exakte Bildschirmmitte (50dvh), Start = 80px (Kommandopanel)
     // → Höhe = 50dvh - 80px
     height: calc(50dvh - 80px);
-    padding: $spacing-lg $spacing-md 0;
+    padding: $spacing-lg $spacing-md;
     flex-shrink: 0;
     position: relative;
     z-index: 1;
@@ -389,7 +400,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    padding: $spacing-lg $spacing-md;
+    padding: 0 $spacing-md $spacing-md;
     position: relative;
     z-index: 1;
   }

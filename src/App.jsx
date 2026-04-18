@@ -406,7 +406,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
     >
 
 
-      <div className="command-panel__header">
+      <div className="command-panel__header" onClick={onToggle} style={{ cursor: 'pointer' }}>
         <div>
           <div className="command-panel__greeting">{t.greeting(new Date().getHours(), user.name)}</div>
           <div className="command-panel__date">
@@ -418,39 +418,24 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
           </div>
         </div>
         <div className="command-panel__actions" style={{ display: 'flex', gap: '8px' }}>
-          <button
-            className={`command-panel__bell ${notif ? "command-panel__bell--active" : ""}`}
-            onClick={onToggle}
-            style={
-              notif
-                ? { background: notif.color + "22", borderColor: notif.color + "55" }
-                : {}
-            }
-          >
-            <Bell size={17} color={notif ? notif.color : "currentColor"} className="icon-muted" />
-            {notif && (
-              <span
-                className="command-panel__bell-dot"
-                style={{ background: notif.color }}
-              />
-            )}
-          </button>
-          <button
-            className="command-panel__bell command-panel__profile-btn"
-            onClick={onOpenSettings}
-            style={user.avatar ? { padding: 0 } : {}}
-          >
-            {user.avatar ? (
-              <div className="command-panel__profile-avatar">
-                <img src={user.avatar} alt="Avatar" />
-                <div className="command-panel__profile-hover">
-                  <Settings size={18} color="#fff" />
+          {!open && (
+            <button
+              className="command-panel__bell command-panel__profile-btn"
+              onClick={(e) => { e.stopPropagation(); onOpenSettings(); }}
+              style={user.avatar ? { padding: 0 } : {}}
+            >
+              {user.avatar ? (
+                <div className="command-panel__profile-avatar">
+                  <img src={user.avatar} alt="Avatar" />
+                  <div className="command-panel__profile-hover">
+                    <Settings size={18} color="#fff" />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <Settings size={17} className="icon-muted" color="currentColor" />
-            )}
-          </button>
+              ) : (
+                <Settings size={17} className="icon-muted" color="currentColor" />
+              )}
+            </button>
+          )}
         </div>
       </div>
 
@@ -542,7 +527,28 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
         }`}
         onClick={onToggle}
       >
-        <div className="command-panel__handle-bar" />
+        <div 
+          className="command-panel__handle-bar" 
+          style={notif ? { background: notif.color, opacity: 1 } : {}}
+        />
+        {open && (
+           <button
+             className="command-panel__bell command-panel__profile-btn command-panel__profile-btn--sticky"
+             onClick={(e) => { e.stopPropagation(); onOpenSettings(); }}
+             style={user.avatar ? { padding: 0 } : {}}
+           >
+             {user.avatar ? (
+               <div className="command-panel__profile-avatar">
+                 <img src={user.avatar} alt="Avatar" />
+                 <div className="command-panel__profile-hover">
+                   <Settings size={18} color="#fff" />
+                 </div>
+               </div>
+             ) : (
+               <Settings size={17} className="icon-muted" color="#5858A0" />
+             )}
+           </button>
+        )}
       </div>
     </div>
   );

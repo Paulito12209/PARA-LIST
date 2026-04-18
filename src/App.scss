@@ -575,19 +575,19 @@
   border-top-left-radius: $radius-xl;
   border-top-right-radius: $radius-xl;
   background: $color-surface;
-  border-top: 1.5px solid $color-border 0.2; // Basis-Stärke leicht erhöht für Themen-Farbe
+  border-top: 1.5px solid rgba($color-border, 0.2); // Basis-Stärke leicht erhöht für Themen-Farbe
 
   // Themen-spezifische Border-Farben
   .main-content--tasks & {
-    border-top-color: $color-task;
+    border-top-color: rgba($color-task, 0.2);
   }
 
   .main-content--notes & {
-    border-top-color: $color-note;
+    border-top-color: rgba($color-note, 0.2);
   }
 
   .main-content--calendar & {
-    border-top-color: $color-calendar;
+    border-top-color: rgba($color-calendar, 0.2);
   }
 
   &__empty {

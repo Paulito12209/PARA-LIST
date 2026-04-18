@@ -619,22 +619,8 @@
   align-items: center;
   justify-content: space-between; // Links/Rechts Split
   padding: 0 $spacing-md 0 $spacing-sm; // Rechts-Padding hinzugefügt
-  margin: $spacing-sm 0;
+  margin: $spacing-sm 0; 
   gap: $spacing-sm;
-  position: relative;
-
-  // Unterbrochene Top-Border
-  &::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(to right, $color-muted 0%, $color-muted 12%, transparent 12%, transparent 88%, $color-muted 88%, $color-muted 100%);
-    pointer-events: none;
-    transform: translateY(-50%);
-  }
 
   &__left,
   &__right {
@@ -643,10 +629,6 @@
     color: $color-muted;
     text-transform: none;
     letter-spacing: 0.1px;
-    position: relative;
-    z-index: 1;
-    background: $color-bg;
-    padding: 0 $spacing-xs;
   }
 }
 

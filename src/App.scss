@@ -614,14 +614,16 @@
 .task-group-header {
   display: flex;
   align-items: center;
-  padding-left: $spacing-sm;
-  margin: $spacing-sm 0; // 8px nach unten zum Item
+  justify-content: space-between; // Links/Rechts Split
+  padding: 0 $spacing-md 0 $spacing-sm; // Rechts-Padding hinzugefügt
+  margin: $spacing-sm 0; 
   gap: $spacing-sm;
 
-  &__left {
+  &__left,
+  &__right {
     font-size: 10px;
-    font-weight: 500; // Nicht fett
-    color: $color-muted; // Gleiche Farbe wie im Kommandopanel
+    font-weight: 500;
+    color: $color-muted;
     text-transform: none;
     letter-spacing: 0.1px;
   }

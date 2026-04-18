@@ -115,7 +115,7 @@ const getTaskGroup = (due, locale, hideDayNumber = false) => {
   } else if (weekDiff === 0) {
     leftLabel = d.toLocaleDateString(locale, { weekday: 'long' });
   } else if (weekDiff === 1) {
-    leftLabel = "nächste Woche";
+    leftLabel = "Nächste Woche";
   } else {
     const mDiff = (d.getFullYear() - t.getFullYear()) * 12 + (d.getMonth() - t.getMonth());
     if (d.getFullYear() > t.getFullYear()) {
@@ -123,7 +123,7 @@ const getTaskGroup = (due, locale, hideDayNumber = false) => {
     } else if (mDiff === 0) {
       leftLabel = I18N[locale.slice(0,2)]?.thisMonth || "Dieser Monat";
     } else if (mDiff === 1) {
-      leftLabel = "nächsten Monat";
+      leftLabel = "Nächsten Monat";
     } else {
       leftLabel = d.toLocaleDateString(locale, { month: 'long' });
     }
@@ -691,7 +691,8 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header">
-            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__right">{g.right}</span>
           </div>
           {g.items.map(renderItem)}
         </div>
@@ -777,7 +778,8 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header">
-            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__right">{g.right}</span>
           </div>
           {g.items.map(renderItem)}
         </div>
@@ -875,7 +877,8 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header">
-            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__right">{g.right}</span>
           </div>
           {g.items.map(renderItem)}
         </div>

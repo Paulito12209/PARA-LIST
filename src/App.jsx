@@ -13,7 +13,13 @@ import "./App.scss";
 
 /* ── helpers ─────────────────────────────────────────────────── */
 const uid = () => Math.random().toString(36).slice(2, 9);
-const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY = (() => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+})();
 const H = new Date().getHours();
 const isOld = (d) => d && d < TODAY;
 const isToday = (d) => d === TODAY;
@@ -101,32 +107,37 @@ const getTaskGroup = (due, locale, hideDayNumber = false) => {
   const dMonday = getMonday(d);
   const weekDiff = Math.round((dMonday - tMonday) / 604800000);
 
-  let right = "";
+  let leftLabel = "";
   if (diffDays === 1) {
-    right = "morgen";
+    leftLabel = "Morgen";
   } else if (diffDays === 2) {
-    right = "übermorgen";
+    leftLabel = "Übermorgen";
   } else if (weekDiff === 0) {
-    right = "diese Woche";
+    leftLabel = d.toLocaleDateString(locale, { weekday: 'long' });
   } else if (weekDiff === 1) {
-    right = "nächste Woche";
+    leftLabel = "nächste Woche";
   } else {
     const mDiff = (d.getFullYear() - t.getFullYear()) * 12 + (d.getMonth() - t.getMonth());
     if (d.getFullYear() > t.getFullYear()) {
-      right = d.getFullYear().toString();
+      leftLabel = d.getFullYear().toString();
     } else if (mDiff === 0) {
-      // Wenn im laufenden Monat aber nicht in dieser/nächster Woche
-      right = I18N[locale.slice(0,2)]?.thisMonth || "Dieser Monat";
+      leftLabel = I18N[locale.slice(0,2)]?.thisMonth || "Dieser Monat";
     } else if (mDiff === 1) {
-      right = "nächsten Monat";
+      leftLabel = "nächsten Monat";
     } else {
-      const monthStr = d.toLocaleDateString(locale, { month: 'long' }).toUpperCase();
-      right = monthStr;
+      leftLabel = d.toLocaleDateString(locale, { month: 'long' });
     }
   }
 
-  return { left, right, sortKey: d.getTime() };
-};
+  const rightLabel = d.toLocaleDateString(locale, {
+    weekday: 'short',
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit'
+  });
+
+  return { left: leftLabel, right: rightLabel, sortKey: d.getTime() };
+}
 
 const getYouTubeVideoId = (rawUrl) => {
   if (!rawUrl) return null;
@@ -304,11 +315,11 @@ function SwipeToDelete({ children, onDelete }) {
   };
 
   return (
-    <div style={{ position: 'relative', overflow: 'visible', marginBottom: '8px' }}>
+    <div style={{ position: 'relative', overflow: 'visible' }}>
       <div style={{
-          position: 'absolute', inset: 0, background: '#DC2626', borderRadius: '12px',
+          position: 'absolute', inset: '1px', background: '#DC2626', borderRadius: '12px',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '20px',
-          zIndex: 0, marginBottom: '6px'
+          zIndex: 0
       }}>
           <Trash2 color="#fff" size={20} />
       </div>
@@ -543,13 +554,14 @@ function EntryMetaTags({ entry, cats, CC }) {
 }
 
 /* ── Task List ───────────────────────────────────────────────── */
-function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, onOpenEntry }) {
+function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, onOpenEntry, isHome }) {
   const renderItem = (e) => {
     const overdue = isOld(e.due) && !e.done;
+    
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div
-          className={`task-item ${e.done ? "task-item--done" : ""}`}
+          className={`task-item ${e.done ? "task-item--done" : ""} ${isHome ? "task-item--home" : ""}`}
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="task-item__body">
@@ -560,8 +572,9 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
             >
               {e.title}
             </div>
+            
             <div className="task-item__meta">
-              {e.due && (
+              {e.due && !isHome && (
                 <span
                   className={`task-item__due ${overdue ? "task-item__due--overdue" : ""}`}
                 >
@@ -578,7 +591,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
             }`}
             onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
           >
-            {e.done && <Check size={10} color="#fff" strokeWidth={2.5} />}
+    {e.done && <Check size={12} color="#7C83F7" strokeWidth={3} />}
           </button>
         </div>
       </SwipeToDelete>
@@ -613,12 +626,19 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
 
   return (
     <>
-      {todayTasks.map(renderItem)}
+      {todayTasks.length > 0 && (
+        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
+          <div className="task-group-header task-group-header--today">
+            <span className="task-group-header__left">Heute</span>
+          </div>
+          {todayTasks.map(renderItem)}
+        </div>
+      )}
       {futureGroups.map((g, i) => (
-        <div key={i} className="task-group">
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header">
             <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__line" style={color ? { background: color } : {}} />
+            <span className="task-group-header__line" style={color ? { color: color } : {}} />
             <span className="task-group-header__right">{g.right}</span>
           </div>
           {g.items.map(renderItem)}
@@ -629,12 +649,12 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry, onArchiveEntry }) {
+function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry, onArchiveEntry, isHome }) {
   const renderItem = (e) => {
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div 
-          className="note-item" 
+          className={`note-item ${isHome ? "note-item--home" : ""}`} 
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="note-item__header">
@@ -653,9 +673,11 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
             </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
-            <span className="task-item__due" style={{ marginTop: 0 }}>
-              {fmtRelative(e.createdAt, t.locale)}
-            </span>
+            {!isHome && (
+              <span className="task-item__due" style={{ marginTop: 0 }}>
+                {fmtRelative(e.createdAt, t.locale)}
+              </span>
+            )}
             <EntryMetaTags entry={e} cats={cats} CC={CC} />
           </div>
         </div>
@@ -708,7 +730,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
 }
 
 /* ── Calendar List ───────────────────────────────────────────── */
-function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }) {
+function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, isHome }) {
   const renderItem = (e) => {
     const past = e.date && e.date < TODAY;
     return (
@@ -716,22 +738,24 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry }
         <div
           className={`cal-item ${isToday(e.date) ? "cal-item--today" : ""} ${
             past ? "cal-item--past" : ""
-          }`}
+          } ${isHome ? "cal-item--home" : ""}`}
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="cal-item__row">
-            <div className="cal-item__date-badge">
-              <div className="cal-item__date-month">
-                {e.date
-                  ? new Date(e.date + "T12:00").toLocaleDateString(t.locale, {
-                      month: "short",
-                    })
-                  : ""}
+            {!isHome && (
+              <div className="cal-item__date-badge">
+                <div className="cal-item__date-month">
+                  {e.date
+                    ? new Date(e.date + "T12:00").toLocaleDateString(t.locale, {
+                        month: "short",
+                      })
+                    : ""}
+                </div>
+                <div className="cal-item__date-day">
+                  {e.date ? new Date(e.date + "T12:00").getDate() : ""}
+                </div>
               </div>
-              <div className="cal-item__date-day">
-                {e.date ? new Date(e.date + "T12:00").getDate() : ""}
-              </div>
-            </div>
+            )}
             <div className="cal-item__info">
               <div className="cal-item__title">{e.title}</div>
               {e.time && <div className="cal-item__time">{e.time} Uhr</div>}
@@ -976,41 +1000,62 @@ function HomeScreen({
 
   return (
     <div className={`home home--${tab}`}>
-      <div className="home__content">
-        {/* Category cards */}
-        <div className="category-grid">
-          {["project", "area", "resource"].map((type) => {
-            const cfg = CC[type];
-            const CatIcon = CAT_ICONS[type];
-            const count = cats.filter((c) => c.type === type && !c.archived).length;
-            return (
-              <div key={type} className={`category-card category-card--${type}`}>
-                <button
-                  className="category-card__main"
-                  onClick={() => onOpenCatType(type)}
-                >
-                  <CatIcon size={24} color={cfg.color} strokeWidth={2.5} />
-                  <span
-                    className="category-card__label"
-                    style={{ color: cfg.color }}
-                  >
-                    {cfg.label}
-                  </span>
-                  {count > 0 && (
-                    <span className="category-card__count">{count}</span>
-                  )}
-                </button>
-                <button
-                  className={`category-card__add-btn category-card__add-btn--${type}`}
-                  onClick={() => onAddCat(type)}
-                >
-                  <Plus size={15} color={cfg.color} strokeWidth={2.5} />
-                </button>
-              </div>
-            );
-          })}
+      <div className="home__categories-container">
+        {/* Überschrift + Ordner-Icon (wie bei den Subtabs unten) */}
+        <div className="home__categories-header">
+          <span className="home__categories-title">Ordner</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={16} height={16} className="home__categories-icon">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
+          </svg>
         </div>
 
+        {/* Horizontaler Swipe-Track – aktuell nur 1 Page (Ordner) */}
+        <div className="home__categories-track">
+          {/* Page 1: Kategorie-Ordner (Projekte / Arbeitsbereiche / Ressourcen) */}
+          <div className="home__categories-page home__categories-page--active">
+            <div className="category-grid">
+              {["project", "area", "resource"].map((type) => {
+                const cfg = CC[type];
+                const CatIcon = CAT_ICONS[type];
+                const count = cats.filter((c) => c.type === type && !c.archived).length;
+                return (
+                  <div key={type} className={`category-card category-card--${type}`}>
+                    <button
+                      className="category-card__main"
+                      onClick={() => onOpenCatType(type)}
+                    >
+                      {/* Icon mit integrierter Anzahl */}
+                      <div className="category-card__icon-wrap">
+                        <CatIcon size={36} color={cfg.color} strokeWidth={2} />
+                        <span className="category-card__icon-count" style={{ color: cfg.color }}>
+                          {count}
+                        </span>
+                      </div>
+                      <span
+                        className="category-card__label"
+                        style={{ color: cfg.color }}
+                      >
+                        {cfg.label}
+                      </span>
+                    </button>
+                    <button
+                      className={`category-card__add-btn category-card__add-btn--${type}`}
+                      onClick={() => onAddCat(type)}
+                    >
+                      <Plus size={15} color={cfg.color} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Zukünftige Pages hier ergänzen, z.B.: */}
+          {/* <div className="home__categories-page">...</div> */}
+        </div>
+      </div>
+
+      <div className="home__list-container">
         {/* List section header: label left + switcher icons center */}
         <div className="list-section__header">
           <span className="list-section__label">{tabCfg?.label}</span>
@@ -1041,58 +1086,61 @@ function HomeScreen({
             })}
           </div>
         </div>
-      </div>
 
-      {/* Entry list */}
-      <div 
-        className="entry-list" 
-        onClick={handleDoubleTap}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {tabEntries.length === 0 ? (
-          <div className="entry-list__empty">
-            <div className="entry-list__empty-icon" style={{ display: 'flex', justifyContent: 'center' }}>
-              {tabCfg && <tabCfg.Icon size={28} color={tabColor} strokeWidth={1.5} />}
+        {/* Entry list */}
+        <div 
+          className="entry-list" 
+          onClick={handleDoubleTap}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          {tabEntries.length === 0 ? (
+            <div className="entry-list__empty">
+              <div className="entry-list__empty-icon" style={{ display: 'flex', justifyContent: 'center' }}>
+                {tabCfg && <tabCfg.Icon size={28} color={tabColor} strokeWidth={1.5} />}
+              </div>
+              {t.noEntries(tabCfg?.label)}
             </div>
-            {t.noEntries(tabCfg?.label)}
-          </div>
-        ) : (
-          <>
-            {tab === "tasks" && (
-              <TaskList t={t} CC={CC} lang={lang}
-                entries={tabEntries}
-                cats={cats}
-                onToggle={toggleTask}
-                onDelete={deleteEntry}
-                grouped={true}
-                color={tabColor}
-                onOpenEntry={onOpenEntry}
-              />
-            )}
-            {tab === "notes" && (
-              <NoteList t={t} CC={CC}
-                entries={tabEntries}
-                cats={cats}
-                onDelete={deleteEntry}
-                grouped={true}
-                color={tabColor}
-                onOpenEntry={onOpenEntry}
-                onArchiveEntry={onArchiveEntry}
-              />
-            )}
-            {tab === "calendar" && (
-              <CalList t={t} CC={CC} lang={lang}
-                entries={tabEntries}
-                cats={cats}
-                onDelete={deleteEntry}
-                grouped={true}
-                color={tabColor}
-                onOpenEntry={onOpenEntry}
-              />
-            )}
-          </>
-        )}
+          ) : (
+            <>
+              {tab === "tasks" && (
+                <TaskList t={t} CC={CC} lang={lang}
+                  entries={tabEntries}
+                  cats={cats}
+                  onToggle={toggleTask}
+                  onDelete={deleteEntry}
+                  grouped={true}
+                  color={tabColor}
+                  onOpenEntry={onOpenEntry}
+                  isHome={true}
+                />
+              )}
+              {tab === "notes" && (
+                <NoteList t={t} CC={CC}
+                  entries={tabEntries}
+                  cats={cats}
+                  onDelete={deleteEntry}
+                  grouped={true}
+                  color={tabColor}
+                  onOpenEntry={onOpenEntry}
+                  onArchiveEntry={onArchiveEntry}
+                  isHome={true}
+                />
+              )}
+              {tab === "calendar" && (
+                <CalList t={t} CC={CC} lang={lang}
+                  entries={tabEntries}
+                  cats={cats}
+                  onDelete={deleteEntry}
+                  grouped={true}
+                  color={tabColor}
+                  onOpenEntry={onOpenEntry}
+                  isHome={true}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {showArchiveButton() && (

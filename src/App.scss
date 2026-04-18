@@ -72,7 +72,7 @@
   }
 
   &__date {
-    font-size: 11px;
+    font-size: 12px;
     color: $color-muted;
     margin-top: $spacing-2xs;
   }
@@ -331,9 +331,62 @@
   overflow: hidden;
   position: relative;
 
-  &__content {
-    padding: $spacing-md $spacing-md 0;
+  &__categories-container {
+    // Unterkante = exakte Bildschirmmitte (50dvh), Start = 80px (Kommandopanel)
+    // → Höhe = 50dvh - 80px
+    height: calc(50dvh - 80px);
+    padding: $spacing-md;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // Überschrift + Page-Indicator-Dots
+  &__categories-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-sm;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__categories-title {
+    font-family: $font-heading;
+    font-size: $spacing-md;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.3px;
+  }
+
+  // Ordner-Icon neben dem Titel (analog zu den Subtab-Icons unten)
+  &__categories-icon {
+    color: $color-muted;
+    flex-shrink: 0;
+  }
+
+  // Horizontaler Track für Swipe-Pages (aktuell nur 1 Page)
+  &__categories-track {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    // Späterer Swipe: display: flex; mit translateX-Animation auf den Pages
+  }
+
+  // Einzelne Swipe-Page innerhalb des Tracks
+  &__categories-page {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__list-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0 $spacing-md;
     position: relative;
     z-index: 1;
   }
@@ -343,8 +396,9 @@
 .category-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: $spacing-sm + 1px;
-  margin-bottom: $spacing-md;
+  grid-template-rows: 1fr;
+  gap: $spacing-sm;
+  height: 100%;
 }
 
 .category-card {
@@ -376,28 +430,40 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: $spacing-sm;
-    min-height: 82px;
   }
 
   &__label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     letter-spacing: 0.2px;
   }
 
-  &__count {
-    font-size: 10px;
-    color: $color-muted;
-    background: $color-card;
-    border-radius: $radius-pill;
-    padding: 1px 7px;
+  // Container für Icon + Zahl-Overlay
+  &__icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // Anzahl zentriert innerhalb des Icons
+  &__icon-count {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    // Leichter Versatz nach unten, da Dreieck/Kreis optisch höher sitzen
+    top: 54%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   &__add-btn {
+    height: 48px;
     margin-top: $spacing-xs;
-    border-radius: $radius-pill;
+    border-radius: $radius-md;
     padding: $spacing-sm - 2px;
     @include flex-center;
     border: 1px solid transparent;
@@ -433,7 +499,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0;
-    margin-bottom: $spacing-sm;
+    // margin-bottom: $spacing-sm;
   }
 
   &__label {
@@ -450,9 +516,10 @@
   display: flex;
   align-items: center;
   gap: $spacing-xs;
-  background: $color-card;
+  // background: $color-card;
+  background: transparent;
   border-radius: $radius-pill;
-  padding: $spacing-xs;
+  // padding: $spacing-xs;
   border: 1px solid $color-border;
 
   &__btn {
@@ -471,7 +538,7 @@
 .entry-list {
   flex: 1;
   min-height: 0;
-  padding: 0 $spacing-md;
+  padding: 0;
   overflow-y: auto;
   padding-bottom: 0px;
 
@@ -493,27 +560,44 @@
 .task-group-header {
   display: flex;
   align-items: center;
-  margin: $spacing-md 0 $spacing-sm 0;
+  margin: $spacing-sm 0; // 8px nach unten zum Item
   gap: $spacing-sm;
 
   &__left {
-    font-size: 13px;
-    font-weight: 600;
-    color: $color-text;
+    font-size: 12px;
+    font-weight: 500; // Nicht fett
+    color: $color-muted; // Gleiche Farbe wie im Kommandopanel
+    text-transform: none;
+    letter-spacing: 0.1px;
   }
 
   &__line {
     flex: 1;
     height: 1px;
-    background: $color-border;
+    border-top: 1.5px dashed rgba($color-muted, 0.2); // Leicht dezentere Linie
   }
 
   &__right {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 500;
     color: $color-muted;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    text-transform: none;
+    letter-spacing: 0.1px;
+  }
+
+  &--today {
+
+    .task-group-header__line,
+    .task-group-header__right {
+      display: none; // Nur "Heute" anzeigen
+    }
+  }
+}
+
+// Spezieller Abstand für die erste Gruppe nach dem "Aufgaben" Titel - ENTFERNT auf Wunsch
+.task-group:first-of-type {
+  .task-group-header {
+    margin-top: 0;
   }
 }
 
@@ -618,6 +702,27 @@
       opacity: 0.7;
     }
   }
+
+  // Styles für die Startseite (Home)
+  &--home {
+    background: #EDEFFE !important;
+    border-color: rgba(124, 131, 247, 0.2) !important;
+
+    .task-item__title {
+      color: #1e1b4b; // Dunkles Indigo für Kontrast
+    }
+
+    .task-item__checkbox {
+      border-color: rgba(124, 131, 247, 0.5);
+      background: rgba(255, 255, 255, 0.5);
+
+      &--checked {
+        border-color: #7C83F7;
+        background: rgba(124, 131, 247, 0.133);
+        box-shadow: 0 0 8px rgba(124, 131, 247, 0.19);
+      }
+    }
+  }
 }
 
 // ── Note Item ───────────────────────────────────────────────
@@ -690,6 +795,29 @@
     border-radius: $radius-pill;
     padding: 0 8px;
     vertical-align: middle;
+  }
+
+  &--home {
+    background: #FEF9C3 !important; // Pastellgelb
+    border-color: rgba(245, 158, 11, 0.2) !important;
+
+    .note-item__title {
+      color: #451a03; // Dunkles Braun/Gelb für Kontrast
+    }
+
+    .note-item__excerpt {
+      color: rgba(69, 26, 3, 0.7);
+    }
+
+    .note-item__archive-btn {
+      color: #F59E0B;
+      opacity: 0.8;
+      background: rgba(245, 158, 11, 0.133);
+      border-radius: $radius-pill;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 4px;
+      display: flex;
+    }
   }
 }
 
@@ -787,6 +915,25 @@
     border-radius: $radius-pill;
     padding: 0 8px;
     vertical-align: middle;
+  }
+
+  &--home {
+    background: #E2E7FA !important;
+    border-color: rgba(29, 78, 216, 0.2) !important;
+
+    .cal-item__title {
+      color: #1e3a8a; // Dunkles Blau für Kontrast
+    }
+
+    .cal-item__time {
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    .cal-item__date-badge {
+      background: rgba(29, 78, 216, 0.08);
+      border: 1px solid rgba(29, 78, 216, 0.25);
+    }
   }
 }
 
@@ -1231,8 +1378,6 @@
     letter-spacing: -0.5px;
     background: transparent;
   }
-
-
 
   &__pills {
     display: flex;
@@ -2009,7 +2154,8 @@
     }
   }
 
-  .list-section__label {
+  .list-section__label,
+  .home__categories-title {
     color: #1a1a24;
   }
 
@@ -2026,8 +2172,9 @@
     }
   }
 
-  .task-group-header__left {
-    color: #1a1a24;
+  .task-group-header__left,
+  .task-group-header__right {
+    color: $color-muted;
   }
 
   .task-item,
@@ -2042,7 +2189,7 @@
     }
 
     &__checkbox {
-      border-color: #d1d1e0;
+      border-color: #7C83F7;
     }
   }
 

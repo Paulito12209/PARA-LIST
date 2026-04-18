@@ -1010,7 +1010,9 @@ function HomeScreen({
 
   const handleDoubleTap = useCallback(
     (e) => {
-      if (e.target !== e.currentTarget) return;
+      // Erlaube Klicks auf den Hintergrund (currentTarget) oder das Empty-Placeholder-Element
+      const isEmptyPlaceholder = e.target.closest('.entry-list__empty') || e.target.closest('.cat-detail__section-empty');
+      if (e.target !== e.currentTarget && !isEmptyPlaceholder) return;
       const now = Date.now();
       if (now - lastTap.current < 300) {
         onAddEntry();
@@ -1484,7 +1486,8 @@ function CatDetailScreen({
   const lastTap = useRef(0);
   const handleDoubleTap = useCallback(
     (e) => {
-      if (e.target !== e.currentTarget) return;
+      const isEmptyPlaceholder = e.target.closest('.cat-detail__empty') || e.target.closest('.cat-detail__section-empty') || e.target.closest('.entry-list__empty');
+      if (e.target !== e.currentTarget && !isEmptyPlaceholder) return;
       const now = Date.now();
       if (now - lastTap.current < 300) {
         createEntryFromBookmark();

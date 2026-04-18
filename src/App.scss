@@ -336,7 +336,7 @@
     // Unterkante = exakte Bildschirmmitte (50dvh), Start = 80px (Kommandopanel)
     // → Höhe = 50dvh - 80px
     height: calc(50dvh - 80px);
-    padding: $spacing-md;
+    padding: $spacing-lg $spacing-md 0;
     flex-shrink: 0;
     position: relative;
     z-index: 1;
@@ -387,7 +387,7 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    padding: 0 $spacing-md;
+    padding: $spacing-lg $spacing-md;
     position: relative;
     z-index: 1;
   }
@@ -471,18 +471,15 @@
     transition: opacity $transition-fast;
 
     &--project {
-      background: rgba($color-project, 0.08);
-      border-color: rgba($color-project, 0.25);
+      background: $color-project;
     }
 
     &--area {
-      background: rgba($color-area, 0.08);
-      border-color: rgba($color-area, 0.25);
+      background: $color-area;
     }
 
     &--resource {
-      background: rgba($color-resource, 0.08);
-      border-color: rgba($color-resource, 0.25);
+      background: $color-resource;
     }
 
     &:hover {
@@ -607,7 +604,6 @@
   padding: $spacing-sm + 3px $spacing-md - $spacing-2xs;
   border-radius: $radius-md + 1px;
   @include card-base;
-  margin-bottom: $spacing-xs + $spacing-2xs;
   transition: opacity 0.2s;
 
   &--done {
@@ -728,7 +724,6 @@
   padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
   border-radius: $radius-md + 1px;
   @include card-base;
-  margin-bottom: $spacing-xs + $spacing-2xs;
   transition: opacity 0.2s, transform 0.2s;
 
 
@@ -824,7 +819,6 @@
   padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
   border-radius: $radius-md + 1px;
   @include card-base;
-  margin-bottom: $spacing-xs + $spacing-2xs;
 
   &--today {
     border-color: rgba($color-calendar, 0.31);
@@ -943,7 +937,6 @@
   padding: $spacing-sm + 3px $spacing-md - $spacing-2xs;
   border-radius: $radius-md + 1px;
   @include card-base;
-  margin-bottom: $spacing-xs + $spacing-2xs;
   text-align: left;
 
   &__icon {
@@ -1151,6 +1144,7 @@
       transform: scale(1.1);
     }
   }
+
 
   &__body {
     flex: 1;
@@ -1491,6 +1485,7 @@
     // Rechts: 24px Rail + 16px Abstand = 40px, unten: 16px
     padding: $spacing-md (
       $bookmark-width + $spacing-md) $spacing-md $spacing-md;
+    gap: $spacing-sm;
   }
 
   &__textarea {
@@ -2388,10 +2383,6 @@
     &__count {
       background: #ffffff;
     }
-
-    &__add-btn {
-      background: #ffffff;
-    }
   }
 
   // Ressource Sub-Tabs: Farbanpassung für hellen Hintergrund
@@ -3075,4 +3066,66 @@
   to {
     opacity: 1;
   }
+}
+
+// ── Archive Items (Screenshot 2 Look) ───────────────────────
+.task-item--archive,
+.cal-item--archive,
+.note-item--archive {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(124, 131, 247, 0.2) !important;
+  opacity: 1 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  .task-item__title,
+  .cal-item__title,
+  .note-item__title {
+    color: #1a202c !important;
+    text-decoration: line-through !important;
+    opacity: 0.8;
+  }
+
+  .task-item__due,
+  .task-item__cat-tag,
+  .cal-item__time,
+  .cal-item__cat-tag,
+  .note-item__excerpt,
+  .task-item__meta {
+    color: #4a5568 !important;
+    opacity: 0.7;
+
+    span,
+    div {
+      color: inherit !important;
+    }
+  }
+
+  // Restore Button styling (Only the icon)
+  .task-item__archive-restore-btn,
+  .note-item__archive-btn {
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+    padding: $spacing-xs;
+    opacity: 0.6;
+    cursor: pointer;
+
+    svg {
+      color: #7C83F7 !important;
+    }
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+}
+
+// ── Swipe Container ──────────────────────────────────────────
+.swipe-delete-wrapper {
+  margin-bottom: $spacing-xs + $spacing-2xs;
 }

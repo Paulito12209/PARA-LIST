@@ -315,7 +315,7 @@ function SwipeToDelete({ children, onDelete }) {
   };
 
   return (
-    <div style={{ position: 'relative', overflow: 'visible' }}>
+    <div className="swipe-delete-wrapper" style={{ position: 'relative', overflow: 'visible' }}>
       <div style={{
           position: 'absolute', inset: '1px', background: '#DC2626', borderRadius: '12px',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '20px',
@@ -554,20 +554,20 @@ function EntryMetaTags({ entry, cats, CC }) {
 }
 
 /* ── Task List ───────────────────────────────────────────────── */
-function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, onOpenEntry, isHome }) {
+function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     const overdue = isOld(e.due) && !e.done;
     
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div
-          className={`task-item ${e.done ? "task-item--done" : ""} ${isHome ? "task-item--home" : ""}`}
+          className={`task-item ${e.done && !isArchive ? "task-item--done" : ""} ${isHome ? "task-item--home" : ""} ${isArchive ? "task-item--archive" : ""}`}
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="task-item__body">
             <div
               className={`task-item__title ${
-                e.done ? "task-item__title--done" : ""
+                e.done && !isArchive ? "task-item__title--done" : ""
               }`}
             >
               {e.title}
@@ -585,14 +585,23 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
               <EntryMetaTags entry={e} cats={cats} CC={CC} />
             </div>
           </div>
-          <button
-            className={`task-item__checkbox ${
-              e.done ? "task-item__checkbox--checked" : ""
-            }`}
-            onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
-          >
-    {e.done && <Check size={12} color="#7C83F7" strokeWidth={3} />}
-          </button>
+          {isArchive ? (
+            <button
+              className="task-item__archive-restore-btn"
+              onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
+            >
+              <ArchiveRestore size={16} />
+            </button>
+          ) : (
+            <button
+              className={`task-item__checkbox ${
+                e.done ? "task-item__checkbox--checked" : ""
+              }`}
+              onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
+            >
+              {e.done && <Check size={12} color="#7C83F7" strokeWidth={3} />}
+            </button>
+          )}
         </div>
       </SwipeToDelete>
     );
@@ -651,12 +660,12 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry, onArchiveEntry, isHome }) {
+function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry, onArchiveEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div 
-          className={`note-item ${isHome ? "note-item--home" : ""}`} 
+          className={`note-item ${isHome ? "note-item--home" : ""} ${isArchive ? "note-item--archive" : ""}`} 
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="note-item__header">
@@ -671,7 +680,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
                  onArchiveEntry && onArchiveEntry(e.id);
                }}
             >
-               <Archive size={16} />
+               {isArchive ? <ArchiveRestore size={16} /> : <Archive size={16} />}
             </button>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
@@ -734,15 +743,15 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
 }
 
 /* ── Calendar List ───────────────────────────────────────────── */
-function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, isHome }) {
+function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     const past = e.date && e.date < TODAY;
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div
           className={`cal-item ${isToday(e.date) ? "cal-item--today" : ""} ${
-            past ? "cal-item--past" : ""
-          } ${isHome ? "cal-item--home" : ""}`}
+            past && !isArchive ? "cal-item--past" : ""
+          } ${isHome ? "cal-item--home" : ""} ${isArchive ? "cal-item--archive" : ""}`}
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="cal-item__row">
@@ -767,6 +776,15 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
                 <EntryMetaTags entry={e} cats={cats} CC={CC} />
               </div>
             </div>
+            {isArchive && (
+              <button
+                className="task-item__archive-restore-btn"
+                style={{ marginLeft: '12px' }}
+                onClick={(ev) => { ev.stopPropagation(); onDelete(e.id); /* In archive context, onDelete acts as toggle for some lists? Need to check. */ }}
+              >
+                <ArchiveRestore size={16} />
+              </button>
+            )}
           </div>
         </div>
       </SwipeToDelete>
@@ -1067,7 +1085,7 @@ function HomeScreen({
                       className={`category-card__add-btn category-card__add-btn--${type}`}
                       onClick={() => onAddCat(type)}
                     >
-                      <Plus size={15} color={cfg.color} strokeWidth={2.5} />
+                      <Plus size={22} color="#fff" strokeWidth={2.4} />
                     </button>
                   </div>
                 );
@@ -2009,6 +2027,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
                 onToggle={toggleTask}
                 onDelete={onDelete}
                 onOpenEntry={onOpenEntry}
+                isArchive={true}
               />
             )}
             {tab === "calendar" && (
@@ -2017,6 +2036,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
                 cats={cats}
                 onDelete={onDelete}
                 onOpenEntry={onOpenEntry}
+                isArchive={true}
               />
             )}
             {tab === "notes" && (
@@ -2025,6 +2045,8 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
                 cats={cats}
                 onDelete={onDelete}
                 onOpenEntry={onOpenEntry}
+                onArchiveEntry={onRestoreNote}
+                isArchive={true}
               />
             )}
           </>

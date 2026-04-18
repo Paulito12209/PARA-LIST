@@ -317,7 +317,7 @@ function SwipeToDelete({ children, onDelete }) {
   return (
     <div className="swipe-delete-wrapper" style={{ position: 'relative', overflow: 'visible' }}>
       <div style={{
-          position: 'absolute', inset: '1px', background: '#DC2626', borderRadius: '12px',
+          position: 'absolute', inset: '0', background: '#DC2626', borderRadius: 'var(--radius-lg)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '20px',
           zIndex: 0
       }}>
@@ -682,24 +682,20 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
     <>
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header task-group-header--today" style={{ display: 'none' }}>
+          <div className="task-group-header task-group-header--today">
             <span className="task-group-header__left">Heute</span>
           </div>
           {todayTasks.map(renderItem)}
         </div>
       )}
-      {futureGroups.map((g, i) => {
-        const isFirstOverall = todayTasks.length === 0 && i === 0;
-        return (
+      {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
-          {!isFirstOverall && (
-            <div className="task-group-header">
-              <span className="task-group-header__left">{g.left} ・ {g.right}</span>
-            </div>
-          )}
+          <div className="task-group-header">
+            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+          </div>
           {g.items.map(renderItem)}
         </div>
-      )})}
+      ))}
     </>
   );
 }
@@ -770,19 +766,22 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
 
   return (
     <>
-      {todayTasks.map(renderItem)}
-      {futureGroups.map((g, i) => {
-        const isFirstOverall = todayTasks.length === 0 && i === 0;
-        return (
-        <div key={i} className="task-group">
-          {!isFirstOverall && (
-            <div className="task-group-header">
-              <span className="task-group-header__left">{g.left} ・ {g.right}</span>
-            </div>
-          )}
+      {todayTasks.length > 0 && (
+        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
+          <div className="task-group-header task-group-header--today">
+            <span className="task-group-header__left">Heute</span>
+          </div>
+          {todayTasks.map(renderItem)}
+        </div>
+      )}
+      {futureGroups.map((g, i) => (
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
+          <div className="task-group-header">
+            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+          </div>
           {g.items.map(renderItem)}
         </div>
-      )})}
+      ))}
     </>
   );
 }
@@ -865,19 +864,22 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
 
   return (
     <>
-      {todayTasks.map(renderItem)}
-      {futureGroups.map((g, i) => {
-        const isFirstOverall = todayTasks.length === 0 && i === 0;
-        return (
-        <div key={i} className="task-group">
-          {!isFirstOverall && (
-            <div className="task-group-header">
-              <span className="task-group-header__left">{g.left} ・ {g.right}</span>
-            </div>
-          )}
+      {todayTasks.length > 0 && (
+        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
+          <div className="task-group-header task-group-header--today">
+            <span className="task-group-header__left">Heute</span>
+          </div>
+          {todayTasks.map(renderItem)}
+        </div>
+      )}
+      {futureGroups.map((g, i) => (
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
+          <div className="task-group-header">
+            <span className="task-group-header__left">{g.left} ・ {g.right}</span>
+          </div>
           {g.items.map(renderItem)}
         </div>
-      )})}
+      ))}
     </>
   );
 }
@@ -1154,9 +1156,6 @@ function HomeScreen({
         <div className="list-section__header">
           <div className="list-section__header-left">
             <span className="list-section__label">{tabCfg?.label}</span>
-            {firstGroupLabel && (
-              <span className="list-section__date">{firstGroupLabel}</span>
-            )}
           </div>
           <div className="list-switcher">
             {TABS.map((t) => {

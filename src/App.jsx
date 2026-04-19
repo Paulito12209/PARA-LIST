@@ -448,16 +448,16 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
 
           <div className="command-panel__tabs">
             <button
-              className={`command-panel__tab ${subTab === "today" ? "command-panel__tab--active" : ""}`}
+              className={`command-panel__tab ${subTab === "today" ? "command-panel__tab--active-today" : ""}`}
               onClick={() => setSubTab("today")}
             >
-              Heute <span className="command-panel__badge">{todayEntries.length}</span>
+              Heute {todayEntries.length > 0 && <span className="command-panel__badge command-panel__badge--today">{todayEntries.length}</span>}
             </button>
             <button
-              className={`command-panel__tab ${subTab === "overdue" ? "command-panel__tab--active" : ""}`}
+              className={`command-panel__tab ${subTab === "overdue" ? "command-panel__tab--active-overdue" : ""}`}
               onClick={() => setSubTab("overdue")}
             >
-              Überfällig <span className="command-panel__badge">{overdueEntries.length}</span>
+              Überfällig {overdueEntries.length > 0 && <span className="command-panel__badge command-panel__badge--overdue">{overdueEntries.length}</span>}
             </button>
           </div>
 

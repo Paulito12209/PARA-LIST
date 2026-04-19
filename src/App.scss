@@ -146,10 +146,9 @@
 
   // Pull-down drawer content
   &__drawer {
-    padding: 0 $spacing-md $spacing-xs;
+    padding: $spacing-sm $spacing-md $spacing-xs;
     border-top: 1px solid rgba($color-border, 0.9);
     margin-top: $spacing-sm;
-    padding-top: $spacing-sm;
     animation: panel-in 0.2s ease;
     flex: 1;
     display: flex;
@@ -159,37 +158,71 @@
 
   &__tabs {
     display: flex;
-    gap: $spacing-sm;
-    margin-bottom: $spacing-sm;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-md;
+    background: $color-card;
+    border-radius: $radius-sm;
+    padding: $spacing-2xs;
+    border: 1px solid $color-border;
   }
 
   &__tab {
     flex: 1;
-    padding: 8px;
-    border-radius: $radius-md;
-    background: rgba($color-dim, 0.5);
-    color: $color-muted;
-    font-size: 12px;
-    font-weight: 600;
-    transition: all $transition-fast;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: $spacing-xs;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-sm - 2px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: $font-body;
+    color: $color-muted;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all $transition-fast;
+    cursor: pointer;
 
-    &--active {
-      background: $color-card;
+    &--active-today {
+      background: rgba($color-task, 0.15);
+      color: $color-task;
+      border-color: rgba($color-task, 0.35);
+      box-shadow: 0 0 12px rgba($color-task, 0.12);
+    }
+
+    &--active-overdue {
+      background: rgba($color-notif-red, 0.15);
+      color: $color-notif-red;
+      border-color: rgba($color-notif-red, 0.35);
+      box-shadow: 0 0 12px rgba($color-notif-red, 0.12);
+    }
+
+    &:hover:not(&--active-today):not(&--active-overdue) {
       color: $color-text;
-      border: 1px solid $color-border;
+      background: $color-hover;
     }
   }
 
   &__badge {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 9px;
-    padding: 2px 6px;
     font-size: 10px;
-    color: currentColor;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: $radius-pill;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+
+    &--today {
+      background: rgba($color-task, 0.18);
+      color: $color-task;
+    }
+
+    &--overdue {
+      background: rgba($color-notif-red, 0.18);
+      color: $color-notif-red;
+    }
   }
 
   &__list {
@@ -283,7 +316,7 @@
     }
 
     &--open {
-      padding: $spacing-sm 0 $spacing-sm + $spacing-2xs;
+      padding: $spacing-sm 0;
     }
   }
 
@@ -346,15 +379,14 @@
   position: relative;
 
   &__categories-container {
-    // Unterkante = exakte Bildschirmmitte (50dvh), Start = 80px (Kommandopanel)
-    // → Höhe = 50dvh - 80px
-    height: calc(50dvh - 80px);
+    // Exakte Hälfte des Viewports minus 112px
+    height: calc(50dvh - 112px);
     padding: $spacing-lg $spacing-md;
-    flex-shrink: 0;
     position: relative;
     z-index: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 
   // Überschrift + Page-Indicator-Dots
@@ -386,6 +418,7 @@
     flex: 1;
     overflow: hidden;
     position: relative;
+    min-height: 0;
     // Späterer Swipe: display: flex; mit translateX-Animation auf den Pages
   }
 
@@ -410,19 +443,23 @@
 .category-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 1fr;
-  gap: $spacing-sm;
+  gap: 8px;
   height: 100%;
+  width: 100%;
+  min-height: 0;
 }
 
 .category-card {
   display: flex;
   flex-direction: column;
   width: 100%;
-  border-radius: $radius-md;
+  min-width: 0;
+  max-width: 100%;
+  border-radius: $radius-md+2px;
   border: 1px solid transparent;
   padding: $spacing-xs;
   transition: transform $transition-fast, opacity $transition-fast;
+  overflow: hidden;
 
   &--project {
     background: $color-project-dim;
@@ -442,7 +479,7 @@
   &__main {
     flex: 1;
     width: 100%;
-    padding: $spacing-sm - $spacing-2xs + 12px $spacing-2xs;
+    // padding: $spacing-sm - $spacing-2xs + 12px $spacing-2xs;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -480,7 +517,7 @@
     width: 100%;
     height: 48px;
     margin-top: $spacing-xs;
-    border-radius: $radius-sm+4px;
+    border-radius: $radius-md - 2px;
     padding: $spacing-sm - 2px;
     @include flex-center;
     border: 1px solid transparent;
@@ -1685,7 +1722,7 @@
     height: $spacing-3xl + $spacing-2xs;
     margin: 0;
     padding: 0;
-    border-radius: $spacing-sm - 1px 0 0 ($spacing-sm - 1px);
+    border-radius: $spacing-sm 0 0 $spacing-sm;
     border-right: none;
     @include flex-center;
     transition: all 0.18s;
@@ -1698,7 +1735,7 @@
   gap: $spacing-xs;
   margin-bottom: $spacing-md;
   background: $color-card;
-  border-radius: $radius-md + $spacing-2xs;
+  border-radius: $radius-sm;
   padding: $spacing-2xs;
   border: 1px solid $color-border;
 
@@ -1709,7 +1746,7 @@
     justify-content: center;
     gap: $spacing-xs;
     padding: $spacing-xs + 2px $spacing-sm;
-    border-radius: $radius-md;
+    border-radius: $radius-sm - 2px;
     font-size: 12px;
     font-weight: 600;
     font-family: $font-body;
@@ -2221,14 +2258,31 @@
       border-top-color: #e5e5f0;
     }
 
-    &__tab {
-      background: #e5e5f0;
-      color: #5858A0;
+    &__tabs {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
 
-      &--active {
-        background: #ffffff;
+    &__tab {
+      color: #8e8eb2;
+
+      &--active-today {
+        background: rgba(#7C83F7, 0.12);
+        color: #5a5cc0;
+        border-color: rgba(#7C83F7, 0.30);
+        box-shadow: 0 0 10px rgba(#7C83F7, 0.08);
+      }
+
+      &--active-overdue {
+        background: rgba(#F26565, 0.12);
+        color: #c04040;
+        border-color: rgba(#F26565, 0.30);
+        box-shadow: 0 0 10px rgba(#F26565, 0.08);
+      }
+
+      &:hover:not(&--active-today):not(&--active-overdue) {
         color: #1a1a24;
-        border-color: #d1d1e0;
+        background: #f0f0f5;
       }
     }
 

@@ -1034,19 +1034,23 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
   return (
     <>
       {todayTasks.length > 0 && (
-        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header task-group-header--today">
-            <span className="task-group-header__left">{t.todayGroup}</span>
-          </div>
+        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={t.todayGroup} data-group-right="">
+          {!isHome && (
+            <div className="task-group-header task-group-header--today">
+              <span className="task-group-header__left">{t.todayGroup}</span>
+            </div>
+          )}
           {todayTasks.map(renderItem)}
         </div>
       )}
       {futureGroups.map((g, i) => (
-        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header">
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__right">{g.right}</span>
-          </div>
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right}>
+          {!isHome && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left}</span>
+              <span className="task-group-header__right">{g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
       ))}
@@ -1220,19 +1224,23 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
   return (
     <>
       {todayTasks.length > 0 && (
-        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header task-group-header--today">
-            <span className="task-group-header__left">{t.todayGroup}</span>
-          </div>
+        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={t.todayGroup} data-group-right="">
+          {!isHome && (
+            <div className="task-group-header task-group-header--today">
+              <span className="task-group-header__left">{t.todayGroup}</span>
+            </div>
+          )}
           {todayTasks.map(renderItem)}
         </div>
       )}
       {futureGroups.map((g, i) => (
-        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header">
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__right">{g.right}</span>
-          </div>
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right}>
+          {!isHome && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left}</span>
+              <span className="task-group-header__right">{g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
       ))}
@@ -1391,6 +1399,48 @@ function HomeScreen({
   };
   const tabCfg = TABS.find((t) => t.id === tab);
   const tabColor = tabCfg?.color || "#7C83F7";
+
+  const entryListRef = useRef(null);
+  const [activeGroupHeader, setActiveGroupHeader] = useState(null);
+
+  const handleListScroll = (e) => {
+    if (!entryListRef.current) return;
+    const container = entryListRef.current;
+    const groups = container.querySelectorAll('.task-group');
+    if (!groups.length) {
+      if (activeGroupHeader) setActiveGroupHeader(null);
+      return;
+    }
+    
+    let currentGroup = groups[0];
+    const containerTop = container.getBoundingClientRect().top;
+    
+    // Find the last group that has touched or passed the top edge
+    for (let i = 0; i < groups.length; i++) {
+      const rect = groups[i].getBoundingClientRect();
+      if (rect.top <= containerTop + 24) {
+        currentGroup = groups[i];
+      } else {
+        break;
+      }
+    }
+    
+    if (currentGroup) {
+      const left = currentGroup.dataset.groupLeft;
+      const right = currentGroup.dataset.groupRight;
+      if (left && (!activeGroupHeader || activeGroupHeader.left !== left || activeGroupHeader.right !== right)) {
+        setActiveGroupHeader({ left, right });
+      }
+    }
+  };
+
+  // Run scroll handler whenever tab or entries change to update the header
+  useEffect(() => {
+    if (entryListRef.current) {
+      // Small timeout to allow DOM to render groups
+      setTimeout(() => handleListScroll({ currentTarget: entryListRef.current }), 50);
+    }
+  }, [tab, tabEntries]);
 
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
@@ -1643,12 +1693,22 @@ function HomeScreen({
           </div>
         </div>
 
+        {/* Dynamischer, fixer Gruppen-Header außerhalb des Scroll-Bereichs */}
+        {activeGroupHeader && (tab === "tasks" || tab === "calendar") && (
+          <div className="task-group-header task-group-header--fixed">
+            <span className="task-group-header__left">{activeGroupHeader.left}</span>
+            <span className="task-group-header__right">{activeGroupHeader.right}</span>
+          </div>
+        )}
+
         {/* Entry list */}
         <div 
           className="entry-list" 
           onClick={handleDoubleTap}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
+          ref={entryListRef}
+          onScroll={handleListScroll}
         >
           {tabEntries.length === 0 ? (
             <div className="entry-list__empty">

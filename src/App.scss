@@ -901,9 +901,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between; // Links/Rechts Split
-  // padding: 0 $spacing-md 0 $spacing-sm; // Rechts-Padding hinzugefügt
-  margin: $spacing-sm + 4px 0;
   gap: $spacing-sm;
+
+  // Wird nun als statischer Header über der scrollbaren Liste genutzt
+  margin: 0;
+  padding: 0 $spacing-md $spacing-sm $spacing-md;
+
+  background: transparent;
+
+  &--fixed {
+    // Falls nötig, zusätzliche Anpassungen für den fixen Header
+    padding: $spacing-sm $spacing-md $spacing-xs;
+  }
 
   &__left,
   &__right {
@@ -3009,6 +3018,10 @@
     &__btn--active {
       color: white;
     }
+  }
+
+  .task-group-header {
+    background: transparent;
   }
 
   .task-group-header__left,

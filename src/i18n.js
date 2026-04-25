@@ -103,6 +103,12 @@ export const I18N = {
     tagNamePlaceholder: "Tag-Name...",
     create: "Erstellen",
     youHavePrefix: "Du hast ",
+    markFavorite: "Als Favorit markieren",
+    unmarkFavorite: "Favorit entfernen",
+    archive: "Archivieren",
+    restore: "Wiederherstellen",
+    setBirthday: "Als Geburtstag markieren",
+    unsetBirthday: "Geburtstag entfernen",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -206,6 +212,12 @@ export const I18N = {
     tagNamePlaceholder: "Tag name...",
     create: "Create",
     youHavePrefix: "You have ",
+    markFavorite: "Mark as favorite",
+    unmarkFavorite: "Remove from favorites",
+    archive: "Archive",
+    restore: "Restore",
+    setBirthday: "Set as birthday",
+    unsetBirthday: "Remove birthday",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -309,6 +321,12 @@ export const I18N = {
     tagNamePlaceholder: "Nombre de etiqueta...",
     create: "Crear",
     youHavePrefix: "Tienes ",
+    markFavorite: "Marcar como favorito",
+    unmarkFavorite: "Quitar de favoritos",
+    archive: "Archivar",
+    restore: "Restaurar",
+    setBirthday: "Marcar como cumpleaños",
+    unsetBirthday: "Quitar cumpleaños",
   }
 };
 

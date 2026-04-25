@@ -2027,6 +2027,7 @@ function CatDetailScreen({
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
   const [resSearch, setResSearch] = useState("");
+  const [showMenu, setShowMenu] = useState(false);
 
   // Alle Ordner (inkl. Ressourcen) haben 3 Sub-Tabs im Media/Ressourcen Lesezeichen
   const isProjectOrArea = cat.type === "project" || cat.type === "area";
@@ -2042,6 +2043,8 @@ function CatDetailScreen({
   const datePillRef = useRef(null);
   const tagPopupRef = useRef(null);
   const tagTriggerRef = useRef(null);
+  const menuPopupRef = useRef(null);
+  const menuButtonRef = useRef(null);
 
   // Swipe-Refs für Sub-Tab-Wechsel (wiederverwendbar)
   const subTabTouchX = useRef(0);
@@ -2083,7 +2086,13 @@ function CatDetailScreen({
         tagTriggerRef.current && !tagTriggerRef.current.contains(e.target)) {
       setShowTagSelect(false);
     }
-  }, [showConnSelect, showDate, showTagSelect]);
+    // Kontextmenü schließen
+    if (showMenu &&
+        menuPopupRef.current && !menuPopupRef.current.contains(e.target) &&
+        menuButtonRef.current && !menuButtonRef.current.contains(e.target)) {
+      setShowMenu(false);
+    }
+  }, [showConnSelect, showDate, showTagSelect, showMenu]);
 
   // Event-Listener für Click-Outside
   // (useRef + useCallback statt useEffect, da wir den Handler auf dem cat-detail div setzen)
@@ -2191,9 +2200,43 @@ function CatDetailScreen({
             onChange={(e) => onUpdate({ name: e.target.value })}
             placeholder="Titel..."
           />
-          <button className="cat-detail__delete-btn" onClick={onDelete}>
-            <Trash2 size={16} color="#F26565" />
+          <button 
+            ref={menuButtonRef}
+            className="cat-detail__delete-btn" 
+            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+          >
+            <MoreVertical size={18} color="#5858A0" />
           </button>
+
+          {showMenu && (
+            <div className="cat-detail__conn-popup" ref={menuPopupRef} style={{ top: '40px', right: '0', left: 'auto' }}>
+              <div className="cat-detail__conn-list">
+                <button 
+                  className="cat-detail__conn-item"
+                  onClick={() => { onUpdate({ starred: !cat.starred }); setShowMenu(false); }}
+                >
+                  <Star size={16} fill={cat.starred ? "#F59E0B" : "none"} color={cat.starred ? "#F59E0B" : "#5858A0"} style={{ marginRight: '10px' }} />
+                  <span>{cat.starred ? t.unmarkFavorite : t.markFavorite}</span>
+                </button>
+                <button 
+                  className="cat-detail__conn-item"
+                  onClick={() => { onUpdate({ archived: !cat.archived }); setShowMenu(false); }}
+                >
+                  {cat.archived ? <ArchiveRestore size={16} color="#5858A0" style={{ marginRight: '10px' }} /> : <Archive size={16} color="#5858A0" style={{ marginRight: '10px' }} />}
+                  <span>{cat.archived ? t.restore : t.archive}</span>
+                </button>
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+                <button 
+                  className="cat-detail__conn-item"
+                  onClick={() => { onDelete(); setShowMenu(false); }}
+                  style={{ color: '#F26565' }}
+                >
+                  <Trash2 size={16} color="#F26565" style={{ marginRight: '10px' }} />
+                  <span>{t.delete}</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <div className="cat-detail__pills">
           <div className="cat-detail__pills-group">
@@ -2202,16 +2245,17 @@ function CatDetailScreen({
               {fmtDate(cat.createdAt.split("T")[0], t.locale)}
             </div>
           )}
-          {cat.type === "project" && (
-            <button
-              ref={datePillRef}
-              className="cat-detail__date-pill"
-              onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
-              style={!cat.date ? {} : {}} 
-            >
-              {cat.date ? fmtDate(cat.date, t.locale) : t.addDate}
-            </button>
-          )}
+            {cat.type === "project" && (
+              <button
+                ref={datePillRef}
+                className="cat-detail__date-pill"
+                onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
+                style={{ gap: "6px" }}
+              >
+                <Calendar size={14} />
+                {cat.date ? fmtDate(cat.date, t.locale) : t.addDate}
+              </button>
+            )}
 
           <button
             ref={connPillRef}
@@ -2221,7 +2265,7 @@ function CatDetailScreen({
               relatedCfg
                 ? {
                     background: relatedCfg.color + "20",
-                    borderColor: relatedCfg.color + "45",
+                    borderColor: "transparent",
                     color: relatedCfg.color,
                   }
                 : {}
@@ -2273,12 +2317,7 @@ function CatDetailScreen({
           </div>
           </div>
 
-          <button 
-            className={`cat-detail__archive-toggle ${cat.archived ? 'cat-detail__archive-toggle--active' : ''}`}
-            onClick={() => onUpdate({ archived: !cat.archived })}
-          >
-            {cat.archived ? <ArchiveRestore size={18} color={cfg.color} /> : <Archive size={18} color="#5858A0" />}
-          </button>
+          <div className="cat-detail__archive-placeholder" style={{ flex: 1 }} />
           {showConnSelect && (
             <div className="cat-detail__conn-popup" ref={connPopupRef} onClick={(e) => e.stopPropagation()}>
               <div className="cat-detail__conn-list">
@@ -2796,11 +2835,14 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
   const fabVisible = useInactivity(5000);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showDate, setShowDate] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   
   const connPopupRef = useRef(null);
   const connPillRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
+  const menuPopupRef = useRef(null);
+  const menuButtonRef = useRef(null);
 
   const handleClickOutside = useCallback((e) => {
     if (showConnSelect && connPopupRef.current && !connPopupRef.current.contains(e.target) && connPillRef.current && !connPillRef.current.contains(e.target)) {
@@ -2809,7 +2851,11 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
     if (showDate && dateInputRef.current && !dateInputRef.current.contains(e.target) && datePillRef.current && !datePillRef.current.contains(e.target)) {
       setShowDate(false);
     }
-  }, [showConnSelect, showDate]);
+    if (showMenu && menuPopupRef.current && !menuPopupRef.current.contains(e.target) && menuButtonRef.current && !menuButtonRef.current.contains(e.target)) {
+      setShowMenu(false);
+    }
+  }, [showConnSelect, showDate, showMenu]);
+
   const typeIcon = {
     task: CheckCircle2,
     note: FileText,
@@ -2845,9 +2891,54 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
             onChange={(e) => onUpdate({ title: e.target.value })}
             placeholder="Titel..."
           />
-          <button className="cat-detail__delete-btn" onClick={onDelete}>
-            <Trash2 size={16} color="#F26565" />
+          <button 
+            ref={menuButtonRef}
+            className="cat-detail__delete-btn" 
+            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
+          >
+            <MoreVertical size={18} color="#5858A0" />
           </button>
+
+          {showMenu && (
+            <div className="cat-detail__conn-popup" ref={menuPopupRef} style={{ top: '40px', right: '0', left: 'auto' }}>
+              <div className="cat-detail__conn-list">
+                <button 
+                  className="cat-detail__conn-item"
+                  onClick={() => { onUpdate({ starred: !entry.starred }); setShowMenu(false); }}
+                >
+                  <Star size={16} fill={entry.starred ? "#F59E0B" : "none"} color={entry.starred ? "#F59E0B" : "#5858A0"} style={{ marginRight: '10px' }} />
+                  <span>{entry.starred ? t.unmarkFavorite : t.markFavorite}</span>
+                </button>
+                <button 
+                  className="cat-detail__conn-item"
+                  onClick={() => { onUpdate({ archived: !entry.archived }); setShowMenu(false); }}
+                >
+                  {entry.archived ? <ArchiveRestore size={16} color="#5858A0" style={{ marginRight: '10px' }} /> : <Archive size={16} color="#5858A0" style={{ marginRight: '10px' }} />}
+                  <span>{entry.archived ? t.restore : t.archive}</span>
+                </button>
+                {entry.type === "calendar" && (
+                  <button 
+                    className="cat-detail__conn-item"
+                    onClick={() => { onUpdate({ isBirthday: !entry.isBirthday }); setShowMenu(false); }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke={entry.isBirthday ? "#F59E0B" : "#5858A0"} style={{ width: 16, height: 16, marginRight: '10px' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056-4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
+                    </svg>
+                    <span>{entry.isBirthday ? t.unsetBirthday : t.setBirthday}</span>
+                  </button>
+                )}
+                <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
+                <button 
+                  className="cat-detail__conn-item"
+                  onClick={() => { onDelete(); setShowMenu(false); }}
+                  style={{ color: '#F26565' }}
+                >
+                  <Trash2 size={16} color="#F26565" style={{ marginRight: '10px' }} />
+                  <span>{t.delete}</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
         <div className="cat-detail__pills">
             {/* 1. Datumspille (Aufgabe / Kalender / Notiz-Erstellung) — kommt zuerst */}
@@ -2856,7 +2947,9 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
                 ref={datePillRef}
                 className="cat-detail__date-pill"
                 onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
+                style={{ gap: "6px" }}
               >
+                <Calendar size={14} />
                 {(entry.due || entry.date) ? fmtDate((entry.due || entry.date), t.locale) : t.addDate}
               </button>
             )}
@@ -2869,55 +2962,76 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
             {/* 2. PARA-Kategorie-Tag — kommt nach dem Datum */}
             {(() => {
               const selectedCats = allCats.filter(c => (entry.catIds || []).includes(c.id));
-              const summary = selectedCats.length === 0
-                ? t.connectSelection
-                : selectedCats.length === 1
-                  ? selectedCats[0].name
-                  : `${selectedCats[0].name} +${selectedCats.length - 1}`;
               
-              const activeCat = selectedCats[0] || cat;
+              if (selectedCats.length === 0) {
+                return (
+                  <button
+                    ref={connPillRef}
+                    className="cat-detail__date-pill"
+                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+                  >
+                    {t.connectSelection}
+                  </button>
+                );
+              }
 
               return (
-                <button
-                  ref={connPillRef}
-                  className="cat-detail__date-pill"
-                  onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
-                  style={
-                    activeCat && CC[activeCat.type]
-                      ? {
-                          background: CC[activeCat.type].color + "18",
-                          borderColor: CC[activeCat.type].color + "60",
-                          color: CC[activeCat.type].color,
-                        }
-                      : {}
-                  }
-                >
-                  {summary}
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} ref={connPillRef}>
+                  <button
+                    className="cat-detail__date-pill"
+                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+                    style={{
+                      background: CC[selectedCats[0].type].color + "18",
+                      borderColor: "transparent",
+                      color: CC[selectedCats[0].type].color,
+                    }}
+                  >
+                    {selectedCats[0].name}
+                  </button>
+                  {selectedCats.slice(1).map(c => {
+                    const CIcon = CAT_ICONS[c.type] || Circle;
+                    return (
+                      <button
+                        key={c.id}
+                        onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          padding: 0,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <CIcon size={18} color={CC[c.type].color} />
+                      </button>
+                    )
+                  })}
+                </div>
               );
             })()}
 
-          {entry.type === "calendar" && (
+          {entry.type === "calendar" && entry.isBirthday && (
             <button
               className="cat-detail__birthday-toggle"
               onClick={() => onUpdate({ isBirthday: !entry.isBirthday })}
               style={{
-                background: entry.isBirthday ? "rgba(255, 255, 255, 0.15)" : "transparent",
+                background: "rgba(255, 255, 255, 0.15)",
+                marginLeft: 'auto'
               }}
               title={t.markAsBirthday || "Als Geburtstag markieren"}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke={entry.isBirthday ? "url(#birthdayGrad)" : "currentColor"} style={{ width: 18, height: 18 }}>
-                {entry.isBirthday && (
-                  <defs>
-                    <linearGradient id="birthdayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#F26565" />
-                      <stop offset="33%" stopColor="#F59E0B" />
-                      <stop offset="66%" stopColor="#10B981" />
-                      <stop offset="100%" stopColor="#38BDF8" />
-                    </linearGradient>
-                  </defs>
-                )}
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056 4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="url(#birthdayGrad)" style={{ width: 18, height: 18 }}>
+                <defs>
+                  <linearGradient id="birthdayGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#F26565" />
+                    <stop offset="33%" stopColor="#F59E0B" />
+                    <stop offset="66%" stopColor="#10B981" />
+                    <stop offset="100%" stopColor="#38BDF8" />
+                  </linearGradient>
+                </defs>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056-4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
               </svg>
             </button>
           )}
@@ -2969,15 +3083,7 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
             </div>
           )}
 
-          {entry.type !== "calendar" && (
-            <button 
-              className={`cat-detail__archive-toggle ${entry.archived ? 'cat-detail__archive-toggle--active' : ''}`}
-              onClick={() => onUpdate({ archived: !entry.archived })}
-              style={{ marginLeft: 'auto' }}
-            >
-              {entry.archived ? <ArchiveRestore size={18} color={cfgColor} /> : <Archive size={18} color="#5858A0" />}
-            </button>
-          )}
+          <div className="cat-detail__archive-placeholder" style={{ flex: 1 }} />
         </div>
         
         {/* Date/Time Popup */}

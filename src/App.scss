@@ -2992,19 +2992,30 @@
     &__select,
     &__time-input,
     &__date-input {
-      color: #1a1a24;
+      color: #1a1a24 !important;
+      -webkit-text-fill-color: #1a1a24 !important;
       background: #f7f7f9;
       border-color: #e5e5f0;
       color-scheme: light;
 
       &::placeholder {
         color: #5858A0;
+        -webkit-text-fill-color: #5858A0;
         opacity: 0.7;
       }
 
-      // Datum-/Uhrzeit-Schrift im Light Mode immer sichtbar
-      &::-webkit-datetime-edit {
-        color: #1a1a24;
+      // Datum-/Uhrzeit-Schrift im Light Mode immer sichtbar (iOS/Android)
+      &::-webkit-datetime-edit,
+      &::-webkit-datetime-edit-fields-wrapper,
+      &::-webkit-datetime-edit-text,
+      &::-webkit-datetime-edit-month-field,
+      &::-webkit-datetime-edit-day-field,
+      &::-webkit-datetime-edit-year-field,
+      &::-webkit-datetime-edit-hour-field,
+      &::-webkit-datetime-edit-minute-field {
+        color: #1a1a24 !important;
+        -webkit-text-fill-color: #1a1a24 !important;
+        opacity: 1 !important;
       }
     }
 

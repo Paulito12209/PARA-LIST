@@ -899,6 +899,12 @@
     justify-content: space-between;
     gap: $spacing-sm;
     width: 100%;
+
+    // Titel muss min-width: 0 haben, damit text-truncate im Flex-Container greift
+    .task-item__title {
+      flex: 1;
+      min-width: 0;
+    }
   }
 
   // Aktionen rechts oben (Stern + Menü)

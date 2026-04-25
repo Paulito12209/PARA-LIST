@@ -863,17 +863,28 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
 
               {/* Zeile 3: Pillen-Buttons */}
               <div className="task-item__pills">
-                {/* Datum-Pille */}
-                <button
-                  className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
-                  onClick={(ev) => {
-                    ev.stopPropagation();
-                    setDateEntryId(dateEntryId === e.id ? null : e.id);
-                  }}
-                >
-                  <Calendar size={12} />
-                  {e.due && <span>{isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}</span>}
-                </button>
+                {/* Datum-/Uhrzeit-Pille – Tasks: due, Kalender: date+time, Notizen: nur wenn date vorhanden */}
+                {e.type === 'calendar' ? (
+                  <span
+                    className="task-item__pill task-item__pill--date"
+                    style={{ cursor: 'default' }}
+                  >
+                    <Calendar size={12} />
+                    {e.date && <span>{isToday(e.date) ? t.todayCap : fmtDate(e.date, t.locale)}</span>}
+                    {e.time && <span>· {e.time} {t.oclock}</span>}
+                  </span>
+                ) : e.type !== 'note' ? (
+                  <button
+                    className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      setDateEntryId(dateEntryId === e.id ? null : e.id);
+                    }}
+                  >
+                    <Calendar size={12} />
+                    {e.due && <span>{isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}</span>}
+                  </button>
+                ) : null}
 
                 {/* PARA-Pillen: Projekt, Area, Ressource */}
                 {renderParaPill('project', projs)}

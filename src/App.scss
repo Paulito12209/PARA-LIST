@@ -87,6 +87,7 @@
 
   &__date {
     font-size: 12px;
+    font-weight: 600;
     color: $color-muted;
     margin-top: $spacing-2xs;
   }
@@ -907,7 +908,7 @@
   &__left,
   &__right {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     color: $color-muted;
     text-transform: none;
     letter-spacing: 0.1px;
@@ -2846,6 +2847,10 @@
       color: #1a1a24;
     }
 
+    &__date {
+      color: #8e8eb2;
+    }
+
     &__drawer {
       border-top-color: #e5e5f0;
     }
@@ -3008,7 +3013,7 @@
 
   .task-group-header__left,
   .task-group-header__right {
-    color: $color-muted;
+    color: #8e8eb2;
   }
 
   .task-item,

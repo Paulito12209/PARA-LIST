@@ -2038,7 +2038,11 @@
   animation: slide-in-right $transition-normal;
 
   &__header {
-    padding: $spacing-md + $spacing-2xs $spacing-md $spacing-md - $spacing-2xs $spacing-md;
+    margin-top: -80px;
+    padding-top: 80px + $spacing-md + $spacing-2xs;
+    padding-right: $spacing-md;
+    padding-bottom: $spacing-md - $spacing-2xs;
+    padding-left: $spacing-md;
     border-bottom: 1px solid $color-border;
     transition: background $transition-normal;
   }

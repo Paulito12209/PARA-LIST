@@ -228,7 +228,7 @@ const SEED = {
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
-    { id: "e1", type: "task", title: "Im Menu auswählen.", done: false, note: "Onboarding abschließen", due: TODAY, catId: "p1" },
+    { id: "e1", type: "task", title: "Aufgaben erledigen: Im Menu auswählen", done: false, note: "Onboarding abschließen", due: TODAY, catId: "p1" },
     { id: "e2", type: "task", title: "Aufgabe löschen: Nach links ziehen", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e3", type: "task", title: "Swipe nach links & erstelle eine Notiz", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e4", type: "task", title: "Erstelle dein Geburtstag im Kalender", done: false, note: "", due: TODAY, catId: "p1" },

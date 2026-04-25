@@ -272,7 +272,7 @@
     align-items: center;
     gap: $spacing-sm + $spacing-2xs;
     padding: $spacing-sm $spacing-sm + $spacing-xs;
-    border-radius: $radius-md;
+    border-radius: 24px;
     border: 1px solid $color-border;
     margin-bottom: $spacing-sm;
     background: $color-card;
@@ -370,13 +370,22 @@
     bottom: $spacing-sm;
     display: flex;
     align-items: center;
-    justify-content: space-evenly;
-    background: $color-card;
-    border: 1px solid $color-border;
-    border-radius: $radius-sm;
-    padding: $spacing-2xs;
+    justify-content: center;
+    gap: $spacing-sm;
     animation: fade-in 0.3s ease;
     z-index: 10;
+  }
+
+  &__qs-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: 24px;
+    padding: 4px;
+    height: 48px;
   }
 
   // Einzelner Quick-Settings-Button
@@ -384,9 +393,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: $radius-sm - 2px;
+    width: 40px;
+    height: 100%;
+    border-radius: 20px;
     border: 1px solid transparent;
     background: transparent;
     color: $color-muted;
@@ -409,16 +418,26 @@
       border-color: rgba($color-task, 0.35);
       box-shadow: 0 0 12px rgba($color-task, 0.12);
     }
+  }
 
-    // Settings-Icon
-    &--settings {
-      color: $color-muted;
-      overflow: hidden;
+  &__qs-settings-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    background: $color-card;
+    border: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-muted;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+    padding: 0;
 
-      &:hover {
-        color: $color-text;
-        background: $color-hover;
-      }
+    &:hover {
+      background: $color-hover;
+      color: $color-text;
     }
   }
 
@@ -2854,8 +2873,23 @@
 
     // Quick-Settings-Leiste im Light Mode
     &__quick-settings {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    &__qs-pill {
       background: #ffffff;
       border-color: #e5e5f0;
+    }
+
+    &__qs-settings-btn {
+      background: #ffffff;
+      border-color: #e5e5f0;
+
+      &:hover {
+        background: #f0f0f5;
+        color: #1a1a24;
+      }
     }
 
     &__qs-btn {

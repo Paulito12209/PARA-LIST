@@ -475,19 +475,6 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             >
               Überfällig {overdueEntries.length > 0 && <span className="command-panel__badge command-panel__badge--overdue">{overdueEntries.length}</span>}
             </button>
-            <button
-              className="command-panel__tab-settings"
-              onClick={() => onOpenSettings()}
-              style={user.avatar ? { padding: 0 } : {}}
-            >
-              {user.avatar ? (
-                <div className="command-panel__profile-avatar" style={{ width: 24, height: 24, borderRadius: '50%' }}>
-                  <img src={user.avatar} alt="Avatar" style={{ borderRadius: '50%' }} />
-                </div>
-              ) : (
-                <CustomSettingsIcon size={18} />
-              )}
-            </button>
           </div>
 
           <div className="command-panel__list" key={subTab}>
@@ -562,46 +549,63 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
         />
         {open && (
           <div className="command-panel__quick-settings" onClick={(e) => e.stopPropagation()}>
-            {/* Sprachen: DE / EN / ES */}
-            <button
-              className={`command-panel__qs-btn ${lang === 'de' ? 'command-panel__qs-btn--active' : ''}`}
-              onClick={() => setLang('de')}
-              title="Deutsch"
-            >
-              🇩🇪
-            </button>
-            <button
-              className={`command-panel__qs-btn ${lang === 'en' ? 'command-panel__qs-btn--active' : ''}`}
-              onClick={() => setLang('en')}
-              title="English"
-            >
-              🇬🇧
-            </button>
-            <button
-              className={`command-panel__qs-btn ${lang === 'es' ? 'command-panel__qs-btn--active' : ''}`}
-              onClick={() => setLang('es')}
-              title="Español"
-            >
-              🇪🇸
-            </button>
+            <div className="command-panel__qs-pill">
+              {/* Sprachen: DE / EN / ES */}
+              <button
+                className={`command-panel__qs-btn ${lang === 'de' ? 'command-panel__qs-btn--active' : ''}`}
+                onClick={() => setLang('de')}
+                title="Deutsch"
+              >
+                🇩🇪
+              </button>
+              <button
+                className={`command-panel__qs-btn ${lang === 'en' ? 'command-panel__qs-btn--active' : ''}`}
+                onClick={() => setLang('en')}
+                title="English"
+              >
+                🇬🇧
+              </button>
+              <button
+                className={`command-panel__qs-btn ${lang === 'es' ? 'command-panel__qs-btn--active' : ''}`}
+                onClick={() => setLang('es')}
+                title="Español"
+              >
+                🇪🇸
+              </button>
 
-            {/* Vertikaler Divider */}
-            <div className="command-panel__qs-divider" />
+              {/* Vertikaler Divider */}
+              <div className="command-panel__qs-divider" />
 
-            {/* Darstellung: Moon / Sun */}
+              {/* Darstellung: Moon / Sun */}
+              <button
+                className={`command-panel__qs-btn ${theme === 'dark' ? 'command-panel__qs-btn--active' : ''}`}
+                onClick={() => setTheme('dark')}
+                title="Dark Mode"
+              >
+                <Moon size={16} />
+              </button>
+              <button
+                className={`command-panel__qs-btn ${theme === 'light' ? 'command-panel__qs-btn--active' : ''}`}
+                onClick={() => setTheme('light')}
+                title="Light Mode"
+              >
+                <Sun size={16} />
+              </button>
+            </div>
+            
+            {/* Settings-Button */}
             <button
-              className={`command-panel__qs-btn ${theme === 'dark' ? 'command-panel__qs-btn--active' : ''}`}
-              onClick={() => setTheme('dark')}
-              title="Dark Mode"
+              className="command-panel__qs-settings-btn"
+              onClick={() => onOpenSettings()}
+              style={user.avatar ? { padding: 0 } : {}}
             >
-              <Moon size={16} />
-            </button>
-            <button
-              className={`command-panel__qs-btn ${theme === 'light' ? 'command-panel__qs-btn--active' : ''}`}
-              onClick={() => setTheme('light')}
-              title="Light Mode"
-            >
-              <Sun size={16} />
+              {user.avatar ? (
+                <div className="command-panel__profile-avatar" style={{ width: 32, height: 32, borderRadius: '50%' }}>
+                  <img src={user.avatar} alt="Avatar" style={{ borderRadius: '50%' }} />
+                </div>
+              ) : (
+                <CustomSettingsIcon size={18} />
+              )}
             </button>
           </div>
         )}

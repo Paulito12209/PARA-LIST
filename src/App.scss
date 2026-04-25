@@ -1683,7 +1683,7 @@
   right: $spacing-md;
   width: $spacing-3xl;
   height: $spacing-3xl;
-  border-radius: $radius-md+2px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1702,7 +1702,7 @@
   left: $spacing-md;
   width: $spacing-3xl;
   height: $spacing-3xl;
-  border-radius: $radius-md+2px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1834,7 +1834,7 @@
 
   &__back {
     pointer-events: all;
-    @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
+    @include floating-btn($spacing-3xl, 50%);
     background: $color-surface;
     border: 1px solid $color-border;
   }
@@ -1866,7 +1866,7 @@
     height: $spacing-3xl; // 48px, identisch mit Back- und FAB-Button
     padding: 0 $spacing-md 0 calc($spacing-md + 22px);
     border: 1px solid $color-border;
-    border-radius: $radius-md + $spacing-2xs; // Identischer Radius wie Buttons
+    border-radius: 9999px; // Identischer Radius wie Buttons (pill shape)
     background: $color-surface;
     color: $color-text;
     font-size: 13px;
@@ -1940,7 +1940,7 @@
   }
 
   &__add {
-    @include floating-btn($spacing-3xl, $radius-md + $spacing-2xs);
+    @include floating-btn($spacing-3xl, 50%);
     border: none;
     pointer-events: all;
   }

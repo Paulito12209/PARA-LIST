@@ -1502,6 +1502,7 @@ function HomeScreen({
                 const initial = cfg.label.charAt(0).toUpperCase();
 
                 if (isExpanded) {
+                  const statusLabel = (type === 'area' || type === 'resource') ? 'aktiv' : 'offen';
                   return (
                     <div 
                       key={type} 
@@ -1515,7 +1516,26 @@ function HomeScreen({
                       <div className="category-card__content">
                         <div className="category-card__header">
                           <span className="category-card__title">{cfg.label}</span>
-                          <span className="category-card__status">Du hast <strong>{count}</strong> offen</span>
+                        </div>
+
+                        <div className="category-card__status">
+                          <div className="category-card__status-icon-wrap">
+                            {type === 'area' ? (
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            ) : type === 'resource' ? (
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            ) : (
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                            {/* KEINE Zahl im Icon für expanded State */}
+                          </div>
+                          <span className="category-card__status-text">Du hast <strong>{count}</strong> {statusLabel}</span>
                         </div>
                         <div className="category-card__bottom">
                           <button
@@ -1545,27 +1565,29 @@ function HomeScreen({
                       
                       <div className="category-card__badge-wrap">
                         {type === 'area' ? (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         ) : type === 'resource' ? (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         ) : (
-                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         )}
                         <span className="category-card__badge-count">{count}</span>
                       </div>
 
-                      <button
-                        className="category-card__add-btn category-card__add-btn--collapsed"
-                        onClick={(e) => { e.stopPropagation(); onAddCat(type); }}
-                      >
-                        <Plus size={20} color="#fff" strokeWidth={2.4} />
-                      </button>
+                      <div className="category-card__bottom">
+                        <button
+                          className="category-card__add-btn category-card__add-btn--collapsed"
+                          onClick={(e) => { e.stopPropagation(); onAddCat(type); }}
+                        >
+                          <Plus size={20} color="#fff" strokeWidth={2.4} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

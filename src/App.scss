@@ -595,7 +595,7 @@
   flex-direction: column;
   border-radius: 32px;
   // border: 1px solid transparent;
-  padding: $spacing-md 4px 4px 4px;
+  padding: 4px;
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   overflow: hidden;
   cursor: pointer;
@@ -604,6 +604,7 @@
     flex: 1;
     min-width: 0;
     border-radius: 28px;
+    padding: 4px;
   }
 
   &--collapsed {
@@ -647,8 +648,9 @@
     z-index: 1;
     display: flex;
     flex-direction: column;
-    height: 100%;
     justify-content: space-between;
+    height: 100%;
+    // Wir nutzen Flex-Grow für oben/unten, um die Mitte perfekt zu zentrieren
   }
 
   // --- Expanded View Styles ---
@@ -656,7 +658,8 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 0 12px;
+    padding: $spacing-sm+4px $spacing-sm+4px 0;
+    min-height: 40px; // Verhindert Kollaps
   }
 
   &__title {
@@ -669,51 +672,74 @@
   }
 
   &__status {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.8);
+    gap: 10px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0 $spacing-sm+4px;
+  }
 
-    &::before {
-      content: '';
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 1px solid rgba(255, 255, 255, 0.5);
+  &__status-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  &__status-badge-count {
+    position: absolute;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+  }
+
+  &__status-text {
+    strong {
+      font-weight: 700;
     }
   }
 
   &__bottom {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: flex-end;
-    gap: 8px;
-    margin-top: auto;
+    padding: 0;
   }
 
   // --- Collapsed View Styles ---
   &__initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-sm+4px 0 0;
     font-family: $font-heading;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 700;
     color: #fff;
     text-align: center;
   }
 
   &__badge-wrap {
+    flex: 0 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     position: relative;
-    margin: auto 0;
   }
 
   &__badge-count {
     position: absolute;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     color: #fff;
     top: 50%;

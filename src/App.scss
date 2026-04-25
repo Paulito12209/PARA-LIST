@@ -945,19 +945,19 @@
     position: relative;
   }
 
-  // Popup-Dropdown für Verknüpfungen
+  // Popup-Dropdown für Verknüpfungen (Dark Mode Standard gemäß Screenshot)
   &__pill-popup {
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    min-width: 180px;
-    max-width: 240px;
-    background: $color-surface;
-    border: 1px solid $color-border;
+    min-width: 190px;
+    max-width: 260px;
+    background: #0F1117; // Sehr dunkles Schwarz-Blau für Dark Mode
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: $radius-md;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
     z-index: 60;
-    padding: $spacing-2xs;
+    padding: $spacing-xs;
     animation: slide-up-small 0.15s ease-out;
   }
 
@@ -965,12 +965,17 @@
   &__pill-popup-item {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-xs + 1px $spacing-sm;
-    border-radius: $radius-sm + 2px;
-    font-size: 12px;
+    gap: $spacing-sm + 2px;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-sm + 4px;
+    font-size: 13px;
     font-weight: 500;
-    color: $color-text;
+    color: #FFFFFF; // Weißer Text im Dark Mode
+    transition: background $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
   }
 
   &__pill-popup-name {
@@ -984,43 +989,41 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-radius: $radius-sm;
     background: transparent;
     border: none;
     cursor: pointer;
-    color: $color-muted;
-    opacity: 0.5;
+    color: rgba(255, 255, 255, 0.3);
     transition: all $transition-fast;
     flex-shrink: 0;
 
     &:hover {
-      opacity: 1;
       color: #F26565;
-      background: rgba(#F26565, 0.1);
+      background: rgba(#F26565, 0.15);
     }
   }
 
   // Trennlinie im Popup
   &__pill-popup-divider {
     height: 1px;
-    background: $color-border;
-    margin: $spacing-2xs $spacing-sm;
+    background: rgba(255, 255, 255, 0.06);
+    margin: $spacing-xs 0;
   }
 
   // "+ Projekt" Hinzufügen-Zeile
   &__pill-popup-add {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: $spacing-sm + 2px;
     width: 100%;
-    padding: $spacing-xs + 1px $spacing-sm;
-    border-radius: $radius-sm + 2px;
-    font-size: 12px;
-    font-weight: 500;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-sm + 4px;
+    font-size: 13px;
+    font-weight: 600;
     font-family: $font-body;
-    color: $color-muted;
+    color: rgba(255, 255, 255, 0.5);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -1028,8 +1031,8 @@
     transition: all $transition-fast;
 
     &:hover {
-      background: $color-hover;
-      color: $color-text;
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
     }
   }
 
@@ -1037,14 +1040,14 @@
   &__pill-popup-option {
     display: flex;
     align-items: center;
-    gap: $spacing-sm;
+    gap: $spacing-sm + 2px;
     width: 100%;
-    padding: $spacing-xs + 1px $spacing-sm;
-    border-radius: $radius-sm + 2px;
-    font-size: 12px;
-    font-weight: 400;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-sm + 4px;
+    font-size: 13px;
+    font-weight: 500;
     font-family: $font-body;
-    color: $color-text;
+    color: rgba(255, 255, 255, 0.8);
     background: transparent;
     border: none;
     cursor: pointer;
@@ -1052,7 +1055,8 @@
     transition: all $transition-fast;
 
     &:hover {
-      background: $color-hover;
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
     }
 
     &:active {
@@ -1062,10 +1066,11 @@
 
   // Leere Liste im Popup
   &__pill-popup-empty {
-    padding: $spacing-xs + 1px $spacing-sm;
-    font-size: 11px;
-    color: $color-muted;
+    padding: $spacing-md;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
     text-align: center;
+    font-style: italic;
   }
 
   // Datum-Popup (expandiert unter den Pillen)
@@ -2648,6 +2653,45 @@
   .list-section__label,
   .home__categories-title {
     color: #1a1a24;
+  }
+
+  // PARA-Popups in Light Mode
+  .task-item__pill-popup {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+    &-item,
+    &-option {
+      color: #1a1a24;
+      &:hover {
+        background: #f0f0f5;
+      }
+    }
+
+    &-add {
+      color: #8e8eb2;
+      &:hover {
+        background: #f0f0f5;
+        color: #1a1a24;
+      }
+    }
+
+    &-divider {
+      background: #e5e5f0;
+    }
+
+    &-remove {
+      color: #8e8eb2;
+      &:hover {
+        color: #F26565;
+        background: rgba(#F26565, 0.1);
+      }
+    }
+
+    &-empty {
+      color: #8e8eb2;
+    }
   }
 
   .list-switcher {

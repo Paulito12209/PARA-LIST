@@ -5,7 +5,7 @@ import { useInactivity } from "./hooks/useInactivity";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
-  Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
+  Link2, Pencil, Paperclip, Image as ImageIcon,
   CheckCircle2, Archive, ArchiveRestore, Moon, Sun,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon,
   Star, MoreVertical
@@ -179,6 +179,15 @@ const ArchiveIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) =
 const BookmarkIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} width={size} height={size}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+  </svg>
+);
+
+const CustomSettingsIcon = ({ size = 24, color = "currentColor", strokeWidth = 2, className = "" }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="10 10 20 20" strokeWidth={strokeWidth} stroke={color} width={size} height={size} className={className}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M28 15H19" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M22 25H13" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M22 25C22 25.7956 22.3161 26.5587 22.8787 27.1213C23.4413 27.6839 24.2044 28 25 28C25.7956 28 26.5587 27.6839 27.1213 27.1213C27.6839 26.5587 28 25.7956 28 25C28 24.2044 27.6839 23.4413 27.1213 22.8787C26.5587 22.3161 25.7956 22 25 22C24.2044 22 23.4413 22.3161 22.8787 22.8787C22.3161 23.4413 22 24.2044 22 25Z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15C12 15.394 12.0776 15.7841 12.2284 16.1481C12.3791 16.512 12.6001 16.8427 12.8787 17.1213C13.1573 17.3999 13.488 17.6209 13.8519 17.7716C14.2159 17.9224 14.606 18 15 18C15.394 18 15.7841 17.9224 16.1481 17.7716C16.512 17.6209 16.8427 17.3999 17.1213 17.1213C17.3999 16.8427 17.6209 16.512 17.7716 16.1481C17.9224 15.7841 18 15.394 18 15C18 14.606 17.9224 14.2159 17.7716 13.8519C17.6209 13.488 17.3999 13.1573 17.1213 12.8787C16.8427 12.6001 16.512 12.3791 16.1481 12.2284C15.7841 12.0776 15.394 12 15 12C14.606 12 14.2159 12.0776 13.8519 12.2284C13.488 12.3791 13.1573 12.6001 12.8787 12.8787C12.6001 13.1573 12.3791 13.488 12.2284 13.8519C12.0776 14.2159 12 14.606 12 15Z" />
   </svg>
 );
 
@@ -435,11 +444,11 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                 <div className="command-panel__profile-avatar">
                   <img src={user.avatar} alt="Avatar" />
                   <div className="command-panel__profile-hover">
-                    <Settings size={18} color="#fff" />
+                    <CustomSettingsIcon size={18} color="#fff" />
                   </div>
                 </div>
               ) : (
-                <Settings size={17} className="icon-muted" color="currentColor" />
+                <CustomSettingsIcon size={17} className="icon-muted" color="currentColor" />
               )}
             </button>
           )}
@@ -596,7 +605,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                   <img src={user.avatar} alt="Avatar" style={{ borderRadius: '50%' }} />
                 </div>
               ) : (
-                <Settings size={16} />
+                <CustomSettingsIcon size={16} />
               )}
             </button>
           </div>
@@ -1514,7 +1523,7 @@ function HomeScreen({
                             className="category-card__add-btn category-card__add-btn--expanded"
                             onClick={(e) => { e.stopPropagation(); onAddCat(type); }}
                           >
-                            <Plus size={24} color="#fff" strokeWidth={2.4} />
+                            <Plus size={20} color="#fff" strokeWidth={2.4} />
                           </button>
                         </div>
                       </div>
@@ -3257,7 +3266,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                 <ChevronLeft size={20} color="#5858A0" />
               </button>
             ) : (
-              <Settings size={20} className="icon-muted" color="currentColor" />
+              <CustomSettingsIcon size={20} className="icon-muted" color="currentColor" />
             )}
           </div>
           

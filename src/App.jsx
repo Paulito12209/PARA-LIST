@@ -607,10 +607,13 @@ function EntryMetaTags({ entry, cats, CC }) {
 
 /* ── Task List ───────────────────────────────────────────────── */
 function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDelete, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
-  // State für Kontextmenü und Datum-Popup (nur Home)
+  // State für Kontextmenü, Datum-Popup und Pill-Popup (nur Home)
   const [menuEntryId, setMenuEntryId] = useState(null);
   const [dateEntryId, setDateEntryId] = useState(null);
+  // pillPopup: { entryId, type, showAdd } – welches Pill-Popup offen ist
+  const [pillPopup, setPillPopup] = useState(null);
   const menuRef = useRef(null);
+  const pillPopupRef = useRef(null);
 
   // Kontextmenü schließen bei Klick außerhalb
   useEffect(() => {
@@ -624,6 +627,18 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
     return () => document.removeEventListener('pointerdown', close);
   }, [menuEntryId]);
 
+  // Pill-Popup schließen bei Klick außerhalb
+  useEffect(() => {
+    if (!pillPopup) return;
+    const close = (e) => {
+      if (pillPopupRef.current && !pillPopupRef.current.contains(e.target)) {
+        setPillPopup(null);
+      }
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [pillPopup]);
+
   const renderItem = (e) => {
     const overdue = isOld(e.due) && !e.done;
 
@@ -631,12 +646,123 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
     if (isHome) {
       const ids = e.catIds || (e.catId ? [e.catId] : []);
       const linked = cats.filter((c) => ids.includes(c.id));
-      const proj = linked.find(c => c.type === "project");
-      const area = linked.find(c => c.type === "area");
-      const res = linked.find(c => c.type === "resource");
+      // Mehrfach-Verknüpfungen pro Kategorie
+      const projs = linked.filter(c => c.type === "project");
+      const areas = linked.filter(c => c.type === "area");
+      const ress  = linked.filter(c => c.type === "resource");
+
+      // Icons pro Kategorie
+      const PILL_ICONS = { project: Circle, area: Triangle, resource: Square };
+
+      // Hilfsfunktion: Rendert eine PARA-Pille (Icon oder Name+X)
+      const renderParaPill = (type, items) => {
+        const PillIcon = PILL_ICONS[type];
+        const cc = CC[type];
+        const isPopupOpen = pillPopup && pillPopup.entryId === e.id && pillPopup.type === type;
+        const label = type === 'project' ? t.projectSing : type === 'area' ? t.areaSing : t.resourceSing;
+
+        // Verfügbare Einträge dieser Kategorie (nicht archiviert)
+        const available = cats.filter(c => c.type === type && !c.archived && !ids.includes(c.id));
+
+        return (
+          <div className="task-item__pill-wrap" key={type}>
+            {/* Pille: Icon wenn leer, Name wenn verknüpft */}
+            {items.length === 0 ? (
+              <button
+                className="task-item__pill task-item__pill--icon-btn"
+                style={{ color: cc.color }}
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: true });
+                }}
+              >
+                <PillIcon size={12} strokeWidth={2.5} />
+              </button>
+            ) : (
+              <button
+                className="task-item__pill task-item__pill--cat-btn"
+                style={{ color: cc.color, background: cc.color + '18' }}
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: false });
+                }}
+              >
+                {items[0].name}{items.length > 1 ? ` +${items.length - 1}` : ''}
+              </button>
+            )}
+
+            {/* Popup-Dropdown */}
+            {isPopupOpen && (
+              <div
+                className="task-item__pill-popup"
+                ref={pillPopupRef}
+                onClick={(ev) => ev.stopPropagation()}
+              >
+                {/* Verknüpfte Einträge */}
+                {items.length > 0 && (
+                  <>
+                    {items.map(item => (
+                      <div key={item.id} className="task-item__pill-popup-item">
+                        <PillIcon size={10} color={cc.color} strokeWidth={2.5} />
+                        <span className="task-item__pill-popup-name">{item.name}</span>
+                        <button
+                          className="task-item__pill-popup-remove"
+                          onClick={() => {
+                            // Verknüpfung entfernen
+                            const nextIds = ids.filter(id => id !== item.id);
+                            onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
+                          }}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="task-item__pill-popup-divider" />
+                  </>
+                )}
+
+                {/* Hinzufügen-Zeile */}
+                {!pillPopup.showAdd ? (
+                  <button
+                    className="task-item__pill-popup-add"
+                    onClick={() => setPillPopup({ ...pillPopup, showAdd: true })}
+                  >
+                    <Plus size={12} />
+                    <span>{label}</span>
+                  </button>
+                ) : (
+                  <>
+                    {available.length === 0 ? (
+                      <div className="task-item__pill-popup-empty">
+                        {t.noCats(cc.label).split('\n')[0]}
+                      </div>
+                    ) : (
+                      available.map(opt => (
+                        <button
+                          key={opt.id}
+                          className="task-item__pill-popup-option"
+                          onClick={() => {
+                            // Verknüpfung hinzufügen
+                            const nextIds = [...ids, opt.id];
+                            onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
+                            setPillPopup({ ...pillPopup, showAdd: false });
+                          }}
+                        >
+                          <PillIcon size={10} color={cc.color} strokeWidth={2} style={{ opacity: 0.5 }} />
+                          <span>{opt.name}</span>
+                        </button>
+                      ))
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      };
 
       return (
-        <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} isActive={menuEntryId === e.id || dateEntryId === e.id}>
+        <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}>
           <div
             className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
             onClick={() => onOpenEntry && onOpenEntry(e)}
@@ -692,50 +818,10 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
                   {e.due && <span>{isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}</span>}
                 </button>
 
-                {/* Projekt-Icon */}
-                <span className="task-item__pill task-item__pill--icon" style={{ color: CC.project.color }}>
-                  <Circle size={12} strokeWidth={2.5} />
-                </span>
-
-                {/* Projekt-Name wenn verknüpft */}
-                {proj && (
-                  <span
-                    className="task-item__pill task-item__pill--cat"
-                    style={{ color: CC.project.color, background: CC.project.color + '18' }}
-                  >
-                    {proj.name}
-                  </span>
-                )}
-
-                {/* Area-Icon */}
-                <span className="task-item__pill task-item__pill--icon" style={{ color: CC.area.color }}>
-                  <Triangle size={12} strokeWidth={2.5} />
-                </span>
-
-                {/* Area-Name wenn verknüpft */}
-                {area && (
-                  <span
-                    className="task-item__pill task-item__pill--cat"
-                    style={{ color: CC.area.color, background: CC.area.color + '18' }}
-                  >
-                    {area.name}
-                  </span>
-                )}
-
-                {/* Ressource-Icon */}
-                <span className="task-item__pill task-item__pill--icon" style={{ color: CC.resource.color }}>
-                  <Square size={12} strokeWidth={2.5} />
-                </span>
-
-                {/* Ressource-Name wenn verknüpft */}
-                {res && (
-                  <span
-                    className="task-item__pill task-item__pill--cat"
-                    style={{ color: CC.resource.color, background: CC.resource.color + '18' }}
-                  >
-                    {res.name}
-                  </span>
-                )}
+                {/* PARA-Pillen: Projekt, Area, Ressource */}
+                {renderParaPill('project', projs)}
+                {renderParaPill('area', areas)}
+                {renderParaPill('resource', ress)}
               </div>
 
               {/* Datum-Popup (expandiert unter den Pillen) */}

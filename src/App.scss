@@ -905,20 +905,167 @@
       border: 1px solid #FECACA;
     }
 
-    // Nur-Icon-Pille (PARA-Typ-Symbole)
-    &--icon {
+    // Klickbarer Icon-Button (wenn keine Verknüpfung)
+    &--icon-btn {
       width: 22px;
       padding: 0;
       opacity: 0.55;
-      cursor: default;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:hover {
+        opacity: 0.85;
+      }
+
+      &:active {
+        transform: scale(0.9);
+      }
     }
 
-    // Kategorie-Name-Pille
-    &--cat {
+    // Klickbarer Kategorie-Name-Button (wenn verknüpft)
+    &--cat-btn {
       padding: 0 8px;
       border-radius: $radius-pill;
-      cursor: default;
+      cursor: pointer;
+      transition: all $transition-fast;
+      white-space: nowrap;
+
+      &:hover {
+        opacity: 0.85;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
     }
+  }
+
+  // Wrapper für eine Pille + ihr Popup (relative Positionierung)
+  &__pill-wrap {
+    position: relative;
+  }
+
+  // Popup-Dropdown für Verknüpfungen
+  &__pill-popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 180px;
+    max-width: 240px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    z-index: 60;
+    padding: $spacing-2xs;
+    animation: slide-up-small 0.15s ease-out;
+  }
+
+  // Verknüpfter Eintrag im Popup
+  &__pill-popup-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-xs + 1px $spacing-sm;
+    border-radius: $radius-sm + 2px;
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-text;
+  }
+
+  &__pill-popup-name {
+    flex: 1;
+    min-width: 0;
+    @include text-truncate;
+  }
+
+  // Entfernen-Button (X) im verknüpften Eintrag
+  &__pill-popup-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: $radius-sm;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: $color-muted;
+    opacity: 0.5;
+    transition: all $transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      opacity: 1;
+      color: #F26565;
+      background: rgba(#F26565, 0.1);
+    }
+  }
+
+  // Trennlinie im Popup
+  &__pill-popup-divider {
+    height: 1px;
+    background: $color-border;
+    margin: $spacing-2xs $spacing-sm;
+  }
+
+  // "+ Projekt" Hinzufügen-Zeile
+  &__pill-popup-add {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    padding: $spacing-xs + 1px $spacing-sm;
+    border-radius: $radius-sm + 2px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: $font-body;
+    color: $color-muted;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+      color: $color-text;
+    }
+  }
+
+  // Verfügbare Option in der Auswahlliste
+  &__pill-popup-option {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    padding: $spacing-xs + 1px $spacing-sm;
+    border-radius: $radius-sm + 2px;
+    font-size: 12px;
+    font-weight: 400;
+    font-family: $font-body;
+    color: $color-text;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  // Leere Liste im Popup
+  &__pill-popup-empty {
+    padding: $spacing-xs + 1px $spacing-sm;
+    font-size: 11px;
+    color: $color-muted;
+    text-align: center;
   }
 
   // Datum-Popup (expandiert unter den Pillen)

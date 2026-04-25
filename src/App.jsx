@@ -900,7 +900,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
       catId: finalCatIds[0] || null 
     };
 
-    if (type === "task") Object.assign(entry, { done: false, note, due: due || null, time: time || null });
+    if (type === "task") Object.assign(entry, { done: false, note, due: due || TODAY, time: time || null });
     if (type === "note") Object.assign(entry, { body });
     if (type === "calendar") Object.assign(entry, { date, time, isBirthday });
     if (type === "media") Object.assign(entry, { mediaType, mediaData: mediaFile });

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Clock, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
 import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete } from "./shared";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
 import { useInactivity } from "./hooks/useInactivity";
@@ -270,8 +270,18 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
                 className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
                 onClick={(ev) => { ev.stopPropagation(); setDateEntryId(dateEntryId === e.id ? null : e.id); }}
               >
-                <Calendar size={12} />
-                {e.due && <span>{isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}</span>}
+                {isToday(e.due) ? (
+                  <>
+                    <Clock size={12} />
+                    {e.time && <span>{e.time} {t.oclock}</span>}
+                  </>
+                ) : (
+                  <>
+                    <Calendar size={12} />
+                    {e.due && <span>{fmtDate(e.due, t.locale)}</span>}
+                    {e.time && <span>· {e.time} {t.oclock}</span>}
+                  </>
+                )}
               </button>
             ) : null}
 
@@ -281,13 +291,19 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
           </div>
 
           {dateEntryId === e.id && (
-            <div className="task-item__date-popup" onClick={(ev) => ev.stopPropagation()}>
+            <div className="task-item__date-popup" style={{ display: 'flex', gap: '8px' }} onClick={(ev) => ev.stopPropagation()}>
               <input
                 type="date"
                 className="task-item__date-input"
                 value={e.due || ""}
                 autoFocus
                 onChange={(ev) => { onUpdateEntry && onUpdateEntry(e.id, { due: ev.target.value || null }); }}
+              />
+              <input
+                type="time"
+                className="task-item__date-input"
+                value={e.time || ""}
+                onChange={(ev) => { onUpdateEntry && onUpdateEntry(e.id, { time: ev.target.value || null }); }}
               />
             </div>
           )}

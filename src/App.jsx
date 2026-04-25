@@ -1125,19 +1125,23 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
   return (
     <>
       {todayTasks.length > 0 && (
-        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header task-group-header--today">
-            <span className="task-group-header__left">{t.todayGroup}</span>
-          </div>
+        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={t.todayGroup} data-group-right="">
+          {!isHome && (
+            <div className="task-group-header task-group-header--today">
+              <span className="task-group-header__left">{t.todayGroup}</span>
+            </div>
+          )}
           {todayTasks.map(renderItem)}
         </div>
       )}
       {futureGroups.map((g, i) => (
-        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`}>
-          <div className="task-group-header">
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__right">{g.right}</span>
-          </div>
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right}>
+          {!isHome && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left}</span>
+              <span className="task-group-header__right">{g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
       ))}
@@ -1694,7 +1698,7 @@ function HomeScreen({
         </div>
 
         {/* Dynamischer, fixer Gruppen-Header außerhalb des Scroll-Bereichs */}
-        {activeGroupHeader && (tab === "tasks" || tab === "calendar") && (
+        {activeGroupHeader && (tab === "tasks" || tab === "calendar" || tab === "notes") && (
           <div className="task-group-header task-group-header--fixed">
             <span className="task-group-header__left">{activeGroupHeader.left}</span>
             <span className="task-group-header__right">{activeGroupHeader.right}</span>

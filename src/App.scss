@@ -2997,14 +2997,13 @@
       border-color: #e5e5f0;
       color-scheme: light;
 
-      &::-webkit-datetime-edit {
+      &::placeholder {
         color: #5858A0;
-        opacity: 0.5;
+        opacity: 0.7;
       }
 
-      &:focus::-webkit-datetime-edit,
-      &[value]:not([value=""])::-webkit-datetime-edit {
-        opacity: 1;
+      // Datum-/Uhrzeit-Schrift im Light Mode immer sichtbar
+      &::-webkit-datetime-edit {
         color: #1a1a24;
       }
     }

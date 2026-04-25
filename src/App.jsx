@@ -1341,11 +1341,11 @@ function HomeScreen({
   onOpenArchive,
   onArchiveEntry,
   panelOpen,
+  expandedCat,
+  setExpandedCat,
 }) {
 
-
   const { entries, cats } = state;
-  const [expandedCat, setExpandedCat] = useState("project");
   const tabEntries = entries.map((e) => {
     if (e.type === "calendar" && e.isBirthday) {
       const nextBd = getNextBirthday(e.date);
@@ -3516,6 +3516,7 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [creating, setCreating] = useState(null);
   const [newCatType, setNewCatType] = useState(null);
+  const [expandedCat, setExpandedCat] = useState("project");
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -3724,6 +3725,8 @@ export default function App() {
             tab={tab}
             setTab={setTab}
             panelOpen={panelOpen}
+            expandedCat={expandedCat}
+            setExpandedCat={setExpandedCat}
 
             onOpenCatType={(type) => push({ view: "catList", type })}
             onAddCat={(type) => {

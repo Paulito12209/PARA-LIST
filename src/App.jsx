@@ -1362,7 +1362,7 @@ function HomeScreen({
     if (e.type === "calendar" && e.isBirthday) {
       const nextBd = getNextBirthday(e.date);
       if (nextBd) {
-        return { ...e, date: nextBd.date, title: `${e.title} (${nextBd.age} J.)` };
+        return { ...e, date: nextBd.date, title: `${e.title} (${nextBd.age} ${t.yearsShort || "J."})` };
       }
     }
     return e;
@@ -2105,7 +2105,7 @@ function CatDetailScreen({
             })()}
             {(!cat.tags || cat.tags.length === 0) && (
               <span className="cat-detail__tag" style={{ background: "transparent", border: "1px dashed #5858A066", opacity: 0.8 }}>
-                + Tag
+                {t.addTag || "+ Tag"}
               </span>
             )}
           </div>
@@ -2156,7 +2156,7 @@ function CatDetailScreen({
             <div className="cat-detail__conn-popup" ref={tagPopupRef} onClick={(e) => e.stopPropagation()} style={{ left: "auto", right: 0 }}>
               <div className="cat-detail__conn-list">
                 {(!tags || tags.length === 0) ? (
-                  <div className="cat-detail__conn-empty">Keine Tags</div>
+                  <div className="cat-detail__conn-empty">{t.noTagsPopup || "Keine Tags"}</div>
                 ) : (
                   tags.map(tag => {
                     const isSelected = (cat.tags || []).includes(tag.name);
@@ -2436,7 +2436,7 @@ function CatDetailScreen({
                           onKeyDown={(e) => {
                             if (e.key === "Enter") e.target.blur();
                           }}
-                          placeholder="..."
+                          placeholder={t.tagNamePlaceholder || "..."}
                         />
                         {tag.createdAt && <div className="media-item__meta">{fmtDate(tag.createdAt.split("T")[0], t.locale)}</div>}
                       </div>
@@ -2926,12 +2926,12 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
     type === "media" ? "#10B981" : 
     "#7C3AED";
 
-  const label =
-    type === "task" ? t.task : 
-    type === "note" ? "Notiz" : 
-    type === "calendar" ? "Termin" : 
-    type === "media" ? "Ressource" : 
-    "Quelle";
+    const label =
+      type === "task" ? t.task : 
+      type === "note" ? t.note : 
+      type === "calendar" ? t.calSing : 
+      type === "media" ? t.mediaSing : 
+      t.link;
 
   const save = () => {
     if (!title.trim()) return;
@@ -3149,7 +3149,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
           onClick={save}
           style={{ background: tc }}
         >
-          Erstellen
+          {t.create || "Erstellen"}
         </button>
       </div>
     </div>
@@ -3188,7 +3188,7 @@ function NewCatModal({ type, onSave, onClose, t, CC }) {
           onClick={() => name.trim() && onSave(name.trim())}
           style={{ background: cfg.color }}
         >
-          Erstellen
+          {t.create || "Erstellen"}
         </button>
       </div>
     </div>
@@ -3891,7 +3891,7 @@ export default function App() {
               if (cat.id === ID_BIRTHDAYS && e.type === "calendar" && e.isBirthday) {
                 const nextBd = getNextBirthday(e.date);
                 if (nextBd) {
-                  return { ...e, date: nextBd.date, title: `${e.title} (${nextBd.age} J.)` };
+                  return { ...e, date: nextBd.date, title: `${e.title} (${nextBd.age} ${t.yearsShort || "J."})` };
                 }
               }
               return e;

@@ -97,6 +97,11 @@ export const I18N = {
     noCompletedTasks: "Keine erledigten Aufgaben",
     birthday: "Geburtstag",
     markAsBirthday: "Als Geburtstag markieren",
+    yearsShort: "J.",
+    addTag: "+ Tag",
+    noTagsPopup: "Keine Tags",
+    tagNamePlaceholder: "Tag-Name...",
+    create: "Erstellen",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -194,6 +199,11 @@ export const I18N = {
     noCompletedTasks: "No completed tasks",
     birthday: "Birthday",
     markAsBirthday: "Mark as Birthday",
+    yearsShort: "y.",
+    addTag: "+ Tag",
+    noTagsPopup: "No Tags",
+    tagNamePlaceholder: "Tag name...",
+    create: "Create",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -291,6 +301,11 @@ export const I18N = {
     noCompletedTasks: "No hay tareas completadas",
     birthday: "Cumpleaños",
     markAsBirthday: "Marcar como cumpleaños",
+    yearsShort: "a.",
+    addTag: "+ Etiqueta",
+    noTagsPopup: "Sin etiquetas",
+    tagNamePlaceholder: "Nombre de etiqueta...",
+    create: "Crear",
   }
 };
 

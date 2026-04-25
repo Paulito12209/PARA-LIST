@@ -622,46 +622,323 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
 }
 
 /* ── Entry Meta Tags ─────────────────────────────────────────── */
-function EntryMetaTags({ entry, cats, CC }) {
+function EntryMetaTags({ entry, cats, CC, isHome }) {
   const ids = entry.catIds || (entry.catId ? [entry.catId] : []);
-  if (ids.length === 0) return null;
+  if (!isHome && ids.length === 0) return null;
 
   const linked = cats.filter((c) => ids.includes(c.id));
   const projs = linked.filter((c) => c.type === "project");
   const areas = linked.filter((c) => c.type === "area");
   const res   = linked.filter((c) => c.type === "resource");
 
+  if (!isHome) {
+    return (
+      <>
+        {projs.length > 0 && (
+          <span
+            className="task-item__cat-tag"
+            style={{ color: CC.project.color, background: 'var(--pill-project-bg)' }}
+          >
+            {projs[0].name}{projs.length > 1 ? ` +${projs.length - 1}` : ""}
+          </span>
+        )}
+        {areas.length > 0 && (
+          <span
+            className="task-item__cat-tag"
+            style={{ color: CC.area.color, background: 'var(--pill-area-bg)' }}
+          >
+            {areas[0].name}{areas.length > 1 ? ` +${areas.length - 1}` : ""}
+          </span>
+        )}
+        {res.length > 0 && (
+          <span
+            className="task-item__cat-tag"
+            style={{
+              color: CC.resource.color,
+              background: 'var(--pill-resource-bg)',
+            }}
+          >
+            <Square size={10} color={CC.resource.color} strokeWidth={2.5} style={{ marginRight: 3 }} />
+            {res[0].name.trim()}{res.length > 1 ? ` +${res.length - 1}` : ""}
+          </span>
+        )}
+      </>
+    );
+  }
+
   return (
-    <>
-      {projs.length > 0 && (
-        <span
-          className="task-item__cat-tag"
-          style={{ color: CC.project.color, background: 'var(--pill-project-bg)' }}
-        >
-          {projs[0].name}{projs.length > 1 ? ` +${projs.length - 1}` : ""}
-        </span>
-      )}
-      {areas.length > 0 && (
-        <span
-          className="task-item__cat-tag"
-          style={{ color: CC.area.color, background: 'var(--pill-area-bg)' }}
-        >
-          {areas[0].name}{areas.length > 1 ? ` +${areas.length - 1}` : ""}
-        </span>
-      )}
-      {res.length > 0 && (
-        <span
-          className="task-item__cat-tag"
-          style={{
-            color: CC.resource.color,
-            background: 'var(--pill-resource-bg)',
-          }}
-        >
-          <Square size={10} color={CC.resource.color} strokeWidth={2.5} style={{ marginRight: 3 }} />
-          {res[0].name.trim()}{res.length > 1 ? ` +${res.length - 1}` : ""}
-        </span>
-      )}
-    </>
+    <div className="task-item__pills" style={{ marginTop: 0 }}>
+      <div className="task-item__pill-wrap">
+        {projs.length === 0 ? (
+          <div className="task-item__pill task-item__pill--icon-btn" style={{ color: CC.project.color, cursor: 'default' }}>
+            <Circle size={12} strokeWidth={2.5} />
+          </div>
+        ) : (
+          <div className="task-item__pill task-item__pill--cat-btn" style={{ color: CC.project.color, background: 'var(--pill-project-bg)', cursor: 'default' }}>
+            {projs[0].name}{projs.length > 1 ? ` +${projs.length - 1}` : ""}
+          </div>
+        )}
+      </div>
+
+      <div className="task-item__pill-wrap">
+        {areas.length === 0 ? (
+          <div className="task-item__pill task-item__pill--icon-btn" style={{ color: CC.area.color, cursor: 'default' }}>
+            <Triangle size={12} strokeWidth={2.5} />
+          </div>
+        ) : (
+          <div className="task-item__pill task-item__pill--cat-btn" style={{ color: CC.area.color, background: 'var(--pill-area-bg)', cursor: 'default' }}>
+            {areas[0].name}{areas.length > 1 ? ` +${areas.length - 1}` : ""}
+          </div>
+        )}
+      </div>
+
+      <div className="task-item__pill-wrap">
+        {res.length === 0 ? (
+          <div className="task-item__pill task-item__pill--icon-btn" style={{ color: CC.resource.color, cursor: 'default' }}>
+            <Square size={12} strokeWidth={2.5} />
+          </div>
+        ) : (
+          <div className="task-item__pill task-item__pill--cat-btn" style={{ color: CC.resource.color, background: 'var(--pill-resource-bg)', cursor: 'default' }}>
+            {res[0].name}{res.length > 1 ? ` +${res.length - 1}` : ""}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}/* ── Home Entry Item ─────────────────────────────────────────── */
+function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, onOpenEntry, t, CC, isArchive }) {
+  const [menuEntryId, setMenuEntryId] = useState(null);
+  const [dateEntryId, setDateEntryId] = useState(null);
+  const [pillPopup, setPillPopup] = useState(null);
+  const menuRef = useRef(null);
+  const pillPopupRef = useRef(null);
+  const suppressNextClick = useRef(false);
+
+  useEffect(() => {
+    if (!menuEntryId) return;
+    const close = (ev) => {
+      if (menuRef.current && !menuRef.current.contains(ev.target)) {
+        setMenuEntryId(null);
+        suppressNextClick.current = true;
+        requestAnimationFrame(() => { setTimeout(() => { suppressNextClick.current = false; }, 0); });
+      }
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [menuEntryId]);
+
+  useEffect(() => {
+    if (!pillPopup) return;
+    const close = (ev) => {
+      if (pillPopupRef.current && !pillPopupRef.current.contains(ev.target)) {
+        setPillPopup(null);
+        suppressNextClick.current = true;
+        requestAnimationFrame(() => { setTimeout(() => { suppressNextClick.current = false; }, 0); });
+      }
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [pillPopup]);
+
+  const overdue = isOld(e.due || e.date) && !e.done;
+  const ids = e.catIds || (e.catId ? [e.catId] : []);
+  const linked = cats.filter((c) => ids.includes(c.id));
+  const projs = linked.filter(c => c.type === "project");
+  const areas = linked.filter(c => c.type === "area");
+  const ress  = linked.filter(c => c.type === "resource");
+
+  const PILL_ICONS = { project: Circle, area: Triangle, resource: Square };
+
+  const renderParaPill = (type, items) => {
+    const PillIcon = PILL_ICONS[type];
+    const cc = CC[type];
+    const isPopupOpen = pillPopup && pillPopup.entryId === e.id && pillPopup.type === type;
+    const label = type === 'project' ? t.projectSing : type === 'area' ? t.areaSing : t.resourceSing;
+    const available = cats.filter(c => c.type === type && !c.archived && !ids.includes(c.id));
+
+    return (
+      <div className="task-item__pill-wrap" key={type}>
+        {items.length === 0 ? (
+          <button
+            className="task-item__pill task-item__pill--icon-btn"
+            style={{ color: cc.color }}
+            onClick={(ev) => {
+              ev.stopPropagation();
+              setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: true });
+            }}
+          >
+            <PillIcon size={12} strokeWidth={2.5} />
+          </button>
+        ) : (
+          <button
+            className="task-item__pill task-item__pill--cat-btn"
+            style={{ color: cc.color, background: `var(--pill-${type}-bg)` }}
+            onClick={(ev) => {
+              ev.stopPropagation();
+              setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: false });
+            }}
+          >
+            {items[0].name}{items.length > 1 ? ` +${items.length - 1}` : ''}
+          </button>
+        )}
+
+        {isPopupOpen && (
+          <div className="task-item__pill-popup" ref={pillPopupRef} onClick={(ev) => ev.stopPropagation()}>
+            {items.length > 0 && (
+              <>
+                {items.map(item => (
+                  <div key={item.id} className="task-item__pill-popup-item">
+                    <PillIcon size={10} color={cc.color} strokeWidth={2.5} />
+                    <span className="task-item__pill-popup-name">{item.name}</span>
+                    <button
+                      className="task-item__pill-popup-remove"
+                      onClick={() => {
+                        const nextIds = ids.filter(id => id !== item.id);
+                        onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
+                      }}
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+                <div className="task-item__pill-popup-divider" />
+              </>
+            )}
+
+            {!pillPopup.showAdd ? (
+              <button
+                className="task-item__pill-popup-add"
+                onClick={() => setPillPopup({ ...pillPopup, showAdd: true })}
+              >
+                <Plus size={12} />
+                <span>{label}</span>
+              </button>
+            ) : (
+              <>
+                {available.length === 0 ? (
+                  <div className="task-item__pill-popup-empty">
+                    {t.noCats(cc.label).split('\n')[0]}
+                  </div>
+                ) : (
+                  available.map(opt => (
+                    <button
+                      key={opt.id}
+                      className="task-item__pill-popup-option"
+                      onClick={() => {
+                        const nextIds = [...ids, opt.id];
+                        onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
+                        setPillPopup({ ...pillPopup, showAdd: false });
+                      }}
+                    >
+                      <PillIcon size={10} color={cc.color} strokeWidth={2} style={{ opacity: 0.5 }} />
+                      <span>{opt.name}</span>
+                    </button>
+                  ))
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}>
+      <div
+        className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
+        onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
+      >
+        <div className="task-item__body">
+          <div className="task-item__top-row">
+            <div className={`task-item__title ${e.done ? "task-item__title--done" : ""}`}>
+              {e.title}
+            </div>
+            <div className="task-item__actions-home">
+              <button
+                className="task-item__star-btn"
+                onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
+              >
+                <Star size={18} fill={e.starred ? '#F59E0B' : 'none'} color={e.starred ? '#F59E0B' : '#C0C0D0'} strokeWidth={e.starred ? 0 : 1.5} />
+              </button>
+              <button
+                className="task-item__menu-btn"
+                onClick={(ev) => { ev.stopPropagation(); setMenuEntryId(menuEntryId === e.id ? null : e.id); }}
+              >
+                <MoreVertical size={18} color="#C0C0D0" />
+              </button>
+            </div>
+          </div>
+
+          <div className="task-item__note-hint">
+            {e.body || e.note || t.addNotePlaceholder}
+          </div>
+
+          <div className="task-item__pills">
+            {e.type === 'calendar' ? (
+              <span className="task-item__pill task-item__pill--date" style={{ cursor: 'default' }}>
+                <Calendar size={12} />
+                {e.date && <span>{isToday(e.date) ? t.todayCap : fmtDate(e.date, t.locale)}</span>}
+                {e.time && <span>· {e.time} {t.oclock}</span>}
+              </span>
+            ) : e.type !== 'note' ? (
+              <button
+                className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
+                onClick={(ev) => { ev.stopPropagation(); setDateEntryId(dateEntryId === e.id ? null : e.id); }}
+              >
+                <Calendar size={12} />
+                {e.due && <span>{isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}</span>}
+              </button>
+            ) : null}
+
+            {renderParaPill('project', projs)}
+            {renderParaPill('area', areas)}
+            {renderParaPill('resource', ress)}
+          </div>
+
+          {dateEntryId === e.id && (
+            <div className="task-item__date-popup" onClick={(ev) => ev.stopPropagation()}>
+              <input
+                type="date"
+                className="task-item__date-input"
+                value={e.due || ""}
+                autoFocus
+                onChange={(ev) => { onUpdateEntry && onUpdateEntry(e.id, { due: ev.target.value || null }); }}
+              />
+            </div>
+          )}
+        </div>
+
+        {menuEntryId === e.id && (
+          <div className="task-item__context-menu" ref={menuRef} onClick={(ev) => ev.stopPropagation()}>
+            {e.type === 'task' && (
+              <button
+                className="task-item__context-menu-item"
+                onClick={() => { onToggle && onToggle(e.id); setMenuEntryId(null); }}
+              >
+                <Check size={14} />
+                <span>{e.done ? t.markOpen : t.markDone}</span>
+              </button>
+            )}
+            <button
+              className="task-item__context-menu-item"
+              onClick={() => { onOpenEntry && onOpenEntry(e); setMenuEntryId(null); }}
+            >
+              <Edit2 size={14} />
+              <span>{t.edit}</span>
+            </button>
+            <div className="task-item__context-menu-divider" />
+            <button
+              className="task-item__context-menu-item task-item__context-menu-item--danger"
+              onClick={() => { onDelete(e.id); setMenuEntryId(null); }}
+            >
+              <Trash2 size={14} />
+              <span>{t.delete}</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </SwipeToDelete>
   );
 }
 
@@ -716,242 +993,20 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
 
     // ── Home-Ansicht: Neues Karten-Design ──
     if (isHome) {
-      const ids = e.catIds || (e.catId ? [e.catId] : []);
-      const linked = cats.filter((c) => ids.includes(c.id));
-      // Mehrfach-Verknüpfungen pro Kategorie
-      const projs = linked.filter(c => c.type === "project");
-      const areas = linked.filter(c => c.type === "area");
-      const ress  = linked.filter(c => c.type === "resource");
-
-      // Icons pro Kategorie
-      const PILL_ICONS = { project: Circle, area: Triangle, resource: Square };
-
-      // Hilfsfunktion: Rendert eine PARA-Pille (Icon oder Name+X)
-      const renderParaPill = (type, items) => {
-        const PillIcon = PILL_ICONS[type];
-        const cc = CC[type];
-        const isPopupOpen = pillPopup && pillPopup.entryId === e.id && pillPopup.type === type;
-        const label = type === 'project' ? t.projectSing : type === 'area' ? t.areaSing : t.resourceSing;
-
-        // Verfügbare Einträge dieser Kategorie (nicht archiviert)
-        const available = cats.filter(c => c.type === type && !c.archived && !ids.includes(c.id));
-
-        return (
-          <div className="task-item__pill-wrap" key={type}>
-            {/* Pille: Icon wenn leer, Name wenn verknüpft */}
-            {items.length === 0 ? (
-              <button
-                className="task-item__pill task-item__pill--icon-btn"
-                style={{ color: cc.color }}
-                onClick={(ev) => {
-                  ev.stopPropagation();
-                  setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: true });
-                }}
-              >
-                <PillIcon size={12} strokeWidth={2.5} />
-              </button>
-            ) : (
-              <button
-                className="task-item__pill task-item__pill--cat-btn"
-                style={{ color: cc.color, background: `var(--pill-${type}-bg)` }}
-                onClick={(ev) => {
-                  ev.stopPropagation();
-                  setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: false });
-                }}
-              >
-                {items[0].name}{items.length > 1 ? ` +${items.length - 1}` : ''}
-              </button>
-            )}
-
-            {/* Popup-Dropdown */}
-            {isPopupOpen && (
-              <div
-                className="task-item__pill-popup"
-                ref={pillPopupRef}
-                onClick={(ev) => ev.stopPropagation()}
-              >
-                {/* Verknüpfte Einträge */}
-                {items.length > 0 && (
-                  <>
-                    {items.map(item => (
-                      <div key={item.id} className="task-item__pill-popup-item">
-                        <PillIcon size={10} color={cc.color} strokeWidth={2.5} />
-                        <span className="task-item__pill-popup-name">{item.name}</span>
-                        <button
-                          className="task-item__pill-popup-remove"
-                          onClick={() => {
-                            // Verknüpfung entfernen
-                            const nextIds = ids.filter(id => id !== item.id);
-                            onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
-                          }}
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                    <div className="task-item__pill-popup-divider" />
-                  </>
-                )}
-
-                {/* Hinzufügen-Zeile */}
-                {!pillPopup.showAdd ? (
-                  <button
-                    className="task-item__pill-popup-add"
-                    onClick={() => setPillPopup({ ...pillPopup, showAdd: true })}
-                  >
-                    <Plus size={12} />
-                    <span>{label}</span>
-                  </button>
-                ) : (
-                  <>
-                    {available.length === 0 ? (
-                      <div className="task-item__pill-popup-empty">
-                        {t.noCats(cc.label).split('\n')[0]}
-                      </div>
-                    ) : (
-                      available.map(opt => (
-                        <button
-                          key={opt.id}
-                          className="task-item__pill-popup-option"
-                          onClick={() => {
-                            // Verknüpfung hinzufügen
-                            const nextIds = [...ids, opt.id];
-                            onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
-                            setPillPopup({ ...pillPopup, showAdd: false });
-                          }}
-                        >
-                          <PillIcon size={10} color={cc.color} strokeWidth={2} style={{ opacity: 0.5 }} />
-                          <span>{opt.name}</span>
-                        </button>
-                      ))
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
-        );
-      };
-
       return (
-        <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}>
-          <div
-            className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
-            onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
-          >
-            <div className="task-item__body">
-              {/* Zeile 1: Titel + Stern + Menü */}
-              <div className="task-item__top-row">
-                <div
-                  className={`task-item__title ${e.done ? "task-item__title--done" : ""}`}
-                >
-                  {e.title}
-                </div>
-                <div className="task-item__actions-home">
-                  <button
-                    className="task-item__star-btn"
-                    onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
-                  >
-                    <Star
-                      size={18}
-                      fill={e.starred ? '#F59E0B' : 'none'}
-                      color={e.starred ? '#F59E0B' : '#C0C0D0'}
-                      strokeWidth={e.starred ? 0 : 1.5}
-                    />
-                  </button>
-                  <button
-                    className="task-item__menu-btn"
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      setMenuEntryId(menuEntryId === e.id ? null : e.id);
-                    }}
-                  >
-                    <MoreVertical size={18} color="#C0C0D0" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Zeile 2: Notiz-Platzhalter */}
-              <div className="task-item__note-hint">
-                {e.note || t.addNotePlaceholder}
-              </div>
-
-              {/* Zeile 3: Pillen-Buttons */}
-              <div className="task-item__pills">
-                {/* Datum-/Uhrzeit-Pille – Tasks: due, Kalender: date+time, Notizen: nur wenn date vorhanden */}
-                {e.type === 'calendar' ? (
-                  <span
-                    className="task-item__pill task-item__pill--date"
-                    style={{ cursor: 'default' }}
-                  >
-                    <Calendar size={12} />
-                    {e.date && <span>{isToday(e.date) ? t.todayCap : fmtDate(e.date, t.locale)}</span>}
-                    {e.time && <span>· {e.time} {t.oclock}</span>}
-                  </span>
-                ) : e.type !== 'note' ? (
-                  <button
-                    className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      setDateEntryId(dateEntryId === e.id ? null : e.id);
-                    }}
-                  >
-                    <Calendar size={12} />
-                    {e.due && <span>{isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}</span>}
-                  </button>
-                ) : null}
-
-                {/* PARA-Pillen: Projekt, Area, Ressource */}
-                {renderParaPill('project', projs)}
-                {renderParaPill('area', areas)}
-                {renderParaPill('resource', ress)}
-              </div>
-
-              {/* Datum-Popup (expandiert unter den Pillen) */}
-              {dateEntryId === e.id && (
-                <div className="task-item__date-popup" onClick={(ev) => ev.stopPropagation()}>
-                  <input
-                    type="date"
-                    className="task-item__date-input"
-                    value={e.due || ""}
-                    autoFocus
-                    onChange={(ev) => {
-                      onUpdateEntry && onUpdateEntry(e.id, { due: ev.target.value || null });
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Kontextmenü */}
-            {menuEntryId === e.id && (
-              <div className="task-item__context-menu" ref={menuRef} onClick={(ev) => ev.stopPropagation()}>
-                <button
-                  className="task-item__context-menu-item"
-                  onClick={() => { onToggle(e.id); setMenuEntryId(null); }}
-                >
-                  <Check size={14} />
-                  <span>{e.done ? t.markOpen : t.markDone}</span>
-                </button>
-                <button
-                  className="task-item__context-menu-item"
-                  onClick={() => { onOpenEntry && onOpenEntry(e); setMenuEntryId(null); }}
-                >
-                  <Edit2 size={14} />
-                  <span>{t.edit}</span>
-                </button>
-                <div className="task-item__context-menu-divider" />
-                <button
-                  className="task-item__context-menu-item task-item__context-menu-item--danger"
-                  onClick={() => { onDelete(e.id); setMenuEntryId(null); }}
-                >
-                  <Trash2 size={14} />
-                  <span>{t.delete}</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </SwipeToDelete>
+        <HomeEntryItem
+          key={e.id}
+          e={e}
+          cats={cats}
+          onDelete={onDelete}
+          onToggle={onToggle}
+          onToggleStar={onToggleStar}
+          onUpdateEntry={onUpdateEntry}
+          onOpenEntry={onOpenEntry}
+          t={t}
+          CC={CC}
+          isArchive={isArchive}
+        />
       );
     }
 
@@ -980,7 +1035,7 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
                   {e.time && ` · ${e.time} ${t.oclock}`}
                 </span>
               )}
-              <EntryMetaTags entry={e} cats={cats} CC={CC} />
+              <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
             </div>
           </div>
           {isArchive ? (
@@ -1059,8 +1114,25 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
 }
 
 /* ── Note List ───────────────────────────────────────────────── */
-function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry, onArchiveEntry, isHome, isArchive }) {
+function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry, CC, grouped, color, t, onOpenEntry, onArchiveEntry, isHome, isArchive }) {
   const renderItem = (e) => {
+    if (isHome) {
+      return (
+        <HomeEntryItem
+          key={e.id}
+          e={e}
+          cats={cats}
+          onDelete={onDelete}
+          onToggleStar={onToggleStar}
+          onUpdateEntry={onUpdateEntry}
+          onOpenEntry={onOpenEntry}
+          t={t}
+          CC={CC}
+          isArchive={isArchive}
+        />
+      );
+    }
+
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div 
@@ -1088,7 +1160,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
                 {fmtRelative(e.createdAt, t.locale)}
               </span>
             )}
-            <EntryMetaTags entry={e} cats={cats} CC={CC} />
+            <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
           </div>
         </div>
       </SwipeToDelete>
@@ -1150,8 +1222,25 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
 }
 
 /* ── Calendar List ───────────────────────────────────────────── */
-function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
+function CalList({ entries, cats, onDelete, onToggleStar, onUpdateEntry, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
   const renderItem = (e) => {
+    if (isHome) {
+      return (
+        <HomeEntryItem
+          key={e.id}
+          e={e}
+          cats={cats}
+          onDelete={onDelete}
+          onToggleStar={onToggleStar}
+          onUpdateEntry={onUpdateEntry}
+          onOpenEntry={onOpenEntry}
+          t={t}
+          CC={CC}
+          isArchive={isArchive}
+        />
+      );
+    }
+
     const past = e.date && e.date < TODAY;
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
@@ -1180,7 +1269,7 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
               <div className="cal-item__title">{e.title}</div>
               {e.time && <div className="cal-item__time">{e.time}{t.oclock ? " " + t.oclock : ""}</div>}
               <div className="cal-item__tags">
-                <EntryMetaTags entry={e} cats={cats} CC={CC} />
+                <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
               </div>
             </div>
             {isArchive && (
@@ -1285,7 +1374,7 @@ function MediaList({ entries, cats, onDelete, t, CC }) {
         <div className="media-item__body">
           <div className="media-item__title">{e.title}</div>
           <div className="media-item__meta">{label}</div>
-          <EntryMetaTags entry={e} cats={cats} CC={CC} />
+          <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
         </div>
         <button 
           className="media-item__delete" 
@@ -1340,7 +1429,7 @@ function LinkList({ entries, cats, onDelete, CC }) {
           )}
           <div className="media-item__footer-meta">
             {e.url && <div className="media-item__meta">{e.url}</div>}
-            <EntryMetaTags entry={e} cats={cats} CC={CC} />
+            <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
           </div>
         </div>
       </div>
@@ -1742,6 +1831,8 @@ function HomeScreen({
                   entries={tabEntries}
                   cats={cats}
                   onDelete={deleteEntry}
+                  onToggleStar={toggleStar}
+                  onUpdateEntry={updateEntry}
                   grouped={true}
                   color={tabColor}
                   onOpenEntry={onOpenEntry}
@@ -1754,6 +1845,8 @@ function HomeScreen({
                   entries={tabEntries}
                   cats={cats}
                   onDelete={deleteEntry}
+                  onToggleStar={toggleStar}
+                  onUpdateEntry={updateEntry}
                   grouped={true}
                   color={tabColor}
                   onOpenEntry={onOpenEntry}

@@ -1467,7 +1467,7 @@ function HomeScreen({
                     >
                       {/* Icon mit integrierter Anzahl */}
                       <div className="category-card__icon-wrap">
-                        <CatIcon size={48} color={cfg.color} strokeWidth={2} />
+                        <CatIcon size={56} color={cfg.color} strokeWidth={2} />
                         <span className="category-card__icon-count" style={{ color: cfg.color }}>
                           {count}
                         </span>

@@ -591,7 +591,7 @@
   // Anzahl zentriert innerhalb des Icons
   &__icon-count {
     position: absolute;
-    font-size: 11px;
+    font-size: 14px;
     font-weight: 700;
     line-height: 1;
     // Leichter Versatz nach unten, da Dreieck/Kreis optisch höher sitzen
@@ -746,7 +746,7 @@
 
   &__left,
   &__right {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     color: $color-muted;
     text-transform: none;
@@ -812,7 +812,7 @@
   }
 
   &__title {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
     color: $color-text;
     @include text-truncate;
@@ -840,7 +840,7 @@
     align-items: center;
     justify-content: center;
     height: 22px;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1;
     font-weight: 600;
     color: var(--pill-date-color);
@@ -863,7 +863,7 @@
     align-items: center;
     justify-content: center;
     height: 22px;
-    font-size: 10px;
+    font-size: 12px;
     line-height: 1;
     font-weight: 600;
     border-radius: $radius-pill;
@@ -959,7 +959,7 @@
     height: 22px;
     padding: 0 6px;
     border-radius: $radius-pill;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     gap: 4px;
     border: none;
@@ -2860,6 +2860,7 @@
 
     .task-item__note-hint {
       color: #8e8eb2;
+      font-size: 14px;
     }
 
     .task-item__date-input {

@@ -240,8 +240,8 @@
 
   &__list {
     flex: 1;
-    overflow: hidden;
-    padding-bottom: 56px; // Platz für Quick-Settings-Leiste
+    overflow-y: auto;
+    padding-bottom: 24px; // Platz für Quick-Settings-Leiste
     animation: fade-in 0.25s ease-out;
     will-change: opacity, transform;
   }
@@ -2778,6 +2778,7 @@
     &-item,
     &-option {
       color: #1a1a24;
+
       &:hover {
         background: #f0f0f5;
       }
@@ -2785,6 +2786,7 @@
 
     &-add {
       color: #8e8eb2;
+
       &:hover {
         background: #f0f0f5;
         color: #1a1a24;
@@ -2797,6 +2799,7 @@
 
     &-remove {
       color: #8e8eb2;
+
       &:hover {
         color: #F26565;
         background: rgba(#F26565, 0.1);

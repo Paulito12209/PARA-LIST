@@ -468,7 +468,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             </button>
           </div>
 
-          <div className="command-panel__list" key={subTab} style={{ overflow: 'hidden' }}>
+          <div className="command-panel__list" key={subTab}>
 
             {activeEntries.length === 0 ? (
               <div className="command-panel__drawer-empty">

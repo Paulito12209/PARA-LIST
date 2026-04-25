@@ -1345,6 +1345,7 @@ function HomeScreen({
 
 
   const { entries, cats } = state;
+  const [expandedCat, setExpandedCat] = useState("project");
   const tabEntries = entries.map((e) => {
     if (e.type === "calendar" && e.isBirthday) {
       const nextBd = getNextBirthday(e.date);
@@ -1457,34 +1458,75 @@ function HomeScreen({
             <div className="category-grid">
               {["project", "area", "resource"].map((type) => {
                 const cfg = CC[type];
-                const CatIcon = CAT_ICONS[type];
                 const count = cats.filter((c) => c.type === type && !c.archived).length;
-                return (
-                  <div key={type} className={`category-card category-card--${type}`}>
-                    <button
-                      className="category-card__main"
+                const isExpanded = expandedCat === type;
+                
+                // Initiale für minimierte Ansicht
+                const initial = cfg.label.charAt(0).toUpperCase();
+
+                if (isExpanded) {
+                  return (
+                    <div 
+                      key={type} 
+                      className={`category-card category-card--expanded category-card--${type}`}
                       onClick={() => onOpenCatType(type)}
                     >
-                      {/* Icon mit integrierter Anzahl */}
-                      <div className="category-card__icon-wrap">
-                        <CatIcon size={56} color={cfg.color} strokeWidth={2} />
-                        <span className="category-card__icon-count" style={{ color: cfg.color }}>
-                          {count}
-                        </span>
+                      <div className="category-card__bg"></div>
+                      <div className="category-card__content">
+                        <div className="category-card__header">
+                          <span className="category-card__title">{cfg.label}</span>
+                          <span className="category-card__status">Du hast <strong>{count}</strong> offen</span>
+                        </div>
+                        <div className="category-card__bottom">
+                          <button
+                            className="category-card__add-btn category-card__add-btn--expanded"
+                            onClick={(e) => { e.stopPropagation(); onAddCat(type); }}
+                          >
+                            <Plus size={24} color="#fff" strokeWidth={2.4} />
+                          </button>
+                        </div>
                       </div>
-                      <span
-                        className="category-card__label"
-                        style={{ color: cfg.color }}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div 
+                    key={type} 
+                    className={`category-card category-card--collapsed category-card--${type}`}
+                    onClick={() => {
+                      setExpandedCat(type);
+                      onOpenCatType(type);
+                    }}
+                  >
+                    <div className="category-card__bg"></div>
+                    <div className="category-card__content">
+                      <span className="category-card__initial">{initial}</span>
+                      
+                      <div className="category-card__badge-wrap">
+                        {type === 'area' ? (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        ) : type === 'resource' ? (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        ) : (
+                          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                        <span className="category-card__badge-count">{count}</span>
+                      </div>
+
+                      <button
+                        className="category-card__add-btn category-card__add-btn--collapsed"
+                        onClick={(e) => { e.stopPropagation(); onAddCat(type); }}
                       >
-                        {cfg.label}
-                      </span>
-                    </button>
-                    <button
-                      className={`category-card__add-btn category-card__add-btn--${type}`}
-                      onClick={() => onAddCat(type)}
-                    >
-                      <Plus size={22} color="#fff" strokeWidth={2.4} />
-                    </button>
+                        <Plus size={20} color="#fff" strokeWidth={2.4} />
+                      </button>
+                    </div>
                   </div>
                 );
               })}

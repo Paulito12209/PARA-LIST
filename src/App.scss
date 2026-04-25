@@ -528,102 +528,189 @@
 
 // ── Category Grid ───────────────────────────────────────────
 .category-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 8px;
   height: 100%;
   width: 100%;
   min-height: 0;
 }
 
+@keyframes mesh-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .category-card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  min-width: 0;
-  max-width: 100%;
-  border-radius: $radius-md+2px;
-  border: 1px solid transparent;
-  padding: $spacing-xs;
-  transition: transform $transition-fast, opacity $transition-fast;
+  border-radius: 32px;
+  // border: 1px solid transparent;
+  padding: $spacing-md 4px 4px 4px;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   overflow: hidden;
+  cursor: pointer;
 
-  &--project {
-    background: $color-project-dim;
-    border-color: rgba($color-project, 0.19);
-  }
-
-  &--area {
-    background: $color-area-dim;
-    border-color: rgba($color-area, 0.19);
-  }
-
-  &--resource {
-    background: $color-resource-dim;
-    border-color: rgba($color-resource, 0.19);
-  }
-
-  &__main {
+  &--expanded {
     flex: 1;
-    width: 100%;
-    // padding: $spacing-sm - $spacing-2xs + 12px $spacing-2xs;
+    min-width: 0;
+    border-radius: 28px;
+  }
+
+  &--collapsed {
+    flex: 0 0 56px;
+    width: 56px;
+    border-radius: 28px;
+  }
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-size: 200% 200%;
+    animation: mesh-gradient 10s ease infinite;
+    opacity: 0.9;
+  }
+
+  &--project &__bg {
+    background-image: radial-gradient(at 0% 0%, #E03E3E 0px, transparent 50%),
+      radial-gradient(at 100% 100%, #8A0000 0px, transparent 50%),
+      radial-gradient(at 100% 0%, #FF8A8A 0px, transparent 50%),
+      linear-gradient(135deg, #E03E3E 0%, #4A0000 100%);
+  }
+
+  &--area &__bg {
+    background-image: radial-gradient(at 0% 0%, #D09020 0px, transparent 50%),
+      radial-gradient(at 100% 100%, #805000 0px, transparent 50%),
+      radial-gradient(at 100% 0%, #FFD070 0px, transparent 50%),
+      linear-gradient(135deg, #D09020 0%, #4A2A00 100%);
+  }
+
+  &--resource &__bg {
+    background-image: radial-gradient(at 0% 0%, #30A060 0px, transparent 50%),
+      radial-gradient(at 100% 100%, #0A4A20 0px, transparent 50%),
+      radial-gradient(at 100% 0%, #70FFB0 0px, transparent 50%),
+      linear-gradient(135deg, #30A060 0%, #0A301A 100%);
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+  }
+
+  // --- Expanded View Styles ---
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0 12px;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+  }
+
+  &__bottom {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: auto;
+  }
+
+  // --- Collapsed View Styles ---
+  &__initial {
+    font-family: $font-heading;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+  }
+
+  &__badge-wrap {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: $spacing-sm;
-  }
-
-  &__label {
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
-  }
-
-  // Container für Icon + Zahl-Overlay
-  &__icon-wrap {
     position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin: auto 0;
   }
 
-  // Anzahl zentriert innerhalb des Icons
-  &__icon-count {
+  &__badge-count {
     position: absolute;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 700;
-    line-height: 1;
-    // Leichter Versatz nach unten, da Dreieck/Kreis optisch höher sitzen
-    top: 54%;
+    color: #fff;
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
   }
 
+  // --- Shared Add Button ---
   &__add-btn {
-    width: 100%;
-    height: 48px;
-    margin-top: $spacing-xs;
-    border-radius: $radius-md - 2px;
-    padding: $spacing-sm - 2px;
-    @include flex-center;
-    border: 1px solid transparent;
-    transition: opacity $transition-fast;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: all 0.2s;
 
-    &--project {
-      background: $color-project;
+    &--expanded {
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(4px);
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
     }
 
-    &--area {
-      background: $color-area;
-    }
+    &--collapsed {
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.15);
 
-    &--resource {
-      background: $color-resource;
-    }
-
-    &:hover {
-      opacity: 0.8;
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
     }
   }
 }

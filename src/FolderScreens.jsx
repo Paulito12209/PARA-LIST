@@ -98,8 +98,9 @@ export function BookmarkRail({ active, onSelect, baseColor }) {
             onClick={() => onSelect(bm.id)}
             style={{
               background: isActive ? color : color + "28",
-              border: `1px solid ${color}${isActive ? "" : "50"}`,
-              borderRight: "none",
+              borderWidth: "1px 0px 1px 1px",
+              borderStyle: "solid",
+              borderColor: `${color}${isActive ? "" : "50"}`,
             }}
           >
             <BmIcon size={11} color={isActive ? "#fff" : color} />

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import { useInactivity } from "./hooks/useInactivity";
+import { clear } from "idb-keyval";
 import {
   Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check,
   Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
@@ -1368,7 +1369,6 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                     if (window.confirm(t.deleteConfirm)) {
                       localStorage.clear();
                       try {
-                        const { clear } = await import('idb-keyval');
                         await clear();
                       } catch (e) {
                         console.error('Failed to clear idb', e);

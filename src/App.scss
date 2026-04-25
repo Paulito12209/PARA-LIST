@@ -367,7 +367,7 @@
     position: absolute;
     left: $spacing-md;
     right: $spacing-md;
-    bottom: $spacing-sm;
+    bottom: $spacing-md;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -394,7 +394,7 @@
     align-items: center;
     justify-content: center;
     width: 40px;
-    height: 100%;
+    height: 40px;
     border-radius: 20px;
     border: 1px solid transparent;
     background: transparent;
@@ -405,6 +405,14 @@
     flex-shrink: 0;
     padding: 0;
     line-height: 1;
+
+    &--lang {
+      padding: 0 0 0 4px;
+    }
+
+    &--theme {
+      padding: 0;
+    }
 
     &:hover:not(&--active) {
       color: $color-text;
@@ -893,7 +901,7 @@
   align-items: center;
   justify-content: space-between; // Links/Rechts Split
   // padding: 0 $spacing-md 0 $spacing-sm; // Rechts-Padding hinzugefügt
-  margin: $spacing-sm 0;
+  margin: $spacing-sm + 4px 0;
   gap: $spacing-sm;
 
   &__left,

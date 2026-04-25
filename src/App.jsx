@@ -552,21 +552,21 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             <div className="command-panel__qs-pill">
               {/* Sprachen: DE / EN / ES */}
               <button
-                className={`command-panel__qs-btn ${lang === 'de' ? 'command-panel__qs-btn--active' : ''}`}
+                className={`command-panel__qs-btn command-panel__qs-btn--lang ${lang === 'de' ? 'command-panel__qs-btn--active' : ''}`}
                 onClick={() => setLang('de')}
                 title="Deutsch"
               >
                 🇩🇪
               </button>
               <button
-                className={`command-panel__qs-btn ${lang === 'en' ? 'command-panel__qs-btn--active' : ''}`}
+                className={`command-panel__qs-btn command-panel__qs-btn--lang ${lang === 'en' ? 'command-panel__qs-btn--active' : ''}`}
                 onClick={() => setLang('en')}
                 title="English"
               >
                 🇬🇧
               </button>
               <button
-                className={`command-panel__qs-btn ${lang === 'es' ? 'command-panel__qs-btn--active' : ''}`}
+                className={`command-panel__qs-btn command-panel__qs-btn--lang ${lang === 'es' ? 'command-panel__qs-btn--active' : ''}`}
                 onClick={() => setLang('es')}
                 title="Español"
               >
@@ -578,14 +578,14 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
 
               {/* Darstellung: Moon / Sun */}
               <button
-                className={`command-panel__qs-btn ${theme === 'dark' ? 'command-panel__qs-btn--active' : ''}`}
+                className={`command-panel__qs-btn command-panel__qs-btn--theme ${theme === 'dark' ? 'command-panel__qs-btn--active' : ''}`}
                 onClick={() => setTheme('dark')}
                 title="Dark Mode"
               >
                 <Moon size={16} />
               </button>
               <button
-                className={`command-panel__qs-btn ${theme === 'light' ? 'command-panel__qs-btn--active' : ''}`}
+                className={`command-panel__qs-btn command-panel__qs-btn--theme ${theme === 'light' ? 'command-panel__qs-btn--active' : ''}`}
                 onClick={() => setTheme('light')}
                 title="Light Mode"
               >

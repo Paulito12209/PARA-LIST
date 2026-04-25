@@ -65,7 +65,7 @@ const fmtRelative = (ts, locale) => {
   const now = Date.now();
   const diff = now - ts;
   const sec = Math.floor(diff / 1000);
-  if (sec < 60) return "gerade eben";
+  if (sec < 60) return I18N[locale.slice(0,2)]?.justNow || "gerade eben";
   const min = Math.floor(sec / 60);
   if (min < 60) return `${min}m`;
   const hr = Math.floor(min / 60);
@@ -77,9 +77,10 @@ const fmtRelative = (ts, locale) => {
   const d0 = new Date(ts);
   d0.setHours(0,0,0,0);
   
-  if (t.getTime() === d0.getTime()) return "heute";
+  const langT = I18N[locale.slice(0,2)];
+  if (t.getTime() === d0.getTime()) return langT?.today || "heute";
   t.setDate(t.getDate() - 1);
-  if (t.getTime() === d0.getTime()) return "gestern";
+  if (t.getTime() === d0.getTime()) return langT?.yesterday || "gestern";
   
   return d.toLocaleDateString(locale, { day: "numeric", month: "short" });
 };
@@ -108,23 +109,26 @@ const getTaskGroup = (due, locale, hideDayNumber = false) => {
   const dMonday = getMonday(d);
   const weekDiff = Math.round((dMonday - tMonday) / 604800000);
 
+  const langT = I18N[locale.slice(0,2)];
   let leftLabel = "";
   if (diffDays === 1) {
-    leftLabel = "Morgen";
+    leftLabel = langT?.tomorrow || "Morgen";
   } else if (diffDays === 2) {
-    leftLabel = "Übermorgen";
+    leftLabel = langT?.afterTomorrow || "Übermorgen";
   } else if (weekDiff === 0) {
     leftLabel = d.toLocaleDateString(locale, { weekday: 'long' });
   } else if (weekDiff === 1) {
-    leftLabel = "Nächste Woche";
+    leftLabel = langT?.nextWeek || "Nächste Woche";
   } else {
     const mDiff = (d.getFullYear() - t.getFullYear()) * 12 + (d.getMonth() - t.getMonth());
     if (d.getFullYear() > t.getFullYear()) {
       leftLabel = d.getFullYear().toString();
     } else if (mDiff === 0) {
-      leftLabel = I18N[locale.slice(0,2)]?.thisMonth || "Dieser Monat";
+      leftLabel = langT?.thisMonth || "Dieser Monat";
     } else if (mDiff === 1) {
-      leftLabel = "Nächsten Monat";
+      leftLabel = langT?.nextMonth || "Nächsten Monat";
+    } else if (mDiff === -1) {
+      leftLabel = langT?.lastMonth || "Letzten Monat";
     } else {
       leftLabel = d.toLocaleDateString(locale, { month: 'long' });
     }
@@ -467,13 +471,13 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
               className={`command-panel__tab ${subTab === "today" ? "command-panel__tab--active-today" : ""}`}
               onClick={() => setSubTab("today")}
             >
-              Heute {todayEntries.length > 0 && <span className="command-panel__badge command-panel__badge--today">{todayEntries.length}</span>}
+              {t.todayTabs} {todayEntries.length > 0 && <span className="command-panel__badge command-panel__badge--today">{todayEntries.length}</span>}
             </button>
             <button
               className={`command-panel__tab ${subTab === "overdue" ? "command-panel__tab--active-overdue" : ""}`}
               onClick={() => setSubTab("overdue")}
             >
-              Überfällig {overdueEntries.length > 0 && <span className="command-panel__badge command-panel__badge--overdue">{overdueEntries.length}</span>}
+              {t.overdueTabs} {overdueEntries.length > 0 && <span className="command-panel__badge command-panel__badge--overdue">{overdueEntries.length}</span>}
             </button>
           </div>
 
@@ -481,7 +485,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
 
             {activeEntries.length === 0 ? (
               <div className="command-panel__drawer-empty">
-                {subTab === "today" ? "Keine Einträge für heute" : "Keine überfälligen Einträge"}
+                {subTab === "today" ? t.emptyToday : t.emptyOverdue}
               </div>
             ) : (
               activeEntries.map((e) => {
@@ -924,14 +928,14 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
                   onClick={() => { onToggle(e.id); setMenuEntryId(null); }}
                 >
                   <Check size={14} />
-                  <span>{e.done ? 'Als offen markieren' : 'Erledigt'}</span>
+                  <span>{e.done ? t.markOpen : t.markDone}</span>
                 </button>
                 <button
                   className="task-item__context-menu-item"
                   onClick={() => { onOpenEntry && onOpenEntry(e); setMenuEntryId(null); }}
                 >
                   <Edit2 size={14} />
-                  <span>Bearbeiten</span>
+                  <span>{t.edit}</span>
                 </button>
                 <div className="task-item__context-menu-divider" />
                 <button
@@ -939,7 +943,7 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
                   onClick={() => { onDelete(e.id); setMenuEntryId(null); }}
                 >
                   <Trash2 size={14} />
-                  <span>Löschen</span>
+                  <span>{t.delete}</span>
                 </button>
               </div>
             )}
@@ -1029,7 +1033,7 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header task-group-header--today">
-            <span className="task-group-header__left">Heute</span>
+            <span className="task-group-header__left">{t.todayGroup}</span>
           </div>
           {todayTasks.map(renderItem)}
         </div>
@@ -1116,7 +1120,7 @@ function NoteList({ entries, cats, onDelete, CC, grouped, color, t, onOpenEntry,
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header task-group-header--today">
-            <span className="task-group-header__left">Heute</span>
+            <span className="task-group-header__left">{t.todayGroup}</span>
           </div>
           {todayTasks.map(renderItem)}
         </div>
@@ -1163,7 +1167,7 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
             )}
             <div className="cal-item__info">
               <div className="cal-item__title">{e.title}</div>
-              {e.time && <div className="cal-item__time">{e.time} Uhr</div>}
+              {e.time && <div className="cal-item__time">{e.time}{t.oclock ? " " + t.oclock : ""}</div>}
               <div className="cal-item__tags">
                 <EntryMetaTags entry={e} cats={cats} CC={CC} />
               </div>
@@ -1215,7 +1219,7 @@ function CalList({ entries, cats, onDelete, t, CC, grouped, color, onOpenEntry, 
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`}>
           <div className="task-group-header task-group-header--today">
-            <span className="task-group-header__left">Heute</span>
+            <span className="task-group-header__left">{t.todayGroup}</span>
           </div>
           {todayTasks.map(renderItem)}
         </div>
@@ -1465,7 +1469,7 @@ function HomeScreen({
        if (!d || isToday(d) || isOld(d)) hasToday = true;
        else futureDates.push(d);
     });
-    if (hasToday) return "Heute";
+    if (hasToday) return t.todayGroup;
     if (futureDates.length > 0) {
        futureDates.sort((a,b) => new Date(a) - new Date(b));
        const d = futureDates[0];
@@ -1480,7 +1484,7 @@ function HomeScreen({
       <div className="home__categories-container">
         {/* Überschrift + Ordner-Icon (wie bei den Subtabs unten) */}
         <div className="home__categories-header">
-          <span className="home__categories-title">Ordner</span>
+          <span className="home__categories-title">{t.folders}</span>
           <div className="home__categories-icon-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={16} height={16} className="home__categories-icon">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
@@ -1502,7 +1506,7 @@ function HomeScreen({
                 const initial = cfg.label.charAt(0).toUpperCase();
 
                 if (isExpanded) {
-                  const statusLabel = (type === 'area' || type === 'resource') ? 'aktiv' : 'offen';
+                  const statusLabel = (type === 'area' || type === 'resource') ? (t.active || 'aktiv') : (t.open || 'offen');
                   return (
                     <div 
                       key={type} 
@@ -1521,15 +1525,15 @@ function HomeScreen({
                         <div className="category-card__status">
                           <div className="category-card__status-icon-wrap">
                             {type === 'area' ? (
-                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                             ) : type === 'resource' ? (
-                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                             ) : (
-                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                             )}
@@ -1565,15 +1569,15 @@ function HomeScreen({
                       
                       <div className="category-card__badge-wrap">
                         {type === 'area' ? (
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         ) : type === 'resource' ? (
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         ) : (
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
                         )}
@@ -2230,7 +2234,7 @@ function CatDetailScreen({
                 onClick={() => setTaskSubTab("completed")}
               >
                 <CheckCircle2 size={14} />
-                <span>{t.completed || "Erledigt"}</span>
+                <span>{t.markDone || "Erledigt"}</span>
                 {entries.filter((e) => e.type === "task" && e.done).length > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--completed">{entries.filter((e) => e.type === "task" && e.done).length}</span>
                 )}
@@ -2392,14 +2396,14 @@ function CatDetailScreen({
                 className={`res-sub-tabs__btn ${tagSort.by === 'date' ? 'res-sub-tabs__btn--active-res' : ''}`}
                 onClick={() => setTagSort(prev => ({ by: 'date', desc: prev.by === 'date' ? !prev.desc : true }))}
               >
-                <span>Erstellungsdatum</span>
+                <span>{t.creationDate || "Erstellungsdatum"}</span>
                 {tagSort.by === 'date' && (tagSort.desc ? <ChevronDown size={14}/> : <ChevronUp size={14}/>)}
               </button>
               <button
                 className={`res-sub-tabs__btn ${tagSort.by === 'alpha' ? 'res-sub-tabs__btn--active-res' : ''}`}
                 onClick={() => setTagSort(prev => ({ by: 'alpha', desc: prev.by === 'alpha' ? !prev.desc : false }))}
               >
-                <span>Alphabetisch</span>
+                <span>{t.alphabetical || "Alphabetisch"}</span>
                 {tagSort.by === 'alpha' && (tagSort.desc ? <ChevronDown size={14}/> : <ChevronUp size={14}/>)}
               </button>
             </div>
@@ -2415,7 +2419,7 @@ function CatDetailScreen({
                 }
               });
               if (sortedTags.length === 0) {
-                return <div className="cat-detail__section-empty">Keine Tags vorhanden</div>;
+                return <div className="cat-detail__section-empty">{t.noTags || "Keine Tags vorhanden"}</div>;
               }
               return (
                 <div className="tag-list" style={{ overflowY: 'auto' }}>
@@ -2437,7 +2441,7 @@ function CatDetailScreen({
                         {tag.createdAt && <div className="media-item__meta">{fmtDate(tag.createdAt.split("T")[0], t.locale)}</div>}
                       </div>
                       <button className="media-item__delete" onClick={() => {
-                        if (window.confirm(`Tag "${tag.name}" löschen?`)) {
+                        if (window.confirm(t.confirmDelete(tag.name))) {
                           onDeleteTag(tag.id);
                         }
                       }}>
@@ -2470,7 +2474,7 @@ function CatDetailScreen({
                 className="nav-bottom__res-search-input"
                 value={resSearch}
                 onChange={(e) => setResSearch(e.target.value)}
-                placeholder="Ressourcen suchen..."
+                placeholder={t.searchResources || "Ressourcen suchen..."}
               />
             </div>
             {resSearch.trim() && (
@@ -2543,7 +2547,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
   const tabCfg = isCatTab ? CC[tab] : getTABS(t).find(x => x.id === tab);
   const title = isCatTab 
     ? `Archivierte ${tabCfg.label}` 
-    : tab === "tasks" ? "Erledigte Aufgaben" : tab === "calendar" ? "Vergangene Termine" : "Archivierte Notizen";
+    : tab === "tasks" ? t.completedTasks : tab === "calendar" ? t.pastEvents : t.archivedNotes;
   const CatIcon = isCatTab ? CAT_ICONS[tab] : null;
 
   return (
@@ -2558,7 +2562,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
       </div>
       <div className="cat-detail__body" style={{ padding: '16px', paddingBottom: '100px' }}>
         {archiveItems.length === 0 ? (
-          <div className="cat-detail__section-empty">Keine archivierten Einträge</div>
+          <div className="cat-detail__section-empty">{t.noneArchived || "Keine archivierten Einträge"}</div>
         ) : (
           <>
             {isCatTab && (
@@ -2738,7 +2742,7 @@ function EntryDetailScreen({ t, CC, theme, entry, cat, allCats, onUpdate, onDele
               style={{
                 background: entry.isBirthday ? "rgba(255, 255, 255, 0.15)" : "transparent",
               }}
-              title="Als Geburtstag markieren"
+              title={t.markAsBirthday || "Als Geburtstag markieren"}
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke={entry.isBirthday ? "url(#birthdayGrad)" : "currentColor"} style={{ width: 18, height: 18 }}>
                 {entry.isBirthday && (
@@ -3037,7 +3041,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
               />
             </div>
             <div className="modal__toggle-row">
-              <label htmlFor="isBirthday">Geburtstag</label>
+              <label htmlFor="isBirthday">{t.birthday || "Geburtstag"}</label>
               <label className="modal__switch">
                 <input 
                   type="checkbox" 
@@ -3055,10 +3059,10 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
           <div className="modal__media-grid">
             <input type="file" ref={fileInputRef} onChange={handleFileChange} style={{ display: 'none' }} />
             {[
-              { id: 'image', Icon: ImageIcon, color: '#0D9488', label: 'Bild' },
-              { id: 'video', Icon: VideoIcon, color: '#EF4444', label: 'Video' },
-              { id: 'audio', Icon: AudioIcon, color: '#F97316', label: 'Audio' },
-              { id: 'document', Icon: DocumentIcon, color: '#0078D4', label: 'Dokument' },
+              { id: 'image', Icon: ImageIcon, color: '#0D9488', label: t.image },
+              { id: 'video', Icon: VideoIcon, color: '#EF4444', label: t.video },
+              { id: 'audio', Icon: AudioIcon, color: '#F97316', label: t.audio },
+              { id: 'document', Icon: DocumentIcon, color: '#0078D4', label: t.document },
             ].map(m => (
               <button 
                 key={m.id}

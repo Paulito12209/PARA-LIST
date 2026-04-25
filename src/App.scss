@@ -694,14 +694,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     flex-shrink: 0;
   }
 
   &__status-badge-count {
     position: absolute;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
     color: #fff;
     top: 50%;

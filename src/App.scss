@@ -99,8 +99,8 @@
   &__bell {
     @include floating-btn(48px, 50%);
     position: relative;
-    border: 1.5px solid $color-border;
-    background: $color-dim;
+    @include glass-border;
+    background: rgba($color-dim, 0.6);
     transition: all $transition-fast;
   }
 
@@ -381,8 +381,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: $color-card;
-    border: 1px solid $color-border;
+    background: rgba($color-card, 0.6);
+    @include glass-border;
     border-radius: 24px;
     padding: 4px;
     height: 48px;
@@ -424,8 +424,8 @@
     width: 48px;
     height: 48px;
     border-radius: 24px;
-    background: $color-card;
-    border: 1px solid $color-border;
+    background: rgba($color-card, 0.6);
+    @include glass-border;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -726,7 +726,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
+    @include glass-border;
     transition: all 0.2s;
 
     &--expanded {
@@ -734,7 +734,6 @@
       height: 48px;
       border-radius: 24px;
       background: rgba(0, 0, 0, 0.2);
-      backdrop-filter: blur(4px);
 
       &:hover {
         background: rgba(0, 0, 0, 0.3);

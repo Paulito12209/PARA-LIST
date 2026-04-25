@@ -240,8 +240,8 @@
 
   &__list {
     flex: 1;
-    overflow-y: auto;
-    padding-bottom: $spacing-sm;
+    overflow: hidden;
+    padding-bottom: 56px; // Platz für Quick-Settings-Leiste
     animation: fade-in 0.25s ease-out;
     will-change: opacity, transform;
   }
@@ -341,11 +341,73 @@
     transition: all $transition-normal;
   }
 
-  &__profile-btn--sticky {
+  // Quick-Settings-Leiste (ersetzt den einzelnen Settings-Button)
+  &__quick-settings {
     position: absolute;
+    left: $spacing-md;
     right: $spacing-md;
-    bottom: $spacing-md;
+    bottom: $spacing-sm;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    padding: $spacing-2xs;
     animation: fade-in 0.3s ease;
+    z-index: 10;
+  }
+
+  // Einzelner Quick-Settings-Button
+  &__qs-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: $radius-sm - 2px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: $color-muted;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all $transition-fast;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+
+    &:hover:not(&--active) {
+      color: $color-text;
+      background: $color-hover;
+    }
+
+    // Aktiver Zustand – farblich akzentuiert
+    &--active {
+      background: rgba($color-task, 0.15);
+      color: $color-task;
+      border-color: rgba($color-task, 0.35);
+      box-shadow: 0 0 12px rgba($color-task, 0.12);
+    }
+
+    // Settings-Icon
+    &--settings {
+      color: $color-muted;
+      overflow: hidden;
+
+      &:hover {
+        color: $color-text;
+        background: $color-hover;
+      }
+    }
+  }
+
+  // Vertikaler Divider zwischen Kategorien
+  &__qs-divider {
+    width: 1px;
+    height: 20px;
+    background: $color-border;
+    flex-shrink: 0;
+    margin: 0 $spacing-2xs;
   }
 }
 
@@ -2673,6 +2735,32 @@
 
     &__bell-dot {
       border-color: #ffffff;
+    }
+
+    // Quick-Settings-Leiste im Light Mode
+    &__quick-settings {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__qs-btn {
+      color: #8e8eb2;
+
+      &:hover:not(.command-panel__qs-btn--active) {
+        color: #1a1a24;
+        background: #f0f0f5;
+      }
+
+      &--active {
+        background: rgba(#7C83F7, 0.12);
+        color: #5a5cc0;
+        border-color: rgba(#7C83F7, 0.30);
+        box-shadow: 0 0 10px rgba(#7C83F7, 0.08);
+      }
+    }
+
+    &__qs-divider {
+      background: #e5e5f0;
     }
   }
 

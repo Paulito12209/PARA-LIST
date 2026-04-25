@@ -357,7 +357,7 @@ function SwipeToDelete({ children, onDelete, isActive }) {
 }
 
 /* ── Command Panel ───────────────────────────────────────────── */
-function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t, onOpenEntry }) {
+function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t, onOpenEntry, theme, setTheme, lang, setLang }) {
   const [subTab, setSubTab] = useState("today");
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -468,7 +468,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             </button>
           </div>
 
-          <div className="command-panel__list" key={subTab}>
+          <div className="command-panel__list" key={subTab} style={{ overflow: 'hidden' }}>
 
             {activeEntries.length === 0 ? (
               <div className="command-panel__drawer-empty">
@@ -539,22 +539,67 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
           style={notif ? { background: notif.color, opacity: 1 } : {}}
         />
         {open && (
-           <button
-             className="command-panel__bell command-panel__profile-btn command-panel__profile-btn--sticky"
-             onClick={(e) => { e.stopPropagation(); onOpenSettings(); }}
-             style={user.avatar ? { padding: 0 } : {}}
-           >
-             {user.avatar ? (
-               <div className="command-panel__profile-avatar">
-                 <img src={user.avatar} alt="Avatar" />
-                 <div className="command-panel__profile-hover">
-                   <Settings size={18} color="#fff" />
-                 </div>
-               </div>
-             ) : (
-               <Settings size={17} className="icon-muted" color="#5858A0" />
-             )}
-           </button>
+          <div className="command-panel__quick-settings" onClick={(e) => e.stopPropagation()}>
+            {/* Sprachen: DE / EN / ES */}
+            <button
+              className={`command-panel__qs-btn ${lang === 'de' ? 'command-panel__qs-btn--active' : ''}`}
+              onClick={() => setLang('de')}
+              title="Deutsch"
+            >
+              🇩🇪
+            </button>
+            <button
+              className={`command-panel__qs-btn ${lang === 'en' ? 'command-panel__qs-btn--active' : ''}`}
+              onClick={() => setLang('en')}
+              title="English"
+            >
+              🇬🇧
+            </button>
+            <button
+              className={`command-panel__qs-btn ${lang === 'es' ? 'command-panel__qs-btn--active' : ''}`}
+              onClick={() => setLang('es')}
+              title="Español"
+            >
+              🇪🇸
+            </button>
+
+            {/* Vertikaler Divider */}
+            <div className="command-panel__qs-divider" />
+
+            {/* Darstellung: Moon / Sun */}
+            <button
+              className={`command-panel__qs-btn ${theme === 'dark' ? 'command-panel__qs-btn--active' : ''}`}
+              onClick={() => setTheme('dark')}
+              title="Dark Mode"
+            >
+              <Moon size={16} />
+            </button>
+            <button
+              className={`command-panel__qs-btn ${theme === 'light' ? 'command-panel__qs-btn--active' : ''}`}
+              onClick={() => setTheme('light')}
+              title="Light Mode"
+            >
+              <Sun size={16} />
+            </button>
+
+            {/* Vertikaler Divider */}
+            <div className="command-panel__qs-divider" />
+
+            {/* Settings-Button */}
+            <button
+              className="command-panel__qs-btn command-panel__qs-btn--settings"
+              onClick={() => onOpenSettings()}
+              style={user.avatar ? { padding: 0 } : {}}
+            >
+              {user.avatar ? (
+                <div className="command-panel__profile-avatar" style={{ width: 24, height: 24, borderRadius: '50%' }}>
+                  <img src={user.avatar} alt="Avatar" style={{ borderRadius: '50%' }} />
+                </div>
+              ) : (
+                <Settings size={16} />
+              )}
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -3583,6 +3628,9 @@ export default function App() {
       <CommandPanel
         t={t}
         lang={lang}
+        setLang={(l) => setState(s => ({ ...s, lang: l }))}
+        theme={theme}
+        setTheme={(t) => setState(s => ({ ...s, theme: t }))}
         user={state.user}
         notif={notif}
         entries={state.entries}

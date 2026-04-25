@@ -2387,7 +2387,7 @@ function CatDetailScreen({
           ))}
         {bm === "tags" && (
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div className="res-sub-tabs" style={{ marginBottom: "16px" }}>
+            <div className="res-sub-tabs" style={{ marginBottom: "8px" }}>
               <button
                 className={`res-sub-tabs__btn ${tagSort.by === 'date' ? 'res-sub-tabs__btn--active-res' : ''}`}
                 onClick={() => setTagSort(prev => ({ by: 'date', desc: prev.by === 'date' ? !prev.desc : true }))}

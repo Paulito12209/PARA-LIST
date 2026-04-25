@@ -927,8 +927,8 @@
   align-items: center;
   gap: $spacing-sm + $spacing-xs;
   padding: $spacing-sm + 3px $spacing-md - $spacing-2xs;
-  border-radius: $radius-lg;
   @include card-base;
+  border-radius: $radius-lg;
   transition: opacity 0.2s;
 
   &--done {
@@ -1394,8 +1394,8 @@
 // ── Note Item ───────────────────────────────────────────────
 .note-item {
   padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
-  border-radius: $radius-lg;
   @include card-base;
+  border-radius: $radius-lg;
   transition: opacity 0.2s, transform 0.2s;
 
 
@@ -1489,8 +1489,8 @@
 // ── Calendar Item ───────────────────────────────────────────
 .cal-item {
   padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
-  border-radius: $radius-lg;
   @include card-base;
+  border-radius: $radius-lg;
 
   &--today {
     border-color: rgba($color-calendar, 0.31);
@@ -1607,8 +1607,9 @@
   align-items: center;
   gap: $spacing-sm + $spacing-xs;
   padding: $spacing-sm + 3px $spacing-md - $spacing-2xs;
-  border-radius: $radius-lg;
   @include card-base;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-sm;
   text-align: left;
 
   &__icon {
@@ -1833,8 +1834,7 @@
   &__body {
     flex: 1;
     overflow-y: auto;
-    padding: $spacing-sm + $spacing-xs $spacing-md;
-    padding-bottom: 100px;
+    padding: $spacing-sm $spacing-md 100px;
   }
 
   &__empty {
@@ -1851,8 +1851,8 @@
     gap: $spacing-sm + $spacing-xs;
     width: 100%;
     padding: $spacing-sm + 5px $spacing-md;
-    border-radius: $radius-lg;
     @include card-base;
+    border-radius: $radius-lg;
     text-align: left;
     margin-bottom: $spacing-xs + $spacing-2xs;
   }
@@ -2167,7 +2167,7 @@
     flex-direction: column;
     overflow-y: auto;
     // Rechts: 24px Rail + 16px Abstand = 40px, unten: 16px
-    padding: $spacing-md (
+    padding: $spacing-sm (
       $bookmark-width + $spacing-md) $spacing-md $spacing-md;
     gap: $spacing-sm;
   }
@@ -2283,7 +2283,7 @@
   position: absolute;
   // Slight negative offset removes visible seam to right edge
   right: -1px;
-  top: 112px;
+  top: 116px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -2306,7 +2306,7 @@
 .res-sub-tabs {
   display: flex;
   gap: $spacing-xs;
-  margin-bottom: $spacing-md;
+  margin-bottom: $spacing-sm;
   background: $color-card;
   border-radius: 24px;
   padding: 4px;
@@ -4031,5 +4031,5 @@
 
 // ── Swipe Container ──────────────────────────────────────────
 .swipe-delete-wrapper {
-  margin-bottom: $spacing-xs + $spacing-2xs;
+  margin-bottom: $spacing-sm;
 }

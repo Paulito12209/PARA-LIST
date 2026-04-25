@@ -102,6 +102,7 @@ export const I18N = {
     noTagsPopup: "Keine Tags",
     tagNamePlaceholder: "Tag-Name...",
     create: "Erstellen",
+    youHavePrefix: "Du hast ",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -204,6 +205,7 @@ export const I18N = {
     noTagsPopup: "No Tags",
     tagNamePlaceholder: "Tag name...",
     create: "Create",
+    youHavePrefix: "You have ",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -306,6 +308,7 @@ export const I18N = {
     noTagsPopup: "Sin etiquetas",
     tagNamePlaceholder: "Nombre de etiqueta...",
     create: "Crear",
+    youHavePrefix: "Tienes ",
   }
 };
 

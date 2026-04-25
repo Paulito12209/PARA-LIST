@@ -141,7 +141,10 @@ const getTaskGroup = (due, locale, hideDayNumber = false) => {
     year: '2-digit'
   });
 
-  return { left: leftLabel, right: rightLabel, sortKey: d.getTime() };
+  const capLeft = leftLabel ? leftLabel.charAt(0).toUpperCase() + leftLabel.slice(1) : "";
+  const capRight = rightLabel ? rightLabel.charAt(0).toUpperCase() + rightLabel.slice(1) : "";
+
+  return { left: capLeft, right: capRight, sortKey: d.getTime() };
 }
 
 const getYouTubeVideoId = (rawUrl) => {
@@ -1539,7 +1542,9 @@ function HomeScreen({
                             )}
                             {/* KEINE Zahl im Icon für expanded State */}
                           </div>
-                          <span className="category-card__status-text">Du hast <strong>{count}</strong> {statusLabel}</span>
+                          <span className="category-card__status-text">
+                            {t.youHavePrefix || "Du hast "}<strong>{count}</strong> {statusLabel}
+                          </span>
                         </div>
                         <div className="category-card__bottom">
                           <button

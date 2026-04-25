@@ -228,7 +228,7 @@ const SEED = {
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
-    { id: "e1", type: "task", title: "Aufgabe erledigen: Checkbox abhaken", done: false, note: "Onboarding abschließen", due: TODAY, catId: "p1" },
+    { id: "e1", type: "task", title: "Im Menu auswählen.", done: false, note: "Onboarding abschließen", due: TODAY, catId: "p1" },
     { id: "e2", type: "task", title: "Aufgabe löschen: Nach links ziehen", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e3", type: "task", title: "Swipe nach links & erstelle eine Notiz", done: false, note: "", due: TODAY, catId: "p1" },
     { id: "e4", type: "task", title: "Erstelle dein Geburtstag im Kalender", done: false, note: "", due: TODAY, catId: "p1" },
@@ -659,6 +659,8 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
   const [pillPopup, setPillPopup] = useState(null);
   const menuRef = useRef(null);
   const pillPopupRef = useRef(null);
+  // Flag: unterdrückt den nächsten Click nach dem Schließen eines Popups
+  const suppressNextClick = useRef(false);
 
   // Kontextmenü schließen bei Klick außerhalb
   useEffect(() => {
@@ -666,6 +668,11 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
     const close = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuEntryId(null);
+        // Nächsten Click unterdrücken, damit kein Eintrag geöffnet wird
+        suppressNextClick.current = true;
+        requestAnimationFrame(() => {
+          setTimeout(() => { suppressNextClick.current = false; }, 0);
+        });
       }
     };
     document.addEventListener('pointerdown', close);
@@ -678,6 +685,11 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
     const close = (e) => {
       if (pillPopupRef.current && !pillPopupRef.current.contains(e.target)) {
         setPillPopup(null);
+        // Nächsten Click unterdrücken
+        suppressNextClick.current = true;
+        requestAnimationFrame(() => {
+          setTimeout(() => { suppressNextClick.current = false; }, 0);
+        });
       }
     };
     document.addEventListener('pointerdown', close);
@@ -810,7 +822,7 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
         <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}>
           <div
             className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
-            onClick={() => onOpenEntry && onOpenEntry(e)}
+            onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
           >
             <div className="task-item__body">
               {/* Zeile 1: Titel + Stern + Menü */}
@@ -922,7 +934,7 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div
           className={`task-item ${e.done && !isArchive ? "task-item--done" : ""} ${isArchive ? "task-item--archive" : ""}`}
-          onClick={() => onOpenEntry && onOpenEntry(e)}
+          onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
         >
           <div className="task-item__body">
             <div

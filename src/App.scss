@@ -380,7 +380,7 @@
 
   &__categories-container {
     // Exakte Hälfte des Viewports minus 112px
-    height: calc(50dvh - 112px);
+    height: calc(50dvh - 104px);
     padding: $spacing-lg $spacing-md;
     position: relative;
     z-index: 1;
@@ -408,9 +408,21 @@
   }
 
   // Ordner-Icon neben dem Titel (analog zu den Subtab-Icons unten)
-  &__categories-icon {
-    color: $color-muted;
+  &__categories-icon-wrap {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, rgba(#EF4444, 0.15), rgba(#F59E0B, 0.15), rgba(#10B981, 0.15));
+    border: 1px solid rgba(#8B5CF6, 0.35);
+    border-radius: $radius-sm - 2px;
+    box-shadow: 0 0 12px rgba(#8B5CF6, 0.12);
     flex-shrink: 0;
+  }
+
+  &__categories-icon {
+    color: #8B5CF6;
   }
 
   // Horizontaler Track für Swipe-Pages (aktuell nur 1 Page)
@@ -610,12 +622,10 @@
 .entry-list {
   flex: 1;
   min-height: 0;
-  padding: $spacing-sm $spacing-md 0;
+  padding: $spacing-sm $spacing-md 64px;
   overflow-y: auto;
-  border-top-left-radius: $radius-xl;
-  border-top-right-radius: $radius-xl;
-  background: $color-surface;
-  border-top: 1.5px solid rgba($color-border, 0.2); // Basis-Stärke leicht erhöht für Themen-Farbe
+  // background: $color-surface;
+  // border-top: 1.5px solid rgba($color-border, 0.2); // Basis-Stärke leicht erhöht für Themen-Farbe
 
   // Themen-spezifische Border-Farben
   .main-content--tasks & {
@@ -655,14 +665,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between; // Links/Rechts Split
-  padding: 0 $spacing-md 0 $spacing-sm; // Rechts-Padding hinzugefügt
-  margin: $spacing-sm 0; 
+  // padding: 0 $spacing-md 0 $spacing-sm; // Rechts-Padding hinzugefügt
+  margin: $spacing-sm 0;
   gap: $spacing-sm;
 
   &__left,
   &__right {
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 700;
     color: $color-muted;
     text-transform: none;
     letter-spacing: 0.1px;
@@ -796,25 +806,195 @@
     }
   }
 
-  // Styles für die Startseite (Home)
+  // ── Home-Ansicht: Neues Karten-Design ──
   &--home {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: $spacing-sm + 4px $spacing-md;
+    position: relative;
     background: $color-bg !important;
     border-color: rgba(124, 131, 247, 0.2) !important;
+  }
 
-    .task-item__title {
-      color: #1e1b4b; // Dunkles Indigo für Kontrast
+  // Obere Zeile: Titel + Aktionen
+  &__top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    width: 100%;
+  }
+
+  // Aktionen rechts oben (Stern + Menü)
+  &__actions-home {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    margin-top: -2px;
+  }
+
+  &__star-btn,
+  &__menu-btn {
+    padding: $spacing-2xs;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-sm;
+    transition: all $transition-fast;
+
+    &:active {
+      transform: scale(0.9);
     }
+  }
 
-    .task-item__checkbox {
-      border-color: rgba(124, 131, 247, 0.5);
-      background: rgba(255, 255, 255, 0.5);
+  // Notiz-Platzhalter unter dem Titel
+  &__note-hint {
+    font-size: 12px;
+    color: $color-muted;
+    margin-top: $spacing-2xs;
+    line-height: 1.4;
+    @include text-truncate;
+  }
 
-      &--checked {
-        border-color: #7C83F7;
-        background: rgba(124, 131, 247, 0.133);
-        box-shadow: 0 0 8px rgba(124, 131, 247, 0.19);
+  // Pillen-Zeile
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    margin-top: $spacing-sm;
+  }
+
+  // Basis-Pille
+  &__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: $radius-pill;
+    font-size: 10px;
+    font-weight: 600;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    line-height: 1;
+    transition: all $transition-fast;
+
+    // Datum-Pille – immer sichtbar, blaues Theme
+    &--date {
+      background: #EFF6FF;
+      color: #1D4ED8;
+      border: 1px solid #BFDBFE;
+
+      &:active {
+        transform: scale(0.95);
       }
     }
+
+    // Überfälliges Datum – Rot
+    &--overdue {
+      background: #FEF2F2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+    }
+
+    // Nur-Icon-Pille (PARA-Typ-Symbole)
+    &--icon {
+      width: 22px;
+      padding: 0;
+      opacity: 0.55;
+      cursor: default;
+    }
+
+    // Kategorie-Name-Pille
+    &--cat {
+      padding: 0 8px;
+      border-radius: $radius-pill;
+      cursor: default;
+    }
+  }
+
+  // Datum-Popup (expandiert unter den Pillen)
+  &__date-popup {
+    margin-top: $spacing-sm;
+    animation: slide-up-small 0.2s ease-out;
+  }
+
+  &__date-input {
+    width: 100%;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-md;
+    border: 1px solid rgba(#1D4ED8, 0.25);
+    background: rgba(#1D4ED8, 0.06);
+    color: $color-text;
+    font-size: 13px;
+    font-family: $font-body;
+    color-scheme: dark;
+    transition: all $transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(#1D4ED8, 0.5);
+      box-shadow: 0 0 0 3px rgba(#1D4ED8, 0.1);
+    }
+  }
+
+  // Kontextmenü (Dropdown)
+  &__context-menu {
+    position: absolute;
+    top: $spacing-xl + $spacing-sm;
+    right: $spacing-md;
+    min-width: 160px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    z-index: 50;
+    padding: $spacing-2xs;
+    animation: slide-up-small 0.15s ease-out;
+  }
+
+  &__context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-sm + 2px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: $font-body;
+    color: $color-text;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+
+    &--danger {
+      color: #F26565;
+
+      &:hover {
+        background: rgba(#F26565, 0.1);
+      }
+    }
+  }
+
+  &__context-menu-divider {
+    height: 1px;
+    background: $color-border;
+    margin: $spacing-2xs 0;
   }
 }
 
@@ -2230,13 +2410,18 @@
   color: #1a1a24;
 
   .entry-list {
-    background: #ffffff;
+    // background: #ffffff;
+    background: transparent;
   }
 
   .task-item--home,
   .note-item--home,
   .cal-item--home {
-    background: #f7f7f9 !important;
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.04);
   }
 
   .command-panel {
@@ -2340,8 +2525,11 @@
   .note-item,
   .cal-item,
   .media-item {
-    background: #ffffff;
-    border: 1px solid #e5e5f0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 
     &__title {
       color: #1a1a24;
@@ -2349,6 +2537,48 @@
 
     &__checkbox {
       border-color: #7C83F7;
+    }
+  }
+
+  // Home-Task-Karten Light-Theme-Anpassungen
+  .task-item--home {
+    // Background inherited from group above
+
+    .task-item__note-hint {
+      color: #8e8eb2;
+    }
+
+    .task-item__date-input {
+      background: rgba(#1D4ED8, 0.04);
+      border-color: rgba(#1D4ED8, 0.2);
+      color: #1a1a24;
+      color-scheme: light;
+    }
+
+    .task-item__context-menu {
+      background: #ffffff;
+      border-color: #e5e5f0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-item__context-menu-item {
+      color: #1a1a24;
+
+      &:hover {
+        background: #f0f0f5;
+      }
+
+      &--danger {
+        color: #ef4444;
+
+        &:hover {
+          background: rgba(#ef4444, 0.06);
+        }
+      }
+    }
+
+    .task-item__context-menu-divider {
+      background: #e5e5f0;
     }
   }
 
@@ -3230,6 +3460,7 @@
 
 // Prevent Safari auto-zoom on mobile/touch devices (fonts < 16px trigger zoom)
 @media (hover: none) and (pointer: coarse) {
+
   .modal__input,
   .modal__textarea,
   .modal__select,

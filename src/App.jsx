@@ -7,7 +7,8 @@ import {
   Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search,
   Link2, Pencil, Settings, Paperclip, Image as ImageIcon,
   CheckCircle2, Archive, ArchiveRestore, Moon, Sun,
-  Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon
+  Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon,
+  Star, MoreVertical
 } from "lucide-react";
 import "./App.scss";
 
@@ -255,7 +256,7 @@ function computeNotif(entries) {
    COMPONENTS
    ════════════════════════════════════════════════════════════════ */
 
-function SwipeToDelete({ children, onDelete }) {
+function SwipeToDelete({ children, onDelete, isActive }) {
   const [swiping, setSwiping] = useState(false);
   const [offsetX, setOffsetX] = useState(0);
   const pressTimer = useRef(null);
@@ -314,14 +315,20 @@ function SwipeToDelete({ children, onDelete }) {
     }
   };
 
+  // Roter Hintergrund nur sichtbar wenn aktiv geswipt wird
+  const showDeleteBg = swiping && offsetX < 0;
+
   return (
     <div className="swipe-delete-wrapper" style={{ position: 'relative', overflow: 'visible' }}>
       <div style={{
-          position: 'absolute', inset: '0', background: '#DC2626', borderRadius: 'var(--radius-lg)',
+          position: 'absolute', inset: '0',
+          background: showDeleteBg ? '#DC2626' : 'transparent',
+          borderRadius: 'var(--radius-lg)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '20px',
-          zIndex: 0
+          zIndex: 0,
+          transition: 'background 0.2s ease'
       }}>
-          <Trash2 color="#fff" size={20} />
+          {showDeleteBg && <Trash2 color="#fff" size={20} />}
       </div>
       <div 
         onPointerDown={handlePointerDown}
@@ -333,7 +340,7 @@ function SwipeToDelete({ children, onDelete }) {
           transition: swiping ? 'none' : 'transform 0.2s',
           touchAction: swiping ? 'none' : 'pan-y',
           position: 'relative',
-          zIndex: 1,
+          zIndex: isActive ? 50 : 1,
           willChange: 'transform'
         }}
         onClick={(e) => {
@@ -599,14 +606,191 @@ function EntryMetaTags({ entry, cats, CC }) {
 }
 
 /* ── Task List ───────────────────────────────────────────────── */
-function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
+function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDelete, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
+  // State für Kontextmenü und Datum-Popup (nur Home)
+  const [menuEntryId, setMenuEntryId] = useState(null);
+  const [dateEntryId, setDateEntryId] = useState(null);
+  const menuRef = useRef(null);
+
+  // Kontextmenü schließen bei Klick außerhalb
+  useEffect(() => {
+    if (!menuEntryId) return;
+    const close = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuEntryId(null);
+      }
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [menuEntryId]);
+
   const renderItem = (e) => {
     const overdue = isOld(e.due) && !e.done;
-    
+
+    // ── Home-Ansicht: Neues Karten-Design ──
+    if (isHome) {
+      const ids = e.catIds || (e.catId ? [e.catId] : []);
+      const linked = cats.filter((c) => ids.includes(c.id));
+      const proj = linked.find(c => c.type === "project");
+      const area = linked.find(c => c.type === "area");
+      const res = linked.find(c => c.type === "resource");
+
+      return (
+        <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} isActive={menuEntryId === e.id || dateEntryId === e.id}>
+          <div
+            className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
+            onClick={() => onOpenEntry && onOpenEntry(e)}
+          >
+            <div className="task-item__body">
+              {/* Zeile 1: Titel + Stern + Menü */}
+              <div className="task-item__top-row">
+                <div
+                  className={`task-item__title ${e.done ? "task-item__title--done" : ""}`}
+                >
+                  {e.title}
+                </div>
+                <div className="task-item__actions-home">
+                  <button
+                    className="task-item__star-btn"
+                    onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
+                  >
+                    <Star
+                      size={18}
+                      fill={e.starred ? '#F59E0B' : 'none'}
+                      color={e.starred ? '#F59E0B' : '#C0C0D0'}
+                      strokeWidth={e.starred ? 0 : 1.5}
+                    />
+                  </button>
+                  <button
+                    className="task-item__menu-btn"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      setMenuEntryId(menuEntryId === e.id ? null : e.id);
+                    }}
+                  >
+                    <MoreVertical size={18} color="#C0C0D0" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Zeile 2: Notiz-Platzhalter */}
+              <div className="task-item__note-hint">
+                {e.note || t.addNotePlaceholder}
+              </div>
+
+              {/* Zeile 3: Pillen-Buttons */}
+              <div className="task-item__pills">
+                {/* Datum-Pille */}
+                <button
+                  className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                    setDateEntryId(dateEntryId === e.id ? null : e.id);
+                  }}
+                >
+                  <Calendar size={12} />
+                  {e.due && <span>{isToday(e.due) ? t.todayCap : fmtDate(e.due, t.locale)}</span>}
+                </button>
+
+                {/* Projekt-Icon */}
+                <span className="task-item__pill task-item__pill--icon" style={{ color: CC.project.color }}>
+                  <Circle size={12} strokeWidth={2.5} />
+                </span>
+
+                {/* Projekt-Name wenn verknüpft */}
+                {proj && (
+                  <span
+                    className="task-item__pill task-item__pill--cat"
+                    style={{ color: CC.project.color, background: CC.project.color + '18' }}
+                  >
+                    {proj.name}
+                  </span>
+                )}
+
+                {/* Area-Icon */}
+                <span className="task-item__pill task-item__pill--icon" style={{ color: CC.area.color }}>
+                  <Triangle size={12} strokeWidth={2.5} />
+                </span>
+
+                {/* Area-Name wenn verknüpft */}
+                {area && (
+                  <span
+                    className="task-item__pill task-item__pill--cat"
+                    style={{ color: CC.area.color, background: CC.area.color + '18' }}
+                  >
+                    {area.name}
+                  </span>
+                )}
+
+                {/* Ressource-Icon */}
+                <span className="task-item__pill task-item__pill--icon" style={{ color: CC.resource.color }}>
+                  <Square size={12} strokeWidth={2.5} />
+                </span>
+
+                {/* Ressource-Name wenn verknüpft */}
+                {res && (
+                  <span
+                    className="task-item__pill task-item__pill--cat"
+                    style={{ color: CC.resource.color, background: CC.resource.color + '18' }}
+                  >
+                    {res.name}
+                  </span>
+                )}
+              </div>
+
+              {/* Datum-Popup (expandiert unter den Pillen) */}
+              {dateEntryId === e.id && (
+                <div className="task-item__date-popup" onClick={(ev) => ev.stopPropagation()}>
+                  <input
+                    type="date"
+                    className="task-item__date-input"
+                    value={e.due || ""}
+                    autoFocus
+                    onChange={(ev) => {
+                      onUpdateEntry && onUpdateEntry(e.id, { due: ev.target.value || null });
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Kontextmenü */}
+            {menuEntryId === e.id && (
+              <div className="task-item__context-menu" ref={menuRef} onClick={(ev) => ev.stopPropagation()}>
+                <button
+                  className="task-item__context-menu-item"
+                  onClick={() => { onToggle(e.id); setMenuEntryId(null); }}
+                >
+                  <Check size={14} />
+                  <span>{e.done ? 'Als offen markieren' : 'Erledigt'}</span>
+                </button>
+                <button
+                  className="task-item__context-menu-item"
+                  onClick={() => { onOpenEntry && onOpenEntry(e); setMenuEntryId(null); }}
+                >
+                  <Edit2 size={14} />
+                  <span>Bearbeiten</span>
+                </button>
+                <div className="task-item__context-menu-divider" />
+                <button
+                  className="task-item__context-menu-item task-item__context-menu-item--danger"
+                  onClick={() => { onDelete(e.id); setMenuEntryId(null); }}
+                >
+                  <Trash2 size={14} />
+                  <span>Löschen</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </SwipeToDelete>
+      );
+    }
+
+    // ── Standard-Ansicht (Kategorie-Detail etc.) ──
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
         <div
-          className={`task-item ${e.done && !isArchive ? "task-item--done" : ""} ${isHome ? "task-item--home" : ""} ${isArchive ? "task-item--archive" : ""}`}
+          className={`task-item ${e.done && !isArchive ? "task-item--done" : ""} ${isArchive ? "task-item--archive" : ""}`}
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
           <div className="task-item__body">
@@ -619,7 +803,7 @@ function TaskList({ entries, cats, onToggle, onDelete, t, CC, grouped, color, on
             </div>
             
             <div className="task-item__meta">
-              {e.due && !isHome && (
+              {e.due && (
                 <span
                   className={`task-item__due ${overdue ? "task-item__due--overdue" : ""}`}
                 >
@@ -996,6 +1180,8 @@ function HomeScreen({
   onAddCat,
   onAddEntry,
   toggleTask,
+  toggleStar,
+  updateEntry,
   deleteEntry,
   onOpenEntry,
   onOpenArchive,
@@ -1103,9 +1289,11 @@ function HomeScreen({
         {/* Überschrift + Ordner-Icon (wie bei den Subtabs unten) */}
         <div className="home__categories-header">
           <span className="home__categories-title">Ordner</span>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={16} height={16} className="home__categories-icon">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-          </svg>
+          <div className="home__categories-icon-wrap">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={16} height={16} className="home__categories-icon">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
+            </svg>
+          </div>
         </div>
 
         {/* Horizontaler Swipe-Track – aktuell nur 1 Page (Ordner) */}
@@ -1209,6 +1397,8 @@ function HomeScreen({
                   entries={tabEntries}
                   cats={cats}
                   onToggle={toggleTask}
+                  onToggleStar={toggleStar}
+                  onUpdateEntry={updateEntry}
                   onDelete={deleteEntry}
                   grouped={true}
                   color={tabColor}
@@ -3202,6 +3392,15 @@ export default function App() {
       ),
     }));
 
+  // Favoriten-Stern umschalten
+  const toggleStar = (id) =>
+    setState((s) => ({
+      ...s,
+      entries: s.entries.map((e) =>
+        e.id === id ? { ...e, starred: !e.starred } : e
+      ),
+    }));
+
   const updateEntry = (id, patch) =>
     setState((s) => ({
       ...s,
@@ -3345,6 +3544,8 @@ export default function App() {
               });
             }}
             toggleTask={toggleTask}
+            toggleStar={toggleStar}
+            updateEntry={updateEntry}
             deleteEntry={deleteEntry}
             onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
             onOpenArchive={(currentTab) => {

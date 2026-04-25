@@ -1379,6 +1379,35 @@ function HomeScreen({
 
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
+  
+  const cardPressTimer = useRef(null);
+  const isCardLongPress = useRef(false);
+
+  const handleCardPointerDown = (type) => {
+    isCardLongPress.current = false;
+    cardPressTimer.current = setTimeout(() => {
+      isCardLongPress.current = true;
+      setExpandedCat(type);
+    }, 200);
+  };
+
+  const handleCardPointerUp = () => {
+    if (cardPressTimer.current) clearTimeout(cardPressTimer.current);
+  };
+
+  const handleCardPointerLeave = () => {
+    if (cardPressTimer.current) clearTimeout(cardPressTimer.current);
+  };
+
+  const handleCardClick = (e, type) => {
+    if (isCardLongPress.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    setExpandedCat(type);
+    onOpenCatType(type);
+  };
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -1469,7 +1498,10 @@ function HomeScreen({
                     <div 
                       key={type} 
                       className={`category-card category-card--expanded category-card--${type}`}
-                      onClick={() => onOpenCatType(type)}
+                      onPointerDown={() => handleCardPointerDown(type)}
+                      onPointerUp={handleCardPointerUp}
+                      onPointerLeave={handleCardPointerLeave}
+                      onClick={(e) => handleCardClick(e, type)}
                     >
                       <div className="category-card__bg"></div>
                       <div className="category-card__content">
@@ -1494,10 +1526,10 @@ function HomeScreen({
                   <div 
                     key={type} 
                     className={`category-card category-card--collapsed category-card--${type}`}
-                    onClick={() => {
-                      setExpandedCat(type);
-                      onOpenCatType(type);
-                    }}
+                    onPointerDown={() => handleCardPointerDown(type)}
+                    onPointerUp={handleCardPointerUp}
+                    onPointerLeave={handleCardPointerLeave}
+                    onClick={(e) => handleCardClick(e, type)}
                   >
                     <div className="category-card__bg"></div>
                     <div className="category-card__content">

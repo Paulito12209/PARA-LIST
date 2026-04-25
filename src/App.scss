@@ -17,6 +17,19 @@
   overflow: hidden;
   font-family: $font-body;
   color: $color-text;
+
+  // PARA Pill Backgrounds (Dark Mode Default)
+  --pill-project-bg: #{$color-project-dim};
+  --pill-area-bg: #{$color-area-dim};
+  --pill-resource-bg: #{$color-resource-dim};
+
+  // Date & Overdue Pill (Dark Mode)
+  --pill-date-bg: #{rgba($color-calendar, 0.15)};
+  --pill-date-color: #7C83F7;
+  --pill-date-border: #{rgba($color-calendar, 0.25)};
+  --pill-overdue-bg: #{$color-project-dim};
+  --pill-overdue-color: #F26565;
+  --pill-overdue-border: #{rgba($color-notif-red, 0.25)};
 }
 
 // ── Command Panel ───────────────────────────────────────────
@@ -768,17 +781,17 @@
     font-size: 10px;
     line-height: 1;
     font-weight: 600;
-    color: #1D4ED8;
-    background: #EFF6FF;
-    border: 1px solid #BFDBFE;
+    color: var(--pill-date-color);
+    background: var(--pill-date-bg);
+    border: 1px solid var(--pill-date-border);
     padding: 0 8px;
     border-radius: $radius-pill;
     vertical-align: middle;
 
     &--overdue {
-      color: #DC2626;
-      background: #FEE2E2;
-      border-color: #FCA5A5;
+      color: var(--pill-overdue-color);
+      background: var(--pill-overdue-bg);
+      border-color: var(--pill-overdue-border);
     }
   }
 
@@ -889,9 +902,9 @@
 
     // Datum-Pille – immer sichtbar, blaues Theme
     &--date {
-      background: #EFF6FF;
-      color: #1D4ED8;
-      border: 1px solid #BFDBFE;
+      background: var(--pill-date-bg);
+      color: var(--pill-date-color);
+      border: 1px solid var(--pill-date-border);
 
       &:active {
         transform: scale(0.95);
@@ -900,9 +913,9 @@
 
     // Überfälliges Datum – Rot
     &--overdue {
-      background: #FEF2F2;
-      color: #DC2626;
-      border: 1px solid #FECACA;
+      background: var(--pill-overdue-bg);
+      color: var(--pill-overdue-color);
+      border: 1px solid var(--pill-overdue-border);
     }
 
     // Klickbarer Icon-Button (wenn keine Verknüpfung)
@@ -2560,6 +2573,19 @@
 .app.light-theme {
   background: #f7f7f9;
   color: #1a1a24;
+
+  // PARA Pill Backgrounds (Light Mode)
+  --pill-project-bg: #{rgba($color-project, 0.12)};
+  --pill-area-bg: #{rgba($color-area, 0.12)};
+  --pill-resource-bg: #{rgba($color-resource, 0.12)};
+
+  // Date & Overdue Pill (Light Mode)
+  --pill-date-bg: #EFF6FF;
+  --pill-date-color: #1D4ED8;
+  --pill-date-border: #BFDBFE;
+  --pill-overdue-bg: #FEF2F2;
+  --pill-overdue-color: #DC2626;
+  --pill-overdue-border: #FECACA;
 
   .entry-list {
     // background: #ffffff;

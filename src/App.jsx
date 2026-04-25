@@ -576,7 +576,7 @@ function EntryMetaTags({ entry, cats, CC }) {
       {projs.length > 0 && (
         <span
           className="task-item__cat-tag"
-          style={{ color: CC.project.color, background: CC.project.color + "18" }}
+          style={{ color: CC.project.color, background: 'var(--pill-project-bg)' }}
         >
           {projs[0].name}{projs.length > 1 ? ` +${projs.length - 1}` : ""}
         </span>
@@ -584,7 +584,7 @@ function EntryMetaTags({ entry, cats, CC }) {
       {areas.length > 0 && (
         <span
           className="task-item__cat-tag"
-          style={{ color: CC.area.color, background: CC.area.color + "18" }}
+          style={{ color: CC.area.color, background: 'var(--pill-area-bg)' }}
         >
           {areas[0].name}{areas.length > 1 ? ` +${areas.length - 1}` : ""}
         </span>
@@ -594,7 +594,7 @@ function EntryMetaTags({ entry, cats, CC }) {
           className="task-item__cat-tag"
           style={{
             color: CC.resource.color,
-            background: CC.resource.color + "18",
+            background: 'var(--pill-resource-bg)',
           }}
         >
           <Square size={10} color={CC.resource.color} strokeWidth={2.5} style={{ marginRight: 3 }} />
@@ -681,7 +681,7 @@ function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDele
             ) : (
               <button
                 className="task-item__pill task-item__pill--cat-btn"
-                style={{ color: cc.color, background: cc.color + '18' }}
+                style={{ color: cc.color, background: `var(--pill-${type}-bg)` }}
                 onClick={(ev) => {
                   ev.stopPropagation();
                   setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: false });

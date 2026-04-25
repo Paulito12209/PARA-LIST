@@ -475,6 +475,19 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             >
               Überfällig {overdueEntries.length > 0 && <span className="command-panel__badge command-panel__badge--overdue">{overdueEntries.length}</span>}
             </button>
+            <button
+              className="command-panel__tab-settings"
+              onClick={() => onOpenSettings()}
+              style={user.avatar ? { padding: 0 } : {}}
+            >
+              {user.avatar ? (
+                <div className="command-panel__profile-avatar" style={{ width: 24, height: 24, borderRadius: '50%' }}>
+                  <img src={user.avatar} alt="Avatar" style={{ borderRadius: '50%' }} />
+                </div>
+              ) : (
+                <CustomSettingsIcon size={18} />
+              )}
+            </button>
           </div>
 
           <div className="command-panel__list" key={subTab}>
@@ -589,24 +602,6 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
               title="Light Mode"
             >
               <Sun size={16} />
-            </button>
-
-            {/* Vertikaler Divider */}
-            <div className="command-panel__qs-divider" />
-
-            {/* Settings-Button */}
-            <button
-              className="command-panel__qs-btn command-panel__qs-btn--settings"
-              onClick={() => onOpenSettings()}
-              style={user.avatar ? { padding: 0 } : {}}
-            >
-              {user.avatar ? (
-                <div className="command-panel__profile-avatar" style={{ width: 24, height: 24, borderRadius: '50%' }}>
-                  <img src={user.avatar} alt="Avatar" style={{ borderRadius: '50%' }} />
-                </div>
-              ) : (
-                <CustomSettingsIcon size={16} />
-              )}
             </button>
           </div>
         )}

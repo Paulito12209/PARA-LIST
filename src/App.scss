@@ -172,10 +172,11 @@
   &__tabs {
     display: flex;
     gap: $spacing-xs;
-    margin-bottom: $spacing-md;
+    margin-bottom: $spacing-sm;
     background: $color-card;
-    border-radius: $radius-sm;
-    padding: $spacing-2xs;
+    border-radius: 24px;
+    padding: 4px;
+    height: 48px;
     border: 1px solid $color-border;
   }
 
@@ -185,8 +186,8 @@
     align-items: center;
     justify-content: center;
     gap: $spacing-xs;
-    padding: $spacing-xs + 2px $spacing-sm;
-    border-radius: $radius-sm - 2px;
+    height: 100%;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     font-family: $font-body;
@@ -213,6 +214,26 @@
     &:hover:not(&--active-today):not(&--active-overdue) {
       color: $color-text;
       background: $color-hover;
+    }
+  }
+
+  &__tab-settings {
+    width: 40px;
+    height: 100%;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    color: $color-muted;
+    cursor: pointer;
+    transition: all $transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      background: $color-hover;
+      color: $color-text;
     }
   }
 
@@ -253,7 +274,7 @@
     padding: $spacing-sm $spacing-sm + $spacing-xs;
     border-radius: $radius-md;
     border: 1px solid $color-border;
-    margin-bottom: $spacing-xs + $spacing-2xs;
+    margin-bottom: $spacing-sm;
     background: $color-card;
 
     &--overdue {
@@ -2235,8 +2256,9 @@
   gap: $spacing-xs;
   margin-bottom: $spacing-md;
   background: $color-card;
-  border-radius: $radius-sm;
-  padding: $spacing-2xs;
+  border-radius: 24px;
+  padding: 4px;
+  height: 48px;
   border: 1px solid $color-border;
 
   &__btn {
@@ -2245,8 +2267,8 @@
     align-items: center;
     justify-content: center;
     gap: $spacing-xs;
-    padding: $spacing-xs + 2px $spacing-sm;
-    border-radius: $radius-sm - 2px;
+    height: 100%;
+    border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     font-family: $font-body;

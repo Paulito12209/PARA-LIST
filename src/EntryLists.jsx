@@ -90,7 +90,7 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
 }/* ── Home Entry Item ─────────────────────────────────────────── */
 
 
-export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, onOpenEntry, t, CC, isArchive }) {
+export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, onOpenEntry, onArchiveEntry, t, CC, isArchive }) {
   const [menuEntryId, setMenuEntryId] = useState(null);
   const [dateEntryId, setDateEntryId] = useState(null);
   const [pillPopup, setPillPopup] = useState(null);
@@ -304,6 +304,15 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
                 <span>{e.done ? t.markOpen : t.markDone}</span>
               </button>
             )}
+            {e.type === 'calendar' && (
+              <button
+                className="task-item__context-menu-item"
+                onClick={() => { onToggle && onToggle(e.id); setMenuEntryId(null); }}
+              >
+                {e.done ? <ArchiveRestore size={14} /> : <Check size={14} />}
+                <span>{e.done ? t.markOpen : t.markAttended}</span>
+              </button>
+            )}
             <button
               className="task-item__context-menu-item"
               onClick={() => { onOpenEntry && onOpenEntry(e); setMenuEntryId(null); }}
@@ -311,6 +320,19 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
               <Edit2 size={14} />
               <span>{t.edit}</span>
             </button>
+            {e.type === 'note' && (
+              <button
+                className="task-item__context-menu-item"
+                onClick={() => { 
+                  if (onArchiveEntry) onArchiveEntry(e.id);
+                  else if (onUpdateEntry) onUpdateEntry(e.id, { archived: !e.archived });
+                  setMenuEntryId(null); 
+                }}
+              >
+                {isArchive ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+                <span>{isArchive ? t.restore : t.archive}</span>
+              </button>
+            )}
             <div className="task-item__context-menu-divider" />
             <button
               className="task-item__context-menu-item task-item__context-menu-item--danger"
@@ -510,6 +532,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
           onToggleStar={onToggleStar}
           onUpdateEntry={onUpdateEntry}
           onOpenEntry={onOpenEntry}
+          onArchiveEntry={onArchiveEntry}
           t={t}
           CC={CC}
           isArchive={isArchive}
@@ -606,7 +629,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
 }
 
 
-export function CalList({ entries, cats, onDelete, onToggleStar, onUpdateEntry, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
+export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     if (isHome) {
       return (
@@ -615,6 +638,7 @@ export function CalList({ entries, cats, onDelete, onToggleStar, onUpdateEntry, 
           e={e}
           cats={cats}
           onDelete={onDelete}
+          onToggle={onToggle}
           onToggleStar={onToggleStar}
           onUpdateEntry={onUpdateEntry}
           onOpenEntry={onOpenEntry}

@@ -19,7 +19,7 @@ import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIco
 import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete } from "./shared";
 
 /* ── Command Panel ───────────────────────────────────────────── */
-function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onDelete, t, onOpenEntry, theme, setTheme, lang, setLang }) {
+function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onToggleTask, t, onOpenEntry, theme, setTheme, lang, setLang }) {
   const [subTab, setSubTab] = useState("today");
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -50,7 +50,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
   const todayEntries = entries.filter(
     (e) =>
       (e.type === "task" && !e.done && isToday(e.due)) ||
-      (e.type === "calendar" && isToday(e.date))
+      (e.type === "calendar" && !e.done && isToday(e.date))
   );
 
 
@@ -58,7 +58,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
   const overdueEntries = entries.filter(
     (e) =>
       (e.type === "task" && !e.done && isOld(e.due)) ||
-      (e.type === "calendar" && isOld(e.date))
+      (e.type === "calendar" && !e.done && isOld(e.date))
   ).sort((a, b) => {
     const dA = new Date((a.due || a.date) + "T12:00");
     const dB = new Date((b.due || b.date) + "T12:00");
@@ -177,10 +177,10 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                       className="command-panel__drawer-delete"
                       onClick={(ev) => {
                         ev.stopPropagation();
-                        onDelete(e.id);
+                        onToggleTask(e.id);
                       }}
                     >
-                      <Trash2 size={14} color="#5858A0" />
+                      <Check size={14} color="#5858A0" />
                     </button>
                   </div>
                 );
@@ -302,7 +302,7 @@ function HomeScreen({
     return e;
   }).filter((e) => {
     if (tab === "calendar") {
-      return e.type === "calendar" && (!e.date || !isOld(e.date));
+      return e.type === "calendar" && (!e.date || !isOld(e.date)) && !e.done;
     }
     if (tab === "notes") {
       return e.type === "note" && !e.archived;
@@ -316,7 +316,7 @@ function HomeScreen({
 
   const showArchiveButton = () => {
     if (tab === "tasks") return entries.some((e) => e.type === "task" && e.done);
-    if (tab === "calendar") return entries.some((e) => e.type === "calendar" && isOld(e.date));
+    if (tab === "calendar") return entries.some((e) => e.type === "calendar" && (isOld(e.date) || e.done));
     if (tab === "notes") return entries.some((e) => e.type === "note");
     return false;
   };
@@ -675,6 +675,7 @@ function HomeScreen({
                   entries={tabEntries}
                   cats={cats}
                   onDelete={deleteEntry}
+                  onToggle={toggleTask}
                   onToggleStar={toggleStar}
                   onUpdateEntry={updateEntry}
                   grouped={true}
@@ -727,7 +728,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
     ? cats.filter(c => c.type === tab && c.archived)
     : entries.filter(e => {
         if (tab === "tasks") return e.type === "task" && e.done;
-        if (tab === "calendar") return e.type === "calendar" && isOld(e.date);
+        if (tab === "calendar") return e.type === "calendar" && (isOld(e.date) || e.done);
         if (tab === "notes") return e.type === "note" && e.archived;
         return false;
       }).sort((a, b) => {
@@ -1546,7 +1547,7 @@ export default function App() {
       return state.cats.filter(c => c.type === archiveTab && c.archived).length;
     }
     if (archiveTab === "tasks") return state.entries.filter(e => e.type === "task" && e.done).length;
-    if (archiveTab === "calendar") return state.entries.filter(e => e.type === "calendar" && isOld(e.date)).length;
+    if (archiveTab === "calendar") return state.entries.filter(e => e.type === "calendar" && (isOld(e.date) || e.done)).length;
     if (archiveTab === "notes") return state.entries.filter(e => e.type === "note" && e.archived).length;
     return 0;
   };
@@ -1715,7 +1716,7 @@ export default function App() {
         open={panelOpen}
         onToggle={() => setPanelOpen((o) => !o)}
         onOpenSettings={() => setSettingsOpen(true)}
-        onDelete={deleteEntry}
+        onToggleTask={toggleTask}
         onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
       />
 

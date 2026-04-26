@@ -948,24 +948,25 @@
   transition: opacity 0.2s;
 
   &--done {
-    background: #FFFFFF !important;
-    border: 1px solid rgba(124, 131, 247, 0.2) !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background: rgba($color-surface, 0.5);
+    border: 1px solid rgba($color-task, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
     .task-item__title {
-      color: #1a202c !important;
-      opacity: 0.8;
+      color: $color-text;
+      text-decoration: line-through;
+      opacity: 0.6;
     }
 
     .task-item__due,
     .task-item__cat-tag,
     .task-item__meta {
-      color: #4a5568 !important;
-      opacity: 0.7;
+      color: $color-muted;
+      opacity: 0.6;
 
       span,
       div {
-        color: inherit !important;
+        color: inherit;
       }
     }
   }
@@ -2921,6 +2922,38 @@
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.04);
   }
 
+  // Erledigte & Archivierte Aufgaben im Light Mode
+  .task-item--done,
+  .task-item--archive,
+  .cal-item--archive,
+  .note-item--archive {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(124, 131, 247, 0.2) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+
+    .task-item__title,
+    .cal-item__title,
+    .note-item__title {
+      color: #1a202c !important;
+      opacity: 0.8 !important;
+    }
+
+    .task-item__due,
+    .task-item__cat-tag,
+    .cal-item__time,
+    .cal-item__cat-tag,
+    .note-item__excerpt,
+    .task-item__meta {
+      color: #4a5568 !important;
+      opacity: 0.7 !important;
+
+      span,
+      div {
+        color: inherit !important;
+      }
+    }
+  }
+
   .command-panel {
     border-bottom-color: #e5e5f0;
 
@@ -4078,17 +4111,17 @@
 .task-item--archive,
 .cal-item--archive,
 .note-item--archive {
-  background: #FFFFFF !important;
-  border: 1px solid rgba(124, 131, 247, 0.2) !important;
-  opacity: 1 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  background: rgba($color-surface, 0.5);
+  border: 1px solid rgba($color-task, 0.15);
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   .task-item__title,
   .cal-item__title,
   .note-item__title {
-    color: #1a202c !important;
-    text-decoration: line-through !important;
-    opacity: 0.8;
+    color: $color-text;
+    text-decoration: line-through;
+    opacity: 0.6;
   }
 
   .task-item__due,
@@ -4097,12 +4130,12 @@
   .cal-item__cat-tag,
   .note-item__excerpt,
   .task-item__meta {
-    color: #4a5568 !important;
-    opacity: 0.7;
+    color: $color-muted;
+    opacity: 0.6;
 
     span,
     div {
-      color: inherit !important;
+      color: inherit;
     }
   }
 

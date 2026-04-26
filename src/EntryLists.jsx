@@ -228,7 +228,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
   };
 
   return (
-    <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}>
+    <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} onComplete={(e.type === 'task' || e.type === 'calendar') && onToggle ? () => onToggle(e.id) : undefined} isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}>
       <div
         className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
         onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
@@ -442,7 +442,7 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
 
     // ── Standard-Ansicht (Kategorie-Detail etc.) ──
     return (
-      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
+      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} onComplete={!isArchive && onToggle ? () => onToggle(e.id) : undefined}>
         <div
           className={`task-item ${e.done && !isArchive ? "task-item--done" : ""} ${isArchive ? "task-item--archive" : ""}`}
           onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
@@ -682,7 +682,7 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpd
 
     const past = e.date && e.date < TODAY;
     return (
-      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
+      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} onComplete={!isArchive && onToggle ? () => onToggle(e.id) : undefined}>
         <div
           className={`cal-item ${isToday(e.date) ? "cal-item--today" : ""} ${
             past && !isArchive ? "cal-item--past" : ""

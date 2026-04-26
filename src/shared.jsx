@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { I18N } from "./i18n";
 import {
-  Circle, Triangle, Square, Trash2, FileText, CheckCircle2, Calendar, Paperclip
+  Circle, Triangle, Square, Trash2, Check, FileText, CheckCircle2, Calendar, Paperclip
 } from "lucide-react";
 import { BookmarkIcon, TagIcon } from "./AppIcons"; // We'll move these out to avoid crowding
 
@@ -234,7 +234,7 @@ export function computeNotif(entries) {
    COMPONENTS
    ════════════════════════════════════════════════════════════════ */
 
-export function SwipeToDelete({ children, onDelete, isActive }) {
+export function SwipeToDelete({ children, onDelete, onComplete, isActive }) {
   const [swiping, setSwiping] = useState(false);
   const [offsetX, setOffsetX] = useState(0);
   const pressTimer = useRef(null);
@@ -269,10 +269,14 @@ export function SwipeToDelete({ children, onDelete, isActive }) {
       }
     } else {
       if (e.cancelable) e.preventDefault();
+      // Links swipen → Löschen (immer erlaubt)
+      // Rechts swipen → Erledigen (nur wenn onComplete vorhanden)
       if (dx < 0) {
-         setOffsetX(dx);
+        setOffsetX(dx);
+      } else if (dx > 0 && onComplete) {
+        setOffsetX(dx);
       } else {
-         setOffsetX(0);
+        setOffsetX(0);
       }
     }
   };
@@ -284,7 +288,11 @@ export function SwipeToDelete({ children, onDelete, isActive }) {
     }
     if (isHeld.current) {
       if (offsetX < -100) {
+        // Schwelle für Löschen erreicht
         onDelete();
+      } else if (offsetX > 100 && onComplete) {
+        // Schwelle für Erledigen erreicht
+        onComplete();
       } else {
         setOffsetX(0);
       }
@@ -294,9 +302,11 @@ export function SwipeToDelete({ children, onDelete, isActive }) {
   };
 
   const showDeleteBg = swiping && offsetX < 0;
+  const showCompleteBg = swiping && offsetX > 0 && onComplete;
 
   return (
     <div className="swipe-delete-wrapper" style={{ position: 'relative', overflow: 'visible' }}>
+      {/* Hintergrund: Löschen (rot, rechts) */}
       <div style={{
           position: 'absolute', inset: '0',
           background: showDeleteBg ? '#DC2626' : 'transparent',
@@ -306,6 +316,17 @@ export function SwipeToDelete({ children, onDelete, isActive }) {
           transition: 'background 0.2s ease'
       }}>
           {showDeleteBg && <Trash2 color="#fff" size={20} />}
+      </div>
+      {/* Hintergrund: Erledigen (grün, links) */}
+      <div style={{
+          position: 'absolute', inset: '0',
+          background: showCompleteBg ? '#16A34A' : 'transparent',
+          borderRadius: 'var(--radius-lg)',
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '20px',
+          zIndex: 0,
+          transition: 'background 0.2s ease'
+      }}>
+          {showCompleteBg && <Check color="#fff" size={20} strokeWidth={3} />}
       </div>
       <div 
         onPointerDown={handlePointerDown}

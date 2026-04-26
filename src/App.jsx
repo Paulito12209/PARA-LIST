@@ -68,7 +68,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
   const activeEntries = subTab === "today" ? todayEntries : overdueEntries;
 
   return (
-    <div 
+    <div
       className={`command-panel command-panel--${open ? "open" : "closed"}`}
       onTouchStart={open ? handleTouchStart : undefined}
       onTouchEnd={open ? handleTouchEnd : undefined}
@@ -109,7 +109,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
       </div>
 
       {open && (
-        <div 
+        <div
           className="command-panel__drawer"
           style={{ touchAction: 'pan-y' }}
         >
@@ -142,9 +142,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                 return (
                   <div
                     key={e.id}
-                    className={`command-panel__drawer-item ${
-                      isOld(d) ? "command-panel__drawer-item--overdue" : ""
-                    }`}
+                    className={`command-panel__drawer-item ${isOld(d) ? "command-panel__drawer-item--overdue" : ""
+                      }`}
                     onClick={() => {
                       if (onOpenEntry) {
                         onOpenEntry(e);
@@ -159,8 +158,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                           e.type === "calendar"
                             ? "#1D4ED8"
                             : isOld(d)
-                            ? NOTIF_RED
-                            : "#7C83F7",
+                              ? NOTIF_RED
+                              : "#7C83F7",
                       }}
                     />
                     <div className="command-panel__drawer-info">
@@ -169,8 +168,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                         {e.type === "calendar"
                           ? e.time + (t.oclock ? " " + t.oclock : "")
                           : isOld(d)
-                          ? fmtDate(d, t.locale)
-                          : t.todayCap}
+                            ? fmtDate(d, t.locale)
+                            : t.todayCap}
                       </div>
                     </div>
                     <button
@@ -191,13 +190,12 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
       )}
 
       <div
-        className={`command-panel__handle command-panel__handle--${
-          open ? "open" : "closed"
-        }`}
+        className={`command-panel__handle command-panel__handle--${open ? "open" : "closed"
+          }`}
         onClick={onToggle}
       >
-        <div 
-          className="command-panel__handle-bar" 
+        <div
+          className="command-panel__handle-bar"
           style={notif ? { background: notif.color, opacity: 1 } : {}}
         />
         {open && (
@@ -245,7 +243,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                 <Sun size={16} />
               </button>
             </div>
-            
+
             {/* Settings-Button */}
             <button
               className="command-panel__qs-settings-btn"
@@ -334,10 +332,10 @@ function HomeScreen({
       if (activeGroupHeader) setActiveGroupHeader(null);
       return;
     }
-    
+
     let currentGroup = groups[0];
     const containerTop = container.getBoundingClientRect().top;
-    
+
     // Find the last group that has touched or passed the top edge
     for (let i = 0; i < groups.length; i++) {
       const rect = groups[i].getBoundingClientRect();
@@ -347,7 +345,7 @@ function HomeScreen({
         break;
       }
     }
-    
+
     if (currentGroup) {
       const left = currentGroup.dataset.groupLeft;
       const right = currentGroup.dataset.groupRight;
@@ -367,7 +365,7 @@ function HomeScreen({
 
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
-  
+
   const cardPressTimer = useRef(null);
   const isCardLongPress = useRef(false);
 
@@ -404,12 +402,12 @@ function HomeScreen({
   const handleTouchEnd = (e) => {
     const touchEndX = e.changedTouches[0].clientX;
     const dx = touchEndX - touchStartX.current;
-    
+
     if (Math.abs(dx) > 60 && !panelOpen) {
 
       const tabOrder = TABS.map(t => t.id);
       const currentIndex = tabOrder.indexOf(tab);
-      
+
       if (dx > 0 && currentIndex > 0) {
         // Swipe nach rechts -> Vorheriger Tab
         setTab(tabOrder[currentIndex - 1]);
@@ -441,16 +439,16 @@ function HomeScreen({
     let hasToday = false;
     const futureDates = [];
     tabEntries.forEach(e => {
-       const d = e.due || e.date;
-       if (!d || isToday(d) || isOld(d)) hasToday = true;
-       else futureDates.push(d);
+      const d = e.due || e.date;
+      if (!d || isToday(d) || isOld(d)) hasToday = true;
+      else futureDates.push(d);
     });
     if (hasToday) return t.todayGroup;
     if (futureDates.length > 0) {
-       futureDates.sort((a,b) => new Date(a) - new Date(b));
-       const d = futureDates[0];
-       const g = getTaskGroup(d, t.locale, true);
-       return g.right ? `${g.left} ・ ${g.right}` : g.left;
+      futureDates.sort((a, b) => new Date(a) - new Date(b));
+      const d = futureDates[0];
+      const g = getTaskGroup(d, t.locale, true);
+      return g.right ? `${g.left} ・ ${g.right}` : g.left;
     }
     return null;
   })();
@@ -461,11 +459,11 @@ function HomeScreen({
         {/* Überschrift + Ordner-Icon (wie bei den Subtabs unten) */}
         <div className="home__categories-header">
           <span className="home__categories-title">{t.folders}</span>
-          <div className="home__categories-icon-wrap">
+          {/* <div className="home__categories-icon-wrap">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={16} height={16} className="home__categories-icon">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
             </svg>
-          </div>
+          </div> */}
         </div>
 
         {/* Horizontaler Swipe-Track – aktuell nur 1 Page (Ordner) */}
@@ -477,15 +475,15 @@ function HomeScreen({
                 const cfg = CC[type];
                 const count = cats.filter((c) => c.type === type && !c.archived).length;
                 const isExpanded = expandedCat === type;
-                
+
                 // Initiale für minimierte Ansicht
                 const initial = cfg.label.charAt(0).toUpperCase();
 
                 if (isExpanded) {
                   const statusLabel = (type === 'area' || type === 'resource') ? (t.active || 'aktiv') : (t.open || 'offen');
                   return (
-                    <div 
-                      key={type} 
+                    <div
+                      key={type}
                       className={`category-card category-card--expanded category-card--${type}`}
                       onPointerDown={() => handleCardPointerDown(type)}
                       onPointerUp={handleCardPointerUp}
@@ -502,15 +500,15 @@ function HomeScreen({
                           <div className="category-card__status-icon-wrap">
                             {type === 'area' ? (
                               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             ) : type === 'resource' ? (
                               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             ) : (
                               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                               </svg>
                             )}
                             {/* KEINE Zahl im Icon für expanded State */}
@@ -533,8 +531,8 @@ function HomeScreen({
                 }
 
                 return (
-                  <div 
-                    key={type} 
+                  <div
+                    key={type}
                     className={`category-card category-card--collapsed category-card--${type}`}
                     onPointerDown={() => handleCardPointerDown(type)}
                     onPointerUp={handleCardPointerUp}
@@ -544,19 +542,19 @@ function HomeScreen({
                     <div className="category-card__bg"></div>
                     <div className="category-card__content">
                       <span className="category-card__initial">{initial}</span>
-                      
+
                       <div className="category-card__badge-wrap">
                         {type === 'area' ? (
                           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : type === 'resource' ? (
                           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         ) : (
                           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
                         <span className="category-card__badge-count">{count}</span>
@@ -595,17 +593,16 @@ function HomeScreen({
               return (
                 <button
                   key={t.id}
-                  className={`list-switcher__btn ${
-                    isActive ? "list-switcher__btn--active" : ""
-                  }`}
+                  className={`list-switcher__btn ${isActive ? "list-switcher__btn--active" : ""
+                    }`}
                   onClick={() => setTab(t.id)}
                   style={
                     isActive
                       ? {
-                          background: t.color + "22",
-                          boxShadow: `0 0 12px ${t.color}30`,
-                          color: t.color,
-                        }
+                        background: t.color + "22",
+                        boxShadow: `0 0 12px ${t.color}30`,
+                        color: t.color,
+                      }
                       : {}
                   }
                 >
@@ -625,8 +622,8 @@ function HomeScreen({
         )}
 
         {/* Entry list */}
-        <div 
-          className="entry-list" 
+        <div
+          className="entry-list"
           onClick={handleDoubleTap}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -727,20 +724,20 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
   const archiveItems = isCatTab
     ? cats.filter(c => c.type === tab && c.archived)
     : entries.filter(e => {
-        if (tab === "tasks") return e.type === "task" && e.done;
-        if (tab === "calendar") return e.type === "calendar" && (isOld(e.date) || e.done);
-        if (tab === "notes") return e.type === "note" && e.archived;
-        return false;
-      }).sort((a, b) => {
-        if (tab === "calendar") {
-          return new Date(b.date + "T12:00") - new Date(a.date + "T12:00");
-        }
-        return 0;
-      });
+      if (tab === "tasks") return e.type === "task" && e.done;
+      if (tab === "calendar") return e.type === "calendar" && (isOld(e.date) || e.done);
+      if (tab === "notes") return e.type === "note" && e.archived;
+      return false;
+    }).sort((a, b) => {
+      if (tab === "calendar") {
+        return new Date(b.date + "T12:00") - new Date(a.date + "T12:00");
+      }
+      return 0;
+    });
 
   const tabCfg = isCatTab ? CC[tab] : getTABS(t).find(x => x.id === tab);
-  const title = isCatTab 
-    ? `Archivierte ${tabCfg.label}` 
+  const title = isCatTab
+    ? `Archivierte ${tabCfg.label}`
     : tab === "tasks" ? t.completedTasks : tab === "calendar" ? t.pastEvents : t.archivedNotes;
   const CatIcon = isCatTab ? CAT_ICONS[tab] : null;
 
@@ -868,36 +865,36 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
   };
 
   const tc =
-    type === "task" ? "#7C83F7" : 
-    type === "note" ? "#F59E0B" : 
-    type === "calendar" ? "#38BDF8" : 
-    type === "media" ? "#10B981" : 
-    "#7C3AED";
+    type === "task" ? "#7C83F7" :
+      type === "note" ? "#F59E0B" :
+        type === "calendar" ? "#38BDF8" :
+          type === "media" ? "#10B981" :
+            "#7C3AED";
 
-    const label =
-      type === "task" ? t.task : 
-      type === "note" ? t.note : 
-      type === "calendar" ? t.calSing : 
-      type === "media" ? t.mediaSing : 
-      t.link;
+  const label =
+    type === "task" ? t.task :
+      type === "note" ? t.note :
+        type === "calendar" ? t.calSing :
+          type === "media" ? t.mediaSing :
+            t.link;
 
   const save = () => {
     if (!title.trim()) return;
-    
+
     // Wir erstellen nur noch EINEN Eintrag mit allen ausgewählten Kategorien
     let finalCatIds = catIds.length > 0 ? catIds : [];
-    
+
     if (type === "calendar" && isBirthday) {
       // Automatische Verknüpfung mit Geburtstage-Ressource
       finalCatIds = [ID_BIRTHDAYS];
     }
 
-    const entry = { 
-      type, 
-      title: title.trim(), 
+    const entry = {
+      type,
+      title: title.trim(),
       catIds: finalCatIds,
       // Abwärtskompatibilität: catId ist die erste ID im Array
-      catId: finalCatIds[0] || null 
+      catId: finalCatIds[0] || null
     };
 
     if (type === "task") Object.assign(entry, { done: false, note, due: due || TODAY, time: time || null });
@@ -905,7 +902,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
     if (type === "calendar") Object.assign(entry, { date, time, isBirthday });
     if (type === "media") Object.assign(entry, { mediaType, mediaData: mediaFile });
     if (type === "link") Object.assign(entry, { url: url.trim() });
-    
+
     onSave(entry);
   };
 
@@ -991,10 +988,10 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
             <div className="modal__toggle-row">
               <label htmlFor="isBirthday">{t.birthday || "Geburtstag"}</label>
               <label className="modal__switch">
-                <input 
-                  type="checkbox" 
-                  id="isBirthday" 
-                  checked={isBirthday} 
+                <input
+                  type="checkbox"
+                  id="isBirthday"
+                  checked={isBirthday}
                   onChange={(e) => setIsBirthday(e.target.checked)}
                 />
                 <span className="modal__slider"></span>
@@ -1012,7 +1009,7 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
               { id: 'audio', Icon: AudioIcon, color: '#F97316', label: t.audio },
               { id: 'document', Icon: DocumentIcon, color: '#0078D4', label: t.document },
             ].map(m => (
-              <button 
+              <button
                 key={m.id}
                 className={`modal__media-grid-btn ${mediaType === m.id ? 'modal__media-grid-btn--active' : ''}`}
                 onClick={() => handleMediaGridClick(m.id)}
@@ -1091,9 +1088,8 @@ function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
         })()}
 
         <button
-          className={`modal__submit ${
-            !title.trim() ? "modal__submit--disabled" : ""
-          }`}
+          className={`modal__submit ${!title.trim() ? "modal__submit--disabled" : ""
+            }`}
           onClick={save}
           style={{ background: tc }}
         >
@@ -1130,9 +1126,8 @@ function NewCatModal({ type, onSave, onClose, t, CC }) {
           style={{ borderColor: cfg.color + "45" }}
         />
         <button
-          className={`modal__submit ${
-            !name.trim() ? "modal__submit--disabled" : ""
-          }`}
+          className={`modal__submit ${!name.trim() ? "modal__submit--disabled" : ""
+            }`}
           onClick={() => name.trim() && onSave(name.trim())}
           style={{ background: cfg.color }}
         >
@@ -1157,14 +1152,14 @@ function OnboardingModal({ t, onComplete }) {
     <div className="onboarding">
       <div className="onboarding__content">
         <div className="onboarding__logo">PARA·LIST</div>
-        
+
         {step === 0 ? (
           <div className="onboarding__step">
             <h2 className="onboarding__title">{I18N[lang].welcome}</h2>
             <p className="onboarding__text">{I18N[lang].onboardingLang}</p>
             <div className="onboarding__langs">
               {["de", "en", "es"].map(l => (
-                <button 
+                <button
                   key={l}
                   className={`onboarding__lang-btn ${lang === l ? "onboarding__lang-btn--active" : ""}`}
                   onClick={() => setLang(l)}
@@ -1178,7 +1173,7 @@ function OnboardingModal({ t, onComplete }) {
         ) : (
           <div className="onboarding__step">
             <h2 className="onboarding__title">{I18N[lang].onboardingName}</h2>
-            <input 
+            <input
               autoFocus
               className="onboarding__input"
               value={name}
@@ -1186,7 +1181,7 @@ function OnboardingModal({ t, onComplete }) {
               placeholder="Name..."
               onKeyDown={e => e.key === "Enter" && finish()}
             />
-            <button 
+            <button
               className={`onboarding__next ${!name.trim() ? "onboarding__next--disabled" : ""}`}
               onClick={finish}
             >
@@ -1223,10 +1218,10 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
     window.location.href = mailto;
   };
 
-  const currentTitle = 
-    view === "main" ? t.settings : 
-    view === "profile" ? t.personalData : 
-    t.feedback;
+  const currentTitle =
+    view === "main" ? t.settings :
+      view === "profile" ? t.personalData :
+        t.feedback;
 
   return (
     <div className="modal" onClick={onClose}>
@@ -1242,7 +1237,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
               <CustomSettingsIcon size={20} className="icon-muted" color="currentColor" />
             )}
           </div>
-          
+
           <h3 className="modal__title">{currentTitle}</h3>
 
           <div className="modal__header-right">
@@ -1256,19 +1251,19 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
           <div className="settings-modal__content">
             {/* Apple-style Profile Row */}
             <div className="profile-row" onClick={() => setView("profile")}>
-              <div 
-                className="profile-row__avatar" 
+              <div
+                className="profile-row__avatar"
                 onClick={(e) => {
                   e.stopPropagation();
                   fileInputRef.current?.click();
                 }}
               >
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleAvatarChange} 
-                  accept="image/*" 
-                  style={{ display: 'none' }} 
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleAvatarChange}
+                  accept="image/*"
+                  style={{ display: 'none' }}
                 />
                 {user.avatar ? (
                   <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
@@ -1288,7 +1283,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
 
             <div className="settings-section">
               <div className="settings-label">{t.userName}</div>
-              <input 
+              <input
                 className="modal__input"
                 value={user.name}
                 onChange={(e) => onUpdateUser({ name: e.target.value })}
@@ -1300,7 +1295,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
               <div className="settings-row">
                 <span className="settings-label">{t.appearance}</span>
                 <div className="theme-toggle">
-                  <button 
+                  <button
                     className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
                     onClick={() => setTheme("dark")}
                     style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -1308,7 +1303,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                     <Moon size={14} />
                     {t.dark}
                   </button>
-                  <button 
+                  <button
                     className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
                     onClick={() => setTheme("light")}
                     style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
@@ -1325,7 +1320,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                 <span className="settings-label">{t.language}</span>
                 <div className="theme-toggle">
                   {["de", "en", "es"].map(l => (
-                    <button 
+                    <button
                       key={l}
                       className={`theme-toggle__btn ${lang === l ? "theme-toggle__btn--active" : ""}`}
                       onClick={() => setLang(l)}
@@ -1341,7 +1336,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
             <div className="settings-section">
               <div className="settings-row">
                 <span className="settings-label">{t.feedback}</span>
-                <button 
+                <button
                   className="feedback-trigger-btn"
                   onClick={() => setView("feedback")}
                 >
@@ -1362,26 +1357,26 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
           </div>
         ) : view === "profile" ? (
           <div className="settings-modal__content settings-modal__content--sub">
-             <div className="settings-group">
-                <div className="settings-group__title">{t.dataSection}</div>
-                <button
-                  className="settings-item settings-item--danger"
-                  onClick={async () => {
-                    if (window.confirm(t.deleteConfirm)) {
-                      localStorage.clear();
-                      try {
-                        await clear();
-                      } catch (e) {
-                        console.error('Failed to clear idb', e);
-                      }
-                      window.location.reload();
+            <div className="settings-group">
+              <div className="settings-group__title">{t.dataSection}</div>
+              <button
+                className="settings-item settings-item--danger"
+                onClick={async () => {
+                  if (window.confirm(t.deleteConfirm)) {
+                    localStorage.clear();
+                    try {
+                      await clear();
+                    } catch (e) {
+                      console.error('Failed to clear idb', e);
                     }
-                  }}
-                >
-                  <div className="settings-item__label">{t.deleteApp}</div>
-                  <Trash2 size={16} />
-                </button>
-             </div>
+                    window.location.reload();
+                  }
+                }}
+              >
+                <div className="settings-item__label">{t.deleteApp}</div>
+                <Trash2 size={16} />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="settings-modal__content settings-modal__content--sub">
@@ -1392,7 +1387,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                   { id: "improvement", label: t.improvement, desc: t.improvementDesc },
                   { id: "feature", label: t.feature, desc: t.featureDesc }
                 ].map(type => (
-                  <button 
+                  <button
                     key={type.id}
                     className={`feedback-type-btn ${feedbackType === type.id ? "feedback-type-btn--active" : ""}`}
                     onClick={() => setFeedbackType(type.id)}
@@ -1410,7 +1405,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
 
               <div className="feedback-textarea-group">
                 <label className="feedback-label">{t.feedbackQuestion}</label>
-                <textarea 
+                <textarea
                   className="modal__textarea"
                   value={feedbackText}
                   onChange={(e) => setFeedbackText(e.target.value)}
@@ -1419,7 +1414,7 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                 />
               </div>
 
-              <button 
+              <button
                 className={`modal__submit ${!feedbackText.trim() ? "modal__submit--disabled" : ""}`}
                 onClick={sendFeedback}
                 style={{ background: "#7C83F7" }}
@@ -1645,7 +1640,7 @@ export default function App() {
   const onTouchEnd = (e) => {
     const dx = e.changedTouches[0].clientX - touchX.current;
     const dy = e.changedTouches[0].clientY - touchY.current;
-    
+
     // Swipe back to previous view
     if (dx > 75 && touchX.current < 45 && stack.length > 1 && !panelOpen) {
 
@@ -1679,7 +1674,7 @@ export default function App() {
       const isBackdrop = e.target.classList.contains('command-panel__backdrop');
       const inList = e.target.closest('.command-panel__list');
       const listEl = document.querySelector('.command-panel__list');
-      
+
       // Close if swipe up happens outside of the list (e.g. on backdrop, handle, header), 
       // or if there is no list, or if the list is completely scrolled to the bottom.
       if (isBackdrop || !inList || !listEl || listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight <= 1) {
@@ -1753,8 +1748,8 @@ export default function App() {
                   tab === "tasks"
                     ? "task"
                     : tab === "notes"
-                    ? "note"
-                    : "calendar",
+                      ? "note"
+                      : "calendar",
                 catId: null,
               });
             }}
@@ -1770,7 +1765,7 @@ export default function App() {
             onArchiveEntry={(id) => updateEntry(id, { archived: true })}
           />
         )}
-        
+
         {cur.view === "archive" && (
           <ArchiveScreen
             t={t}
@@ -1823,7 +1818,7 @@ export default function App() {
                 </div>
               );
             }
-            
+
             // Inclusive filtering: include entries from "child" categories
             const childIds = state.cats.filter(c => c.relatedId === cat.id).map(c => c.id);
             const inclusiveEntries = state.entries.filter(e => {
@@ -1843,7 +1838,7 @@ export default function App() {
               }
               return e;
             });
-            
+
             return (
               <CatDetailScreen
                 t={t}
@@ -1897,9 +1892,9 @@ export default function App() {
                 </div>
               );
             }
-            
+
             const cat = state.cats.find(c => c.id === entry.catId);
-            
+
             return (
               <EntryDetailScreen
                 t={t}
@@ -1933,7 +1928,7 @@ export default function App() {
       )}
 
       {state.user.name === "" && (
-        <OnboardingModal 
+        <OnboardingModal
           t={t}
           onComplete={(l, n) => setState(s => ({ ...s, lang: l, user: { name: n } }))}
         />

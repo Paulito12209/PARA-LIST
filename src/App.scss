@@ -532,22 +532,22 @@
   }
 
   // Ordner-Icon neben dem Titel (analog zu den Subtab-Icons unten)
-  &__categories-icon-wrap {
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(90deg, rgba(#EF4444, 0.15), rgba(#F59E0B, 0.15), rgba(#10B981, 0.15));
-    border: 1px solid rgba(#8B5CF6, 0.35);
-    border-radius: $radius-sm - 2px;
-    box-shadow: 0 0 12px rgba(#8B5CF6, 0.12);
-    flex-shrink: 0;
-  }
+  // &__categories-icon-wrap {
+  //   width: 24px;
+  //   height: 24px;
+  //   display: flex;
+  //   align-items: center;
+  //   justify-content: center;
+  //   background: linear-gradient(90deg, rgba(#EF4444, 0.15), rgba(#F59E0B, 0.15), rgba(#10B981, 0.15));
+  //   border: 1px solid rgba(#8B5CF6, 0.35);
+  //   border-radius: $radius-sm - 2px;
+  //   box-shadow: 0 0 12px rgba(#8B5CF6, 0.12);
+  //   flex-shrink: 0;
+  // }
 
-  &__categories-icon {
-    color: #8B5CF6;
-  }
+  // &__categories-icon {
+  //   color: #8B5CF6;
+  // }
 
   // Horizontaler Track für Swipe-Pages (aktuell nur 1 Page)
   &__categories-track {
@@ -748,12 +748,13 @@
 
   &__badge-count {
     position: absolute;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: #fff;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    padding-top: 2px;
   }
 
   // --- Shared Add Button ---
@@ -836,7 +837,7 @@
 .list-switcher {
   display: flex;
   align-items: center;
-  gap: $spacing-2xs;
+  gap: $spacing-sm;
   background: transparent;
   border-radius: $radius-pill;
   border: none;
@@ -902,6 +903,7 @@
   align-items: center;
   justify-content: space-between; // Links/Rechts Split
   gap: $spacing-sm;
+  min-height: 18px;
 
   // Wird nun als statischer Header über der scrollbaren Liste genutzt
   margin: 0;
@@ -910,8 +912,9 @@
   background: transparent;
 
   &--fixed {
-    // Falls nötig, zusätzliche Anpassungen für den fixen Header
     padding: $spacing-sm $spacing-md $spacing-xs;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   &__left,
@@ -921,6 +924,9 @@
     color: $color-muted;
     text-transform: none;
     letter-spacing: 0.1px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
   }
 }
 

@@ -259,18 +259,17 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
           </div>
 
           <div className="task-item__pills">
-            {e.type === 'calendar' ? (
+            {e.type === 'note' ? (
               <span className="task-item__pill task-item__pill--date" style={{ cursor: 'default' }}>
-                <Calendar size={12} />
-                {e.date && <span>{isToday(e.date) ? t.todayCap : fmtDate(e.date, t.locale)}</span>}
-                {e.time && <span>· {e.time} {t.oclock}</span>}
+                <Clock size={12} />
+                <span>{new Date(e.createdAt).toLocaleDateString(t.locale, { day: 'numeric', month: 'short' })}</span>
               </span>
-            ) : e.type !== 'note' ? (
+            ) : (e.type === 'task' || e.type === 'calendar') ? (
               <button
                 className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
                 onClick={(ev) => { ev.stopPropagation(); setDateEntryId(dateEntryId === e.id ? null : e.id); }}
               >
-                {isToday(e.due) ? (
+                {isToday(e.type === 'calendar' ? e.date : e.due) ? (
                   <>
                     <Clock size={12} />
                     {e.time && <span>{e.time} {t.oclock}</span>}
@@ -278,7 +277,9 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
                 ) : (
                   <>
                     <Calendar size={12} />
-                    {e.due && <span>{fmtDate(e.due, t.locale)}</span>}
+                    {(e.type === 'calendar' ? e.date : e.due) && (
+                      <span>{fmtDate(e.type === 'calendar' ? e.date : e.due, t.locale)}</span>
+                    )}
                     {e.time && <span>· {e.time} {t.oclock}</span>}
                   </>
                 )}
@@ -295,9 +296,16 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
               <input
                 type="date"
                 className="task-item__date-input"
-                value={e.due || ""}
+                value={(e.type === 'calendar' ? e.date : e.due) || ""}
                 autoFocus
-                onChange={(ev) => { onUpdateEntry && onUpdateEntry(e.id, { due: ev.target.value || null }); }}
+                onChange={(ev) => { 
+                  const val = ev.target.value || null;
+                  if (e.type === 'calendar') {
+                    onUpdateEntry && onUpdateEntry(e.id, { date: val });
+                  } else {
+                    onUpdateEntry && onUpdateEntry(e.id, { due: val });
+                  }
+                }}
               />
               <input
                 type="time"
@@ -614,13 +622,20 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
   const futureGroups = Array.from(groupedTasks.values());
   futureGroups.sort((a, b) => a.sortKey - b.sortKey);
   futureGroups.forEach((g) => {
-    g.items.sort((a, b) => new Date(a.due || a.date) - new Date(b.due || b.date));
+    g.items.sort((a, b) => a.createdAt - b.createdAt);
   });
+
+  const getOldestLabel = (items) => {
+    if (!items || items.length === 0) return "";
+    const oldest = items.reduce((a, b) => (a.createdAt < b.createdAt ? a : b));
+    const d = new Date(oldest.createdAt);
+    return `${t.oldestEntry}: ${d.toLocaleDateString(t.locale, { day: 'numeric', month: 'short' })} ・ ${d.toLocaleTimeString(t.locale, { hour: '2-digit', minute: '2-digit' })}`;
+  };
 
   return (
     <>
       {todayTasks.length > 0 && (
-        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={t.todayGroup} data-group-right="">
+        <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={isHome ? getOldestLabel(todayTasks) : t.todayGroup} data-group-right="">
           {!isHome && (
             <div className="task-group-header task-group-header--today">
               <span className="task-group-header__left">{t.todayGroup}</span>
@@ -630,7 +645,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
         </div>
       )}
       {futureGroups.map((g, i) => (
-        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right}>
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={isHome ? getOldestLabel(g.items) : g.left} data-group-right={g.right}>
           {!isHome && (
             <div className="task-group-header">
               <span className="task-group-header__left">{g.left}</span>

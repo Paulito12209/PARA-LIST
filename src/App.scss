@@ -3556,7 +3556,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 8px;
-  padding: 16px 0;
+  padding: 0 0 16px;
   border-bottom: 1px solid #262648;
 }
 
@@ -3775,11 +3775,18 @@
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+    justify-content: space-between; // Inhalt oben, Button unten
     // Padding kommt vom modal__sheet (16px)
 
     &--sub {
       animation: slide-in-right 0.3s ease;
     }
+  }
+
+  // Oberer Inhaltsbereich – scrollbar, nimmt verfügbaren Platz ein
+  &__body {
+    flex: 1;
+    overflow-y: auto;
   }
 
   // Untere Aktionsleiste für Sub-Views (Profil etc.)
@@ -3788,8 +3795,8 @@
     align-items: center;
     gap: 12px;
     margin-top: auto;
-    padding-top: 24px;
-    padding-bottom: 8px;
+    padding: 24px 0 16px;
+
   }
 
   // Runder Zurück-FAB (Chevron links)
@@ -3797,9 +3804,9 @@
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    border: 1.5px solid #262648;
-    background: #1C1C30;
-    color: #5858A0;
+    border: 1px solid $color-border;
+    background: $color-surface;
+    color: $color-text;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3809,7 +3816,7 @@
 
     &:active {
       transform: scale(0.92);
-      background: #262648;
+      background: $color-hover;
     }
   }
 

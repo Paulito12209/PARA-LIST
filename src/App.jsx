@@ -1248,139 +1248,147 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
 
         {view === "main" ? (
           <div className="settings-modal__content">
-            {/* Apple-style Profile Row */}
-            <div className="profile-row" onClick={() => setView("profile")}>
-              <div
-                className="profile-row__avatar"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileInputRef.current?.click();
-                }}
-              >
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleAvatarChange}
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                />
-                {user.avatar ? (
-                  <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
-                ) : (
-                  user.name ? user.name.charAt(0).toUpperCase() : "P"
-                )}
-                <div className="profile-row__avatar-overlay">
-                  <ImageIcon size={14} color="white" />
-                </div>
-              </div>
-              <div className="profile-row__info">
-                <div className="profile-row__name">{user.name || "User"}</div>
-                <div className="profile-row__sub">{t.personalData}</div>
-              </div>
-              <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" />
-            </div>
-
-            <div className="settings-section">
-              <div className="settings-label">{t.userName}</div>
-              <input
-                className="modal__input"
-                value={user.name}
-                onChange={(e) => onUpdateUser({ name: e.target.value })}
-                placeholder="Name..."
-              />
-            </div>
-
-            <div className="settings-section">
-              <div className="settings-row">
-                <span className="settings-label">{t.appearance}</span>
-                <div className="theme-toggle">
-                  <button
-                    className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
-                    onClick={() => setTheme("dark")}
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Moon size={14} />
-                    {t.dark}
-                  </button>
-                  <button
-                    className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
-                    onClick={() => setTheme("light")}
-                    style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
-                  >
-                    <Sun size={14} />
-                    {t.light}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="settings-section">
-              <div className="settings-row">
-                <span className="settings-label">{t.language}</span>
-                <div className="theme-toggle">
-                  {["de", "en", "es"].map(l => (
-                    <button
-                      key={l}
-                      className={`theme-toggle__btn ${lang === l ? "theme-toggle__btn--active" : ""}`}
-                      onClick={() => setLang(l)}
-                    >
-                      {l === "de" ? "🇩🇪" : l === "en" ? "🇬🇧" : "🇪🇸"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Feedback Section */}
-            <div className="settings-section">
-              <div className="settings-row">
-                <span className="settings-label">{t.feedback}</span>
-                <button
-                  className="feedback-trigger-btn"
-                  onClick={() => setView("feedback")}
+            {/* Oberer Inhaltsbereich – wird nach oben gedrückt */}
+            <div className="settings-modal__body">
+              {/* Apple-style Profile Row */}
+              <div className="profile-row" onClick={() => setView("profile")}>
+                <div
+                  className="profile-row__avatar"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" style={{ width: 18, height: 18 }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                  </svg>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                  />
+                  {user.avatar ? (
+                    <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
+                  ) : (
+                    user.name ? user.name.charAt(0).toUpperCase() : "P"
+                  )}
+                  <div className="profile-row__avatar-overlay">
+                    <ImageIcon size={14} color="white" />
+                  </div>
+                </div>
+                <div className="profile-row__info">
+                  <div className="profile-row__name">{user.name || "User"}</div>
+                  <div className="profile-row__sub">{t.personalData}</div>
+                </div>
+                <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" />
+              </div>
+
+              <div className="settings-section">
+                <div className="settings-label">{t.userName}</div>
+                <input
+                  className="modal__input"
+                  value={user.name}
+                  onChange={(e) => onUpdateUser({ name: e.target.value })}
+                  placeholder="Name..."
+                />
+              </div>
+
+              <div className="settings-section">
+                <div className="settings-row">
+                  <span className="settings-label">{t.appearance}</span>
+                  <div className="theme-toggle">
+                    <button
+                      className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
+                      onClick={() => setTheme("dark")}
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Moon size={14} />
+                      {t.dark}
+                    </button>
+                    <button
+                      className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
+                      onClick={() => setTheme("light")}
+                      style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <Sun size={14} />
+                      {t.light}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-section">
+                <div className="settings-row">
+                  <span className="settings-label">{t.language}</span>
+                  <div className="theme-toggle">
+                    {["de", "en", "es"].map(l => (
+                      <button
+                        key={l}
+                        className={`theme-toggle__btn ${lang === l ? "theme-toggle__btn--active" : ""}`}
+                        onClick={() => setLang(l)}
+                      >
+                        {l === "de" ? "🇩🇪" : l === "en" ? "🇬🇧" : "🇪🇸"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Feedback Section */}
+              <div className="settings-section">
+                <div className="settings-row">
+                  <span className="settings-label">{t.feedback}</span>
+                  <button
+                    className="feedback-trigger-btn"
+                    onClick={() => setView("feedback")}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" style={{ width: 18, height: 18 }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Schließen-Button immer am unteren Rand */}
+            <div className="settings-modal__footer">
+              <button
+                className="settings-modal__footer-close"
+                onClick={onClose}
+              >
+                {t.closeBtn}
+              </button>
+            </div>
+          </div>
+        ) : view === "profile" ? (
+          <div className="settings-modal__content settings-modal__content--sub">
+            {/* Oberer Inhaltsbereich – wird nach oben gedrückt */}
+            <div className="settings-modal__body">
+              <div className="settings-group">
+                <div className="settings-group__title">{t.dataSection}</div>
+                <button
+                  className="settings-item settings-item--danger"
+                  onClick={async () => {
+                    if (window.confirm(t.deleteConfirm)) {
+                      localStorage.clear();
+                      try {
+                        await clear();
+                      } catch (e) {
+                        console.error('Failed to clear idb', e);
+                      }
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  <div className="settings-item__label">{t.deleteApp}</div>
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
 
-            <button
-              className="modal__submit modal__submit--secondary"
-              onClick={onClose}
-              style={{ marginTop: '24px' }}
-            >
-              {t.closeBtn}
-            </button>
-          </div>
-        ) : view === "profile" ? (
-          <div className="settings-modal__content settings-modal__content--sub">
-            <div className="settings-group">
-              <div className="settings-group__title">{t.dataSection}</div>
-              <button
-                className="settings-item settings-item--danger"
-                onClick={async () => {
-                  if (window.confirm(t.deleteConfirm)) {
-                    localStorage.clear();
-                    try {
-                      await clear();
-                    } catch (e) {
-                      console.error('Failed to clear idb', e);
-                    }
-                    window.location.reload();
-                  }
-                }}
-              >
-                <div className="settings-item__label">{t.deleteApp}</div>
-                <Trash2 size={16} />
-              </button>
-            </div>
-
-            {/* Untere Aktionsleiste: Zurück-FAB + Schließen-Button */}
+            {/* Untere Aktionsleiste: Zurück-FAB + Schließen-Button – immer am unteren Rand */}
             <div className="settings-modal__footer">
               <button className="settings-modal__footer-back" onClick={() => setView("main")}>
-                <ChevronLeft size={20} />
+                <ChevronLeft size={20} color="#EDEEFF" />
               </button>
               <button className="settings-modal__footer-close" onClick={onClose}>
                 {t.closeBtn}

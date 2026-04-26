@@ -246,13 +246,16 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
 
             {/* Settings-Button */}
             <button
-              className="command-panel__qs-settings-btn"
+              className="command-panel__qs-settings-btn command-panel__profile-btn"
               onClick={() => onOpenSettings()}
               style={user.avatar ? { padding: 0 } : {}}
             >
               {user.avatar ? (
-                <div className="command-panel__profile-avatar" style={{ width: 32, height: 32, borderRadius: '50%' }}>
-                  <img src={user.avatar} alt="Avatar" style={{ borderRadius: '50%' }} />
+                <div className="command-panel__profile-avatar">
+                  <img src={user.avatar} alt="Avatar" />
+                  <div className="command-panel__profile-hover">
+                    <CustomSettingsIcon size={18} color="#fff" />
+                  </div>
                 </div>
               ) : (
                 <CustomSettingsIcon size={18} />

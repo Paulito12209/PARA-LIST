@@ -1078,13 +1078,14 @@
     border: 1px solid rgba(244, 114, 182, 0.25) !important;
     box-shadow: 0 4px 15px rgba(244, 114, 182, 0.04) !important;
 
-    .light-theme & {
+    .app.light-theme &.task-item--birthday {
        background: linear-gradient(135deg, 
-        rgba(244, 114, 182, 0.15) 0%, 
-        rgba(245, 158, 11, 0.12) 35%, 
-        rgba(16, 185, 129, 0.12) 70%, 
-        rgba(59, 130, 246, 0.15) 100%
+        rgba(244, 114, 182, 0.28) 0%, 
+        rgba(245, 158, 11, 0.22) 35%, 
+        rgba(16, 185, 129, 0.22) 70%, 
+        rgba(59, 130, 246, 0.28) 100%
       ) !important;
+      border-color: rgba(244, 114, 182, 0.4) !important;
     }
 
     &:hover {

@@ -263,7 +263,7 @@
   &__list {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 24px; // Platz für Quick-Settings-Leiste
+    padding-bottom: 52px; // Platz für Quick-Settings-Leiste
     animation: fade-in 0.25s ease-out;
     will-change: opacity, transform;
   }

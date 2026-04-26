@@ -118,7 +118,7 @@ export const I18N = {
     birthdayCreated: (title, userName) => {
       const isMe = title.toLowerCase().includes(userName.toLowerCase());
       if (isMe) return `Alles Gute zu DEINEM Geburtstag, ${userName}! 🎂`;
-      return `Alles Gute zum Geburtstag, ${title}! 🎂`;
+      return `Alles Gute zum Geburtstag an ${title}! 🎂`;
     },
     birthdayMessage: "Pro-Tipp: Wenn du das Geburtsjahr angibst, berechne ich automatisch das Alter und erinnere dich jedes Jahr daran! 🎉",
     birthdayGotIt: "Verstanden!",

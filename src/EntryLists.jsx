@@ -130,6 +130,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
   const projs = linked.filter(c => c.type === "project");
   const areas = linked.filter(c => c.type === "area");
   const ress  = linked.filter(c => c.type === "resource");
+  const isBirthdayEntry = e.isBirthday || e.catId === ID_BIRTHDAYS || (e.catIds && e.catIds.includes(ID_BIRTHDAYS));
 
   const PILL_ICONS = { project: Circle, area: Triangle, resource: Square };
 
@@ -243,7 +244,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
       isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}
     >
       <div
-        className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
+        className={`task-item task-item--home ${e.done ? "task-item--done" : ""} ${isBirthdayEntry ? "task-item--birthday" : ""}`}
         onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
       >
         <div className="task-item__body">

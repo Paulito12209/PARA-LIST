@@ -1494,7 +1494,7 @@ function TaskDoneCelebration({ t, count, onClose }) {
 }
 
 /* ── Birthday Celebration ────────────────────────────────── */
-function BirthdayCelebration({ t, entry, onClose }) {
+function BirthdayCelebration({ t, entry, userName, onClose }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -1542,7 +1542,7 @@ function BirthdayCelebration({ t, entry, onClose }) {
             <rect x="2" y="20" width="20" height="2" fill="#E5E7EB"/>
           </svg>
         </div>
-        <h2 className="task-done-card__title">{t.birthdayCreated}</h2>
+        <h2 className="task-done-card__title">{t.birthdayCreated(entry.title, userName)}</h2>
         <p className="task-done-card__message" style={{ whiteSpace: 'pre-line' }}>{t.birthdayMessage}</p>
         
         <button className="task-done-card__close-btn" onClick={onClose}>
@@ -2113,6 +2113,7 @@ export default function App() {
         <BirthdayCelebration
           t={t}
           entry={celebrationBirthday}
+          userName={state.user.name}
           onClose={() => setCelebrationBirthday(null)}
         />
       )}

@@ -408,7 +408,7 @@
     line-height: 1;
 
     &--lang {
-      padding: 0 0 0 4px;
+      padding: 0 0 0 2px;
     }
 
     &--theme {
@@ -1069,32 +1069,29 @@
   }
 
   &--birthday {
-    background: linear-gradient(135deg, 
-      rgba(244, 114, 182, 0.12) 0%, 
-      rgba(245, 158, 11, 0.1) 35%, 
-      rgba(16, 185, 129, 0.1) 70%, 
-      rgba(59, 130, 246, 0.12) 100%
-    ) !important;
+    background: linear-gradient(135deg,
+        rgba(244, 114, 182, 0.12) 0%,
+        rgba(245, 158, 11, 0.1) 35%,
+        rgba(16, 185, 129, 0.1) 70%,
+        rgba(59, 130, 246, 0.12) 100%) !important;
     border: 1px solid rgba(244, 114, 182, 0.25) !important;
     box-shadow: 0 4px 15px rgba(244, 114, 182, 0.04) !important;
 
     .app.light-theme &.task-item--birthday {
-       background: linear-gradient(135deg, 
-        rgba(244, 114, 182, 0.28) 0%, 
-        rgba(245, 158, 11, 0.22) 35%, 
-        rgba(16, 185, 129, 0.22) 70%, 
-        rgba(59, 130, 246, 0.28) 100%
-      ) !important;
+      background: linear-gradient(135deg,
+          rgba(244, 114, 182, 0.28) 0%,
+          rgba(245, 158, 11, 0.22) 35%,
+          rgba(16, 185, 129, 0.22) 70%,
+          rgba(59, 130, 246, 0.28) 100%) !important;
       border-color: rgba(244, 114, 182, 0.4) !important;
     }
 
     &:hover {
-      background: linear-gradient(135deg, 
-        rgba(244, 114, 182, 0.18) 0%, 
-        rgba(245, 158, 11, 0.15) 35%, 
-        rgba(16, 185, 129, 0.15) 70%, 
-        rgba(59, 130, 246, 0.18) 100%
-      ) !important;
+      background: linear-gradient(135deg,
+          rgba(244, 114, 182, 0.18) 0%,
+          rgba(245, 158, 11, 0.15) 35%,
+          rgba(16, 185, 129, 0.15) 70%,
+          rgba(59, 130, 246, 0.18) 100%) !important;
       border-color: rgba(244, 114, 182, 0.4) !important;
     }
   }
@@ -1113,7 +1110,7 @@
       min-width: 0;
       overflow: hidden;
       white-space: nowrap;
-      text-overflow: clip; 
+      text-overflow: clip;
     }
   }
 
@@ -1163,7 +1160,10 @@
     align-items: center;
     margin-top: $spacing-sm;
     scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   // Basis-Pille
@@ -1940,7 +1940,7 @@
     color: $color-text;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: clip; 
+    text-overflow: clip;
     width: 100%;
     flex-shrink: 1;
     min-width: 0;
@@ -2155,7 +2155,10 @@
     align-items: center;
     padding: $spacing-xs 0;
     scrollbar-width: none;
-    &::-webkit-scrollbar { display: none; }
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   &__archive-toggle,
@@ -4313,9 +4316,11 @@
     opacity: 1;
     transform: translateY(0) rotate(0deg) scale(1);
   }
+
   75% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
     transform: translateY(100vh) rotate(720deg) scale(0.5);
@@ -4328,6 +4333,7 @@
     opacity: 0;
     transform: scale(0.7) translateY(30px);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -4340,10 +4346,12 @@
     opacity: 0;
     transform: scale(0) translateY(40px) rotate(-15deg);
   }
+
   60% {
     opacity: 1;
     transform: scale(1.2) translateY(-8px) rotate(5deg);
   }
+
   100% {
     opacity: 1;
     transform: scale(1) translateY(0) rotate(0deg);

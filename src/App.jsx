@@ -58,7 +58,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
   const overdueEntries = entries.filter(
     (e) =>
       (e.type === "task" && !e.done && isOld(e.due)) ||
-      (e.type === "calendar" && !e.done && isOld(e.date))
+      (e.type === "calendar" && !e.done && !e.isBirthday && isOld(e.date))
   ).sort((a, b) => {
     const dA = new Date((a.due || a.date) + "T12:00");
     const dB = new Date((b.due || b.date) + "T12:00");
@@ -1723,8 +1723,9 @@ export default function App() {
 
   const toggleTask = (id) =>
     setState((s) => {
-      const isNowDone = !s.entries.find((e) => e.id === id)?.done;
-      if (isNowDone) {
+      const entry = s.entries.find((e) => e.id === id);
+      const isNowDone = !entry?.done;
+      if (isNowDone && !entry?.isBirthday) {
         setShowCelebration(true);
         if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
       }

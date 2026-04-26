@@ -3652,7 +3652,7 @@
   border-radius: 16px;
   width: 100%;
   text-align: left;
-  margin-bottom: 24px;
+  margin-bottom: $spacing-md;
   transition: all 0.2s ease;
 
   &:active {
@@ -3779,6 +3779,87 @@
 
     &--sub {
       animation: slide-in-right 0.3s ease;
+    }
+  }
+
+  // Untere Aktionsleiste für Sub-Views (Profil etc.)
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 24px;
+    padding-bottom: 8px;
+  }
+
+  // Runder Zurück-FAB (Chevron links)
+  &__footer-back {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1.5px solid #262648;
+    background: #1C1C30;
+    color: #5858A0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.92);
+      background: #262648;
+    }
+  }
+
+  // Breiter Schließen-Button
+  &__footer-close {
+    flex: 1;
+    padding: 13px 16px;
+    border-radius: $radius-lg;
+    background: #262648;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-body;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active {
+      opacity: 0.85;
+      transform: scale(0.98);
+    }
+  }
+}
+
+// Light-Mode Styling für den Schließen-Button
+.app.light-theme {
+  .modal__submit--secondary {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+  }
+
+  .settings-modal__footer-back {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #5858A0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    &:active {
+      background: #f0f0f5;
+    }
+  }
+
+  .settings-modal__footer-close {
+    background: #ef4444;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+
+    &:active {
+      background: #dc2626;
     }
   }
 }

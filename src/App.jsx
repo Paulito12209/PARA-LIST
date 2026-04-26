@@ -1231,23 +1231,19 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
       <div className={`modal__sheet settings-modal ${view !== "main" ? "settings-modal--sub" : ""}`} onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
         <div className="modal__header">
+          {/* Im Main-View keine Buttons im Header (Schließen ist unten) */}
           <div className="modal__header-left">
-            {view !== "main" ? (
+            {/* Zurück-Button nur im Feedback-View (im Profile-View sind Buttons unten) */}
+            {view === "feedback" && (
               <button className="settings-modal__back-inline" onClick={() => setView("main")}>
                 <ChevronLeft size={20} color="#5858A0" />
               </button>
-            ) : (
-              <CustomSettingsIcon size={20} className="icon-muted" color="currentColor" />
             )}
           </div>
 
           <h3 className="modal__title">{currentTitle}</h3>
 
-          <div className="modal__header-right">
-            <button className="modal__close" onClick={onClose}>
-              <X size={18} color="#5858A0" />
-            </button>
-          </div>
+          <div className="modal__header-right" />
         </div>
 
         {view === "main" ? (
@@ -1378,6 +1374,16 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
               >
                 <div className="settings-item__label">{t.deleteApp}</div>
                 <Trash2 size={16} />
+              </button>
+            </div>
+
+            {/* Untere Aktionsleiste: Zurück-FAB + Schließen-Button */}
+            <div className="settings-modal__footer">
+              <button className="settings-modal__footer-back" onClick={() => setView("main")}>
+                <ChevronLeft size={20} />
+              </button>
+              <button className="settings-modal__footer-close" onClick={onClose}>
+                {t.closeBtn}
               </button>
             </div>
           </div>

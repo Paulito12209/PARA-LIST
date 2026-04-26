@@ -228,7 +228,20 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
   };
 
   return (
-    <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)} onComplete={(e.type === 'task' || e.type === 'calendar') && onToggle ? () => onToggle(e.id) : undefined} isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}>
+    <SwipeToDelete
+      key={e.id}
+      onDelete={() => onDelete(e.id)}
+      onComplete={
+        (e.type === 'task' || e.type === 'calendar') && onToggle
+          ? () => onToggle(e.id)
+          : e.type === 'note' && onArchiveEntry
+            ? () => onArchiveEntry(e.id)
+            : undefined
+      }
+      completeColor={e.type === 'note' ? '#6B7280' : undefined}
+      CompleteIcon={e.type === 'note' ? Archive : undefined}
+      isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}
+    >
       <div
         className={`task-item task-item--home ${e.done ? "task-item--done" : ""}`}
         onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import { I18N } from "./i18n";
 import {
-  Circle, Triangle, Square, Trash2, Check, FileText, CheckCircle2, Calendar, Paperclip
+  Circle, Triangle, Square, Trash2, Check, Archive, FileText, CheckCircle2, Calendar, Paperclip
 } from "lucide-react";
 import { BookmarkIcon, TagIcon } from "./AppIcons"; // We'll move these out to avoid crowding
 
@@ -234,7 +234,7 @@ export function computeNotif(entries) {
    COMPONENTS
    ════════════════════════════════════════════════════════════════ */
 
-export function SwipeToDelete({ children, onDelete, onComplete, isActive }) {
+export function SwipeToDelete({ children, onDelete, onComplete, completeColor, CompleteIcon, isActive }) {
   const [swiping, setSwiping] = useState(false);
   const [offsetX, setOffsetX] = useState(0);
   const pressTimer = useRef(null);
@@ -317,16 +317,16 @@ export function SwipeToDelete({ children, onDelete, onComplete, isActive }) {
       }}>
           {showDeleteBg && <Trash2 color="#fff" size={20} />}
       </div>
-      {/* Hintergrund: Erledigen (grün, links) */}
+      {/* Hintergrund: Erledigen / Archivieren (Farbe konfigurierbar) */}
       <div style={{
           position: 'absolute', inset: '0',
-          background: showCompleteBg ? '#16A34A' : 'transparent',
+          background: showCompleteBg ? (completeColor || '#16A34A') : 'transparent',
           borderRadius: 'var(--radius-lg)',
           display: 'flex', alignItems: 'center', justifyContent: 'flex-start', paddingLeft: '20px',
           zIndex: 0,
           transition: 'background 0.2s ease'
       }}>
-          {showCompleteBg && <Check color="#fff" size={20} strokeWidth={3} />}
+          {showCompleteBg && (CompleteIcon ? <CompleteIcon color="#fff" size={20} strokeWidth={2.5} /> : <Check color="#fff" size={20} strokeWidth={3} />)}
       </div>
       <div 
         onPointerDown={handlePointerDown}

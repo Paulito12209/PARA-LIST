@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
-import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete } from "./shared";
+import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete, AutoScrollText } from "./shared";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
 import { useInactivity } from "./hooks/useInactivity";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "./EntryLists";
@@ -44,7 +44,7 @@ export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive
                 <CatIcon size={18} color={cfg.color} />
               </div>
               <div className="cat-list__item-info">
-                <div className="cat-list__item-name">{cat.name}</div>
+                <div className="cat-list__item-name"><AutoScrollText>{cat.name}</AutoScrollText></div>
                 {cat.date && (
                   <div className="cat-list__item-date">{fmtDate(cat.date, t.locale)}</div>
                 )}
@@ -656,9 +656,7 @@ export function CatDetailScreen({
                     >
                       <Square size={18} color={CC.resource.color} />
                     </div>
-                    <div className="cat-list__item-info">
-                      <div className="cat-list__item-name">{res.name}</div>
-                    </div>
+                      <div className="cat-list__item-name"><AutoScrollText>{res.name}</AutoScrollText></div>
                     <ChevronLeft
                       size={16}
                       color="#5858A0"

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Clock, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
-import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete } from "./shared";
+import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete, AutoScrollText } from "./shared";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
 import { useInactivity } from "./hooks/useInactivity";
 
@@ -250,7 +250,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
         <div className="task-item__body">
           <div className="task-item__top-row">
             <div className={`task-item__title ${e.done ? "task-item__title--done" : ""}`}>
-              {e.title}
+              <AutoScrollText>{e.title}</AutoScrollText>
             </div>
             <div className="task-item__actions-home">
               <button
@@ -269,7 +269,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
           </div>
 
           <div className="task-item__note-hint">
-            {e.body || e.note || t.addNotePlaceholder}
+            <AutoScrollText>{e.body || e.note || t.addNotePlaceholder}</AutoScrollText>
           </div>
 
           <div className="task-item__pills">
@@ -467,7 +467,7 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
                 e.done && !isArchive ? "task-item__title--done" : ""
               }`}
             >
-              {e.title}
+              <AutoScrollText>{e.title}</AutoScrollText>
             </div>
             
             <div className="task-item__meta">
@@ -586,8 +586,8 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
         >
           <div className="note-item__header">
             <div className="note-item__body">
-              <div className="note-item__title">{e.title}</div>
-              {e.body && <div className="note-item__excerpt">{e.body}</div>}
+              <div className="note-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
+              {e.body && <div className="note-item__excerpt"><AutoScrollText>{e.body}</AutoScrollText></div>}
             </div>
             <button
                className="note-item__archive-btn"
@@ -719,7 +719,7 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpd
               </div>
             )}
             <div className="cal-item__info">
-              <div className="cal-item__title">{e.title}</div>
+              <div className="cal-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
               {e.time && <div className="cal-item__time">{e.time}{t.oclock ? " " + t.oclock : ""}</div>}
               <div className="cal-item__tags">
                 <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
@@ -825,8 +825,8 @@ export function MediaList({ entries, cats, onDelete, t, CC }) {
           <Icon size={18} />
         </div>
         <div className="media-item__body">
-          <div className="media-item__title">{e.title}</div>
-          <div className="media-item__meta">{label}</div>
+          <div className="media-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
+          <div className="media-item__meta"><AutoScrollText>{label}</AutoScrollText></div>
           <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
         </div>
         <button 
@@ -855,7 +855,7 @@ export function LinkList({ entries, cats, onDelete, CC }) {
              <div className="media-item__icon-mini" style={{ color: "#7C3AED" }}>
                <BookmarkIcon size={14} />
              </div>
-             <div className="media-item__title">{e.title}</div>
+             <div className="media-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
           </div>
           <button 
             className="media-item__delete" 
@@ -881,7 +881,7 @@ export function LinkList({ entries, cats, onDelete, CC }) {
             </div>
           )}
           <div className="media-item__footer-meta">
-            {e.url && <div className="media-item__meta">{e.url}</div>}
+            {e.url && <div className="media-item__meta"><AutoScrollText>{e.url}</AutoScrollText></div>}
             <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
           </div>
         </div>

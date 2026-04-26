@@ -988,10 +988,9 @@
   }
 
   &__title {
-    font-size: 16px;
-    font-weight: 500;
-    color: $color-text;
-    @include text-truncate;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip; // Ellipsis entfernen, da wir scrollen
 
     &--done {
       text-decoration: line-through;
@@ -1111,6 +1110,9 @@
     .task-item__title {
       flex: 1;
       min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: clip; 
     }
   }
 
@@ -1146,16 +1148,21 @@
     color: $color-muted;
     margin-top: $spacing-2xs;
     line-height: 1.4;
-    @include text-truncate;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip; // Ellipsis entfernen
   }
 
   // Pillen-Zeile
   &__pills {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
     gap: 5px;
     align-items: center;
     margin-top: $spacing-sm;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 
   // Basis-Pille
@@ -1476,6 +1483,9 @@
     font-size: 14px;
     font-weight: 600;
     color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
   }
 
   &__excerpt {
@@ -1483,7 +1493,9 @@
     color: $color-muted;
     margin-top: $spacing-xs;
     line-height: 1.5;
-    @include line-clamp(2);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
   }
 
   &__delete {
@@ -1591,6 +1603,9 @@
     font-size: 14px;
     font-weight: 600;
     color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
   }
 
   &__time {
@@ -1678,7 +1693,9 @@
     font-size: 14px;
     font-weight: 500;
     color: $color-text;
-    @include text-truncate;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
 
     &--input {
       width: 100%;
@@ -1701,7 +1718,9 @@
     font-size: 11px;
     color: $color-muted;
     margin-top: $spacing-2xs;
-    @include text-truncate;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
   }
 
   &__cat-tag {
@@ -1916,6 +1935,9 @@
     font-size: 14px;
     font-weight: 600;
     color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
   }
 
   &__item-date {
@@ -2118,9 +2140,12 @@
   &__pills-group {
     display: flex;
     gap: $spacing-sm - 1px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
     align-items: center;
-    padding: $spacing-xs 0; // Keep some spacing for the tags
+    padding: $spacing-xs 0;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
   }
 
   &__archive-toggle,

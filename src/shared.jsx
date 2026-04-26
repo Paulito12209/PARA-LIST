@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { I18N } from "./i18n";
 import {
   Circle, Triangle, Square, Trash2, Check, Archive, FileText, CheckCircle2, Calendar, Paperclip
@@ -346,6 +346,127 @@ export function SwipeToDelete({ children, onDelete, onComplete, completeColor, C
                e.stopPropagation();
                e.preventDefault();
            }
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Komponente, die Text automatisch scrollt, wenn er zu lang für den Container ist.
+ * Wartet 6s am Anfang, scrollt dann, wartet 3s am Ende und springt zurück.
+ */
+export function AutoScrollText({ children, className, delayStart = 6000, delayEnd = 3000, speed = 35 }) {
+  const containerRef = useRef(null);
+  const contentRef = useRef(null);
+  const [offset, setOffset] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const lastWidths = useRef({ container: 0, content: 0 });
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const content = contentRef.current;
+    if (!container || !content) return;
+
+    let timer;
+    let isActive = true;
+
+    const run = () => {
+      if (!isActive) return;
+      
+      const containerWidth = container.clientWidth;
+      const contentWidth = content.scrollWidth;
+      
+      // Nur neustarten, wenn sich die Breiten wirklich geändert haben
+      if (containerWidth === lastWidths.current.container && contentWidth === lastWidths.current.content && offset === 0 && duration === 0) {
+        // Wenn wir bereits am Anfang stehen und sich nichts geändert hat, warten wir einfach weiter
+        // Falls wir aber mitten im Scrollen sind, lassen wir es laufen.
+      }
+      
+      lastWidths.current = { container: containerWidth, content: contentWidth };
+      const diff = contentWidth - containerWidth;
+      
+      if (diff <= 1) {
+        setOffset(0);
+        setDuration(0);
+        timer = setTimeout(run, 2000);
+        return;
+      }
+
+      const cycle = () => {
+        if (!isActive) return;
+        
+        // Phase 1: Start
+        setOffset(0);
+        setDuration(0);
+
+        timer = setTimeout(() => {
+          if (!isActive) return;
+          
+          // Phase 2: Scrollen
+          const d = diff * speed;
+          setOffset(diff);
+          setDuration(d);
+
+          timer = setTimeout(() => {
+            if (!isActive) return;
+            
+            // Phase 3: Ende-Warten
+            timer = setTimeout(() => {
+              if (!isActive) return;
+              
+              // Zurück zum Start und Loop
+              setOffset(0);
+              setDuration(0);
+              timer = setTimeout(cycle, 100);
+            }, delayEnd);
+          }, d);
+        }, delayStart);
+      };
+
+      cycle();
+    };
+
+    const observer = new ResizeObserver(() => {
+      if (!isActive) return;
+      const cw = container.clientWidth;
+      const sw = content.scrollWidth;
+      if (cw !== lastWidths.current.container || sw !== lastWidths.current.content) {
+        clearTimeout(timer);
+        run();
+      }
+    });
+    observer.observe(container);
+
+    run();
+    return () => {
+      isActive = false;
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [children, speed, delayStart, delayEnd]);
+
+  return (
+    <div 
+      ref={containerRef} 
+      className={className} 
+      style={{ 
+        overflow: 'hidden', 
+        whiteSpace: 'nowrap', 
+        width: '100%',
+        maskImage: offset > 0 || duration > 0 ? 'none' : undefined // Optional: Verhindert Abschneiden durch Ellipsis im CSS
+      }}
+    >
+      <div 
+        ref={contentRef}
+        style={{
+          display: 'inline-block',
+          transform: `translateX(-${offset}px)`,
+          transition: duration > 0 ? `transform ${duration}ms linear` : 'none',
+          willChange: 'transform'
         }}
       >
         {children}

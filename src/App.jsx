@@ -1434,6 +1434,13 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
 
 /* ── Task Done Celebration ────────────────────────────────── */
 function TaskDoneCelebration({ t, count, onClose }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
   const pieces = Array.from({ length: 40 }).map((_, i) => ({
     id: i,
     left: Math.random() * 100 + "%",

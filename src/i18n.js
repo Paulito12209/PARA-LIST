@@ -111,6 +111,10 @@ export const I18N = {
     restore: "Wiederherstellen",
     setBirthday: "Als Geburtstag markieren",
     unsetBirthday: "Geburtstag entfernen",
+    taskDone: "Gut gemacht! 🎉",
+    taskDoneMessage: "Du hast eine Aufgabe erledigt!",
+    taskDoneCount: (n) => n === 1 ? "1 Aufgabe bisher erledigt" : `${n} Aufgaben bisher erledigt`,
+    taskDoneClose: "Weiter so!",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -222,6 +226,10 @@ export const I18N = {
     restore: "Restore",
     setBirthday: "Set as birthday",
     unsetBirthday: "Remove birthday",
+    taskDone: "Well done! 🎉",
+    taskDoneMessage: "You completed a task!",
+    taskDoneCount: (n) => n === 1 ? "1 task completed so far" : `${n} tasks completed so far`,
+    taskDoneClose: "Keep it up!",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -333,6 +341,10 @@ export const I18N = {
     restore: "Restaurar",
     setBirthday: "Marcar como cumpleaños",
     unsetBirthday: "Quitar cumpleaños",
+    taskDone: "¡Bien hecho! 🎉",
+    taskDoneMessage: "¡Has completado una tarea!",
+    taskDoneCount: (n) => n === 1 ? "1 tarea completada" : `${n} tareas completadas`,
+    taskDoneClose: "¡Sigue así!",
   }
 };
 

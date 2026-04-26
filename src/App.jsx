@@ -1432,6 +1432,60 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
   );
 }
 
+/* ── Task Done Celebration ────────────────────────────────── */
+function TaskDoneCelebration({ t, count, onClose }) {
+  const pieces = Array.from({ length: 40 }).map((_, i) => ({
+    id: i,
+    left: Math.random() * 100 + "%",
+    delay: Math.random() * 2 + "s",
+    duration: Math.random() * 2 + 2 + "s",
+    color: ["#7C83F7", "#F59E0B", "#10B981", "#EF4444", "#3B82F6"][Math.floor(Math.random() * 5)],
+    type: ["circle", "rect", "star"][Math.floor(Math.random() * 3)],
+    size: Math.random() * 10 + 5 + "px",
+  }));
+
+  return (
+    <div className="task-done-overlay" onClick={onClose}>
+      <div className="confetti-container">
+        {pieces.map((p) => (
+          <div
+            key={p.id}
+            className={`confetti-piece confetti-piece--${p.type}`}
+            style={{
+              left: p.left,
+              animationDelay: p.delay,
+              animationDuration: p.duration,
+              color: p.color,
+              background: p.type !== "star" ? p.color : "transparent",
+              width: p.size,
+              height: p.type === "rect" ? parseFloat(p.size) * 1.5 + "px" : p.size,
+            }}
+          />
+        ))}
+      </div>
+      <div className="task-done-card" onClick={(e) => e.stopPropagation()}>
+        <div className="task-done-card__rocket">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C12 2 11 3 11 7C11 8 11.5 9 12 9C12.5 9 13 8 13 7C13 3 12 2 12 2Z" fill="#F59E0B"/>
+            <path d="M12 22C12 22 13 21 13 17C13 16 12.5 15 12 15C11.5 15 11 16 11 17C11 21 12 22 12 22Z" fill="#EF4444"/>
+            <path d="M17 12C17 12 16 11 12 11C8 11 7 12 7 12C7 12 6 13 6 17C6 21 12 22 12 22C12 22 18 21 18 17C18 13 17 12 17 12Z" fill="#7C83F7"/>
+            <path d="M12 15C13.1046 15 14 14.1046 14 13C14 11.8954 13.1046 11 12 11C10.8954 11 10 11.8954 10 13C10 14.1046 10.8954 15 12 15Z" fill="white" fillOpacity="0.3"/>
+            <circle cx="12" cy="13" r="1.5" fill="white"/>
+          </svg>
+        </div>
+        <h2 className="task-done-card__title">{t.taskDone}</h2>
+        <p className="task-done-card__message">{t.taskDoneMessage}</p>
+        <div className="task-done-card__counter">
+          <span>{t.taskDoneCount(count)}</span>
+        </div>
+        <button className="task-done-card__close-btn" onClick={onClose}>
+          {t.taskDoneClose}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════
    APP ROOT
    ════════════════════════════════════════════════════════════════ */
@@ -1528,6 +1582,7 @@ export default function App() {
   const [creating, setCreating] = useState(null);
   const [newCatType, setNewCatType] = useState(null);
   const [expandedCat, setExpandedCat] = useState("project");
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -1593,12 +1648,19 @@ export default function App() {
     }));
 
   const toggleTask = (id) =>
-    setState((s) => ({
-      ...s,
-      entries: s.entries.map((e) =>
-        e.id === id ? { ...e, done: !e.done } : e
-      ),
-    }));
+    setState((s) => {
+      const isNowDone = !s.entries.find((e) => e.id === id)?.done;
+      if (isNowDone) {
+        setShowCelebration(true);
+        if (navigator.vibrate) navigator.vibrate([30, 50, 30]);
+      }
+      return {
+        ...s,
+        entries: s.entries.map((e) =>
+          e.id === id ? { ...e, done: !e.done } : e
+        ),
+      };
+    });
 
   // Favoriten-Stern umschalten
   const toggleStar = (id) =>
@@ -1962,6 +2024,14 @@ export default function App() {
             setNewCatType(null);
           }}
           onClose={() => setNewCatType(null)}
+        />
+      )}
+
+      {showCelebration && (
+        <TaskDoneCelebration
+          t={t}
+          count={state.entries.filter(e => e.type === "task" && e.done).length}
+          onClose={() => setShowCelebration(false)}
         />
       )}
     </div>

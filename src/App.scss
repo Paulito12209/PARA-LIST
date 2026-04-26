@@ -4070,3 +4070,191 @@
 .swipe-delete-wrapper {
   margin-bottom: $spacing-sm;
 }
+
+// ── Aufgabe-Erledigt Gratulations-Dialog ─────────────────────
+.task-done-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  animation: fade-in 0.2s ease;
+  padding: $spacing-md;
+}
+
+.task-done-card {
+  width: 100%;
+  max-width: 320px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: 32px;
+  padding: 40px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: task-done-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35), 0 0 60px rgba(124, 131, 247, 0.15);
+
+  &__rocket {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+    animation: rocket-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+    filter: drop-shadow(0 4px 16px rgba(124, 131, 247, 0.4));
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 26px;
+    font-weight: 800;
+    color: $color-text;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+
+  &__message {
+    font-size: 14px;
+    color: $color-muted;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  &__counter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba($color-task, 0.1);
+    border: 1px solid rgba($color-task, 0.25);
+    border-radius: $radius-pill;
+    padding: 8px 20px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-task;
+    animation: fade-in 0.3s ease 0.3s both;
+  }
+
+  &__counter-number {
+    font-size: 18px;
+    font-weight: 800;
+    font-family: $font-heading;
+  }
+
+  &__close-btn {
+    width: 100%;
+    padding: 14px 0;
+    border-radius: $radius-pill;
+    background: $color-task;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-body;
+    border: none;
+    cursor: pointer;
+    transition: all $transition-fast;
+    box-shadow: 0 4px 20px rgba($color-task, 0.35);
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 28px rgba($color-task, 0.45);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
+// Confetti-Container
+.confetti-container {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+// Einzelnes Confetti-Partikel
+.confetti-piece {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  top: -20px;
+  opacity: 0;
+  animation: confetti-fall linear forwards;
+
+  &--circle {
+    border-radius: 50%;
+  }
+
+  &--rect {
+    border-radius: 2px;
+    width: 8px;
+    height: 14px;
+  }
+
+  &--star {
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 10px solid currentColor;
+    background: none !important;
+  }
+}
+
+// Confetti-Fall-Animation
+@keyframes confetti-fall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg) scale(0.5);
+  }
+}
+
+// Karten-Pop-In
+@keyframes task-done-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+// Raketen-Bounce
+@keyframes rocket-bounce {
+  0% {
+    opacity: 0;
+    transform: scale(0) translateY(40px) rotate(-15deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.2) translateY(-8px) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+// ── Light Theme Anpassungen ──────────────────────────────────
+.light-theme {
+  .task-done-card {
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15), 0 0 60px rgba(124, 131, 247, 0.1);
+  }
+}

@@ -1493,6 +1493,66 @@ function TaskDoneCelebration({ t, count, onClose }) {
   );
 }
 
+/* ── Birthday Celebration ────────────────────────────────── */
+function BirthdayCelebration({ t, entry, onClose }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 12000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const pieces = Array.from({ length: 40 }).map((_, i) => ({
+    id: i,
+    left: Math.random() * 100 + "%",
+    delay: Math.random() * 2 + "s",
+    duration: Math.random() * 2 + 2 + "s",
+    color: ["#F472B6", "#F59E0B", "#10B981", "#7C83F7", "#3B82F6"][Math.floor(Math.random() * 5)],
+    type: ["circle", "rect", "star"][Math.floor(Math.random() * 3)],
+    size: Math.random() * 10 + 5 + "px",
+  }));
+
+  return (
+    <div className="task-done-overlay" onClick={onClose}>
+      <div className="confetti-container">
+        {pieces.map((p) => (
+          <div
+            key={p.id}
+            className={`confetti-piece confetti-piece--${p.type}`}
+            style={{
+              left: p.left,
+              animationDelay: p.delay,
+              animationDuration: p.duration,
+              color: p.color,
+              background: p.type !== "star" ? p.color : "transparent",
+              width: p.size,
+              height: p.type === "rect" ? parseFloat(p.size) * 1.5 + "px" : p.size,
+            }}
+          />
+        ))}
+      </div>
+      <div className="task-done-card" onClick={(e) => e.stopPropagation()}>
+        <div className="task-done-card__rocket">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 20H20V12H4V20Z" fill="#F472B6"/>
+            <path d="M4 12C4 10.8954 4.89543 10 6 10H18C19.1046 10 20 10.8954 20 12V14H4V12Z" fill="#FBCFE8"/>
+            <path d="M6 10V8C6 6.89543 6.89543 6 8 6H16C17.1046 6 18 6.89543 18 8V10" stroke="#F472B6" strokeWidth="2"/>
+            <path d="M12 6V3" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="12" cy="2" r="1" fill="#EF4444"/>
+            <rect x="2" y="20" width="20" height="2" fill="#E5E7EB"/>
+          </svg>
+        </div>
+        <h2 className="task-done-card__title">{t.birthdayCreated}</h2>
+        <p className="task-done-card__message" style={{ whiteSpace: 'pre-line' }}>{t.birthdayMessage}</p>
+        
+        <button className="task-done-card__close-btn" onClick={onClose}>
+          {t.birthdayGotIt}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════════════════
    APP ROOT
    ════════════════════════════════════════════════════════════════ */
@@ -1590,6 +1650,7 @@ export default function App() {
   const [newCatType, setNewCatType] = useState(null);
   const [expandedCat, setExpandedCat] = useState("project");
   const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationBirthday, setCelebrationBirthday] = useState(null);
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -1649,10 +1710,16 @@ export default function App() {
   };
 
   const addEntry = (entry) =>
-    setState((s) => ({
-      ...s,
-      entries: [...s.entries, { id: uid(), createdAt: Date.now(), ...entry }],
-    }));
+    setState((s) => {
+      const newId = uid();
+      if (entry.type === "calendar" && entry.isBirthday) {
+        setCelebrationBirthday({ ...entry, id: newId });
+      }
+      return {
+        ...s,
+        entries: [...s.entries, { id: newId, createdAt: Date.now(), ...entry }],
+      };
+    });
 
   const toggleTask = (id) =>
     setState((s) => {
@@ -2039,6 +2106,14 @@ export default function App() {
           t={t}
           count={state.entries.filter(e => e.type === "task" && e.done).length}
           onClose={() => setShowCelebration(false)}
+        />
+      )}
+
+      {celebrationBirthday && (
+        <BirthdayCelebration
+          t={t}
+          entry={celebrationBirthday}
+          onClose={() => setCelebrationBirthday(null)}
         />
       )}
     </div>

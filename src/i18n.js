@@ -115,6 +115,13 @@ export const I18N = {
     taskDoneMessage: "Du hast eine Aufgabe erledigt!",
     taskDoneCount: (n) => n === 1 ? "1 Aufgabe bisher erledigt" : `${n} Aufgaben bisher erledigt`,
     taskDoneClose: "Weiter so!",
+    birthdayCreated: (title, userName) => {
+      const isMe = title.toLowerCase().includes(userName.toLowerCase());
+      if (isMe) return `Alles Gute zu DEINEM Geburtstag, ${userName}! 🎂`;
+      return `Alles Gute zum Geburtstag, ${title}! 🎂`;
+    },
+    birthdayMessage: "Pro-Tipp: Wenn du das Geburtsjahr angibst, berechne ich automatisch das Alter und erinnere dich jedes Jahr daran! 🎉",
+    birthdayGotIt: "Verstanden!",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -230,6 +237,13 @@ export const I18N = {
     taskDoneMessage: "You completed a task!",
     taskDoneCount: (n) => n === 1 ? "1 task completed so far" : `${n} tasks completed so far`,
     taskDoneClose: "Keep it up!",
+    birthdayCreated: (title, userName) => {
+      const isMe = title.toLowerCase().includes(userName.toLowerCase());
+      if (isMe) return `Happy Birthday to YOU, ${userName}! 🎂`;
+      return `Happy Birthday, ${title}! 🎂`;
+    },
+    birthdayMessage: "Pro-tip: If you enter the birth year, I'll automatically calculate the age and remind you every year! 🎉",
+    birthdayGotIt: "Got it!",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -345,6 +359,13 @@ export const I18N = {
     taskDoneMessage: "¡Has completado una tarea!",
     taskDoneCount: (n) => n === 1 ? "1 tarea completada" : `${n} tareas completadas`,
     taskDoneClose: "¡Sigue así!",
+    birthdayCreated: (title, userName) => {
+      const isMe = title.toLowerCase().includes(userName.toLowerCase());
+      if (isMe) return `¡Feliz cumpleaños para TI, ${userName}! 🎂`;
+      return `¡Feliz cumpleaños, ${title}! 🎂`;
+    },
+    birthdayMessage: "Pro-tip: Si ingresas el año de nacimiento, calcularé automáticamente la edad y te lo recordaré cada año! 🎉",
+    birthdayGotIt: "¡Entendido!",
   }
 };
 

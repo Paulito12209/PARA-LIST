@@ -4254,7 +4254,36 @@
 
 // ── Light Theme Anpassungen ──────────────────────────────────
 .light-theme {
+  .task-done-overlay {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(12px);
+  }
+
   .task-done-card {
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.15), 0 0 60px rgba(124, 131, 247, 0.1);
+    background: #ffffff;
+    border-color: #e5e5f0;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12), 0 0 40px rgba(124, 131, 247, 0.08);
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__message {
+      color: #5858A0;
+    }
+
+    &__counter {
+      background: rgba(124, 131, 247, 0.08);
+      border-color: rgba(124, 131, 247, 0.2);
+      color: #5a5cc0;
+    }
+
+    &__close-btn {
+      box-shadow: 0 4px 20px rgba(124, 131, 247, 0.3);
+
+      &:hover {
+        box-shadow: 0 8px 28px rgba(124, 131, 247, 0.4);
+      }
+    }
   }
 }

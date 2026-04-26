@@ -827,7 +827,7 @@ export function MediaList({ entries, cats, onDelete, t, CC }) {
         <div className="media-item__body">
           <div className="media-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
           <div className="media-item__meta"><AutoScrollText>{label}</AutoScrollText></div>
-          <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
+          <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={false} />
         </div>
         <button 
           className="media-item__delete" 
@@ -882,7 +882,7 @@ export function LinkList({ entries, cats, onDelete, CC }) {
           )}
           <div className="media-item__footer-meta">
             {e.url && <div className="media-item__meta"><AutoScrollText>{e.url}</AutoScrollText></div>}
-            <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
+            <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={false} />
           </div>
         </div>
       </div>

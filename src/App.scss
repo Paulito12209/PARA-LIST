@@ -1929,6 +1929,8 @@
 
   &__item-info {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   &__item-name {
@@ -1937,7 +1939,14 @@
     color: $color-text;
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: clip;
+    text-overflow: clip; 
+    width: 100%;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  svg {
+    flex-shrink: 0;
   }
 
   &__item-date {

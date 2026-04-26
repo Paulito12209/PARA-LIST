@@ -656,7 +656,9 @@ export function CatDetailScreen({
                     >
                       <Square size={18} color={CC.resource.color} />
                     </div>
+                    <div className="cat-list__item-info">
                       <div className="cat-list__item-name"><AutoScrollText>{res.name}</AutoScrollText></div>
+                    </div>
                     <ChevronLeft
                       size={16}
                       color="#5858A0"

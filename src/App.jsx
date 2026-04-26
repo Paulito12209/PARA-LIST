@@ -16,7 +16,7 @@ import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, L
 import { CatListScreen, BookmarkRail, CatDetailScreen } from "./FolderScreens";
 import { EntryDetailScreen } from "./EntryDetailScreen";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
-import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete } from "./shared";
+import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete, AutoScrollText } from "./shared";
 
 /* ── Command Panel ───────────────────────────────────────────── */
 function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, onToggleTask, t, onOpenEntry, theme, setTheme, lang, setLang }) {
@@ -771,7 +771,7 @@ function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, togg
                       <CatIcon size={18} color={tabCfg.color} />
                     </div>
                     <div className="cat-list__item-info">
-                      <div className="cat-list__item-name">{cat.name}</div>
+                      <div className="cat-list__item-name"><AutoScrollText>{cat.name}</AutoScrollText></div>
                     </div>
                     <ChevronLeft
                       size={16}

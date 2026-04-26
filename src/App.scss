@@ -347,11 +347,11 @@
     z-index: 10;
 
     &--closed {
-      padding: $spacing-xs 0 $spacing-sm;
+      padding: $spacing-xs 0 6px;
     }
 
     &--open {
-      padding: $spacing-sm 0;
+      padding: 6px 0;
     }
   }
 

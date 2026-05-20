@@ -280,6 +280,7 @@ function HomeScreen({
   onOpenCatType,
   onAddCat,
   onAddEntry,
+  onAddVoiceEntry, // Neue Prop für den Sprachassistenten
   toggleTask,
   toggleStar,
   updateEntry,
@@ -293,6 +294,17 @@ function HomeScreen({
 }) {
 
   const { entries, cats } = state;
+  
+  // Zustand für den ausgewählten Kategorie-Typ auf der Startseite (standardmäßig Projekte)
+  const [activeCatType, setActiveCatType] = useState("project");
+  
+  // Zustand für die aktive Sprachaufnahme
+  const [isListening, setIsListening] = useState(false);
+
+  // Erstes Element der aktiven Kategorie aus dem State filtern
+  const activeCats = cats.filter((c) => c.type === activeCatType && !c.archived);
+  const firstCat = activeCats[0];
+
   const tabEntries = entries.map((e) => {
     if (e.type === "calendar" && e.isBirthday) {
       const nextBd = getNextBirthday(e.date);
@@ -339,7 +351,7 @@ function HomeScreen({
     let currentGroup = groups[0];
     const containerTop = container.getBoundingClientRect().top;
 
-    // Find the last group that has touched or passed the top edge
+    // Finde die letzte Gruppe, die den oberen Rand berührt oder überschritten hat
     for (let i = 0; i < groups.length; i++) {
       const rect = groups[i].getBoundingClientRect();
       if (rect.top <= containerTop + 24) {
@@ -358,45 +370,15 @@ function HomeScreen({
     }
   };
 
-  // Run scroll handler whenever tab or entries change to update the header
+  // Scroll-Handler ausführen, wenn sich der Tab oder die Einträge ändern
   useEffect(() => {
     if (entryListRef.current) {
-      // Small timeout to allow DOM to render groups
       setTimeout(() => handleListScroll({ currentTarget: entryListRef.current }), 50);
     }
   }, [tab, tabEntries]);
 
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
-
-  const cardPressTimer = useRef(null);
-  const isCardLongPress = useRef(false);
-
-  const handleCardPointerDown = (type) => {
-    isCardLongPress.current = false;
-    cardPressTimer.current = setTimeout(() => {
-      isCardLongPress.current = true;
-      setExpandedCat(type);
-    }, 200);
-  };
-
-  const handleCardPointerUp = () => {
-    if (cardPressTimer.current) clearTimeout(cardPressTimer.current);
-  };
-
-  const handleCardPointerLeave = () => {
-    if (cardPressTimer.current) clearTimeout(cardPressTimer.current);
-  };
-
-  const handleCardClick = (e, type) => {
-    if (isCardLongPress.current) {
-      e.preventDefault();
-      e.stopPropagation();
-      return;
-    }
-    setExpandedCat(type);
-    onOpenCatType(type);
-  };
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -407,7 +389,6 @@ function HomeScreen({
     const dx = touchEndX - touchStartX.current;
 
     if (Math.abs(dx) > 60 && !panelOpen) {
-
       const tabOrder = TABS.map(t => t.id);
       const currentIndex = tabOrder.indexOf(tab);
 
@@ -423,7 +404,6 @@ function HomeScreen({
 
   const handleDoubleTap = useCallback(
     (e) => {
-      // Erlaube Klicks auf den Hintergrund (currentTarget) oder das Empty-Placeholder-Element
       const isEmptyPlaceholder = e.target.closest('.entry-list__empty') || e.target.closest('.cat-detail__section-empty');
       if (e.target !== e.currentTarget && !isEmptyPlaceholder) return;
       const now = Date.now();
@@ -437,174 +417,237 @@ function HomeScreen({
     [onAddEntry]
   );
 
-  const firstGroupLabel = (() => {
-    if (!tabEntries || tabEntries.length === 0) return null;
-    let hasToday = false;
-    const futureDates = [];
-    tabEntries.forEach(e => {
-      const d = e.due || e.date;
-      if (!d || isToday(d) || isOld(d)) hasToday = true;
-      else futureDates.push(d);
-    });
-    if (hasToday) return t.todayGroup;
-    if (futureDates.length > 0) {
-      futureDates.sort((a, b) => new Date(a) - new Date(b));
-      const d = futureDates[0];
-      const g = getTaskGroup(d, t.locale, true);
-      return g.right ? `${g.left} ・ ${g.right}` : g.left;
+  // Spracherkennungsfunktion mit HTML5 SpeechRecognition
+  const handleVoiceInput = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert(lang === 'de'
+        ? "Spracherkennung wird in diesem Browser leider nicht unterstützt. Bitte nutze Chrome oder Safari."
+        : "Speech recognition is not supported in this browser. Please use Chrome or Safari.");
+      return;
     }
-    return null;
-  })();
+    if (isListening) return;
+
+    const rec = new SpeechRecognition();
+    rec.lang = lang === 'de' ? 'de-DE' : lang === 'es' ? 'es-ES' : 'en-US';
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    rec.onstart = () => {
+      setIsListening(true);
+      if (navigator.vibrate) navigator.vibrate(20);
+    };
+
+    rec.onresult = (event) => {
+      const text = event.results[0][0].transcript;
+      if (text && text.trim() && onAddVoiceEntry) {
+        onAddVoiceEntry(text.trim());
+        if (navigator.vibrate) navigator.vibrate([15, 40, 15]);
+      }
+    };
+
+    rec.onerror = (err) => {
+      console.error("Speech Recognition error:", err);
+      setIsListening(false);
+      // Benutzerfreundliche Fehlermeldung je nach Fehlertyp
+      if (err.error === 'not-allowed' || err.error === 'permission-denied') {
+        alert(lang === 'de'
+          ? "Mikrofon-Zugriff wurde verweigert. Bitte erlaube den Mikrofon-Zugriff in deinen Browser-Einstellungen."
+          : "Microphone access was denied. Please allow microphone access in your browser settings.");
+      } else if (err.error === 'no-speech') {
+        // Kein Fehler-Alert bei Stille – das ist normales Verhalten
+      } else if (err.error === 'network') {
+        alert(lang === 'de'
+          ? "Netzwerkfehler bei der Spracherkennung. Bitte überprüfe deine Internetverbindung."
+          : "Network error during speech recognition. Please check your internet connection.");
+      }
+    };
+
+    rec.onend = () => {
+      setIsListening(false);
+    };
+
+    rec.start();
+  };
+
+  // RGB-Farbwerte der ausgewählten Kategorie für die Lichtwellen ermitteln
+  const getThemeColorRgb = (type) => {
+    if (type === "project") return "224, 62, 62";     // Rot
+    if (type === "area") return "208, 144, 32";       // Orange/Gelb
+    if (type === "resource") return "48, 160, 96";    // Grün
+    return "124, 131, 247";                            // Blau/Lila (Archiv)
+  };
+
+  const rgbVal = getThemeColorRgb(activeCatType);
 
   return (
     <div className={`home home--${tab}`}>
-      <div className="home__categories-container">
-        {/* Überschrift + Ordner-Icon (wie bei den Subtabs unten) */}
-        <div className="home__categories-header">
-          <span className="home__categories-title">{t.folders}</span>
-          {/* <div className="home__categories-icon-wrap">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" width={16} height={16} className="home__categories-icon">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776" />
-            </svg>
-          </div> */}
-        </div>
-
-        {/* Horizontaler Swipe-Track – aktuell nur 1 Page (Ordner) */}
-        <div className="home__categories-track">
-          {/* Page 1: Kategorie-Ordner (Projekte / Arbeitsbereiche / Ressourcen) */}
-          <div className="home__categories-page home__categories-page--active">
-            <div className="category-grid">
-              {["project", "area", "resource"].map((type) => {
-                const cfg = CC[type];
-                const count = cats.filter((c) => c.type === type && !c.archived).length;
-                const isExpanded = expandedCat === type;
-
-                // Initiale für minimierte Ansicht
-                const initial = cfg.label.charAt(0).toUpperCase();
-
-                if (isExpanded) {
-                  const statusLabel = (type === 'area' || type === 'resource') ? (t.active || 'aktiv') : (t.open || 'offen');
-                  return (
-                    <div
-                      key={type}
-                      className={`category-card category-card--expanded category-card--${type}`}
-                      onPointerDown={() => handleCardPointerDown(type)}
-                      onPointerUp={handleCardPointerUp}
-                      onPointerLeave={handleCardPointerLeave}
-                      onClick={(e) => handleCardClick(e, type)}
-                    >
-                      <div className="category-card__bg"></div>
-                      <div className="category-card__content">
-                        <div className="category-card__header">
-                          <span className="category-card__title">{cfg.label}</span>
-                        </div>
-
-                        <div className="category-card__status">
-                          <div className="category-card__status-icon-wrap">
-                            {type === 'area' ? (
-                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            ) : type === 'resource' ? (
-                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            ) : (
-                              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                            )}
-                            {/* KEINE Zahl im Icon für expanded State */}
-                          </div>
-                          <span className="category-card__status-text">
-                            {t.youHavePrefix || "Du hast "}<strong>{count}</strong> {statusLabel}
-                          </span>
-                        </div>
-                        <div className="category-card__bottom">
-                          <button
-                            className="category-card__add-btn category-card__add-btn--expanded"
-                            onClick={(e) => { e.stopPropagation(); onAddCat(type); }}
-                          >
-                            <Plus size={20} color="#fff" strokeWidth={2.4} />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }
-
-                return (
-                  <div
-                    key={type}
-                    className={`category-card category-card--collapsed category-card--${type}`}
-                    onPointerDown={() => handleCardPointerDown(type)}
-                    onPointerUp={handleCardPointerUp}
-                    onPointerLeave={handleCardPointerLeave}
-                    onClick={(e) => handleCardClick(e, type)}
-                  >
-                    <div className="category-card__bg"></div>
-                    <div className="category-card__content">
-                      <span className="category-card__initial">{initial}</span>
-
-                      <div className="category-card__badge-wrap">
-                        {type === 'area' ? (
-                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 3L22 20H2L12 3Z" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        ) : type === 'resource' ? (
-                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="3" y="3" width="18" height="18" rx="2" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        ) : (
-                          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                          </svg>
-                        )}
-                        <span className="category-card__badge-count">{count}</span>
-                      </div>
-
-                      <div className="category-card__bottom">
-                        <button
-                          className="category-card__add-btn category-card__add-btn--collapsed"
-                          onClick={(e) => { e.stopPropagation(); onAddCat(type); }}
-                        >
-                          <Plus size={20} color="#fff" strokeWidth={2.4} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      {/* ── OBERES COVER-ELEMENT (LICHTWELLEN & ERSTES ELEMENT) ── */}
+      <div 
+        className="home-cover" 
+        style={{ "--cover-accent-rgb": rgbVal }}
+      >
+        <div className="home-cover__light-wave" />
+        <div className="home-cover__content">
+          <div className="home-cover__header">
+            <span className="home-cover__badge">
+              {activeCatType === "project" && (
+                <>
+                  <Circle size={10} strokeWidth={3} className="home-cover__badge-icon" />
+                  {t.projects ? t.projects.toUpperCase().slice(0, -1) : "PROJEKT"}
+                </>
+              )}
+              {activeCatType === "area" && (
+                <>
+                  <Triangle size={10} strokeWidth={3} className="home-cover__badge-icon" />
+                  {t.areas ? t.areas.toUpperCase().slice(0, -1) : "BEREICH"}
+                </>
+              )}
+              {activeCatType === "resource" && (
+                <>
+                  <Square size={10} strokeWidth={3} className="home-cover__badge-icon" />
+                  {t.resources ? t.resources.toUpperCase().slice(0, -1) : "RESSOURCE"}
+                </>
+              )}
+              {activeCatType === "archive" && (
+                <>
+                  <Archive size={10} strokeWidth={3} className="home-cover__badge-icon" />
+                  {t.archive ? t.archive.toUpperCase() : "ARCHIV"}
+                </>
+              )}
+            </span>
+            {state.user.avatar && (
+              <img 
+                src={state.user.avatar} 
+                alt="Avatar" 
+                className="home-cover__avatar"
+              />
+            )}
           </div>
 
-          {/* Zukünftige Pages hier ergänzen, z.B.: */}
-          {/* <div className="home__categories-page">...</div> */}
+          {firstCat ? (
+            <div className="home-cover__main">
+              <h1 className="home-cover__title">{firstCat.name}</h1>
+              <p className="home-cover__desc">
+                {firstCat.desc || firstCat.body || (lang === 'de' ? 'Erfasse und verwalte deine Themen mit PARA-LIST.' : 'Organize and manage your topics with PARA-LIST.')}
+              </p>
+              
+              {/* Dynamische Pills/Tags basierend auf den Eigenschaften des Elements */}
+              <div className="home-cover__tags">
+                <span className="home-cover__tag">
+                  <Calendar size={12} className="home-cover__tag-icon" />
+                  {firstCat.date ? fmtDate(firstCat.date, t.locale) : (lang === 'de' ? 'Flexibel' : 'Flexible')}
+                </span>
+                <span className="home-cover__tag">
+                  <Link2 size={12} className="home-cover__tag-icon" />
+                  {
+                    firstCat.relatedId 
+                      ? (cats.find(c => c.id === firstCat.relatedId)?.name || (lang === 'de' ? 'Allgemein' : 'General'))
+                      : firstCat.type === 'project' 
+                        ? (lang === 'de' ? 'Projekt' : 'Project')
+                        : firstCat.type === 'area'
+                          ? (lang === 'de' ? 'Bereich' : 'Area')
+                          : (lang === 'de' ? 'Ressource' : 'Resource')
+                  }
+                </span>
+                <span className="home-cover__tag">
+                  {firstCat.tags && firstCat.tags.length > 0 ? firstCat.tags[0] : 'App'}
+                </span>
+              </div>
+
+              {/* Passiver Textlink zur Detailansicht ganz unten platziert */}
+              <div 
+                className="home-cover__textlink"
+                onClick={() => onOpenCatType(activeCatType)}
+              >
+                {activeCatType === "project" && (lang === 'de' ? "Alle Projekte anzeigen →" : "Show all projects →")}
+                {activeCatType === "area" && (lang === 'de' ? "Alle Bereiche anzeigen →" : "Show all areas →")}
+                {activeCatType === "resource" && (lang === 'de' ? "Alle Ressourcen anzeigen →" : "Show all resources →")}
+              </div>
+            </div>
+          ) : (
+            <div className="home-cover__main">
+              <h1 className="home-cover__title">
+                {activeCatType === "project" && (lang === 'de' ? "Keine Projekte" : "No Projects")}
+                {activeCatType === "area" && (lang === 'de' ? "Keine Bereiche" : "No Areas")}
+                {activeCatType === "resource" && (lang === 'de' ? "Keine Ressourcen" : "No Resources")}
+              </h1>
+              <p className="home-cover__desc">
+                {lang === 'de' ? "Erstelle dein erstes Element mit dem Plus-Symbol unten!" : "Create your first item with the plus symbol below!"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* ── GETEILTE NAVIGATION (SPLIT NAVIGATION) ── */}
+      <div className="split-nav">
+        {/* Linker Container (Pills mit Dotted-Textur) */}
+        <div className="split-nav__pills">
+          <div className="split-nav__dots-bg" />
+          <div className="split-nav__items">
+            {[
+              { id: "project", icon: Circle, color: "#E03E3E", label: t.projects || "Projekte" },
+              { id: "area", icon: Triangle, color: "#D09020", label: t.areas || "Bereiche" },
+              { id: "resource", icon: Square, color: "#30A060", label: t.resources || "Ressourcen" },
+              { id: "archive", icon: Archive, color: "#7C83F7", label: t.archive || "Archiv" },
+            ].map((item) => {
+              const IconComp = item.icon;
+              const isActive = activeCatType === item.id;
+              return (
+                <button
+                  key={item.id}
+                  className={`split-nav__btn ${isActive ? "split-nav__btn--active" : ""}`}
+                  onClick={() => {
+                    if (item.id === "archive") {
+                      onOpenArchive(tab);
+                    } else {
+                      setActiveCatType(item.id);
+                    }
+                  }}
+                  style={isActive ? { color: item.color } : {}}
+                  title={item.label}
+                >
+                  <IconComp size={isActive ? 32 : 20} strokeWidth={isActive ? 2.5 : 2} />
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Rechter Container (Plus-Button mit Dotted-Textur) */}
+        <button
+          className="split-nav__add"
+          onClick={() => onAddCat(activeCatType)}
+          style={{ borderColor: `rgb(${rgbVal})` }}
+          title={lang === 'de' ? "Neu erstellen" : "Create new"}
+        >
+          <div className="split-nav__dots-bg" />
+          <Plus size={32} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
+        </button>
+      </div>
+
+      {/* ── MINIMALISTISCHE AUFGABENLISTE (16PX GRID) ── */}
       <div className="home__list-container">
-        {/* List section header: label left + switcher icons center */}
         <div className="list-section__header">
           <div className="list-section__header-left">
             <span className="list-section__label">{tabCfg?.label}</span>
           </div>
           <div className="list-switcher">
-            {TABS.map((t) => {
-              const TabIcon = t.Icon;
-              const isActive = tab === t.id;
+            {TABS.map((tItem) => {
+              const TabIcon = tItem.Icon;
+              const isActive = tab === tItem.id;
               return (
                 <button
-                  key={t.id}
-                  className={`list-switcher__btn ${isActive ? "list-switcher__btn--active" : ""
-                    }`}
-                  onClick={() => setTab(t.id)}
+                  key={tItem.id}
+                  className={`list-switcher__btn ${isActive ? "list-switcher__btn--active" : ""}`}
+                  onClick={() => setTab(tItem.id)}
                   style={
                     isActive
                       ? {
-                        background: t.color + "22",
-                        boxShadow: `0 0 12px ${t.color}30`,
-                        color: t.color,
+                        background: tItem.color + "22",
+                        boxShadow: `0 0 12px ${tItem.color}30`,
+                        color: tItem.color,
                       }
                       : {}
                   }
@@ -616,7 +659,7 @@ function HomeScreen({
           </div>
         </div>
 
-        {/* Dynamischer, fixer Gruppen-Header außerhalb des Scroll-Bereichs */}
+        {/* Dynamischer, fixer Gruppen-Header */}
         {activeGroupHeader && (tab === "tasks" || tab === "calendar" || tab === "notes") && (
           <div className="task-group-header task-group-header--fixed">
             <span className="task-group-header__left">{activeGroupHeader.left}</span>
@@ -624,7 +667,7 @@ function HomeScreen({
           </div>
         )}
 
-        {/* Entry list */}
+        {/* Aufgabenliste ohne umschließenden Container */}
         <div
           className="entry-list"
           onClick={handleDoubleTap}
@@ -689,133 +732,309 @@ function HomeScreen({
         </div>
       </div>
 
-      {showArchiveButton() && (
-        <button
-          className="fab-archive"
-          onClick={() => onOpenArchive(tab)}
-          style={{
-            background: "#9CA3AF22",
-            border: "1px solid #9CA3AF55",
-            color: "#9CA3AF",
-            boxShadow: "0 8px 24px #9CA3AF22",
-          }}
-        >
-          <ArchiveIcon size={22} color="#9CA3AF" strokeWidth={2} />
-        </button>
+      {/* ── PULSIERENDER SPRACHASSISTENT (VOICE FAB) ── */}
+      {(tab === "tasks" || tab === "notes" || tab === "calendar") && (
+        <div className="voice-fab-container">
+          <button
+            className={`voice-fab ${isListening ? "voice-fab--listening" : ""}`}
+            onClick={handleVoiceInput}
+            style={{
+              boxShadow: isListening 
+                ? "0 0 30px rgba(239, 68, 68, 0.6)" 
+                : `0 8px 24px ${tabColor}55`,
+              background: isListening 
+                ? "linear-gradient(135deg, #ef4444, #ec4899)" 
+                : tab === "notes"
+                  ? "linear-gradient(135deg, #F59E0B, #FF8008)"
+                  : tab === "calendar"
+                    ? "linear-gradient(135deg, #1D4ED8, #3b82f6)"
+                    : `linear-gradient(135deg, #7C83F7, #9B66FF)`
+            }}
+            title={
+              tab === "notes"
+                ? (lang === 'de' ? "Notiz per Spracheingabe hinzufügen" : "Add note via voice")
+                : tab === "calendar"
+                  ? (lang === 'de' ? "Termin per Spracheingabe hinzufügen" : "Add event via voice")
+                  : (lang === 'de' ? "Aufgabe per Spracheingabe hinzufügen" : "Add task via voice")
+            }
+          >
+            {isListening && <div className="voice-fab__pulse-ring" />}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="white"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              width="24"
+              height="24"
+              className="voice-fab__icon"
+            >
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v1a7 7 0 0 1-14 0v-1" />
+              <line x1="12" x2="12" y1="19" y2="22" />
+            </svg>
+          </button>
+        </div>
       )}
-
-      {/* FAB */}
-      <button
-        className="fab"
-        onClick={onAddEntry}
-        style={{
-          background: tabColor,
-          boxShadow: `0 8px 24px ${tabColor}55`,
-        }}
-      >
-        <Plus size={22} color="#fff" strokeWidth={2.4} />
-      </button>
     </div>
   );
 }
 
 /* ── Archive Screen ────────────────────────────────────────────── */
 function ArchiveScreen({ t, CC, lang, entries, cats, tab, onDelete, onBack, toggleTask, onOpenEntry, onRestoreNote, onOpenCat }) {
-  const isCatTab = ["project", "area", "resource"].includes(tab);
+  // Lokaler Zustand zur Steuerung des aktiven Archiv-Tabs im Dashboard
+  const [activeArchiveTab, setActiveArchiveTab] = useState(null);
   const fabVisible = useInactivity(5000);
 
-  const archiveItems = isCatTab
-    ? cats.filter(c => c.type === tab && c.archived)
-    : entries.filter(e => {
-      if (tab === "tasks") return e.type === "task" && e.done;
-      if (tab === "calendar") return e.type === "calendar" && (isOld(e.date) || e.done);
-      if (tab === "notes") return e.type === "note" && e.archived;
-      return false;
-    }).sort((a, b) => {
-      if (tab === "calendar") {
-        return new Date(b.date + "T12:00") - new Date(a.date + "T12:00");
-      }
-      return 0;
-    });
+  // Zähler für die archivierten Elemente ermitteln
+  const archivedProjects = cats.filter(c => c.type === "project" && c.archived);
+  const archivedAreas = cats.filter(c => c.type === "area" && c.archived);
+  const archivedResources = cats.filter(c => c.type === "resource" && c.archived);
 
-  const tabCfg = isCatTab ? CC[tab] : getTABS(t).find(x => x.id === tab);
-  const title = isCatTab
-    ? `Archivierte ${tabCfg.label}`
-    : tab === "tasks" ? t.completedTasks : tab === "calendar" ? t.pastEvents : t.archivedNotes;
-  const CatIcon = isCatTab ? CAT_ICONS[tab] : null;
+  const completedTasks = entries.filter(e => e.type === "task" && e.done);
+  const archivedNotes = entries.filter(e => e.type === "note" && e.archived);
+  const archivedEvents = entries.filter(e => e.type === "calendar" && (isOld(e.date) || e.done));
+
+  // Daten für die aktuell geöffnete Detailansicht filtern
+  const getArchiveItems = () => {
+    if (activeArchiveTab === "project") return archivedProjects;
+    if (activeArchiveTab === "area") return archivedAreas;
+    if (activeArchiveTab === "resource") return archivedResources;
+    if (activeArchiveTab === "tasks") return completedTasks;
+    if (activeArchiveTab === "notes") return archivedNotes;
+    if (activeArchiveTab === "calendar") return archivedEvents.sort((a, b) => new Date(b.date + "T12:00") - new Date(a.date + "T12:00"));
+    return [];
+  };
+
+  const archiveItems = getArchiveItems();
+  const isCatTab = ["project", "area", "resource"].includes(activeArchiveTab);
+  const CatIcon = isCatTab ? CAT_ICONS[activeArchiveTab] : null;
+
+  const getSectionTitle = () => {
+    if (activeArchiveTab === "project") return lang === 'de' ? "Archivierte Projekte" : "Archived Projects";
+    if (activeArchiveTab === "area") return lang === 'de' ? "Archivierte Bereiche" : "Archived Areas";
+    if (activeArchiveTab === "resource") return lang === 'de' ? "Archivierte Ressourcen" : "Archived Resources";
+    if (activeArchiveTab === "tasks") return t.completedTasks || (lang === 'de' ? "Erledigte Aufgaben" : "Completed Tasks");
+    if (activeArchiveTab === "notes") return t.archivedNotes || (lang === 'de' ? "Archivierte Notizen" : "Archived Notes");
+    if (activeArchiveTab === "calendar") return t.pastEvents || (lang === 'de' ? "Vergangene Termine" : "Past Events");
+    return "";
+  };
 
   return (
-    <div className="cat-detail">
+    <div className="cat-detail archive-dashboard-container">
+      {/* ── HEADER ── */}
       <div className="cat-detail__header">
         <div className="cat-detail__title-row">
-          {isCatTab ? <CatIcon size={18} color={tabCfg.color} /> : <ArchiveIcon size={18} color={tabCfg?.color || "#EDEEFF"} />}
+          <ArchiveIcon size={18} color="#7C83F7" />
           <div className="cat-detail__title-input" style={{ pointerEvents: "none" }}>
-            {title}
+            {activeArchiveTab ? getSectionTitle() : (lang === 'de' ? "Archiv-Dashboard" : "Archive Dashboard")}
           </div>
         </div>
       </div>
+
       <div className="cat-detail__body" style={{ padding: '16px', paddingBottom: '100px' }}>
-        {archiveItems.length === 0 ? (
-          <div className="cat-detail__section-empty">{t.noneArchived || "Keine archivierten Einträge"}</div>
-        ) : (
-          <>
-            {isCatTab && (
-              <div className="cat-list__archive-items" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {archiveItems.map((cat) => (
-                  <button
-                    key={cat.id}
-                    className="cat-list__item"
-                    onClick={() => onOpenCat(cat)}
-                  >
-                    <div className="cat-list__item-icon">
-                      <CatIcon size={18} color={tabCfg.color} />
-                    </div>
-                    <div className="cat-list__item-info">
-                      <div className="cat-list__item-name"><AutoScrollText>{cat.name}</AutoScrollText></div>
-                    </div>
-                    <ChevronLeft
-                      size={16}
-                      color="#5858A0"
-                      style={{ transform: "rotate(180deg)" }}
-                    />
-                  </button>
-                ))}
+        {/* ── DAS DASHBOARD (Wenn kein Tab aktiv ist) ── */}
+        {!activeArchiveTab ? (
+          <div className="archive-dashboard">
+            {/* OBERER BEREICH: Karussell fuer Ordner */}
+            <div className="archive-dashboard__section-title">
+              {lang === 'de' ? "Archivierte Ordner" : "Archived Folders"}
+            </div>
+            
+            <div className="archive-carousel">
+              {/* Projekt-Karte */}
+              <div 
+                className="archive-card archive-card--project" 
+                onClick={() => setActiveArchiveTab("project")}
+              >
+                <div className="archive-card__dots" />
+                <div className="archive-card__header">
+                  <div className="archive-card__icon-box">
+                    <Circle size={22} strokeWidth={2.5} color="#E03E3E" fill="rgba(224,62,62,0.15)" />
+                  </div>
+                  <span className="archive-card__count">{archivedProjects.length}</span>
+                </div>
+                <div className="archive-card__title">
+                  {lang === 'de' ? "Projekte" : "Projects"}
+                </div>
+                <div className="archive-card__desc">
+                  {lang === 'de' ? "Hier liegen deine abgeschlossenen Projekte." : "Your completed project archives."}
+                </div>
               </div>
-            )}
-            {tab === "tasks" && (
-              <TaskList t={t} CC={CC} lang={lang}
-                entries={archiveItems}
-                cats={cats}
-                onToggle={toggleTask}
-                onDelete={onDelete}
-                onOpenEntry={onOpenEntry}
-                isArchive={true}
-              />
-            )}
-            {tab === "calendar" && (
-              <CalList t={t} CC={CC} lang={lang}
-                entries={archiveItems}
-                cats={cats}
-                onDelete={onDelete}
-                onOpenEntry={onOpenEntry}
-                isArchive={true}
-              />
-            )}
-            {tab === "notes" && (
-              <NoteList t={t} CC={CC}
-                entries={archiveItems}
-                cats={cats}
-                onDelete={onDelete}
-                onOpenEntry={onOpenEntry}
-                onArchiveEntry={onRestoreNote}
-                isArchive={true}
-              />
-            )}
-          </>
+
+              {/* Bereichs-Karte */}
+              <div 
+                className="archive-card archive-card--area" 
+                onClick={() => setActiveArchiveTab("area")}
+              >
+                <div className="archive-card__dots" />
+                <div className="archive-card__header">
+                  <div className="archive-card__icon-box">
+                    <Triangle size={22} strokeWidth={2.5} color="#D09020" fill="rgba(208,144,32,0.15)" />
+                  </div>
+                  <span className="archive-card__count">{archivedAreas.length}</span>
+                </div>
+                <div className="archive-card__title">
+                  {lang === 'de' ? "Bereiche" : "Areas"}
+                </div>
+                <div className="archive-card__desc">
+                  {lang === 'de' ? "Archivierte Lebensbereiche und Rollen." : "Your archived life areas."}
+                </div>
+              </div>
+
+              {/* Ressourcen-Karte */}
+              <div 
+                className="archive-card archive-card--resource" 
+                onClick={() => setActiveArchiveTab("resource")}
+              >
+                <div className="archive-card__dots" />
+                <div className="archive-card__header">
+                  <div className="archive-card__icon-box">
+                    <Square size={22} strokeWidth={2.5} color="#30A060" fill="rgba(48,160,96,0.15)" />
+                  </div>
+                  <span className="archive-card__count">{archivedResources.length}</span>
+                </div>
+                <div className="archive-card__title">
+                  {lang === 'de' ? "Ressourcen" : "Resources"}
+                </div>
+                <div className="archive-card__desc">
+                  {lang === 'de' ? "Abgelegtes Wissen und Nachschlagewerke." : "Archived collections of knowledge."}
+                </div>
+              </div>
+            </div>
+
+            {/* UNTERER BEREICH: Grid fuer Eintraege */}
+            <div className="archive-dashboard__section-title" style={{ marginTop: '28px' }}>
+              {lang === 'de' ? "Archivierte Inhalte" : "Archived Contents"}
+            </div>
+
+            <div className="archive-grid">
+              {/* Aufgaben-Karte */}
+              <div 
+                className="archive-grid-card archive-grid-card--tasks"
+                onClick={() => setActiveArchiveTab("tasks")}
+              >
+                <div className="archive-grid-card__header">
+                  <CheckCircle2 size={20} color="#7C83F7" />
+                  <span className="archive-grid-card__count">{completedTasks.length}</span>
+                </div>
+                <span className="archive-grid-card__title">
+                  {lang === 'de' ? "Aufgaben" : "Tasks"}
+                </span>
+              </div>
+
+              {/* Notizen-Karte */}
+              <div 
+                className="archive-grid-card archive-grid-card--notes"
+                onClick={() => setActiveArchiveTab("notes")}
+              >
+                <div className="archive-grid-card__header">
+                  <FileText size={20} color="#FBBF24" />
+                  <span className="archive-grid-card__count">{archivedNotes.length}</span>
+                </div>
+                <span className="archive-grid-card__title">
+                  {lang === 'de' ? "Notizen" : "Notes"}
+                </span>
+              </div>
+
+              {/* Kalender-Karte */}
+              <div 
+                className="archive-grid-card archive-grid-card--calendar"
+                onClick={() => setActiveArchiveTab("calendar")}
+              >
+                <div className="archive-grid-card__header">
+                  <Calendar size={20} color="#1E3A8A" />
+                  <span className="archive-grid-card__count">{archivedEvents.length}</span>
+                </div>
+                <span className="archive-grid-card__title">
+                  {lang === 'de' ? "Termine" : "Events"}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* ── DETAILED LIST VIEW (Wenn eine Karte angeklickt wurde) ── */
+          <div className="archive-detail-list animated fadeIn">
+            <button 
+              className="archive-detail-list__back-btn"
+              onClick={() => setActiveArchiveTab(null)}
+            >
+              ← {lang === 'de' ? "Zurück zum Dashboard" : "Back to Dashboard"}
+            </button>
+
+            <div className="archive-detail-list__content" style={{ marginTop: '16px' }}>
+              {archiveItems.length === 0 ? (
+                <div className="cat-detail__section-empty">
+                  {t.noneArchived || "Keine archivierten Einträge"}
+                </div>
+              ) : (
+                <>
+                  {isCatTab && (
+                    <div className="cat-list__archive-items" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {archiveItems.map((cat) => (
+                        <button
+                          key={cat.id}
+                          className="cat-list__item"
+                          onClick={() => onOpenCat(cat)}
+                        >
+                          <div className="cat-list__item-icon">
+                            <CatIcon size={18} color={CC[activeArchiveTab].color} />
+                          </div>
+                          <div className="cat-list__item-info">
+                            <div className="cat-list__item-name"><AutoScrollText>{cat.name}</AutoScrollText></div>
+                          </div>
+                          <ChevronLeft
+                            size={16}
+                            color="#5858A0"
+                            style={{ transform: "rotate(180deg)" }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {activeArchiveTab === "tasks" && (
+                    <TaskList t={t} CC={CC} lang={lang}
+                      entries={archiveItems}
+                      cats={cats}
+                      onToggle={toggleTask}
+                      onDelete={onDelete}
+                      onOpenEntry={onOpenEntry}
+                      isArchive={true}
+                    />
+                  )}
+                  {activeArchiveTab === "calendar" && (
+                    <CalList t={t} CC={CC} lang={lang}
+                      entries={archiveItems}
+                      cats={cats}
+                      onDelete={onDelete}
+                      onOpenEntry={onOpenEntry}
+                      isArchive={true}
+                    />
+                  )}
+                  {activeArchiveTab === "notes" && (
+                    <NoteList t={t} CC={CC}
+                      entries={archiveItems}
+                      cats={cats}
+                      onDelete={onDelete}
+                      onOpenEntry={onOpenEntry}
+                      onArchiveEntry={onRestoreNote}
+                      isArchive={true}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          </div>
         )}
       </div>
+
       <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`}>
-        <button className="nav-bottom__back" onClick={onBack}>
+        <button 
+          className="nav-bottom__back" 
+          onClick={activeArchiveTab ? () => setActiveArchiveTab(null) : onBack}
+        >
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
       </div>
@@ -1906,6 +2125,43 @@ export default function App() {
                       : "calendar",
                 catId: null,
               });
+            }}
+            onAddVoiceEntry={(title) => {
+              // Neuen Eintrag basierend auf dem aktiven Tab erstellen
+              if (tab === "notes") {
+                addEntry({
+                  type: "note",
+                  title,
+                  body: "",
+                  starred: false,
+                  catId: null,
+                  catIds: [],
+                  tags: []
+                });
+              } else if (tab === "calendar") {
+                addEntry({
+                  type: "calendar",
+                  title,
+                  date: TODAY,
+                  time: "",
+                  isBirthday: false,
+                  starred: false,
+                  catId: null,
+                  catIds: [],
+                  tags: []
+                });
+              } else {
+                addEntry({
+                  type: "task",
+                  title,
+                  due: TODAY,
+                  done: false,
+                  starred: false,
+                  catId: null,
+                  catIds: [],
+                  tags: []
+                });
+              }
             }}
             toggleTask={toggleTask}
             toggleStar={toggleStar}

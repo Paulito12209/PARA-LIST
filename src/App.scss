@@ -4446,38 +4446,864 @@
   }
 }
 
-// ── Light Theme Anpassungen ──────────────────────────────────
-.light-theme {
-  .task-done-overlay {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(12px);
+
+// ============================================================
+// ── STARTSEITEN-REDESIGN (HOMESCREEN) – PREMIUM STYLES ──
+// ============================================================
+
+// ── Startseiten-Cover mit animierten Lichtwellen ──
+.home-cover {
+  position: relative;
+  width: 100%;
+  min-height: 280px;
+  padding: 24px 20px 48px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: #0d0e1b;
+  border-bottom: none; // Kein harter Trennstrich – Übergang wird via Pseudo-Element gelöst
+
+  // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund (#07070F)
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 56px;
+    background: linear-gradient(to bottom, transparent 0%, #07070F 100%);
+    z-index: 3;
+    pointer-events: none;
   }
 
-  .task-done-card {
-    background: #ffffff;
-    border-color: #e5e5f0;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12), 0 0 40px rgba(124, 131, 247, 0.08);
+  // Der Haupt-Lichtwellen-Gradient im Hintergrund
+  &__light-wave {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(var(--cover-accent-rgb), 0.42) 0%, transparent 60%),
+      radial-gradient(circle at 10% 70%, rgba(var(--cover-accent-rgb), 0.18) 0%, transparent 50%),
+      linear-gradient(to bottom, transparent 40%, #0d0e1b 100%);
+    animation: wave-float 8s ease-in-out infinite alternate;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__badge {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgb(var(--cover-accent-rgb));
+    letter-spacing: 0.8px;
+    text-shadow: 0 0 10px rgba(var(--cover-accent-rgb), 0.4);
+    backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    // Verhindert, dass das SVG-Icon in der Flexbox zusammengestaucht wird
+    svg {
+      flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    object-fit: cover;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 30px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  &__desc {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.45;
+    margin: 0;
+    max-width: 90%;
+  }
+
+  // Passiver Textlink zur Vollansicht
+  &__textlink {
+    display: inline-flex;
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    margin-top: 4px;
+    transition: all 0.2s ease;
+    border-bottom: 1.5px dashed rgba(255, 255, 255, 0.2);
+    padding-bottom: 2px;
+
+    &:hover {
+      color: rgb(var(--cover-accent-rgb));
+      border-bottom-color: rgba(var(--cover-accent-rgb), 0.5);
+      text-shadow: 0 0 8px rgba(var(--cover-accent-rgb), 0.3);
+    }
+  }
+
+  &__tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+
+  &__tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    // Verhindert, dass die Tag-Icons in der Flexbox zusammengestaucht werden
+    svg {
+      flex-shrink: 0;
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+// ── Geteilte Navigationsleiste (Split Navigation) ──
+.split-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  margin: -24px 0 16px; // Schiebt die Leiste elegant in das Cover hinein
+  z-index: 10;
+  position: relative;
+  width: 100%;
+
+  // Dotted-Hintergrund für High-End Haptik
+  &__dots-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px);
+    background-size: 8px 8px;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  // Linke Karte (Pills-Container)
+  &__pills {
+    flex: 1;
+    position: relative;
+    height: 56px;
+    background: rgba(20, 21, 38, 0.65);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    // border-radius: 28px;
+    border-top-left-radius: 28px;
+    border-bottom-left-radius: 28px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    overflow: hidden;
+  }
+
+  &__items {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    align-items: center;
+    z-index: 2;
+  }
+
+  // Runde Kategorie-Buttons
+  &__btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color: rgba(255, 255, 255, 0.45); // Standardmäßige Icons-Farbe (inaktiv)
+
+    svg {
+      transition: all 0.2s ease;
+    }
+
+    &--active {
+      transform: scale(1.1);
+      box-shadow: none; // Kein Schatten mehr, da kein kreisförmiger Hintergrund
+      // Die aktive Icon-Farbe wird dynamisch über React via style={{ color: item.color }} übergeben
+    }
+
+    &:hover:not(&--active) {
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.8); // Hover-Farbe für inaktive Icons
+    }
+  }
+
+  // Rechte Karte (Plus-Button)
+  &__add {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    background: rgba(20, 21, 38, 0.65);
+    border: 2px solid;
+    // border-radius: 20px; // Etwas eckiger als die linke Pille
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 28px;
+    border-bottom-right-radius: 28px;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+
+    &:hover {
+      transform: scale(1.06);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// ── Clean Tasks List (Ohne umschliessende Karten) ──
+.home__list-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 8px 16px 20px;
+}
+
+.home .entry-list {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-top: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+// ── Page-Dots unten in der Mitte ──
+.home-page-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-bottom: 8px;
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.25s ease;
+    cursor: pointer;
+
+    &--active {
+      width: 14px;
+      border-radius: 3px;
+    }
+  }
+}
+
+// ── Pulsierender Sprachassistenten-FAB (Voice FAB) ──
+.voice-fab-container {
+  position: absolute;
+  bottom: 24px;
+  right: 20px;
+  z-index: 99;
+}
+
+.voice-fab {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &__icon {
+    z-index: 2;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  }
+
+  // Ringe-Animation waehrend der Aufnahme
+  &__pulse-ring {
+    position: absolute;
+    inset: -6px;
+    border: 2px solid #ef4444;
+    border-radius: 50%;
+    opacity: 0;
+    animation: voice-pulse-ripple 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &--listening {
+    transform: scale(1.12);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: -12px;
+      border: 1px solid #ec4899;
+      border-radius: 50%;
+      opacity: 0;
+      animation: voice-pulse-ripple 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) infinite 0.75s;
+    }
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// ── Animationen fuer die Lichtwellen und Sprachassistent ──
+@keyframes wave-float {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+
+  100% {
+    transform: scale(1.08) translateY(-15px);
+  }
+}
+
+@keyframes voice-pulse-ripple {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+// ============================================================
+// ── PREMIUM ARCHIV-DASHBOARD (ARCHIVE SCREEN) ──
+// ============================================================
+
+.archive-dashboard-container {
+  background: #0d0e1b !important; // Premium dunkler Space-Hintergrund
+}
+
+.archive-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+
+  &__section-title {
+    font-family: $font-heading;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    padding-left: 4px;
+  }
+}
+
+// Horizontal scrollbares Karussell fuer Ordner
+.archive-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  // Scrollbar ausblenden
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+// Ordner-Archiv-Karten mit Glow-Effekten
+.archive-card {
+  flex: 0 0 250px;
+  scroll-snap-align: start;
+  position: relative;
+  height: 156px;
+  padding: 20px;
+  background: rgba(20, 21, 38, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  // Dotted Textur im Kartenhintergrund
+  &__dots {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px);
+    background-size: 8px 8px;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    z-index: 2;
+  }
+
+  &__icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__count {
+    font-size: 26px;
+    font-weight: 800;
+    font-family: $font-heading;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-top: 16px;
+    z-index: 2;
+  }
+
+  &__desc {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.4;
+    margin-top: 4px;
+    z-index: 2;
+  }
+
+  // Projektspezifische Farbanpassungen und Glow
+  &--project {
+    border-color: rgba(224, 62, 62, 0.15);
+    color: #E03E3E;
+
+    .archive-card__icon-box {
+      background: rgba(224, 62, 62, 0.1);
+      border-color: rgba(224, 62, 62, 0.2);
+    }
+
+    &:hover {
+      border-color: rgba(224, 62, 62, 0.4);
+      box-shadow: 0 12px 32px rgba(224, 62, 62, 0.18);
+      transform: translateY(-4px);
+    }
+  }
+
+  // Bereichsspezifische Farbanpassungen und Glow
+  &--area {
+    border-color: rgba(208, 144, 32, 0.15);
+    color: #D09020;
+
+    .archive-card__icon-box {
+      background: rgba(208, 144, 32, 0.1);
+      border-color: rgba(208, 144, 32, 0.2);
+    }
+
+    &:hover {
+      border-color: rgba(208, 144, 32, 0.4);
+      box-shadow: 0 12px 32px rgba(208, 144, 32, 0.18);
+      transform: translateY(-4px);
+    }
+  }
+
+  // Ressourcenspezifische Farbanpassungen und Glow
+  &--resource {
+    border-color: rgba(48, 160, 96, 0.15);
+    color: #30A060;
+
+    .archive-card__icon-box {
+      background: rgba(48, 160, 96, 0.1);
+      border-color: rgba(48, 160, 96, 0.2);
+    }
+
+    &:hover {
+      border-color: rgba(48, 160, 96, 0.4);
+      box-shadow: 0 12px 32px rgba(48, 160, 96, 0.18);
+      transform: translateY(-4px);
+    }
+  }
+}
+
+// Grid fuer kompakte Inhalt-Archivkarten
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.archive-grid-card {
+  position: relative;
+  background: rgba(20, 21, 38, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__count {
+    font-size: 20px;
+    font-weight: 800;
+    color: #ffffff;
+    font-family: $font-heading;
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.03);
+  }
+
+  &--tasks:hover {
+    border-color: rgba(124, 131, 247, 0.3);
+    box-shadow: 0 8px 24px rgba(124, 131, 247, 0.12);
+  }
+
+  &--notes:hover {
+    border-color: rgba(236, 72, 153, 0.3);
+    box-shadow: 0 8px 24px rgba(236, 72, 153, 0.12);
+  }
+
+  &--calendar:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.12);
+  }
+}
+
+// Detail-Listenansichten im Archiv
+.archive-detail-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__back-btn {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      transform: translateX(-2px);
+    }
+  }
+}
+
+// Light-Theme Anpassungen fuer das Archiv-Dashboard
+.app.light-theme {
+  .archive-dashboard-container {
+    background: #f7f7fa !important;
+  }
+
+  .archive-dashboard {
+    &__section-title {
+      color: rgba(28, 28, 48, 0.55);
+    }
+  }
+
+  .archive-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+
+    &__dots {
+      opacity: 0.08;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.8) 1px, transparent 1px);
+    }
+
+    &__icon-box {
+      background: rgba(0, 0, 0, 0.02);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &__count {
+      color: #1c1c30;
+    }
 
     &__title {
-      color: #1a1a24;
+      color: #1c1c30;
     }
 
-    &__message {
-      color: #5858A0;
+    &__desc {
+      color: #5858a0;
     }
 
-    &__counter {
-      background: rgba(124, 131, 247, 0.08);
-      border-color: rgba(124, 131, 247, 0.2);
-      color: #5a5cc0;
+    &--project:hover {
+      border-color: rgba(224, 62, 62, 0.3);
+      box-shadow: 0 12px 32px rgba(224, 62, 62, 0.12);
     }
 
-    &__close-btn {
-      box-shadow: 0 4px 20px rgba(124, 131, 247, 0.3);
+    &--area:hover {
+      border-color: rgba(208, 144, 32, 0.3);
+      box-shadow: 0 12px 32px rgba(208, 144, 32, 0.12);
+    }
+
+    &--resource:hover {
+      border-color: rgba(48, 160, 96, 0.3);
+      box-shadow: 0 12px 32px rgba(48, 160, 96, 0.12);
+    }
+  }
+
+  .archive-grid-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+
+    &__count {
+      color: #1c1c30;
+    }
+
+    &__title {
+      color: #5858a0;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    &--tasks:hover {
+      border-color: rgba(124, 131, 247, 0.4);
+    }
+
+    &--notes:hover {
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+
+    &--calendar:hover {
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+  }
+
+  .archive-detail-list {
+    &__back-btn {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.06);
+      color: #5858a0;
 
       &:hover {
-        box-shadow: 0 8px 28px rgba(124, 131, 247, 0.4);
+        background: rgba(0, 0, 0, 0.06);
+        color: #1c1c30;
       }
+    }
+  }
+}
+
+// ── Light-Theme Anpassungen fuer das neue Design ──
+.app.light-theme {
+  .home-cover {
+    background: #f7f7fa;
+    border-bottom: none; // Kein harter Trennstrich im Light-Mode
+
+    // Übergangsverlauf passend zum Light-Mode App-Hintergrund (#f7f7f9)
+    &::after {
+      background: linear-gradient(to bottom, transparent 0%, #f7f7f9 100%);
+    }
+
+    &__light-wave {
+      // Stärkere Deckkraft damit die Akzentfarbe (z.B. Rot bei "Projekte") im Light-Mode klar sichtbar ist
+      background:
+        radial-gradient(circle at 80% 20%, rgba(var(--cover-accent-rgb), 0.38) 0%, transparent 65%),
+        radial-gradient(circle at 10% 70%, rgba(var(--cover-accent-rgb), 0.18) 0%, transparent 55%),
+        linear-gradient(to bottom, transparent 40%, #f7f7f9 100%);
+    }
+
+    &__badge {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+
+    &__avatar {
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+      color: #1c1c30;
+    }
+
+    &__desc {
+      color: #5858a0;
+    }
+
+    &__textlink {
+      color: rgba(28, 28, 48, 0.55);
+      border-bottom-color: rgba(0, 0, 0, 0.15);
+
+      &:hover {
+        color: rgb(var(--cover-accent-rgb));
+        border-bottom-color: rgba(var(--cover-accent-rgb), 0.4);
+      }
+    }
+
+    &__tag {
+      color: #5858a0;
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  .split-nav {
+    &__dots-bg {
+      opacity: 0.12;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.8) 1px, transparent 1px);
+    }
+
+    &__pills {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.06);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+      .split-nav__btn {
+        color: #5858a0; // Standardmaessige Icon-Farbe fuer inaktive Elemente
+
+        svg {
+          // Erlaubt das Vererben von stroke="currentColor" und React inline-Styles
+          transition: all 0.2s ease;
+        }
+
+        // Keine zusätzlichen Styles für den aktiven Zustand
+
+        &:hover:not(.split-nav__btn--active) {
+          background: rgba(0, 0, 0, 0.04);
+          color: #1c1c30; // Hover-Farbe fuer inaktive Elemente
+        }
+      }
+    }
+
+    &__add {
+      background: rgba(255, 255, 255, 0.85);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      border-width: 1.5px;
+      border-color: rgba(0, 0, 0, 0.08);
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+    }
+  }
+
+  .home-page-dots {
+    &__dot {
+      background: rgba(0, 0, 0, 0.15);
     }
   }
 }

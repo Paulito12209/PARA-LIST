@@ -247,8 +247,8 @@ export function HomeScreen({
                 {firstCat.date
                   ? fmtDate(firstCat.date, t.locale)
                   : lang === "de"
-                  ? "Flexibel"
-                  : "Flexible"}
+                    ? "Flexibel"
+                    : "Flexible"}
               </span>
               <span className="home-cover__tag home-cover__tag--area">
                 <Triangle size={12} className="home-cover__tag-icon" />
@@ -388,7 +388,7 @@ export function HomeScreen({
                   style={isActive ? { color: item.color } : {}}
                   title={t[item.labelKey] || item.fallback}
                 >
-                  <IconComp size={36} strokeWidth={isActive ? 2.5 : 2} />
+                  <IconComp size={32} strokeWidth={isActive ? 2.5 : 2} />
                 </button>
               );
             })}
@@ -400,7 +400,7 @@ export function HomeScreen({
           onClick={() => onAddCat(activeCatType)}
           title={lang === "de" ? "Neu erstellen" : "Create new"}
         >
-          <Plus size={36} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
+          <Plus size={32} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
         </button>
       </div>
 
@@ -421,10 +421,10 @@ export function HomeScreen({
                   style={
                     isActive
                       ? {
-                          background: tItem.color + "22",
-                          boxShadow: `0 0 12px ${tItem.color}30`,
-                          color: tItem.color,
-                        }
+                        background: tItem.color + "22",
+                        boxShadow: `0 0 12px ${tItem.color}30`,
+                        color: tItem.color,
+                      }
                       : {}
                   }
                 >

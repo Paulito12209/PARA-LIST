@@ -45,9 +45,15 @@
   transition: background $transition-normal;
 
   &--closed {
-    background: transparent;
+    background: var(--command-panel-header-bg, #{$color-surface});
     border: none;
+    border-radius: 0 0 $radius-lg $radius-lg;
     overflow: visible;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(var(--cover-accent-rgb), 0.12),
+      0 8px 32px rgba(var(--cover-accent-rgb), 0.22),
+      0 2px 12px rgba(var(--cover-accent-rgb), 0.14);
   }
 
   &--open {
@@ -79,15 +85,8 @@
     position: relative;
     z-index: 1;
     min-height: 80px;
-    overflow: hidden;
-    background: var(--command-panel-header-bg, #{$color-surface});
-    border-radius: 0 0 $radius-lg $radius-lg;
+    background: transparent;
     padding-bottom: 6px;
-    box-shadow:
-      0 4px 24px rgba(0, 0, 0, 0.06),
-      0 0 0 1px rgba(var(--cover-accent-rgb), 0.12),
-      0 8px 32px rgba(var(--cover-accent-rgb), 0.22),
-      0 2px 12px rgba(var(--cover-accent-rgb), 0.14);
   }
 
   &__header-row {
@@ -4909,7 +4908,7 @@
 .app:has(.main-content--calendar) {
   --command-panel-header-bg: transparent;
 
-  .command-panel--closed > .command-panel__header {
+  .command-panel--closed {
     background: transparent;
     // Box-Shadow bleibt: Akzent-Glow definiert die abgerundeten Panel-Ecken
   }
@@ -4919,7 +4918,7 @@
 .app.light-theme:has(.main-content--tasks),
 .app.light-theme:has(.main-content--notes),
 .app.light-theme:has(.main-content--calendar) {
-  .command-panel--closed > .command-panel__header {
+  .command-panel--closed {
     box-shadow: none;
   }
 
@@ -5733,7 +5732,7 @@
   }
 }
 
-.app.light-theme .command-panel--closed>.command-panel__header {
+.app.light-theme .command-panel--closed {
   background: #ffffff;
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.05),

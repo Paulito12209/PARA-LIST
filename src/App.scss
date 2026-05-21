@@ -4638,12 +4638,12 @@
         transparent 165px,
         transparent 250px
       ),
-      // Akzentfarbe baut sich von unten auf, mit leichtem Schimmer bis fast oben
+      // Akzentfarbe baut sich von unten auf, bleibt aber überall sichtbar (auch hinter Panel)
       linear-gradient(to top,
         rgba(var(--cover-accent-rgb), 0.50) 0%,
-        rgba(var(--cover-accent-rgb), 0.25) 38%,
-        rgba(var(--cover-accent-rgb), 0.08) 70%,
-        transparent 92%),
+        rgba(var(--cover-accent-rgb), 0.30) 38%,
+        rgba(var(--cover-accent-rgb), 0.20) 75%,
+        rgba(var(--cover-accent-rgb), 0.15) 100%),
       // Haupt-Akzentglow (unterer Cover-Bereich)
       radial-gradient(ellipse 80% 65% at 55% 70%,
         rgba(var(--cover-accent-rgb), 0.35) 0%,
@@ -4817,16 +4817,24 @@
   }
 }
 
-// ── Header-Blend (NUR Light Mode) ────────────────────────────
-// Light Mode + Home-Screen: Header transparent → weißes Cover scheint durch
-// Dark Mode braucht das nicht: Header (#1A1A2E) = Cover-Hintergrund → nahtlos
-.app.light-theme:has(.main-content--tasks),
-.app.light-theme:has(.main-content--notes),
-.app.light-theme:has(.main-content--calendar) {
+// ── Header-Blend: Cover-Textur scheint durch das Panel ─────────
+// Beide Modes: Panel transparent → Cover-Pattern (Dots + Akzent) sichtbar
+.app:has(.main-content--tasks),
+.app:has(.main-content--notes),
+.app:has(.main-content--calendar) {
   --command-panel-header-bg: transparent;
 
   .command-panel--closed > .command-panel__header {
     background: transparent;
+    // Box-Shadow bleibt: Akzent-Glow definiert die abgerundeten Panel-Ecken
+  }
+}
+
+// Light Mode: zusätzlich Text dunkel + Shadow entfernen
+.app.light-theme:has(.main-content--tasks),
+.app.light-theme:has(.main-content--notes),
+.app.light-theme:has(.main-content--calendar) {
+  .command-panel--closed > .command-panel__header {
     box-shadow: none;
   }
 

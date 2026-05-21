@@ -4889,10 +4889,10 @@
 
 // ── Pulsierender Sprachassistenten-FAB (Voice FAB) ──
 .voice-fab-container {
-  position: absolute;
+  position: fixed;
   bottom: 24px;
   right: 20px;
-  z-index: 99;
+  z-index: 999;
 }
 
 .voice-fab {

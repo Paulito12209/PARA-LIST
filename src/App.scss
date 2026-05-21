@@ -4823,6 +4823,7 @@
   --command-panel-header-bg: transparent;
 
   .command-panel--closed > .command-panel__header {
+    background: transparent;
     box-shadow: none;
   }
 

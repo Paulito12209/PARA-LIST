@@ -4619,14 +4619,33 @@
     inset: 0;
     z-index: 1;
     background:
-      radial-gradient(circle at 80% 42%, rgba(var(--cover-accent-rgb), 0.34) 0%, transparent 62%),
-      radial-gradient(circle at 12% 88%, rgba(var(--cover-accent-rgb), 0.14) 0%, transparent 52%),
-      linear-gradient(to bottom,
-        rgba(var(--cover-accent-rgb), 0.08) 0%,
-        rgba(var(--cover-accent-rgb), 0.11) 24%,
-        rgba(var(--cover-accent-rgb), 0.08) 44%,
-        rgba(var(--cover-accent-rgb), 0.03) 68%,
-        #1A1A2E 100%);
+      // Layer 1: Helle diagonale Lichtstreifen (prominente Bänder)
+      repeating-linear-gradient(
+        135deg,
+        transparent 0px,
+        transparent 70px,
+        rgba(255, 255, 255, 0.28) 95px,
+        rgba(255, 255, 255, 0.10) 120px,
+        transparent 150px,
+        transparent 220px
+      ),
+      // Layer 2: Breitere, weichere Streifen für Tiefe
+      repeating-linear-gradient(
+        138deg,
+        transparent 0px,
+        transparent 30px,
+        rgba(255, 255, 255, 0.12) 90px,
+        transparent 160px,
+        transparent 240px
+      ),
+      // Layer 3: Hotspot oben rechts (heller, kräftiger Akzent)
+      radial-gradient(ellipse 75% 65% at 82% 18%,
+        rgba(var(--cover-accent-rgb), 0.45) 0%,
+        transparent 70%),
+      // Layer 4: Voll gesättigte Basis aus der Ordnerfarbe
+      linear-gradient(180deg,
+        rgb(var(--cover-accent-rgb)) 0%,
+        rgba(var(--cover-accent-rgb), 0.85) 100%);
     animation: wave-float 8s ease-in-out infinite alternate;
   }
 

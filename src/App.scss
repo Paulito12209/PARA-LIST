@@ -493,6 +493,9 @@
 // ── Main Content Area ───────────────────────────────────────
 .main-content {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   position: relative;
   padding-top: var(--command-panel-peek);
@@ -508,7 +511,8 @@
 
 // ── Home Screen ─────────────────────────────────────────────
 .home {
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;

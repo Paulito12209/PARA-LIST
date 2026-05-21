@@ -4597,17 +4597,17 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  background: #1A1A2E;
+  background: #ffffff;
   border-bottom: none;
 
-  // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund (#07070F)
+  // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund
   &::after {
     content: '';
     position: absolute;
     left: 0;
     right: 0;
     bottom: -1px;
-    height: 56px;
+    height: 72px;
     background: linear-gradient(to bottom, transparent 0%, #1A1A2E 100%);
     z-index: 3;
     pointer-events: none;
@@ -4619,33 +4619,31 @@
     inset: 0;
     z-index: 1;
     background:
-      // Layer 1: Helle diagonale Lichtstreifen (prominente Bänder)
+      // Diagonale Akzentfarb-Streifen über weißem Grund
       repeating-linear-gradient(
         135deg,
         transparent 0px,
-        transparent 70px,
-        rgba(255, 255, 255, 0.28) 95px,
-        rgba(255, 255, 255, 0.10) 120px,
-        transparent 150px,
-        transparent 220px
+        transparent 60px,
+        rgba(var(--cover-accent-rgb), 0.24) 82px,
+        rgba(var(--cover-accent-rgb), 0.08) 110px,
+        transparent 140px,
+        transparent 200px
       ),
-      // Layer 2: Breitere, weichere Streifen für Tiefe
+      // Zweite Streifen-Ebene (versetzt, weicher)
       repeating-linear-gradient(
-        138deg,
+        132deg,
         transparent 0px,
-        transparent 30px,
-        rgba(255, 255, 255, 0.12) 90px,
-        transparent 160px,
-        transparent 240px
+        transparent 95px,
+        rgba(var(--cover-accent-rgb), 0.13) 130px,
+        transparent 165px,
+        transparent 250px
       ),
-      // Layer 3: Hotspot oben rechts (heller, kräftiger Akzent)
-      radial-gradient(ellipse 75% 65% at 82% 18%,
-        rgba(var(--cover-accent-rgb), 0.45) 0%,
+      // Zentraler Akzent-Glow
+      radial-gradient(ellipse 65% 55% at 62% 58%,
+        rgba(var(--cover-accent-rgb), 0.22) 0%,
         transparent 70%),
-      // Layer 4: Voll gesättigte Basis aus der Ordnerfarbe
-      linear-gradient(180deg,
-        rgb(var(--cover-accent-rgb)) 0%,
-        rgba(var(--cover-accent-rgb), 0.85) 100%);
+      // Weißer Basis-Hintergrund
+      #ffffff;
     animation: wave-float 8s ease-in-out infinite alternate;
   }
 
@@ -4808,6 +4806,26 @@
       width: 12px;
       height: 12px;
     }
+  }
+}
+
+// ── Header-Blend wenn Cover-Card sichtbar ist ────────────────
+// Wenn Home-Screen aktiv: Header-Hintergrund transparent → Cover scheint durch
+.app:has(.main-content--tasks),
+.app:has(.main-content--notes),
+.app:has(.main-content--calendar) {
+  --command-panel-header-bg: transparent;
+
+  .command-panel--closed > .command-panel__header {
+    box-shadow: none;
+  }
+
+  .command-panel__greeting {
+    color: #1A1A2E;
+  }
+
+  .command-panel__date {
+    color: rgba(26, 26, 46, 0.55);
   }
 }
 

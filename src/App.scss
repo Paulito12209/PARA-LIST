@@ -4638,15 +4638,18 @@
         transparent 165px,
         transparent 250px
       ),
-      // Akzentfarbe baut sich von unten auf → Cover-Top bleibt dunkel = kein Seam am Panel
+      // Akzentfarbe baut sich von unten auf, mit leichtem Schimmer bis fast oben
       linear-gradient(to top,
         rgba(var(--cover-accent-rgb), 0.50) 0%,
-        rgba(var(--cover-accent-rgb), 0.20) 38%,
-        transparent 60%),
+        rgba(var(--cover-accent-rgb), 0.25) 38%,
+        rgba(var(--cover-accent-rgb), 0.08) 70%,
+        transparent 92%),
       // Haupt-Akzentglow (unterer Cover-Bereich)
       radial-gradient(ellipse 80% 65% at 55% 70%,
         rgba(var(--cover-accent-rgb), 0.35) 0%,
         transparent 70%),
+      // Punkt-Textur über die ganze Cover-Card
+      radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px) 0 0 / 14px 14px,
       // Dunkle Basis
       #1A1A2E;
     animation: wave-float 8s ease-in-out infinite alternate;
@@ -5484,6 +5487,8 @@
         radial-gradient(ellipse 65% 55% at 62% 55%,
           rgba(var(--cover-accent-rgb), 0.22) 0%,
           transparent 70%),
+        // Punkt-Textur über die ganze Cover-Card
+        radial-gradient(rgba(0, 0, 0, 0.10) 1px, transparent 1px) 0 0 / 14px 14px,
         #ffffff;
     }
 

@@ -611,9 +611,8 @@ function HomeScreen({
 
       {/* ── GETEILTE NAVIGATION (SPLIT NAVIGATION) ── */}
       <div className="split-nav">
-        {/* Linker Container (Pills mit Dotted-Textur) */}
+        {/* Linker Container (Pills) */}
         <div className={`split-nav__pills split-nav__pills--${activeCatType}`}>
-          <div className="split-nav__dots-bg" />
           <div className="split-nav__items">
             {[
               { id: "project", icon: Circle, color: "#E03E3E", label: t.projects || "Projekte" },
@@ -651,7 +650,6 @@ function HomeScreen({
           style={{}}
           title={lang === 'de' ? "Neu erstellen" : "Create new"}
         >
-          <div className="split-nav__dots-bg" />
           <Plus size={36} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
         </button>
       </div>

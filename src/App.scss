@@ -27,7 +27,7 @@
 
   // Date & Overdue Pill (Dark Mode)
   --pill-date-bg: #{rgba($color-calendar, 0.15)};
-  --pill-date-color: #7C83F7;
+  --pill-date-color: #60A5FA; // Klares Himmelblau statt Indigo-Lila
   --pill-date-border: #{rgba($color-calendar, 0.25)};
   --pill-overdue-bg: #{$color-project-dim};
   --pill-overdue-color: #F26565;
@@ -75,7 +75,7 @@
     padding: calc(#{$spacing-md} + env(safe-area-inset-top, 0px)) $spacing-md 0;
   }
 
-  &--closed > &__header {
+  &--closed>&__header {
     position: relative;
     z-index: 1;
     background: var(--command-panel-header-bg, #{$color-surface});
@@ -925,6 +925,29 @@
     padding: $spacing-sm $spacing-md $spacing-xs;
     width: 100%;
     box-sizing: border-box;
+  }
+
+  // Gruppen-Trenner im Home-Modus (z.B. "Morgen • 22. Mai")
+  &--home {
+    margin-top: $spacing-sm;
+    margin-bottom: $spacing-sm;
+    padding: $spacing-xs $spacing-md;
+    background: transparent;
+    // border-top: 1px solid rgba($color-border, 0.25);
+
+    .task-group-header__left {
+      font-size: 13px;
+      font-weight: 700;
+      color: $color-text;
+      opacity: 0.75;
+    }
+
+    .task-group-header__right {
+      font-size: 11px;
+      font-weight: 500;
+      color: $color-muted;
+      opacity: 0.8;
+    }
   }
 
   &__left,
@@ -2280,7 +2303,7 @@
     border-radius: $radius-pill;
     padding: 0 8px;
     background: $color-dim;
-    color: $color-muted;
+    color: rgba($color-text, 0.55); // Heller als $color-muted für bessere Lesbarkeit
   }
 
   &__date-input {
@@ -2932,18 +2955,26 @@
   color: #1a1a24;
   --command-panel-header-bg: #ffffff;
 
-  // PARA Pill Backgrounds (Light Mode)
-  --pill-project-bg: #{rgba($color-project, 0.12)};
-  --pill-area-bg: #{rgba($color-area, 0.12)};
-  --pill-resource-bg: #{rgba($color-resource, 0.12)};
+  // PARA Pill Backgrounds (Light Mode) – weißlich, glassmorphisch
+  --pill-project-bg: rgba(255, 255, 255, 0.78);
+  --pill-area-bg: rgba(255, 255, 255, 0.78);
+  --pill-resource-bg: rgba(255, 255, 255, 0.78);
 
   // Date & Overdue Pill (Light Mode)
-  --pill-date-bg: #EFF6FF;
-  --pill-date-color: #1D4ED8;
-  --pill-date-border: #BFDBFE;
+  --pill-date-bg: rgba(219, 234, 254, 0.85);
+  --pill-date-color: #2563EB;
+  --pill-date-border: rgba(147, 197, 253, 0.7);
   --pill-overdue-bg: #FEF2F2;
   --pill-overdue-color: #DC2626;
   --pill-overdue-border: #FECACA;
+
+  // Pill Glassmorphismus im Light Mode
+  .task-item__pill--cat-btn {
+    backdrop-filter: blur(10px) saturate(140%);
+    -webkit-backdrop-filter: blur(10px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+  }
 
   .entry-list {
     // background: #ffffff;
@@ -3173,6 +3204,21 @@
 
   .task-group-header {
     background: transparent;
+
+    // Light-Mode: Gruppen-Trenner im Home-Modus
+    &--home {
+      border-top-color: rgba(#8e8eb2, 0.2);
+
+      .task-group-header__left {
+        color: #3a3a6a;
+        opacity: 0.85;
+      }
+
+      .task-group-header__right {
+        color: #8e8eb2;
+        opacity: 1;
+      }
+    }
   }
 
   .task-group-header__left,

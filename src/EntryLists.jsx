@@ -21,6 +21,7 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
             className="task-item__cat-tag"
             style={{ color: CC.project.color, background: 'var(--pill-project-bg)' }}
           >
+            <Circle size={10} color={CC.project.color} strokeWidth={2.5} style={{ marginRight: 3, flexShrink: 0 }} />
             {projs[0].name}{projs.length > 1 ? ` +${projs.length - 1}` : ""}
           </span>
         )}
@@ -29,6 +30,7 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
             className="task-item__cat-tag"
             style={{ color: CC.area.color, background: 'var(--pill-area-bg)' }}
           >
+            <Triangle size={10} color={CC.area.color} strokeWidth={2.5} style={{ marginRight: 3, flexShrink: 0 }} />
             {areas[0].name}{areas.length > 1 ? ` +${areas.length - 1}` : ""}
           </span>
         )}
@@ -57,6 +59,7 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
           </div>
         ) : (
           <div className="task-item__pill task-item__pill--cat-btn" style={{ color: CC.project.color, background: 'var(--pill-project-bg)', cursor: 'default' }}>
+            <Circle size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />
             {projs[0].name}{projs.length > 1 ? ` +${projs.length - 1}` : ""}
           </div>
         )}
@@ -69,6 +72,7 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
           </div>
         ) : (
           <div className="task-item__pill task-item__pill--cat-btn" style={{ color: CC.area.color, background: 'var(--pill-area-bg)', cursor: 'default' }}>
+            <Triangle size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />
             {areas[0].name}{areas.length > 1 ? ` +${areas.length - 1}` : ""}
           </div>
         )}
@@ -81,6 +85,7 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
           </div>
         ) : (
           <div className="task-item__pill task-item__pill--cat-btn" style={{ color: CC.resource.color, background: 'var(--pill-resource-bg)', cursor: 'default' }}>
+            <Square size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />
             {res[0].name}{res.length > 1 ? ` +${res.length - 1}` : ""}
           </div>
         )}
@@ -163,6 +168,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
               setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: false });
             }}
           >
+            <PillIcon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />
             {items[0].name}{items.length > 1 ? ` +${items.length - 1}` : ''}
           </button>
         )}
@@ -544,12 +550,11 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
       )}
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right}>
-          {!isHome && (
-            <div className="task-group-header">
-              <span className="task-group-header__left">{g.left}</span>
-              <span className="task-group-header__right">{g.right}</span>
-            </div>
-          )}
+          {/* Gruppen-Trenner immer anzeigen – auch im Home-Modus */}
+          <div className={`task-group-header ${isHome ? "task-group-header--home" : ""}`}>
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__right">{g.right}</span>
+          </div>
           {g.items.map(renderItem)}
         </div>
       ))}
@@ -659,13 +664,12 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
         </div>
       )}
       {futureGroups.map((g, i) => (
-        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={isHome ? getOldestLabel(g.items) : g.left} data-group-right={g.right}>
-          {!isHome && (
-            <div className="task-group-header">
-              <span className="task-group-header__left">{g.left}</span>
-              <span className="task-group-header__right">{g.right}</span>
-            </div>
-          )}
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={isHome ? g.left : g.left} data-group-right={g.right}>
+          {/* Gruppen-Trenner immer anzeigen – auch im Home-Modus */}
+          <div className={`task-group-header ${isHome ? "task-group-header--home" : ""}`}>
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__right">{g.right}</span>
+          </div>
           {g.items.map(renderItem)}
         </div>
       ))}
@@ -781,12 +785,11 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpd
       )}
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right}>
-          {!isHome && (
-            <div className="task-group-header">
-              <span className="task-group-header__left">{g.left}</span>
-              <span className="task-group-header__right">{g.right}</span>
-            </div>
-          )}
+          {/* Gruppen-Trenner immer anzeigen – auch im Home-Modus */}
+          <div className={`task-group-header ${isHome ? "task-group-header--home" : ""}`}>
+            <span className="task-group-header__left">{g.left}</span>
+            <span className="task-group-header__right">{g.right}</span>
+          </div>
           {g.items.map(renderItem)}
         </div>
       ))}

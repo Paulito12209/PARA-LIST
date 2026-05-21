@@ -1,0 +1,20 @@
+// ============================================================
+// PARA·LIST – Shared (Swipe, fade-in animation)
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+// ── Swipe Container ──────────────────────────────────────────
+.swipe-delete-wrapper {
+  margin-bottom: $spacing-sm;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}

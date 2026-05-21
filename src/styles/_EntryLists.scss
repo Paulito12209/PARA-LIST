@@ -1,0 +1,1216 @@
+// ============================================================
+// PARA·LIST – Entry Lists (Tasks, Notes, Calendar, Media, Link)
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+.list-section {
+  position: relative;
+
+  &__header {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    /* Zentriert Icons relativ zum Header-Block */
+    justify-content: space-between;
+    padding: 0 $spacing-md;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+    /* Reduziert Abstand, damit Icons besser zum Label passen */
+  }
+
+  &__date {
+    font-size: 10px;
+    font-weight: 500; // Nicht fett
+    color: $color-muted;
+    text-transform: none;
+    letter-spacing: 0.1px;
+    line-height: 1;
+    display: block;
+  }
+
+  &__label {
+    font-family: $font-heading;
+    font-size: 28px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+    /* Leicht erhöht für besseres Alignment */
+    display: block;
+  }
+}
+
+// ── List Switcher (Floating Icons) ──────────────────────────
+
+.list-switcher {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  background: transparent;
+  border-radius: $radius-pill;
+  border: none;
+  /* Pillen-Rahmen entfernt */
+
+  &__btn {
+    @include floating-btn(36px, $radius-pill);
+    transition: all $transition-fast;
+    color: $color-muted;
+
+    &--active {
+      color: white;
+      // Shadow/bg set dynamically
+    }
+  }
+}
+
+// ── Entry List Container ────────────────────────────────────
+
+.entry-list {
+  flex: 1;
+  min-height: 0;
+  padding: $spacing-sm $spacing-md 96px;
+  overflow-y: auto;
+  // background: $color-surface;
+  // border-top: 1.5px solid rgba($color-border, 0.2); // Basis-Stärke leicht erhöht für Themen-Farbe
+
+  // Themen-spezifische Border-Farben
+  .main-content--tasks & {
+    border-top-color: rgba($color-task, 0.2);
+  }
+
+  .main-content--notes & {
+    border-top-color: rgba($color-note, 0.2);
+  }
+
+  .main-content--calendar & {
+    border-top-color: rgba($color-calendar, 0.2);
+  }
+
+  &__empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: $spacing-2xl $spacing-md;
+    color: $color-muted;
+    font-size: 13px;
+    min-height: 200px;
+  }
+
+  &__empty-icon {
+    font-size: 28px;
+    margin-bottom: $spacing-sm + $spacing-2xs;
+    opacity: 0.4;
+  }
+}
+
+// ── Task Group Header ───────────────────────────────────────
+
+.task-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; // Links/Rechts Split
+  gap: $spacing-sm;
+  min-height: 18px;
+
+  // Wird nun als statischer Header über der scrollbaren Liste genutzt
+  margin: 0;
+  padding: 0 $spacing-md $spacing-sm $spacing-md;
+
+  background: transparent;
+
+  &--fixed {
+    padding: $spacing-sm $spacing-md $spacing-xs;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  // Gruppen-Trenner im Home-Modus (z.B. "Morgen • 22. Mai")
+  &--home {
+    margin-top: $spacing-sm;
+    margin-bottom: $spacing-sm;
+    padding: $spacing-xs $spacing-md;
+    background: transparent;
+    // border-top: 1px solid rgba($color-border, 0.25);
+
+    .task-group-header__left {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba($color-text, 0.55);
+    }
+
+    .task-group-header__right {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba($color-text, 0.45);
+    }
+  }
+
+  &__left,
+  &__right {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba($color-text, 0.55);
+    text-transform: none;
+    letter-spacing: 0.1px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+  }
+}
+
+// Spezieller Abstand für die erste Gruppe nach dem "Aufgaben" Titel - ENTFERNT auf Wunsch
+.task-group:first-of-type {
+  .task-group-header {
+    margin-top: 0;
+  }
+}
+
+// ── Task Item ───────────────────────────────────────────────
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm + $spacing-xs;
+  padding: $spacing-sm + 3px $spacing-md - $spacing-2xs;
+  @include card-base;
+  border-radius: $radius-lg;
+  transition: opacity 0.2s;
+
+  &--home {
+    border-radius: 0;
+    background: #1A1A2E;
+    border-color: transparent;
+    align-items: flex-start;
+
+    .task-item__body {
+      position: static;
+      padding-right: 0;
+      align-self: flex-start;
+    }
+
+    .task-item__side-actions {
+      position: static;
+      flex-shrink: 0;
+      align-self: flex-start;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      gap: $spacing-xs;
+      padding-top: 2px;
+    }
+
+    .task-item__type-icon,
+    .note-item__type-icon,
+    .cal-item__type-icon {
+      align-self: flex-start;
+      flex-shrink: 0;
+    }
+
+    .task-item__star-btn,
+    .task-item__menu-btn {
+      background: none;
+      border: none;
+      padding: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .task-item__menu-btn svg {
+      transform: rotate(90deg);
+    }
+  }
+
+  &--done {
+    background: rgba($color-surface, 0.5);
+    border: 1px solid rgba($color-task, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+    .task-item__title {
+      color: $color-text;
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+
+    .task-item__due,
+    .task-item__cat-tag,
+    .task-item__meta {
+      color: $color-muted;
+      opacity: 0.6;
+
+      span,
+      div {
+        color: inherit;
+      }
+    }
+  }
+
+  &__checkbox {
+    @include floating-btn(22px, 11px);
+    border: 2px solid $color-dim;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+
+    &--checked {
+      border-color: $color-task;
+      background: $color-task;
+    }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip; // Ellipsis entfernen, da wir scrollen
+
+    &--done {
+      text-decoration: line-through;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    gap: 6px;
+    margin-top: $spacing-xs + 2px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* nicht mehr gerendert, aber als Fallback beibehalten */
+  &__meta-tags {
+    display: contents;
+  }
+
+  &__due {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 600;
+    color: var(--pill-date-color);
+    background: var(--pill-date-bg);
+    border: 1px solid var(--pill-date-border);
+    padding: 0 8px;
+    border-radius: $radius-pill;
+    vertical-align: middle;
+
+    &--overdue {
+      color: var(--pill-overdue-color);
+      background: var(--pill-overdue-bg);
+      border-color: var(--pill-overdue-border);
+    }
+  }
+
+
+  &__cat-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    font-size: 12px;
+    line-height: 1;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
+    vertical-align: middle;
+  }
+
+  &__delete {
+    padding: $spacing-xs;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  // ── Home-Ansicht: Neues Karten-Design ──
+  &--home {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: $spacing-sm + $spacing-xs;
+    padding: $spacing-sm + 4px $spacing-md;
+    position: relative;
+    background: #1A1A2E !important;
+    border-color: transparent !important;
+  }
+
+  &--birthday {
+    background: linear-gradient(135deg,
+        rgba(244, 114, 182, 0.12) 0%,
+        rgba(245, 158, 11, 0.1) 35%,
+        rgba(16, 185, 129, 0.1) 70%,
+        rgba(59, 130, 246, 0.12) 100%) !important;
+    border: 1px solid rgba(244, 114, 182, 0.25) !important;
+    box-shadow: 0 4px 15px rgba(244, 114, 182, 0.04) !important;
+
+    .app.light-theme &.task-item--birthday {
+      background: linear-gradient(135deg,
+          rgba(244, 114, 182, 0.28) 0%,
+          rgba(245, 158, 11, 0.22) 35%,
+          rgba(16, 185, 129, 0.22) 70%,
+          rgba(59, 130, 246, 0.28) 100%) !important;
+      border-color: rgba(244, 114, 182, 0.4) !important;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg,
+          rgba(244, 114, 182, 0.18) 0%,
+          rgba(245, 158, 11, 0.15) 35%,
+          rgba(16, 185, 129, 0.15) 70%,
+          rgba(59, 130, 246, 0.18) 100%) !important;
+      border-color: rgba(244, 114, 182, 0.4) !important;
+    }
+  }
+
+  // Obere Zeile: Titel + Aktionen
+  &__top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    width: 100%;
+
+    // Titel muss min-width: 0 haben, damit text-truncate im Flex-Container greift
+    .task-item__title {
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: clip;
+    }
+  }
+
+  // Aktionen rechts oben (Stern + Menü)
+  &__actions-home {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    flex-shrink: 0;
+    margin-top: -2px;
+  }
+
+  &__star-btn,
+  &__menu-btn {
+    padding: $spacing-2xs;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-sm;
+    transition: all $transition-fast;
+
+    &:active {
+      transform: scale(0.9);
+    }
+  }
+
+  // Notiz-Platzhalter unter dem Titel
+  &__note-hint {
+    font-size: 12px;
+    color: $color-muted;
+    margin-top: $spacing-2xs;
+    line-height: 1.4;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip; // Ellipsis entfernen
+  }
+
+  // Pillen-Zeile
+  &__pills {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 5px;
+    align-items: center;
+    margin-top: $spacing-sm;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  // Basis-Pille
+  &__pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: $radius-pill;
+    font-size: 12px;
+    font-weight: 600;
+    gap: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    line-height: 1;
+    transition: all $transition-fast;
+
+    // Datum-Pille – immer sichtbar, blaues Theme
+    &--date {
+      background: var(--pill-date-bg);
+      color: var(--pill-date-color);
+      border: 1px solid var(--pill-date-border);
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+
+    // Überfälliges Datum – Rot
+    &--overdue {
+      background: var(--pill-overdue-bg);
+      color: var(--pill-overdue-color);
+      border: 1px solid var(--pill-overdue-border);
+    }
+
+    // Klickbarer Icon-Button (wenn keine Verknüpfung)
+    &--icon-btn {
+      width: 22px;
+      padding: 0;
+      opacity: 0.55;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &:hover {
+        opacity: 0.85;
+      }
+
+      &:active {
+        transform: scale(0.9);
+      }
+    }
+
+    // Klickbarer Kategorie-Name-Button (wenn verknüpft)
+    &--cat-btn {
+      padding: 0 8px;
+      border-radius: $radius-pill;
+      cursor: pointer;
+      transition: all $transition-fast;
+      white-space: nowrap;
+
+      &:hover {
+        opacity: 0.85;
+      }
+
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
+
+  // Wrapper für eine Pille + ihr Popup (relative Positionierung)
+  &__pill-wrap {
+    position: relative;
+  }
+
+  // Popup-Dropdown für Verknüpfungen (Dark Mode Standard gemäß Screenshot)
+  &__pill-popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 190px;
+    max-width: 260px;
+    background: #0F1117; // Sehr dunkles Schwarz-Blau für Dark Mode
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: $radius-md;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    z-index: 60;
+    padding: $spacing-xs;
+    animation: slide-up-small 0.15s ease-out;
+  }
+
+  // Verknüpfter Eintrag im Popup
+  &__pill-popup-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + 2px;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-sm + 4px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #FFFFFF; // Weißer Text im Dark Mode
+    transition: background $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  &__pill-popup-name {
+    flex: 1;
+    min-width: 0;
+    @include text-truncate;
+  }
+
+  // Entfernen-Button (X) im verknüpften Eintrag
+  &__pill-popup-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: $radius-sm;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.3);
+    transition: all $transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      color: #F26565;
+      background: rgba(#F26565, 0.15);
+    }
+  }
+
+  // Trennlinie im Popup
+  &__pill-popup-divider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: $spacing-xs 0;
+  }
+
+  // "+ Projekt" Hinzufügen-Zeile
+  &__pill-popup-add {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + 2px;
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-sm + 4px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: $font-body;
+    color: rgba(255, 255, 255, 0.5);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
+    }
+  }
+
+  // Verfügbare Option in der Auswahlliste
+  &__pill-popup-option {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + 2px;
+    width: 100%;
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-sm + 4px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: $font-body;
+    color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #FFFFFF;
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  // Leere Liste im Popup
+  &__pill-popup-empty {
+    padding: $spacing-md;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    font-style: italic;
+  }
+
+  // Datum-Popup (expandiert unter den Pillen)
+  &__date-popup {
+    margin-top: $spacing-sm;
+    animation: slide-up-small 0.2s ease-out;
+  }
+
+  &__date-input {
+    width: 100%;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-md;
+    border: 1px solid rgba(#1D4ED8, 0.25);
+    background: rgba(#1D4ED8, 0.06);
+    color: $color-text;
+    font-size: 13px;
+    font-family: $font-body;
+    color-scheme: dark;
+    transition: all $transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(#1D4ED8, 0.5);
+      box-shadow: 0 0 0 3px rgba(#1D4ED8, 0.1);
+    }
+  }
+
+  // Kontextmenü (Dropdown)
+  &__context-menu {
+    position: absolute;
+    top: $spacing-xl + $spacing-sm;
+    right: $spacing-md;
+    min-width: 160px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    z-index: 50;
+    padding: $spacing-2xs;
+    animation: slide-up-small 0.15s ease-out;
+  }
+
+  &__context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-sm + 2px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: $font-body;
+    color: $color-text;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+
+    &--danger {
+      color: #F26565;
+
+      &:hover {
+        background: rgba(#F26565, 0.1);
+      }
+    }
+  }
+
+  &__context-menu-divider {
+    height: 1px;
+    background: $color-border;
+    margin: $spacing-2xs 0;
+  }
+}
+
+// ── Note Item ───────────────────────────────────────────────
+
+.note-item {
+  padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
+  @include card-base;
+  border-radius: $radius-lg;
+  transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm + $spacing-xs;
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+
+  &__archive-btn {
+    padding: $spacing-xs;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+    color: $color-muted;
+    margin-left: $spacing-sm;
+
+    @media (hover: hover) {
+      &:hover {
+        opacity: 0.7;
+        color: $color-text;
+      }
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+  }
+
+  &__excerpt {
+    font-size: 12px;
+    color: $color-muted;
+    margin-top: $spacing-xs;
+    line-height: 1.5;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+  }
+
+  &__delete {
+    margin-left: $spacing-sm;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &__cat-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
+    vertical-align: middle;
+  }
+
+  &--home {
+    background: #1A1A2E !important;
+    border-color: rgba(245, 158, 11, 0.2) !important;
+
+    .note-item__title {
+      color: #451a03; // Dunkles Braun/Gelb für Kontrast
+    }
+
+    .note-item__excerpt {
+      color: rgba(69, 26, 3, 0.7);
+    }
+
+    .note-item__archive-btn {
+      color: #F59E0B;
+      opacity: 0.8;
+      background: rgba(245, 158, 11, 0.133);
+      border-radius: $radius-pill;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 4px;
+      display: flex;
+    }
+  }
+}
+
+// ── Calendar Item ───────────────────────────────────────────
+
+.cal-item {
+  padding: $spacing-sm + $spacing-xs $spacing-md - $spacing-2xs;
+  @include card-base;
+  border-radius: $radius-lg;
+
+  &--today {
+    border-color: rgba($color-calendar, 0.31);
+  }
+
+  &--past {
+    opacity: 0.45;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+  }
+
+  &__date-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: $spacing-sm + $spacing-2xs;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.21);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__date-month {
+    font-size: 8px;
+    color: $color-calendar;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &__date-day {
+    font-size: 15px;
+    color: $color-calendar;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+  }
+
+  &__time {
+    font-size: 11px;
+    color: $color-calendar;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+    margin-top: $spacing-xs;
+  }
+
+  &__delete {
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &__cat-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
+    vertical-align: middle;
+  }
+
+  &--home {
+    background: #1A1A2E !important;
+    border-color: rgba(29, 78, 216, 0.2) !important;
+
+    .cal-item__title {
+      color: #1e3a8a; // Dunkles Blau für Kontrast
+    }
+
+    .cal-item__time {
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    .cal-item__date-badge {
+      background: rgba(29, 78, 216, 0.08);
+      border: 1px solid rgba(29, 78, 216, 0.25);
+    }
+  }
+}
+
+// ── Type-Icons (left-side leading icon, Gemini-inspired) ─────
+
+.task-item__type-icon,
+.note-item__type-icon,
+.cal-item__type-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  transition: background $transition-fast, transform $transition-fast;
+}
+
+.task-item__type-icon {
+  cursor: pointer;
+  background: rgba(124, 131, 247, 0.10);
+
+  &:active {
+    transform: scale(0.94);
+    background: rgba(124, 131, 247, 0.20);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(124, 131, 247, 0.16);
+    }
+  }
+}
+
+.note-item__type-icon {
+  background: rgba(251, 191, 36, 0.10);
+}
+
+.cal-item__type-icon {
+  background: rgba(30, 58, 138, 0.10);
+}
+
+// ── Media Item ───────────────────────────────────────────────
+
+.media-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm + $spacing-xs;
+  padding: $spacing-sm + 3px $spacing-md - $spacing-2xs;
+  @include card-base;
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-sm;
+  text-align: left;
+
+  &__icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+
+    &--input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 0;
+      margin: 0;
+      font: inherit;
+      color: inherit;
+      outline: none;
+
+      &:focus {
+        background: rgba(#5858A0, 0.05);
+        border-radius: 4px;
+      }
+    }
+  }
+
+  &__meta {
+    font-size: 11px;
+    color: $color-muted;
+    margin-top: $spacing-2xs;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+  }
+
+  &__cat-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
+    vertical-align: middle;
+  }
+
+  &__delete {
+    padding: $spacing-xs;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  // --- Spezifische Anpassungen für Links ---
+  &--link {
+    flex-direction: column;
+    align-items: stretch;
+    padding: $spacing-md;
+    gap: $spacing-sm;
+
+    .media-item__body {
+      padding: 0;
+    }
+  }
+
+  &__header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  &__title-box {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+  }
+
+  &__icon-mini {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba($color-bm-link, 0.12);
+    padding: $spacing-xs + 1px;
+    border-radius: $radius-sm;
+    flex-shrink: 0;
+  }
+
+  &__content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__footer-meta {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+    align-items: flex-start;
+  }
+}
+
+
+.link-item__preview {
+  margin-top: $spacing-xs;
+  border-radius: $radius-md;
+  overflow: hidden;
+  border: 1px solid $color-border;
+  background: $color-card;
+  aspect-ratio: 16 / 9;
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+}
+
+// ── FAB (Floating Action Button) ────────────────────────────
+
+// ── Archive Items (Screenshot 2 Look) ───────────────────────
+.task-item--archive,
+.cal-item--archive,
+.note-item--archive {
+  background: rgba($color-surface, 0.5);
+  border: 1px solid rgba($color-task, 0.15);
+  opacity: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  .task-item__title,
+  .cal-item__title,
+  .note-item__title {
+    color: $color-text;
+    text-decoration: line-through;
+    opacity: 0.6;
+  }
+
+  .task-item__due,
+  .task-item__cat-tag,
+  .cal-item__time,
+  .cal-item__cat-tag,
+  .note-item__excerpt,
+  .task-item__meta {
+    color: $color-muted;
+    opacity: 0.6;
+
+    span,
+    div {
+      color: inherit;
+    }
+  }
+
+  // Restore Button styling (Only the icon)
+  .task-item__archive-restore-btn,
+  .note-item__archive-btn {
+    background: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+    padding: $spacing-xs;
+    opacity: 0.6;
+    cursor: pointer;
+
+    svg {
+      color: #7C83F7 !important;
+    }
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+}

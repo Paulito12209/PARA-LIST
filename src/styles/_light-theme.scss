@@ -1,0 +1,1106 @@
+// ============================================================
+// PARA·LIST – Light Theme Overrides
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+// ── Light Theme Overrides ──────────────────────────────────
+.app.light-theme {
+  background: #f7f7f9;
+  color: #1a1a24;
+  --command-panel-header-bg: #ffffff;
+
+  // PARA Pill Backgrounds (Light Mode) – halbtransparent für Frosted-Glass
+  --pill-project-bg: rgba(255, 255, 255, 0.55);
+  --pill-area-bg: rgba(255, 255, 255, 0.55);
+  --pill-resource-bg: rgba(255, 255, 255, 0.55);
+
+  // Date & Overdue Pill (Light Mode)
+  --pill-date-bg: rgba(219, 234, 254, 0.92);
+  --pill-date-color: #2563EB;
+  --pill-date-border: rgba(255, 255, 255, 0.9);
+  --pill-overdue-bg: #FEF2F2;
+  --pill-overdue-color: #DC2626;
+  --pill-overdue-border: rgba(255, 255, 255, 0.9);
+
+  // Pill – weiße Border mit Inner Glow im Light Mode
+  .task-item__pill--cat-btn,
+  .task-item__cat-tag {
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.95) !important;
+    box-shadow:
+      inset 0 1px 6px rgba(255, 255, 255, 0.85),
+      0 1px 5px rgba(0, 0, 0, 0.06);
+  }
+
+  .task-item__pill--date,
+  .task-item__pill--overdue {
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow:
+      inset 0 1px 6px rgba(255, 255, 255, 0.75),
+      0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .entry-list {
+    // background: #ffffff;
+    background: transparent;
+  }
+
+  .task-item--home,
+  .note-item--home,
+  .cal-item--home {
+    background: #f7f7fa !important;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid transparent !important;
+    box-shadow: none;
+  }
+
+  // Erledigte & Archivierte Aufgaben im Light Mode
+  .task-item--done,
+  .task-item--archive,
+  .cal-item--archive,
+  .note-item--archive {
+    background: #FFFFFF !important;
+    border: 1px solid rgba(124, 131, 247, 0.2) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+
+    .task-item__title,
+    .cal-item__title,
+    .note-item__title {
+      color: #1a202c !important;
+      opacity: 0.8 !important;
+    }
+
+    .task-item__due,
+    .task-item__cat-tag,
+    .cal-item__time,
+    .cal-item__cat-tag,
+    .note-item__excerpt,
+    .task-item__meta {
+      color: #4a5568 !important;
+      opacity: 0.7 !important;
+
+      span,
+      div {
+        color: inherit !important;
+      }
+    }
+  }
+
+  .command-panel {
+    border-bottom-color: #e5e5f0;
+
+    &--closed {
+      background: transparent;
+    }
+
+    &--open {
+      background: #f0f0f5;
+    }
+
+    &__greeting {
+      color: #1a1a24;
+    }
+
+    &__date {
+      color: #3a3a6a;
+      opacity: 0.85;
+    }
+
+    &__drawer {
+      border-top-color: #e5e5f0;
+    }
+
+    &__tabs {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__tab {
+      color: #8e8eb2;
+
+      &--active-today {
+        background: rgba(#7C83F7, 0.12);
+        color: #5a5cc0;
+        border-color: rgba(#7C83F7, 0.30);
+        box-shadow: 0 0 10px rgba(#7C83F7, 0.08);
+      }
+
+      &--active-overdue {
+        background: rgba(#F26565, 0.12);
+        color: #c04040;
+        border-color: rgba(#F26565, 0.30);
+        box-shadow: 0 0 10px rgba(#F26565, 0.08);
+      }
+
+      &:hover:not(&--active-today):not(&--active-overdue) {
+        color: #1a1a24;
+        background: #f0f0f5;
+      }
+    }
+
+    &__drawer-item {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__drawer-title {
+      color: #1a1a24;
+    }
+
+    &__drawer-empty {
+      color: #5858A0;
+    }
+
+    &__bell {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+    }
+
+    &__handle-bar {
+      background: #3a3a6a;
+      opacity: 0.85;
+    }
+
+    &__bell-dot {
+      border-color: #ffffff;
+    }
+
+    // Quick-Settings-Leiste im Light Mode
+    &__quick-settings {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    &__qs-pill {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__qs-settings-btn {
+      background: #ffffff;
+      border-color: #e5e5f0;
+
+      &:hover {
+        background: #f0f0f5;
+        color: #1a1a24;
+      }
+    }
+
+    &__qs-btn {
+      color: #8e8eb2;
+
+      &:hover:not(.command-panel__qs-btn--active) {
+        color: #1a1a24;
+        background: #f0f0f5;
+      }
+
+      &--active {
+        background: rgba(#7C83F7, 0.12);
+        color: #5a5cc0;
+        border-color: rgba(#7C83F7, 0.30);
+        box-shadow: 0 0 10px rgba(#7C83F7, 0.08);
+      }
+    }
+
+    &__qs-divider {
+      background: #e5e5f0;
+    }
+  }
+
+  .list-section__label,
+  .home__categories-title {
+    color: #1a1a24;
+  }
+
+  // PARA-Popups in Light Mode
+  .task-item__pill-popup {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+    &-item,
+    &-option {
+      color: #1a1a24;
+
+      &:hover {
+        background: #f0f0f5;
+      }
+    }
+
+    &-add {
+      color: #8e8eb2;
+
+      &:hover {
+        background: #f0f0f5;
+        color: #1a1a24;
+      }
+    }
+
+    &-divider {
+      background: #e5e5f0;
+    }
+
+    &-remove {
+      color: #8e8eb2;
+
+      &:hover {
+        color: #F26565;
+        background: rgba(#F26565, 0.1);
+      }
+    }
+
+    &-empty {
+      color: #8e8eb2;
+    }
+  }
+
+  .list-switcher {
+    background: transparent;
+    border: none;
+
+    &__btn {
+      color: #8e8eb2;
+    }
+
+    &__btn--active {
+      color: white;
+    }
+  }
+
+  .task-group-header {
+    background: transparent;
+
+    // Light-Mode: Gruppen-Trenner im Home-Modus
+    &--home {
+      border-top-color: rgba(#8e8eb2, 0.2);
+
+      .task-group-header__left {
+        color: #3a3a6a;
+        opacity: 0.85;
+      }
+
+      .task-group-header__right {
+        color: #8e8eb2;
+        opacity: 1;
+      }
+    }
+  }
+
+  .task-group-header__left,
+  .task-group-header__right {
+    color: #3a3a6a;
+    opacity: 0.85;
+  }
+
+  .task-item,
+  .note-item,
+  .cal-item,
+  .media-item {
+    background: #f7f7f9;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: none;
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__checkbox {
+      border-color: #7C83F7;
+    }
+  }
+
+  // Home-Task-Karten Light-Theme-Anpassungen
+  .task-item--home {
+    // Background inherited from group above
+
+    .task-item__note-hint {
+      color: #8e8eb2;
+      font-size: 14px;
+    }
+
+    .task-item__date-input {
+      background: rgba(#1D4ED8, 0.04);
+      border-color: rgba(#1D4ED8, 0.2);
+      color: #1a1a24;
+      color-scheme: light;
+    }
+
+    .task-item__context-menu {
+      background: #ffffff;
+      border-color: #e5e5f0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-item__context-menu-item {
+      color: #1a1a24;
+
+      &:hover {
+        background: #f0f0f5;
+      }
+
+      &--danger {
+        color: #ef4444;
+
+        &:hover {
+          background: rgba(#ef4444, 0.06);
+        }
+      }
+    }
+
+    .task-item__context-menu-divider {
+      background: #e5e5f0;
+    }
+  }
+
+  .cat-list {
+    &__header {
+      border-bottom-color: #e5e5f0;
+    }
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__item {
+      background: #ffffff;
+      border: 1px solid #e5e5f0;
+    }
+
+    &__item-name {
+      color: #1a1a24;
+    }
+  }
+
+  .cat-detail {
+    &__header {
+      border-bottom-color: #e5e5f0;
+    }
+
+    &__title-input {
+      color: #1a1a24;
+    }
+
+    &__textarea {
+      color: #1a1a24;
+    }
+
+    &__date-pill {
+      background: var(--pill-date-bg);
+      border-color: var(--pill-date-border);
+      color: var(--pill-date-color);
+
+      &[style*="color"] {
+        background: rgba(var(--brand-rgb), 0.1) !important;
+      }
+
+      &:hover {
+        background: var(--pill-date-border);
+      }
+    }
+
+    &__tag {
+      background: #e5e5f0;
+      color: #5858A0;
+    }
+
+    &__conn-popup {
+      background: #ffffff;
+      border-color: #e5e5f0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    &__conn-item {
+      color: #1a1a24;
+
+      &:hover {
+        background: #f0f0f5;
+      }
+    }
+
+    &__conn-none {
+      border-top-color: #e5e5f0;
+
+      &:hover {
+        color: #1a1a24;
+      }
+    }
+
+    &__conn-empty {
+      color: #5858A0;
+    }
+
+    &__date-input {
+      color-scheme: light;
+      color: #1a1a24;
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+    }
+  }
+
+  .modal {
+    &__sheet {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__input,
+    &__textarea,
+    &__select,
+    &__time-input,
+    &__date-input {
+      color: #1a1a24 !important;
+      -webkit-text-fill-color: #1a1a24 !important;
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+      color-scheme: light;
+
+      &::placeholder {
+        color: #5858A0;
+        -webkit-text-fill-color: #5858A0;
+        opacity: 0.7;
+      }
+
+      // Datum-/Uhrzeit-Schrift im Light Mode immer sichtbar (iOS/Android)
+      &::-webkit-datetime-edit,
+      &::-webkit-datetime-edit-fields-wrapper,
+      &::-webkit-datetime-edit-text,
+      &::-webkit-datetime-edit-month-field,
+      &::-webkit-datetime-edit-day-field,
+      &::-webkit-datetime-edit-year-field,
+      &::-webkit-datetime-edit-hour-field,
+      &::-webkit-datetime-edit-minute-field {
+        color: #1a1a24 !important;
+        -webkit-text-fill-color: #1a1a24 !important;
+        opacity: 1 !important;
+      }
+    }
+
+    &__toggle-row {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+
+      label {
+        color: #1a1a24;
+      }
+    }
+
+    &__slider {
+      background-color: #e5e5f0;
+
+      &:before {
+        background-color: #ffffff;
+      }
+    }
+
+    &__multi-select-btn {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+      color: #8e8eb2;
+
+      &--has-selection {
+        color: #1a1a24;
+      }
+    }
+
+    &__multi-select-list {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__multi-select-item {
+      color: #1a1a24;
+
+      &:hover,
+      &--selected {
+        background: #f0f0f5;
+      }
+    }
+
+    &__multi-select-check {
+      border-color: #d1d1e0;
+    }
+
+    .icon-muted {
+      color: #5858A0;
+    }
+  }
+
+  .nav-bottom__back {
+    background: #ffffff;
+    border-color: #e5e5f0;
+
+    svg {
+      stroke: #5858A0;
+    }
+  }
+
+  .category-card {
+    &--project {
+      background: rgba(#E03E3E, 0.1);
+      border-color: rgba(#E03E3E, 0.2);
+    }
+
+    &--area {
+      background: rgba(#D09020, 0.1);
+      border-color: rgba(#D09020, 0.2);
+    }
+
+    &--resource {
+      background: rgba(#30A060, 0.1);
+      border-color: rgba(#30A060, 0.2);
+    }
+
+    &__count {
+      background: #ffffff;
+    }
+  }
+
+  // Ressource Sub-Tabs: Farbanpassung für hellen Hintergrund
+  .res-sub-tabs {
+    background: #ffffff;
+    border-color: #e5e5f0;
+
+    &__btn {
+      color: #8e8eb2;
+
+      // Notizen-Tab: Helleres Gelb/Gold für Light Mode
+      &--active-notes {
+        background: rgba(#F59E0B, 0.12);
+        color: #b87a00;
+        border-color: rgba(#F59E0B, 0.30);
+        box-shadow: 0 0 10px rgba(#F59E0B, 0.08);
+      }
+
+      // Ressourcen-Tab: Helleres Grün für Light Mode
+      &--active-res {
+        background: rgba(#10B981, 0.12);
+        color: #0a8a5e;
+        border-color: rgba(#10B981, 0.30);
+        box-shadow: 0 0 10px rgba(#10B981, 0.08);
+      }
+
+      // Medien-Tab: Cooles Magenta-Rosa für Light Mode
+      &--active-media {
+        background: rgba(#EC4899, 0.12);
+        color: #be185d;
+        border-color: rgba(#EC4899, 0.30);
+        box-shadow: 0 0 10px rgba(#EC4899, 0.08);
+      }
+
+      &:hover:not(&--active-notes):not(&--active-media):not(&--active-res) {
+        color: #1a1a24;
+        background: #f0f0f5;
+      }
+    }
+
+    &__count {
+
+      // Notizen-Badge in sattem Goldton
+      &--notes {
+        background: rgba(#F59E0B, 0.14);
+        color: #b87a00;
+      }
+
+      // Ressourcen-Badge in sattem Grünton
+      &--res {
+        background: rgba(#10B981, 0.14);
+        color: #0a8a5e;
+      }
+
+      // Medien-Badge in tiefem Magenta-Rosa
+      &--media {
+        background: rgba(#EC4899, 0.14);
+        color: #be185d;
+      }
+    }
+  }
+
+  .modal__media-grid-btn {
+    background: #f7f7f9;
+    border-color: #e5e5f0;
+
+    span {
+      color: #1a1a24;
+    }
+
+    &--active {
+      background: #ffffff;
+      border-color: currentColor;
+    }
+  }
+
+  // Suchfeld Light Mode Overrides
+  .nav-bottom__res-search-input {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #1a1a24;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+
+    &::placeholder {
+      color: #8e8eb2;
+    }
+
+    &:focus {
+      background: #ffffff;
+      border-color: rgba(#10B981, 0.4);
+      box-shadow: 0 0 0 3px rgba(#10B981, 0.08);
+    }
+  }
+
+  .nav-bottom__res-search-results {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-bottom__res-search-item {
+    color: #1a1a24;
+
+    &:hover {
+      background: #f0f0f5;
+      color: #10B981;
+    }
+  }
+
+  .cat-list__archive-btn {
+    color: #5858A0;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  .cat-detail__archive-toggle {
+    color: #5858A0;
+
+    &--active {
+      opacity: 1;
+    }
+  }
+}
+
+
+.app.light-theme .profile-row {
+  background: #ffffff;
+  border-color: #e5e5f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  &__name {
+    color: #1a1a24;
+  }
+
+  &__avatar {
+    box-shadow: 0 4px 12px rgba(124, 131, 247, 0.2);
+  }
+
+  &:active {
+    background: #f0f0f5;
+  }
+}
+
+// Settings Modal Navigation & Sub-views
+
+.app.light-theme {
+  .modal__submit--secondary {
+    background: #ef4444;
+    color: #fff;
+    border: none;
+  }
+
+  .settings-modal__footer-back {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #5858A0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    &:active {
+      background: #f0f0f5;
+    }
+  }
+
+  .settings-modal__footer-close {
+    background: #ef4444;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+
+    &:active {
+      background: #dc2626;
+    }
+  }
+}
+
+
+.app.light-theme .settings-item {
+  background: #ffffff;
+  border-color: #e5e5f0;
+
+  &__label {
+    color: #1a1a24;
+  }
+
+  &--danger {
+    background: rgba(242, 101, 101, 0.08);
+    border-color: rgba(242, 101, 101, 0.15);
+
+    .settings-item__label {
+      color: #ef4444;
+    }
+  }
+}
+
+// Feedback Styles
+
+.app.light-theme {
+  .feedback-trigger-btn {
+    background: rgba(#7C83F7, 0.08);
+    border-color: rgba(#7C83F7, 0.2);
+  }
+
+  .feedback-types {
+    background: #f0f0f5;
+  }
+
+  .feedback-type-btn {
+    color: #5858A0;
+
+    &--active {
+      background: #7C83F7;
+      color: white;
+    }
+  }
+
+  .feedback-callout {
+    background: rgba(#7C83F7, 0.05);
+    border-color: #e5e5f0;
+    color: #5858A0;
+  }
+
+  .feedback-label {
+    color: #1a1a24;
+  }
+}
+
+
+.app.light-theme .onboarding {
+  background: #ffffff;
+
+  &__title {
+    color: #1a1a24;
+  }
+
+  &__input {
+    background: #f0f0f5;
+    border-color: #e5e5f0;
+    color: #1a1a24;
+  }
+
+  &__lang-btn {
+    border-color: #e5e5f0;
+  }
+}
+
+// Light-Theme Anpassungen fuer das Archiv-Dashboard
+.app.light-theme {
+  .archive-dashboard-container {
+    background: #f7f7fa !important;
+  }
+
+  .archive-dashboard {
+    &__section-title {
+      color: rgba(28, 28, 48, 0.55);
+    }
+  }
+
+  .archive-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.06);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+
+    &__dots {
+      opacity: 0.08;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.8) 1px, transparent 1px);
+    }
+
+    &__icon-box {
+      background: rgba(0, 0, 0, 0.02);
+      border-color: rgba(0, 0, 0, 0.05);
+    }
+
+    &__count {
+      color: #1c1c30;
+    }
+
+    &__title {
+      color: #1c1c30;
+    }
+
+    &__desc {
+      color: #5858a0;
+    }
+
+    &--project:hover {
+      border-color: rgba(224, 62, 62, 0.3);
+      box-shadow: 0 12px 32px rgba(224, 62, 62, 0.12);
+    }
+
+    &--area:hover {
+      border-color: rgba(208, 144, 32, 0.3);
+      box-shadow: 0 12px 32px rgba(208, 144, 32, 0.12);
+    }
+
+    &--resource:hover {
+      border-color: rgba(48, 160, 96, 0.3);
+      box-shadow: 0 12px 32px rgba(48, 160, 96, 0.12);
+    }
+  }
+
+  .archive-grid-card {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+
+    &__count {
+      color: #1c1c30;
+    }
+
+    &__title {
+      color: #5858a0;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.95);
+      border-color: rgba(0, 0, 0, 0.12);
+    }
+
+    &--tasks:hover {
+      border-color: rgba(124, 131, 247, 0.4);
+    }
+
+    &--notes:hover {
+      border-color: rgba(236, 72, 153, 0.4);
+    }
+
+    &--calendar:hover {
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+  }
+
+  .archive-detail-list {
+    &__back-btn {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.06);
+      color: #5858a0;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.06);
+        color: #1c1c30;
+      }
+    }
+  }
+}
+
+// ── Light-Theme Anpassungen fuer das neue Design ──
+.app.light-theme {
+  .home-cover {
+    background: #f7f7fa;
+    border-bottom: none;
+
+    &::after {
+      background: linear-gradient(to bottom, transparent 0%, #f7f7f9 100%);
+    }
+
+    &__light-wave {
+      // Light Mode: Farbige Akzentstreifen über weißem Grund
+      background:
+        repeating-linear-gradient(
+          135deg,
+          transparent 0px,
+          transparent 60px,
+          rgba(var(--cover-accent-rgb), 0.25) 82px,
+          rgba(var(--cover-accent-rgb), 0.09) 110px,
+          transparent 140px,
+          transparent 200px
+        ),
+        repeating-linear-gradient(
+          132deg,
+          transparent 0px,
+          transparent 95px,
+          rgba(var(--cover-accent-rgb), 0.14) 130px,
+          transparent 165px,
+          transparent 250px
+        ),
+        radial-gradient(ellipse 65% 55% at 62% 55%,
+          rgba(var(--cover-accent-rgb), 0.22) 0%,
+          transparent 70%),
+        // Punkt-Textur über die ganze Cover-Card
+        radial-gradient(rgba(0, 0, 0, 0.10) 1px, transparent 1px) 0 0 / 14px 14px,
+        #ffffff;
+    }
+
+    &__badge {
+      background: rgba(255, 255, 255, 0.45);
+      border: 1.5px solid rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      box-shadow:
+        inset 0 1px 8px rgba(255, 255, 255, 0.7),
+        0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    &__avatar {
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    &__title {
+      color: #1c1c30;
+    }
+
+    &__desc {
+      color: #3a3a6a;
+      opacity: 0.85;
+    }
+
+    &__textlink {
+      color: rgba(28, 28, 48, 0.55);
+      border-bottom-color: rgba(0, 0, 0, 0.15);
+
+      &:hover {
+        color: rgb(var(--cover-accent-rgb));
+        border-bottom-color: rgba(var(--cover-accent-rgb), 0.4);
+      }
+    }
+
+    &__tag {
+      color: #3a3a6a;
+      background: rgba(255, 255, 255, 0.5);
+      border: 1.5px solid rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      box-shadow:
+        inset 0 1px 8px rgba(255, 255, 255, 0.75),
+        0 2px 8px rgba(0, 0, 0, 0.05);
+
+      &--date {
+        color: #1D4ED8;
+      }
+
+      &--area {
+        color: #B07A10;
+      }
+    }
+  }
+
+  .main-content--tasks,
+  .main-content--notes,
+  .main-content--calendar {
+    background: transparent;
+  }
+
+  .home {
+    background: #f7f7fa;
+  }
+
+  .split-nav {
+    &__dots-bg {
+      opacity: 0.12;
+      background-image: radial-gradient(rgba(0, 0, 0, 0.8) 1px, transparent 1px);
+    }
+
+    &__pills {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(0, 0, 0, 0.06);
+      box-shadow:
+        inset 0 0 22px rgba(var(--cover-accent-rgb), 0.14),
+        0 8px 32px rgba(255, 255, 255, 0.85);
+
+      &.split-nav__pills--project {
+        border-color: rgba(224, 62, 62, 0.62);
+      }
+
+      &.split-nav__pills--area {
+        border-color: rgba(208, 144, 32, 0.62);
+      }
+
+      &.split-nav__pills--resource {
+        border-color: rgba(48, 160, 96, 0.62);
+      }
+
+      &.split-nav__pills--archive {
+        border-color: rgba(124, 131, 247, 0.62);
+      }
+
+      .split-nav__btn {
+        color: #5858a0; // Standardmaessige Icon-Farbe fuer inaktive Elemente
+
+        svg {
+          // Erlaubt das Vererben von stroke="currentColor" und React inline-Styles
+          transition: all 0.2s ease;
+        }
+
+        // Keine zusätzlichen Styles für den aktiven Zustand
+
+        &:hover:not(.split-nav__btn--active) {
+          background: rgba(0, 0, 0, 0.04);
+          color: #1c1c30; // Hover-Farbe fuer inaktive Elemente
+        }
+      }
+    }
+
+    &__add {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: rgba(var(--cover-accent-rgb), 0.62);
+      // Inset-Glow in theme-Farbe + weißer äußerer Drop Shadow (Light Mode)
+      box-shadow:
+        inset 0 0 22px rgba(var(--cover-accent-rgb), 0.18),
+        0 8px 32px rgba(255, 255, 255, 0.85);
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.02);
+      }
+    }
+  }
+
+  .home-page-dots {
+    &__dot {
+      background: rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+// Explizit: Sass-Nesting erzeugte zuvor einen ungültigen Light-Mode-Header-Selektor
+
+.app.light-theme .voice-fab {
+  /* Light‑Mode‑Style: fast durchsichtig */
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: none;
+  border: 1.5px solid rgba($color-task, 0.45);
+  box-shadow:
+    inset 0 0 12px rgba($color-task, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+  .voice-fab__icon { color: $color-task; }
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow:
+      inset 0 0 16px rgba($color-task, 0.2),
+      0 6px 18px rgba(0, 0, 0, 0.15);
+  }
+}
+
+
+.app.light-theme .command-panel--closed {
+  background: #ffffff;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(var(--cover-accent-rgb), 0.14),
+    0 8px 36px rgba(var(--cover-accent-rgb), 0.28),
+    0 2px 14px rgba(var(--cover-accent-rgb), 0.16);
+}

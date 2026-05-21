@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
-import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete, AutoScrollText } from "./shared";
-import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
-import { useInactivity } from "./hooks/useInactivity";
-import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "./EntryLists";
+import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
+import { SwipeToDelete } from "../components/SwipeToDelete";
+import { AutoScrollText } from "../components/AutoScrollText";
+import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
+import { useInactivity } from "../hooks/useInactivity";
+import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
   const fabVisible = useInactivity(5000);
@@ -111,6 +113,9 @@ export function BookmarkRail({ active, onSelect, baseColor }) {
   );
 }
 
+const RES_SUB_TAB_ORDER = ["resources", "notes", "media"];
+const TASK_SUB_TAB_ORDER = ["open", "completed"];
+const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 
 export function CatDetailScreen({
   t,
@@ -146,9 +151,6 @@ export function CatDetailScreen({
   const [resSearch, setResSearch] = useState("");
   const [showMenu, setShowMenu] = useState(false);
 
-  // Alle Ordner (inkl. Ressourcen) haben 3 Sub-Tabs im Media/Ressourcen Lesezeichen
-  const isProjectOrArea = cat.type === "project" || cat.type === "area";
-  
   // Sub-Tab für das Ressource-Lesezeichen (standardmäßig "resources")
   const [resSubTab, setResSubTab] = useState("resources");
   const [taskSubTab, setTaskSubTab] = useState("open");
@@ -255,39 +257,24 @@ export function CatDetailScreen({
   }, [getEntryTypeFromBookmark, bm, onAddEntry, onCreateTag]);
 
   // Swipe-Handler für Sub-Tab-Wechsel (3 Tabs bei Projekt/Bereich/Ressource)
-  const resSubTabOrder = ["resources", "notes", "media"];
-  const taskSubTabOrder = ["open", "completed"];
   const onSubTabTouchStart = useCallback((e) => {
     subTabTouchX.current = e.touches[0].clientX;
   }, []);
   const onSubTabTouchEnd = useCallback((e) => {
     const dx = e.changedTouches[0].clientX - subTabTouchX.current;
-    if (Math.abs(dx) > 60) {
-      if (bm === "media") {
-        setResSubTab(prev => {
-          const idx = resSubTabOrder.indexOf(prev);
-          if (dx > 0) {
-            // Swipe rechts → vorheriger Tab
-            return resSubTabOrder[Math.max(0, idx - 1)];
-          } else {
-            // Swipe links → nächster Tab
-            return resSubTabOrder[Math.min(resSubTabOrder.length - 1, idx + 1)];
-          }
-        });
-      } else if (bm === "tasks") {
-        setTaskSubTab(prev => {
-          const idx = taskSubTabOrder.indexOf(prev);
-          if (dx > 0) {
-            // Swipe rechts → vorheriger Tab
-            return taskSubTabOrder[Math.max(0, idx - 1)];
-          } else {
-            // Swipe links → nächster Tab
-            return taskSubTabOrder[Math.min(taskSubTabOrder.length - 1, idx + 1)];
-          }
-        });
-      }
-    }
-  }, [resSubTabOrder, taskSubTabOrder, bm]);
+    if (Math.abs(dx) <= SUB_TAB_SWIPE_THRESHOLD_PX) return;
+
+    const stepInOrder = (order, prev) => {
+      const idx = order.indexOf(prev);
+      // dx > 0 → Swipe rechts → vorheriger Tab; dx < 0 → nächster Tab
+      return dx > 0
+        ? order[Math.max(0, idx - 1)]
+        : order[Math.min(order.length - 1, idx + 1)];
+    };
+
+    if (bm === "media") setResSubTab((prev) => stepInOrder(RES_SUB_TAB_ORDER, prev));
+    else if (bm === "tasks") setTaskSubTab((prev) => stepInOrder(TASK_SUB_TAB_ORDER, prev));
+  }, [bm]);
 
   const lastTap = useRef(0);
   const handleDoubleTap = useCallback(

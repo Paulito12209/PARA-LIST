@@ -1,0 +1,563 @@
+// ============================================================
+// PARA·LIST – Folder Screens (Cat List/Detail, Bookmark Rail)
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+.cat-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: slide-in-right $transition-normal;
+
+  &__header {
+    padding: 8px $spacing-md;
+    border-bottom: 1px solid $color-border;
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 21px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+  }
+
+  &__archive-btn {
+    margin-left: auto;
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    transition: all $transition-fast;
+    color: #9CA3AF;
+    opacity: 0.6;
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+
+
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    padding: $spacing-sm $spacing-md 100px;
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $spacing-3xl 0;
+    color: $color-muted;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-xs;
+    width: 100%;
+    padding: $spacing-sm + 5px $spacing-md;
+    @include card-base;
+    border-radius: $radius-lg;
+    text-align: left;
+    margin-bottom: $spacing-xs + $spacing-2xs;
+  }
+
+  &__item-icon {
+    @include floating-btn(34px, $spacing-sm + $spacing-2xs);
+  }
+
+  &__item-info {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+
+    &--project {
+      border-color: rgba(224, 62, 62, 0.72);
+      box-shadow: 0 0 0 1px rgba(224, 62, 62, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(224, 62, 62, 0.4);
+    }
+
+    &--area {
+      border-color: rgba(208, 144, 32, 0.72);
+      box-shadow: 0 0 0 1px rgba(208, 144, 32, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(208, 144, 32, 0.38);
+    }
+
+    &--resource {
+      border-color: rgba(48, 160, 96, 0.72);
+      box-shadow: 0 0 0 1px rgba(48, 160, 96, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(48, 160, 96, 0.34);
+    }
+
+    &--archive {
+      border-color: rgba(124, 131, 247, 0.72);
+      box-shadow: 0 0 0 1px rgba(124, 131, 247, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(124, 131, 247, 0.4);
+    }
+  }
+
+  &__item-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: clip;
+    width: 100%;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+
+  &__item-date {
+    display: inline-flex;
+    align-items: center;
+    height: 22px;
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
+    color: $color-calendar;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.25);
+    margin-top: $spacing-2xs;
+  }
+}
+
+// ── Bottom Navigation (Back + Action) ───────────────────────
+
+.cat-detail {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: slide-in-right $transition-normal;
+
+  &__header {
+    margin-top: -80px;
+    padding-top: 80px + $spacing-md + $spacing-2xs;
+    padding-right: $spacing-md;
+    padding-bottom: $spacing-md - $spacing-2xs;
+    padding-left: $spacing-md;
+    border-bottom: 1px solid $color-border;
+    transition: background $transition-normal;
+  }
+
+  &--calendar>&__header {
+    background: linear-gradient(135deg, rgba($color-calendar, 0.1) 0%, rgba($color-calendar, 0.04) 100%);
+    border-bottom-color: rgba($color-calendar, 0.2);
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__title-input {
+    flex: 1;
+    font-size: 19px;
+    font-family: $font-heading;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+    background: transparent;
+  }
+
+  &__pills {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: $spacing-sm;
+    position: relative;
+    padding: 0; // Removed to control gaps via button height
+  }
+
+  &__pills-group {
+    display: flex;
+    gap: $spacing-sm - 1px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    align-items: center;
+    padding: $spacing-xs 0;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__archive-toggle,
+  &__delete-btn,
+  &__birthday-toggle {
+    background: transparent;
+    @include flex-center;
+    width: 32px;
+    height: 34px; // 18px icon + 8px top + 8px bottom = 34px
+    transition: all $transition-fast;
+    opacity: 0.6;
+    flex-shrink: 0;
+    margin-right: -8px; // Nudge right to align with visual edge
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    &--active {
+      opacity: 1;
+    }
+  }
+
+  &__delete-btn {
+    margin-left: auto;
+  }
+
+  &__birthday-toggle {
+    margin-left: auto;
+    border-radius: 50%;
+  }
+
+
+  &__date-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 12px;
+    border-radius: $radius-pill;
+    font-size: 11px;
+    line-height: 1;
+    font-weight: 600;
+    font-family: $font-body;
+    background: var(--pill-date-bg);
+    border: 1px solid var(--pill-date-border);
+    color: var(--pill-date-color);
+    transition: all $transition-fast;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--pill-date-border);
+    }
+
+    &--static {
+      cursor: default;
+      pointer-events: none;
+      background: rgba($color-calendar, 0.08);
+      border-color: rgba($color-calendar, 0.2);
+    }
+  }
+
+  &__res-count {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-pill;
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid transparent;
+  }
+
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 22px;
+    font-size: 10px;
+    line-height: 1;
+    font-weight: 600;
+    border-radius: $radius-pill;
+    padding: 0 8px;
+    background: $color-dim;
+    color: rgba($color-text, 0.55); // Heller als $color-muted für bessere Lesbarkeit
+  }
+
+  &__date-input {
+    margin-top: $spacing-sm;
+    @include input-base;
+    color-scheme: dark;
+  }
+
+  &__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    // Rechts: 24px Rail + 16px Abstand = 40px, unten: 16px
+    padding: $spacing-sm (
+      $bookmark-width + $spacing-md) $spacing-md $spacing-md;
+    gap: $spacing-sm;
+  }
+
+  &__textarea {
+    width: 100%;
+    flex: 1;
+    height: 100%;
+    min-height: 100px;
+    font-size: 14px;
+    line-height: 1.75;
+    color: $color-text;
+    background: transparent;
+    border: none;
+    resize: none;
+    font-family: $font-body;
+  }
+
+  &__section-empty {
+    color: $color-muted;
+    font-size: 13px;
+    text-align: center;
+    padding: $spacing-xl 0;
+  }
+
+  // Floating connection pop-up
+  &__conn-popup {
+    position: absolute;
+    top: calc(100% + 8px
+    );
+  left: 0;
+  width: 200px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  z-index: 150;
+  overflow: hidden;
+  animation: slide-up-small 0.2s ease-out;
+}
+
+&__conn-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: $spacing-xs;
+}
+
+&__conn-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-md;
+  text-align: left;
+  transition: background $transition-fast;
+  color: $color-text;
+
+  &:hover {
+    background: $color-hover;
+  }
+}
+
+&__conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+&__conn-name {
+  font-size: 13px;
+  font-weight: 500;
+  @include text-truncate;
+}
+
+&__conn-empty {
+  padding: $spacing-md;
+  text-align: center;
+  color: $color-muted;
+  font-size: 12px;
+}
+
+&__conn-none {
+  width: 100%;
+  padding: $spacing-sm;
+  border-top: 1px solid $color-border;
+  font-size: 11px;
+  color: $color-muted;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-text;
+  }
+}
+}
+
+
+@keyframes slide-up-small {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ── Bookmark Rail ───────────────────────────────────────────
+
+.bookmark-rail {
+  position: absolute;
+  // Slight negative offset removes visible seam to right edge
+  right: -1px;
+  top: 116px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  z-index: 5;
+
+  &__tab {
+    width: $bookmark-width;
+    height: $spacing-3xl + $spacing-2xs;
+    margin: 0;
+    padding: 0;
+    border-radius: $spacing-sm 0 0 $spacing-sm;
+    border-right: none;
+    @include flex-center;
+    transition: all 0.18s;
+  }
+}
+
+// ── Ressource Sub-Tabs (Notizen / Medien) ──────────────────
+
+.bookmark-rail {
+  &__tab {
+    &--active {
+      box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+.res-sub-tabs {
+  display: flex;
+  gap: $spacing-xs;
+  margin-bottom: $spacing-sm;
+  background: $color-card;
+  border-radius: 24px;
+  padding: 4px;
+  height: 48px;
+  border: 1px solid $color-border;
+
+  &__btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    height: 100%;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: $font-body;
+    color: $color-muted;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all $transition-fast;
+    cursor: pointer;
+
+    // Notizen-Tab: Gelb/Gold (Notiz-Farbe)
+    &--active-notes {
+      background: rgba(#F59E0B, 0.15);
+      color: #F59E0B;
+      border-color: rgba(#F59E0B, 0.35);
+      box-shadow: 0 0 12px rgba(#F59E0B, 0.12);
+    }
+
+    // Ressourcen-Tab: Kräftiges Grün (altes Medien-Grün)
+    &--active-res {
+      background: rgba(#10B981, 0.15);
+      color: #10B981;
+      border-color: rgba(#10B981, 0.35);
+      box-shadow: 0 0 12px rgba(#10B981, 0.12);
+    }
+
+    // Medien-Tab: Cool Magenta-Rosa
+    &--active-media {
+      background: rgba(#EC4899, 0.15);
+      color: #EC4899;
+      border-color: rgba(#EC4899, 0.35);
+      box-shadow: 0 0 12px rgba(#EC4899, 0.12);
+    }
+
+    // Aufgaben - Offen Tab: Grau (inaktiv aussehend)
+    &--active-open {
+      background: rgba(#8B8BA8, 0.12);
+      color: #8B8BA8;
+      border-color: rgba(#8B8BA8, 0.2);
+      box-shadow: 0 0 8px rgba(#8B8BA8, 0.08);
+    }
+
+    // Aufgaben - Erledigt Tab: Grün
+    &--active-completed {
+      background: rgba(#10B981, 0.15);
+      color: #10B981;
+      border-color: rgba(#10B981, 0.35);
+      box-shadow: 0 0 12px rgba(#10B981, 0.12);
+    }
+
+    &:hover:not(&--active-notes):not(&--active-media):not(&--active-res):not(&--active-open):not(&--active-completed) {
+      color: $color-text;
+      background: $color-hover;
+    }
+  }
+
+  // Anzahl-Badge im Sub-Tab
+  &__count {
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: $radius-pill;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+
+    // Notizen-Anzahl in Gelb/Gold
+    &--notes {
+      background: rgba(#F59E0B, 0.18);
+      color: #F59E0B;
+    }
+
+    // Ressourcen-Anzahl
+    &--res {
+      background: rgba(#10B981, 0.18);
+      color: #10B981;
+    }
+
+    // Medien-Anzahl in Magenta-Rosa
+    &--media {
+      background: rgba(#EC4899, 0.18);
+      color: #EC4899;
+    }
+
+    // Aufgaben - Offen Count: Grau
+    &--open {
+      background: rgba(#8B8BA8, 0.18);
+      color: #8B8BA8;
+    }
+
+    // Aufgaben - Erledigt Count: Grün
+    &--completed {
+      background: rgba(#10B981, 0.18);
+      color: #10B981;
+    }
+  }
+}
+
+// ── Modal Overlay ───────────────────────────────────────────

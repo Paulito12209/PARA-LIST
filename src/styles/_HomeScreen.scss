@@ -1,0 +1,731 @@
+// ============================================================
+// PARA·LIST – Home Screen, Categories, Cover, Split Nav
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+// ── Home Screen ─────────────────────────────────────────────
+.home {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+  background: #1A1A2E;
+
+  &__categories-container {
+    // Exakte Hälfte des Viewports minus 112px
+    height: calc(50dvh - 104px);
+    padding: $spacing-lg $spacing-md;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  // Überschrift + Page-Indicator-Dots
+  &__categories-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-md;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__categories-title {
+    font-family: $font-heading;
+    font-size: $spacing-md+4px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.3px;
+  }
+
+  // Ordner-Icon neben dem Titel (analog zu den Subtab-Icons unten)
+  // &__categories-icon-wrap {
+  //   width: 24px;
+  //   height: 24px;
+  //   display: flex;
+  //   align-items: center;
+  //   justify-content: center;
+  //   background: linear-gradient(90deg, rgba(#EF4444, 0.15), rgba(#F59E0B, 0.15), rgba(#10B981, 0.15));
+  //   border: 1px solid rgba(#8B5CF6, 0.35);
+  //   border-radius: $radius-sm - 2px;
+  //   box-shadow: 0 0 12px rgba(#8B5CF6, 0.12);
+  //   flex-shrink: 0;
+  // }
+
+  // &__categories-icon {
+  //   color: #8B5CF6;
+  // }
+
+  // Horizontaler Track für Swipe-Pages (aktuell nur 1 Page)
+  &__categories-track {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 0;
+    // Späterer Swipe: display: flex; mit translateX-Animation auf den Pages
+  }
+
+  // Einzelne Swipe-Page innerhalb des Tracks
+  &__categories-page {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__list-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// ── Category Grid ───────────────────────────────────────────
+.category-grid {
+  display: flex;
+  gap: 8px;
+  height: 100%;
+  width: 100%;
+  min-height: 0;
+}
+
+
+@keyframes mesh-gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+.category-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 32px;
+  // border: 1px solid transparent;
+  padding: 4px;
+  transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  overflow: hidden;
+  cursor: pointer;
+
+  &--expanded {
+    flex: 1;
+    min-width: 0;
+    border-radius: 28px;
+    padding: 4px;
+  }
+
+  &--collapsed {
+    flex: 0 0 56px;
+    width: 56px;
+    border-radius: 28px;
+  }
+
+  &__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-size: 200% 200%;
+    animation: mesh-gradient 10s ease infinite;
+    opacity: 0.9;
+  }
+
+  &--project &__bg {
+    background-image: radial-gradient(at 0% 0%, #E03E3E 0px, transparent 50%),
+      radial-gradient(at 100% 100%, #8A0000 0px, transparent 50%),
+      radial-gradient(at 100% 0%, #FF8A8A 0px, transparent 50%),
+      linear-gradient(135deg, #E03E3E 0%, #4A0000 100%);
+  }
+
+  &--area &__bg {
+    background-image: radial-gradient(at 0% 0%, #D09020 0px, transparent 50%),
+      radial-gradient(at 100% 100%, #805000 0px, transparent 50%),
+      radial-gradient(at 100% 0%, #FFD070 0px, transparent 50%),
+      linear-gradient(135deg, #D09020 0%, #4A2A00 100%);
+  }
+
+  &--resource &__bg {
+    background-image: radial-gradient(at 0% 0%, #30A060 0px, transparent 50%),
+      radial-gradient(at 100% 100%, #0A4A20 0px, transparent 50%),
+      radial-gradient(at 100% 0%, #70FFB0 0px, transparent 50%),
+      linear-gradient(135deg, #30A060 0%, #0A301A 100%);
+  }
+
+  &__content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    // Wir nutzen Flex-Grow für oben/unten, um die Mitte perfekt zu zentrieren
+  }
+
+  // --- Expanded View Styles ---
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: $spacing-sm+4px $spacing-sm+4px 0;
+    min-height: 40px; // Verhindert Kollaps
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+  }
+
+  &__status {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+    padding: 0 $spacing-sm+4px;
+  }
+
+  &__status-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+
+  &__status-badge-count {
+    position: absolute;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 1;
+  }
+
+  &__status-text {
+    strong {
+      font-weight: 700;
+    }
+  }
+
+  &__bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0;
+  }
+
+  // --- Collapsed View Styles ---
+  &__initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-sm+4px 0 0;
+    font-family: $font-heading;
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+  }
+
+  &__badge-wrap {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  &__badge-count {
+    position: absolute;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding-top: 2px;
+  }
+
+  // --- Shared Add Button ---
+  &__add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    @include glass-border;
+    transition: all 0.2s;
+
+    &--expanded {
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      background: rgba(0, 0, 0, 0.2);
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.3);
+      }
+    }
+
+    &--collapsed {
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.15);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+    }
+  }
+}
+
+// ── List Section (Switcher + Entries) ────────────────────────
+
+// ============================================================
+// ── STARTSEITEN-REDESIGN (HOMESCREEN) – PREMIUM STYLES ──
+// ============================================================
+
+// ── Startseiten-Cover mit animierten Lichtwellen ──
+.home-cover {
+  position: relative;
+  width: 100%;
+  min-height: 350px;
+  // Zieht das Cover hinter das Command Panel (+2px Überlappung gegen Anti-Alias-Lücke)
+  margin-top: calc(-1 * var(--command-panel-peek) - 2px);
+  padding: calc(24px + var(--command-panel-peek) + 2px) 20px 48px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: #1A1A2E;
+  border-bottom: none;
+
+  // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 72px;
+    background: linear-gradient(to bottom, transparent 0%, #1A1A2E 100%);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  // Der Haupt-Lichtwellen-Gradient im Hintergrund (Dark Mode)
+  &__light-wave {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      // Akzent von oben nach unten – macht Akzentfarbe hinter den Header-Ecken sichtbar
+      linear-gradient(to bottom,
+        rgba(var(--cover-accent-rgb), 0.45) 0%,
+        transparent 38%),
+      // Weiße Diagonalstreifen (sichtbar auf Dunkel)
+      repeating-linear-gradient(
+        135deg,
+        transparent 0px,
+        transparent 60px,
+        rgba(255, 255, 255, 0.20) 82px,
+        rgba(255, 255, 255, 0.07) 110px,
+        transparent 140px,
+        transparent 200px
+      ),
+      // Zweite Streifen-Ebene (versetzt, weicher)
+      repeating-linear-gradient(
+        132deg,
+        transparent 0px,
+        transparent 95px,
+        rgba(255, 255, 255, 0.10) 130px,
+        transparent 165px,
+        transparent 250px
+      ),
+      // Akzentfarbe baut sich von unten auf, bleibt aber überall sichtbar (auch hinter Panel)
+      linear-gradient(to top,
+        rgba(var(--cover-accent-rgb), 0.50) 0%,
+        rgba(var(--cover-accent-rgb), 0.30) 38%,
+        rgba(var(--cover-accent-rgb), 0.20) 75%,
+        rgba(var(--cover-accent-rgb), 0.15) 100%),
+      // Haupt-Akzentglow (unterer Cover-Bereich)
+      radial-gradient(ellipse 80% 65% at 55% 70%,
+        rgba(var(--cover-accent-rgb), 0.35) 0%,
+        transparent 70%),
+      // Punkt-Textur über die ganze Cover-Card
+      radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px) 0 0 / 14px 14px,
+      // Dunkle Basis
+      #1A1A2E;
+    animation: wave-float 8s ease-in-out infinite alternate;
+  }
+
+  &__bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    opacity: 0.5;
+  }
+
+  &__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__badge {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    color: rgb(var(--cover-accent-rgb));
+    letter-spacing: 0.8px;
+    text-shadow: 0 0 10px rgba(var(--cover-accent-rgb), 0.4);
+    backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    // Verhindert, dass das SVG-Icon in der Flexbox zusammengestaucht wird
+    svg {
+      flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    object-fit: cover;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__primary-action {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 30px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  &__desc {
+    font-size: 13.5px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.45;
+    margin: 0;
+    max-width: 90%;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 30px;
+    margin-top: 4px;
+  }
+
+  // Passiver Textlink zur Vollansicht
+  &__textlink {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s ease;
+    border-bottom: 1.5px dashed rgba(255, 255, 255, 0.2);
+    padding-bottom: 2px;
+
+    &:hover {
+      color: rgb(var(--cover-accent-rgb));
+      border-bottom-color: rgba(var(--cover-accent-rgb), 0.5);
+      text-shadow: 0 0 8px rgba(var(--cover-accent-rgb), 0.3);
+    }
+  }
+
+  &__tags {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    background: rgba(255, 255, 255, 0.04);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+
+    &--date {
+      color: #60A5FA;
+    }
+
+    &--area {
+      color: $color-area;
+    }
+
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    // Verhindert, dass die Tag-Icons in der Flexbox zusammengestaucht werden
+    svg {
+      flex-shrink: 0;
+      width: 12px;
+      height: 12px;
+    }
+  }
+}
+
+
+// ── Geteilte Navigationsleiste (Split Navigation) ──
+.split-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  margin: -24px 0 24px; // Schiebt die Leiste elegant in das Cover hinein
+  z-index: 10;
+  position: relative;
+  width: 100%;
+
+  // Dotted-Hintergrund für High-End Haptik
+  &__dots-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.06;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px);
+    background-size: 8px 8px;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  // Linke Karte (Pills-Container)
+  &__pills {
+    flex: 1;
+    position: relative;
+    height: 56px;
+    background: rgba(20, 21, 38, 0.65);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    // border-radius: 28px;
+    border-top-left-radius: 28px;
+    border-bottom-left-radius: 28px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    backdrop-filter: blur(16px);
+    box-shadow:
+      inset 0 0 22px rgba(var(--cover-accent-rgb), 0.18),
+      0 8px 32px rgba(15, 15, 30, 0.55);
+    display: flex;
+    align-items: center;
+    padding: 0 6px;
+    overflow: hidden;
+  }
+
+  &__items {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    align-items: center;
+    z-index: 2;
+  }
+
+  // Runde Kategorie-Buttons
+  &__btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    color: rgba(255, 255, 255, 0.45); // Standardmäßige Icons-Farbe (inaktiv)
+
+    svg {
+      transition: all 0.2s ease;
+    }
+
+    &--active {
+      box-shadow: none;
+    }
+
+    &:hover:not(&--active) {
+      background: rgba(255, 255, 255, 0.06);
+      color: rgba(255, 255, 255, 0.8); // Hover-Farbe für inaktive Icons
+    }
+  }
+
+  // Rechte Karte (Plus‑Button) – identisches Glow‑Styling wie die linken Pills
+  &__add {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    background: rgba(20, 21, 38, 0.65);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    border-top-right-radius: 28px;
+    border-bottom-right-radius: 28px;
+    backdrop-filter: blur(16px);
+    // Inset-Glow in theme-Farbe + dunkler äußerer Drop Shadow (Dark Mode)
+    box-shadow:
+      inset 0 0 22px rgba(var(--cover-accent-rgb), 0.22),
+      0 8px 32px rgba(15, 15, 30, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+
+    &:hover {
+      transform: scale(1.06);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// ── Clean Tasks List (Ohne umschliessende Karten) ──
+
+.home__list-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 8px 0 0px;
+}
+
+.home .entry-list {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 0 96px !important;
+  margin-top: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+// ── Page-Dots unten in der Mitte ──
+
+.home-page-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-bottom: 8px;
+
+  &__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: all 0.25s ease;
+    cursor: pointer;
+
+    &--active {
+      width: 14px;
+      border-radius: 3px;
+    }
+  }
+}
+
+// ── Pulsierender Sprachassistenten-FAB (Voice FAB) ──
+
+@keyframes wave-float {
+  0% {
+    transform: scale(1) translateY(0);
+  }
+
+  100% {
+    transform: scale(1.08) translateY(-15px);
+  }
+}

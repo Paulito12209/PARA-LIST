@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Clock, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
-import { uid, TODAY, isOld, isToday, getNextBirthday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, SEED, computeNotif, SwipeToDelete, AutoScrollText } from "./shared";
+import { TODAY, isOld, isToday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, NOTIF_RED, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
+import { SwipeToDelete } from "./SwipeToDelete";
+import { AutoScrollText } from "./AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
-import { useInactivity } from "./hooks/useInactivity";
 
 export function EntryMetaTags({ entry, cats, CC, isHome }) {
   const ids = entry.catIds || (entry.catId ? [entry.catId] : []);
@@ -415,10 +416,9 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
 }
 
 
-export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDelete, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
-  // State für Kontextmenü, Datum-Popup und Pill-Popup (nur Home)
+export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDelete, t, CC, grouped, color: _color, onOpenEntry, isHome, isArchive }) {
+  // State für Kontextmenü und Pill-Popup (nur Home)
   const [menuEntryId, setMenuEntryId] = useState(null);
-  const [dateEntryId, setDateEntryId] = useState(null);
   // pillPopup: { entryId, type, showAdd } – welches Pill-Popup offen ist
   const [pillPopup, setPillPopup] = useState(null);
   const menuRef = useRef(null);
@@ -587,7 +587,7 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
 }
 
 
-export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry, CC, grouped, color, t, onOpenEntry, onArchiveEntry, isHome, isArchive }) {
+export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry, CC, grouped, color: _color, t, onOpenEntry, onArchiveEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     if (isHome) {
       return (
@@ -709,7 +709,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
 }
 
 
-export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, t, CC, grouped, color, onOpenEntry, isHome, isArchive }) {
+export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, t, CC, grouped, color: _color, onOpenEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     if (isHome) {
       return (

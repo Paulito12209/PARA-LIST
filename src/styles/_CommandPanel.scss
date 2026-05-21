@@ -1,0 +1,471 @@
+// ============================================================
+// PARA·LIST – Command Panel
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+// ── Command Panel ───────────────────────────────────────────
+.command-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  flex-shrink: 0;
+  transition: background $transition-normal;
+
+  &--closed {
+    background: var(--command-panel-header-bg, #{$color-surface});
+    border: none;
+    border-radius: 0 0 $radius-lg $radius-lg;
+    overflow: visible;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.06),
+      0 0 0 1px rgba(var(--cover-accent-rgb), 0.12),
+      0 8px 32px rgba(var(--cover-accent-rgb), 0.22),
+      0 2px 12px rgba(var(--cover-accent-rgb), 0.14);
+  }
+
+  &--open {
+    background: $color-hover;
+    border-bottom: 1px solid $color-border;
+    border-radius: 0 0 $radius-lg $radius-lg;
+    overflow: hidden;
+    height: calc(100vh - 90px);
+    height: calc(100dvh - 90px);
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 90;
+    backdrop-filter: blur(2px);
+    animation: fade-in 0.2s ease;
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    padding: calc(#{$spacing-md} + env(safe-area-inset-top, 0px)) $spacing-md 0;
+  }
+
+  &--closed>&__header {
+    position: relative;
+    z-index: 1;
+    min-height: 80px;
+    background: transparent;
+    padding-bottom: 6px;
+  }
+
+  &__header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: $spacing-2xs;
+  }
+
+  &__filter-btn {
+    @include floating-btn(56px, 50%);
+    position: relative;
+    @include glass-border;
+    background: rgba($color-dim, 0.6);
+    transition: all $transition-fast;
+    color: $color-text;
+  }
+
+  &__greeting {
+    font-family: $font-heading;
+    // font-size: ($spacing-md + $spacing-xs);
+    font-size: $spacing-lg;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__date {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba($color-text, 0.55);
+    margin-top: $spacing-2xs;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  &__bell {
+    @include floating-btn(48px, 50%);
+    position: relative;
+    @include glass-border;
+    background: rgba($color-dim, 0.6);
+    transition: all $transition-fast;
+  }
+
+  &__bell-dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: 2px solid $color-hover;
+  }
+
+  &__profile-btn {
+    overflow: hidden;
+
+    @media (hover: hover) {
+      &:hover {
+        .command-panel__profile-hover {
+          opacity: 1;
+        }
+
+        .command-panel__profile-avatar img {
+          filter: blur(2px) brightness(0.8);
+        }
+      }
+    }
+  }
+
+  &__profile-avatar {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    border-radius: inherit;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter $transition-fast;
+    }
+  }
+
+  &__profile-hover {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity $transition-fast;
+    border-radius: inherit;
+    z-index: 2;
+  }
+
+  // Pull-down drawer content
+  &__drawer {
+    padding: $spacing-sm $spacing-md $spacing-xs;
+    border-top: 1px solid rgba($color-border, 0.9);
+    margin-top: $spacing-sm;
+    animation: panel-in 0.2s ease;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  &__tabs {
+    display: flex;
+    gap: $spacing-xs;
+    margin-bottom: $spacing-sm;
+    background: $color-card;
+    border-radius: 24px;
+    padding: 4px;
+    height: 48px;
+    border: 1px solid $color-border;
+  }
+
+  &__tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-xs;
+    height: 100%;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: $font-body;
+    color: $color-muted;
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all $transition-fast;
+    cursor: pointer;
+
+    &--active-today {
+      background: rgba($color-task, 0.15);
+      color: $color-task;
+      border-color: rgba($color-task, 0.35);
+      box-shadow: 0 0 12px rgba($color-task, 0.12);
+    }
+
+    &--active-overdue {
+      background: rgba($color-notif-red, 0.15);
+      color: $color-notif-red;
+      border-color: rgba($color-notif-red, 0.35);
+      box-shadow: 0 0 12px rgba($color-notif-red, 0.12);
+    }
+
+    &:hover:not(&--active-today):not(&--active-overdue) {
+      color: $color-text;
+      background: $color-hover;
+    }
+  }
+
+  &__tab-settings {
+    width: 40px;
+    height: 100%;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    color: $color-muted;
+    cursor: pointer;
+    transition: all $transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      background: $color-hover;
+      color: $color-text;
+    }
+  }
+
+  &__badge {
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: $radius-pill;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+
+    &--today {
+      background: rgba($color-task, 0.18);
+      color: $color-task;
+    }
+
+    &--overdue {
+      background: rgba($color-notif-red, 0.18);
+      color: $color-notif-red;
+    }
+  }
+
+  &__list {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 52px; // Platz für Quick-Settings-Leiste
+    animation: fade-in 0.25s ease-out;
+    will-change: opacity, transform;
+  }
+
+  &__drawer-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+    padding: $spacing-sm $spacing-sm + $spacing-xs;
+    border-radius: 24px;
+    border: 1px solid $color-border;
+    margin-bottom: $spacing-sm;
+    background: $color-card;
+
+    &--overdue {
+      background: rgba($color-notif-red, 0.09);
+    }
+  }
+
+  &__drawer-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__drawer-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  &__drawer-title {
+    font-size: 13px;
+    color: $color-text;
+    width: 100%;
+    @include text-truncate;
+  }
+
+  &__drawer-meta {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    color: $color-calendar;
+    background: rgba($color-calendar, 0.12);
+    border: 1px solid rgba($color-calendar, 0.25);
+    padding: 1px 7px;
+    border-radius: $radius-pill;
+    flex-shrink: 0;
+  }
+
+  &__drawer-delete {
+    padding: $spacing-xs;
+    opacity: 0.35;
+    transition: opacity $transition-fast;
+    margin-left: auto;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &__drawer-empty {
+    color: $color-muted;
+    font-size: 13px;
+    text-align: center;
+    padding: $spacing-sm + $spacing-2xs 0 $spacing-xs;
+  }
+
+  // Handle bar (geschlossen: im Header; offen: im Footer)
+  &__handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    z-index: 10;
+
+    &--closed {
+      padding: $spacing-xs 0 0;
+    }
+
+    &--open {
+      padding: 6px 0;
+    }
+  }
+
+  &__footer {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    min-height: 110px;
+  }
+
+  &__handle-bar {
+    width: 34px;
+    height: 4px;
+    border-radius: $spacing-2xs;
+    background: rgba($color-text, 0.35);
+    transition: all $transition-normal;
+  }
+
+  // Quick-Settings-Leiste (ersetzt den einzelnen Settings-Button)
+  &__quick-settings {
+    position: absolute;
+    left: $spacing-md;
+    right: $spacing-md;
+    bottom: $spacing-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    animation: fade-in 0.3s ease;
+    z-index: 10;
+  }
+
+  &__qs-pill {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba($color-card, 0.6);
+    @include glass-border;
+    border-radius: 24px;
+    padding: 4px;
+    height: 48px;
+  }
+
+  // Einzelner Quick-Settings-Button
+  &__qs-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: $color-muted;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all $transition-fast;
+    flex-shrink: 0;
+    padding: 0;
+    line-height: 1;
+
+    &--lang {
+      padding: 0 0 0 2px;
+    }
+
+    &--theme {
+      padding: 0;
+    }
+
+    &:hover:not(&--active) {
+      color: $color-text;
+      background: $color-hover;
+    }
+
+    // Aktiver Zustand – farblich akzentuiert
+    &--active {
+      background: rgba($color-task, 0.15);
+      color: $color-task;
+      border-color: rgba($color-task, 0.35);
+      box-shadow: 0 0 12px rgba($color-task, 0.12);
+    }
+  }
+
+  &__qs-settings-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 24px;
+    background: rgba($color-card, 0.6);
+    @include glass-border;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-muted;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+    padding: 0;
+
+    &:hover {
+      background: $color-hover;
+      color: $color-text;
+    }
+  }
+
+  // Vertikaler Divider zwischen Kategorien
+  &__qs-divider {
+    width: 1px;
+    height: 20px;
+    background: $color-border;
+    flex-shrink: 0;
+    margin: 0 $spacing-2xs;
+  }
+}

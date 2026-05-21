@@ -1,0 +1,434 @@
+// ============================================================
+// PARA·LIST – Settings Modal + Feedback
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+// ── Settings Styling ───────────────────────────────────────
+.settings-section {
+  padding: 0 !important;
+}
+
+.settings-modal .settings-section {
+  padding: 0;
+}
+
+.settings-modal .settings-section+.settings-section {
+  margin-top: 16px;
+}
+
+.settings-modal .settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 0 0 16px;
+  border-bottom: 1px solid #262648;
+}
+
+.app.light-theme .settings-row {
+  border-bottom-color: #e5e5f0;
+}
+
+.settings-modal .settings-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.settings-modal .modal__input {
+  margin-bottom: 0;
+}
+
+.settings-modal .settings-label+.modal__input {
+  margin-top: 8px;
+}
+
+.theme-toggle {
+  display: flex;
+  background: #1C1C30;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.settings-modal .settings-row .settings-label {
+  margin-bottom: 0;
+}
+
+.settings-modal .modal__icon-row {
+  margin-bottom: 0;
+}
+
+.settings-modal .modal__icon-row+.settings-section {
+  margin-top: 8px;
+}
+
+.app.light-theme .theme-toggle {
+  background: #f0f0f5;
+}
+
+.theme-toggle__btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5858A0;
+  border: none;
+  background: transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #262648;
+    color: #EDEEFF;
+  }
+
+  &--active {
+    background: #262648;
+    color: #EDEEFF;
+  }
+}
+
+.app.light-theme .theme-toggle__btn {
+  &:hover {
+    background: #ffffff;
+    color: #1a1a24;
+  }
+
+  &--active {
+    background: #ffffff;
+    color: #1a1a24;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+}
+
+.app.light-theme .theme-toggle__btn--active {
+  background: #ffffff;
+  color: #1a1a24;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+// Profile Row (Apple Style)
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: #1C1C30;
+  border: 1px solid #262648;
+  border-radius: 16px;
+  width: 100%;
+  text-align: left;
+  margin-bottom: $spacing-md;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.98);
+    background: #262648;
+  }
+
+  &__avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7C83F7, #4F46E5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(124, 131, 247, 0.3);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+
+    &:hover .profile-row__avatar-overlay {
+      opacity: 1;
+    }
+  }
+
+  &__avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__name {
+    font-size: 18px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.3px;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: #5858A0;
+    margin-top: 2px;
+  }
+
+  &__chevron {
+    opacity: 0.5;
+  }
+}
+
+
+.settings-modal {
+  max-height: 95dvh !important;
+  overflow: hidden !important; // Header fixieren, nur Content scrollt
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0 !important; // Padding unten entfernen, damit Button nicht abgeschnitten wird
+
+  @media (max-width: 480px) {
+    height: 95dvh;
+  }
+
+  @media (min-width: 480px) {
+    max-height: 85vh !important;
+    height: auto;
+  }
+
+  &__back-inline {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    margin-right: 4px;
+    transition: transform 0.2s ease;
+
+    &:active {
+      transform: translateX(-2px);
+    }
+  }
+
+  &__content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; // Inhalt oben, Button unten
+    // Padding kommt vom modal__sheet (16px)
+
+    &--sub {
+      animation: slide-in-right 0.3s ease;
+    }
+  }
+
+  // Oberer Inhaltsbereich – scrollbar, nimmt verfügbaren Platz ein
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  // Untere Aktionsleiste für Sub-Views (Profil etc.)
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+    padding: 24px 0 16px;
+
+  }
+
+  // Runder Zurück-FAB (Chevron links)
+  &__footer-back {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid $color-border;
+    background: $color-surface;
+    color: $color-text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.92);
+      background: $color-hover;
+    }
+  }
+
+  // Breiter Schließen-Button
+  &__footer-close {
+    flex: 1;
+    padding: 13px 16px;
+    border-radius: $radius-lg;
+    background: #262648;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-body;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active {
+      opacity: 0.85;
+      transform: scale(0.98);
+    }
+  }
+}
+
+// Light-Mode Styling für den Schließen-Button
+
+.settings-group {
+  margin-top: 24px;
+
+  &__title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #5858A0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 0;
+    margin-bottom: 8px;
+  }
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 16px;
+  background: #1C1C30;
+  border: 1px solid #262648;
+  border-radius: $radius-md;
+  text-align: left;
+  transition: all 0.2s;
+
+  &__label {
+    font-size: 15px;
+    font-weight: 500;
+    color: white;
+  }
+
+  &--danger {
+    color: #F26565;
+    background: rgba(242, 101, 101, 0.1);
+    border-color: rgba(242, 101, 101, 0.2);
+
+    .settings-item__label {
+      color: #F26565;
+    }
+  }
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.99);
+  }
+}
+
+.app.light-theme .settings-item {
+  background: #ffffff;
+  border-color: #e5e5f0;
+
+  &__label {
+    color: #1a1a24;
+  }
+
+  &--danger {
+    background: rgba(242, 101, 101, 0.08);
+    border-color: rgba(242, 101, 101, 0.15);
+
+    .settings-item__label {
+      color: #ef4444;
+    }
+  }
+}
+
+// Feedback Styles
+
+.feedback-trigger-btn {
+  @include flex-center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba($color-task, 0.12);
+  border: 1px solid rgba($color-task, 0.25);
+  color: $color-task;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.9);
+    background: rgba($color-task, 0.2);
+  }
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.feedback-types {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: $radius-md;
+}
+
+.feedback-type-btn {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #5858A0;
+  transition: all 0.2s;
+
+  &--active {
+    background: #7C83F7;
+    color: white;
+    box-shadow: 0 2px 8px rgba(124, 131, 247, 0.3);
+  }
+}
+
+.feedback-callout {
+  background: rgba($color-task, 0.08);
+  border-radius: $radius-md;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #8E8EB2;
+  border: 1px solid rgba($color-task, 0.15);
+  line-height: 1.4;
+  animation: fade-in 0.3s ease;
+}
+
+.feedback-textarea-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feedback-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #EDEEFF;
+  margin-left: 4px;
+}
+

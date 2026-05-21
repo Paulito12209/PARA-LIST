@@ -1,0 +1,263 @@
+// ============================================================
+// PARA·LIST – Archive Dashboard
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+// ============================================================
+// ── PREMIUM ARCHIV-DASHBOARD (ARCHIVE SCREEN) ──
+// ============================================================
+
+.archive-dashboard-container {
+  background: #0d0e1b !important; // Premium dunkler Space-Hintergrund
+}
+
+.archive-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+
+  &__section-title {
+    font-family: $font-heading;
+    font-size: 14px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    padding-left: 4px;
+  }
+}
+
+// Horizontal scrollbares Karussell fuer Ordner
+.archive-carousel {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 8px 4px 16px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+
+  // Scrollbar ausblenden
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+// Ordner-Archiv-Karten mit Glow-Effekten
+.archive-card {
+  flex: 0 0 250px;
+  scroll-snap-align: start;
+  position: relative;
+  height: 156px;
+  padding: 20px;
+  background: rgba(20, 21, 38, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  // Dotted Textur im Kartenhintergrund
+  &__dots {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.8) 1px, transparent 1px);
+    background-size: 8px 8px;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    z-index: 2;
+  }
+
+  &__icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  &__count {
+    font-size: 26px;
+    font-weight: 800;
+    font-family: $font-heading;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-top: 16px;
+    z-index: 2;
+  }
+
+  &__desc {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.4;
+    margin-top: 4px;
+    z-index: 2;
+  }
+
+  // Projektspezifische Farbanpassungen und Glow
+  &--project {
+    border-color: rgba(224, 62, 62, 0.15);
+    color: #E03E3E;
+
+    .archive-card__icon-box {
+      background: rgba(224, 62, 62, 0.1);
+      border-color: rgba(224, 62, 62, 0.2);
+    }
+
+    &:hover {
+      border-color: rgba(224, 62, 62, 0.4);
+      box-shadow: 0 12px 32px rgba(224, 62, 62, 0.18);
+      transform: translateY(-4px);
+    }
+  }
+
+  // Bereichsspezifische Farbanpassungen und Glow
+  &--area {
+    border-color: rgba(208, 144, 32, 0.15);
+    color: #D09020;
+
+    .archive-card__icon-box {
+      background: rgba(208, 144, 32, 0.1);
+      border-color: rgba(208, 144, 32, 0.2);
+    }
+
+    &:hover {
+      border-color: rgba(208, 144, 32, 0.4);
+      box-shadow: 0 12px 32px rgba(208, 144, 32, 0.18);
+      transform: translateY(-4px);
+    }
+  }
+
+  // Ressourcenspezifische Farbanpassungen und Glow
+  &--resource {
+    border-color: rgba(48, 160, 96, 0.15);
+    color: #30A060;
+
+    .archive-card__icon-box {
+      background: rgba(48, 160, 96, 0.1);
+      border-color: rgba(48, 160, 96, 0.2);
+    }
+
+    &:hover {
+      border-color: rgba(48, 160, 96, 0.4);
+      box-shadow: 0 12px 32px rgba(48, 160, 96, 0.18);
+      transform: translateY(-4px);
+    }
+  }
+}
+
+// Grid fuer kompakte Inhalt-Archivkarten
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.archive-grid-card {
+  position: relative;
+  background: rgba(20, 21, 38, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__count {
+    font-size: 20px;
+    font-weight: 800;
+    color: #ffffff;
+    font-family: $font-heading;
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: scale(1.03);
+  }
+
+  &--tasks:hover {
+    border-color: rgba(124, 131, 247, 0.3);
+    box-shadow: 0 8px 24px rgba(124, 131, 247, 0.12);
+  }
+
+  &--notes:hover {
+    border-color: rgba(236, 72, 153, 0.3);
+    box-shadow: 0 8px 24px rgba(236, 72, 153, 0.12);
+  }
+
+  &--calendar:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.12);
+  }
+}
+
+// Detail-Listenansichten im Archiv
+.archive-detail-list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  &__back-btn {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      transform: translateX(-2px);
+    }
+  }
+}
+

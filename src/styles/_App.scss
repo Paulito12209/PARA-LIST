@@ -1,0 +1,647 @@
+// ============================================================
+// PARA·LIST – App Shell, Modal, Nav, FAB, Loading
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+.app {
+  width: 100%;
+  max-width: 420px;
+  height: 100dvh;
+  margin: 0 auto;
+  background: $color-bg;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  font-family: $font-body;
+  color: $color-text;
+  --command-panel-header-bg: #1a1a2e;
+  --command-panel-peek: calc(80px + env(safe-area-inset-top, 0px));
+
+  // PARA Pill Backgrounds (Dark Mode Default)
+  --pill-project-bg: #{$color-project-dim};
+  --pill-area-bg: #{$color-area-dim};
+  --pill-resource-bg: #{$color-resource-dim};
+
+  // Date & Overdue Pill (Dark Mode)
+  --pill-date-bg: #{rgba($color-calendar, 0.15)};
+  --pill-date-color: #60A5FA; // Klares Himmelblau statt Indigo-Lila
+  --pill-date-border: #{rgba($color-calendar, 0.25)};
+  --pill-overdue-bg: #{$color-project-dim};
+  --pill-overdue-color: #F26565;
+  --pill-overdue-border: #{rgba($color-notif-red, 0.25)};
+}
+
+// ── Main Content Area ───────────────────────────────────────
+.main-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  padding-top: var(--command-panel-peek);
+
+  // Startseite: Cover darf in die Peek-Zone ragen (kein Clipping → keine grauen Ecken)
+  &--tasks,
+  &--notes,
+  &--calendar {
+    overflow: visible;
+    background: transparent;
+  }
+}
+
+.fab {
+  position: absolute;
+  bottom: $spacing-md;
+  right: $spacing-md;
+  width: $spacing-3xl;
+  height: $spacing-3xl;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  z-index: 95;
+
+  svg {
+    display: block;
+  }
+}
+
+
+.fab-archive {
+  position: absolute;
+  bottom: $spacing-md;
+  left: $spacing-md;
+  width: $spacing-3xl;
+  height: $spacing-3xl;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  z-index: 95;
+  transition: all $transition-normal;
+
+  svg {
+    display: block;
+  }
+}
+
+// ── Category List Screen ────────────────────────────────────
+
+.nav-bottom {
+  position: absolute;
+  bottom: $spacing-md;
+  left: 0;
+  right: 0;
+  padding: 0 $spacing-md;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: $spacing-sm;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.5s ease;
+
+  &--inactive {
+    opacity: 0.05;
+  }
+
+  &__back {
+    pointer-events: all;
+    @include floating-btn($spacing-3xl, 50%);
+    background: $color-surface;
+    border: 1px solid $color-border;
+  }
+
+  &__res-search {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    pointer-events: all;
+    z-index: 10;
+  }
+
+  &__res-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  &__res-search-icon {
+    position: absolute;
+    left: $spacing-md;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  &__res-search-input {
+    width: 100%;
+    height: $spacing-3xl; // 48px, identisch mit Back- und FAB-Button
+    padding: 0 $spacing-md 0 calc($spacing-md + 22px);
+    border: 1px solid $color-border;
+    border-radius: 9999px; // Identischer Radius wie Buttons (pill shape)
+    background: $color-surface;
+    color: $color-text;
+    font-size: 13px;
+    font-family: $font-body;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transition: all $transition-normal;
+
+    &:focus {
+      outline: none;
+      border-color: rgba(#10B981, 0.5);
+      background: $color-hover;
+      box-shadow: 0 0 0 3px rgba(#10B981, 0.12);
+    }
+
+    &::placeholder {
+      color: rgba($color-text, 0.6); // Sichtbarkeit im Dark Mode erhöht
+    }
+  }
+
+  &__res-search-results {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: 220px;
+    max-height: 220px;
+    overflow-y: auto;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    padding: $spacing-xs;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    animation: slide-up-small 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &__res-search-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + 2px;
+    padding: $spacing-sm + 2px $spacing-md;
+    border-radius: $radius-md;
+    background: transparent;
+    border: none;
+    color: $color-text;
+    text-align: left;
+    transition: all $transition-fast;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(#10B981, 0.1);
+      color: #10B981;
+    }
+
+    span {
+      font-size: 13.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-sm + 1px;
+    pointer-events: all;
+  }
+
+  &__add {
+    @include floating-btn($spacing-3xl, 50%);
+    border: none;
+    pointer-events: all;
+  }
+}
+
+// ── Category Detail Screen ──────────────────────────────────
+
+.modal {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: flex-end;
+
+  @media (min-width: 480px) {
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-md;
+  }
+
+  &__sheet {
+    width: 100%;
+    background: $color-surface;
+    border-radius: $radius-xl $radius-xl 0 0;
+    padding: $spacing-md + $spacing-xs $spacing-md $spacing-xl + $spacing-xs;
+    border: 1px solid $color-border;
+    border-bottom: none;
+    max-height: 82vh;
+    overflow-y: auto;
+    animation: slide-up $transition-normal;
+
+    @media (min-width: 480px) {
+      border-radius: $radius-xl;
+      border-bottom: 1px solid $color-border;
+      max-height: 85vh;
+    }
+  }
+
+  &__handle {
+    width: 34px;
+    height: 4px;
+    border-radius: $spacing-2xs;
+    background: $color-dim;
+    margin: 0 auto $spacing-md + $spacing-xs;
+
+    @media (min-width: 480px) {
+      display: none;
+    }
+  }
+
+  &__header {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    // margin-bottom: $spacing-md;
+    text-align: center;
+    min-height: 44px;
+  }
+
+  &__header-left,
+  &__header-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .modal__media-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: $spacing-sm;
+    margin: $spacing-md 0;
+
+    &-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid $color-border;
+      border-radius: $radius-md;
+      padding: $spacing-sm $spacing-2xs;
+      cursor: pointer;
+      transition: all $transition-fast;
+
+      &--active {
+        border-color: currentColor;
+        background: $color-surface;
+      }
+
+      .icon-wrapper {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: $spacing-2xs;
+        color: white;
+      }
+
+      span {
+        font-size: 11px;
+        color: $color-text;
+        font-weight: 500;
+      }
+    }
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 17px;
+    font-weight: 700;
+    color: $color-text;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.2;
+  }
+
+  &__close {
+    padding: $spacing-xs;
+  }
+
+  &__input {
+    @include input-base;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  &__input+&__input,
+  &__input+&__select,
+  &__textarea+&__select,
+  &__select {
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__textarea {
+    @include input-base;
+    font-size: 13px;
+    line-height: 1.65;
+    resize: none;
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__select {
+    @include input-base;
+    font-size: 13px;
+    color-scheme: dark;
+    cursor: pointer;
+  }
+
+  // Multi-Select Dropdown für Kategorien
+  &__toggle-row {
+    margin-top: $spacing-sm + 1px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba($color-dim, 0.4);
+    padding: $spacing-sm $spacing-md;
+    border-radius: $radius-md;
+    border: 1px solid $color-border;
+    transition: all $transition-fast;
+
+    label {
+      font-size: 14px;
+      color: $color-text;
+      font-weight: 500;
+    }
+  }
+
+  &__switch {
+    position: relative;
+    display: inline-block;
+    width: 38px;
+    height: 22px;
+
+    input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+
+      &:checked+.modal__slider {
+        background-color: #38BDF8;
+      }
+
+      &:checked+.modal__slider:before {
+        transform: translateX(16px);
+      }
+    }
+  }
+
+  &__slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #262648;
+    transition: .3s;
+    border-radius: 34px;
+
+    &:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+  }
+
+  &__multi-select {
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__multi-select-btn {
+    @include input-base;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    width: 100%;
+    color: $color-muted;
+
+    &--has-selection {
+      color: $color-text;
+    }
+  }
+
+  &__multi-select-list {
+    position: absolute;
+    bottom: calc(100% + #{$spacing-xs});
+    left: 0;
+    right: 0;
+    max-height: 180px;
+    overflow-y: auto;
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-md;
+    padding: $spacing-2xs;
+    z-index: 10;
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  &__multi-select-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    width: 100%;
+    padding: $spacing-xs + 2px $spacing-sm;
+    border-radius: $radius-sm + 2px;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: $color-text;
+    font-size: 13px;
+    font-family: $font-body;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+
+    &--selected {
+      background: $color-hover;
+    }
+  }
+
+  &__multi-select-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 2px solid $color-dim;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all $transition-fast;
+  }
+
+  &__multi-select-name {
+    flex: 1;
+    @include text-truncate;
+  }
+
+  &__input-row {
+    display: flex;
+    gap: $spacing-sm;
+    width: 100%;
+    margin-top: $spacing-sm + 1px;
+
+    &>* {
+      flex: 1;
+      width: 0; // Force equal width
+      margin-top: 0 !important;
+    }
+  }
+
+  &__date-input,
+  &__time-input {
+    @include input-base;
+    font-size: 13px;
+    color-scheme: dark;
+    margin-top: $spacing-sm + 1px;
+  }
+
+  &__submit {
+    width: 100%;
+    margin-top: 16px;
+    padding: $spacing-sm + 5px;
+    border-radius: $radius-lg;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-body;
+    transition: opacity $transition-fast;
+
+    &--disabled {
+      opacity: 0.45;
+    }
+
+    &--danger {
+      background: #E03E3E;
+      color: #fff;
+    }
+
+    &--secondary {
+      background: #262648;
+      color: #fff;
+      margin-top: 16px;
+    }
+  }
+
+  // New category modal variant
+  &__icon-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+    margin-bottom: 8px;
+  }
+}
+
+// ── Loading Screen ──────────────────────────────────────────
+.loading {
+  @include flex-center;
+  height: 100dvh;
+  background: $color-bg;
+  flex-direction: column;
+  gap: $spacing-md;
+
+  &__text {
+    font-family: $font-heading;
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-text;
+    letter-spacing: -0.5px;
+    opacity: 0.6;
+  }
+
+  &__spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid $color-dim;
+    border-top-color: $color-task;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Prevent Safari auto-zoom on mobile/touch devices (fonts < 16px trigger zoom)
+@media (hover: none) and (pointer: coarse) {
+
+  .modal__input,
+  .modal__textarea,
+  .modal__select,
+  .nav-bottom__res-search-input,
+  .cat-detail__date-input,
+  .onboarding__input {
+    font-size: 16px !important;
+  }
+}
+
+.app:has(.main-content--tasks),
+.app:has(.main-content--notes),
+.app:has(.main-content--calendar) {
+  --command-panel-header-bg: transparent;
+
+  .command-panel--closed {
+    background: transparent;
+    // Box-Shadow bleibt: Akzent-Glow definiert die abgerundeten Panel-Ecken
+  }
+}
+
+// Light Mode: zusätzlich Text dunkel + Shadow entfernen
+.app.light-theme:has(.main-content--tasks),
+.app.light-theme:has(.main-content--notes),
+.app.light-theme:has(.main-content--calendar) {
+  .command-panel--closed {
+    box-shadow: none;
+  }
+
+  .command-panel__greeting {
+    color: #1A1A2E;
+  }
+
+  .command-panel__date {
+    color: rgba(26, 26, 46, 0.55);
+  }
+}
+

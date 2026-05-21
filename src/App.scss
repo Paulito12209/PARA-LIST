@@ -4774,6 +4774,7 @@
     &--area {
       color: $color-area;
     }
+
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -5555,6 +5556,23 @@
 }
 
 // Explizit: Sass-Nesting erzeugte zuvor einen ungültigen Light-Mode-Header-Selektor
+.app.light-theme .voice-fab {
+  /* Light‑Mode‑Style: fast durchsichtig */
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: none;
+  border: 1.5px solid rgba($color-task, 0.45);
+  box-shadow:
+    inset 0 0 12px rgba($color-task, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+  .voice-fab__icon { color: $color-task; }
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    box-shadow:
+      inset 0 0 16px rgba($color-task, 0.2),
+      0 6px 18px rgba(0, 0, 0, 0.15);
+  }
+}
+
 .app.light-theme .command-panel--closed>.command-panel__header {
   background: #ffffff;
   box-shadow:

@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Claude settings
-.claude/settings.json
+.claude/

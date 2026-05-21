@@ -768,9 +768,10 @@ function HomeScreen({
             className={`voice-fab ${isListening ? "voice-fab--listening" : ""}`}
             onClick={handleVoiceInput}
             style={{
+              border: `1.5px solid ${tabColor}73`,
               boxShadow: isListening
                 ? "0 0 30px rgba(239, 68, 68, 0.6)"
-                : undefined
+                : `inset 0 0 22px ${tabColor}38, 0 8px 32px rgba(15, 15, 30, 0.55)`,
             }}
             title={
               tab === "notes"

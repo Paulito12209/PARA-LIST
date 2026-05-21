@@ -96,18 +96,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
               <button
                 className="command-panel__bell command-panel__profile-btn"
                 onClick={(e) => { e.stopPropagation(); onOpenSettings(); }}
-                style={user.avatar ? { padding: 0 } : {}}
               >
-                {user.avatar ? (
-                  <div className="command-panel__profile-avatar">
-                    <img src={user.avatar} alt="Avatar" />
-                    <div className="command-panel__profile-hover">
-                      <CustomSettingsIcon size={18} color="#fff" />
-                    </div>
-                  </div>
-                ) : (
-                  <CustomSettingsIcon size={17} className="icon-muted" color="currentColor" />
-                )}
+                <CustomSettingsIcon size={17} className="icon-muted" color="currentColor" />
               </button>
             )}
           </div>
@@ -256,18 +246,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
             <button
               className="command-panel__qs-settings-btn command-panel__profile-btn"
               onClick={() => onOpenSettings()}
-              style={user.avatar ? { padding: 0 } : {}}
             >
-              {user.avatar ? (
-                <div className="command-panel__profile-avatar">
-                  <img src={user.avatar} alt="Avatar" />
-                  <div className="command-panel__profile-hover">
-                    <CustomSettingsIcon size={18} color="#fff" />
-                  </div>
-                </div>
-              ) : (
-                <CustomSettingsIcon size={18} />
-              )}
+              <CustomSettingsIcon size={18} />
             </button>
           </div>
         </div>

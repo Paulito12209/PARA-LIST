@@ -253,6 +253,27 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
         className={`task-item task-item--home ${e.done ? "task-item--done" : ""} ${isBirthdayEntry ? "task-item--birthday" : ""}`}
         onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
       >
+        {e.type === 'task' && (
+          <button
+            className={`task-item__type-icon ${e.done ? "task-item__type-icon--done" : ""}`}
+            onClick={(ev) => { ev.stopPropagation(); onToggle && onToggle(e.id); }}
+            aria-label={e.done ? (t.markUndone || "Mark as not done") : (t.markDone || "Mark as done")}
+          >
+            {e.done
+              ? <CheckCircle2 size={22} color="#7C83F7" strokeWidth={2.25} />
+              : <Circle size={22} color="#7C83F7" strokeWidth={2.25} />}
+          </button>
+        )}
+        {e.type === 'note' && (
+          <div className="note-item__type-icon" aria-hidden="true">
+            <FileText size={22} color="#FBBF24" strokeWidth={2.25} />
+          </div>
+        )}
+        {e.type === 'calendar' && (
+          <div className="cal-item__type-icon" aria-hidden="true">
+            <Calendar size={22} color="#1E3A8A" strokeWidth={2.25} />
+          </div>
+        )}
         <div className="task-item__body">
           <div className="task-item__side-actions">
             <button

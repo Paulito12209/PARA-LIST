@@ -9,7 +9,7 @@ import {
   Link2, Pencil, Paperclip, Image as ImageIcon,
   CheckCircle2, Archive, ArchiveRestore, Moon, Sun,
   Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon,
-  Star, MoreVertical
+  Star, MoreVertical, Sliders
 } from "lucide-react";
 import "./App.scss";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "./EntryLists";
@@ -94,20 +94,10 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
           <div className="command-panel__actions" style={{ display: 'flex', gap: '8px' }}>
             {!open && (
               <button
-                className="command-panel__bell command-panel__profile-btn"
+                className="command-panel__bell command-panel__filter-btn"
                 onClick={(e) => { e.stopPropagation(); onOpenSettings(); }}
-                style={user.avatar ? { padding: 0 } : {}}
               >
-                {user.avatar ? (
-                  <div className="command-panel__profile-avatar">
-                    <img src={user.avatar} alt="Avatar" />
-                    <div className="command-panel__profile-hover">
-                      <CustomSettingsIcon size={18} color="#fff" />
-                    </div>
-                  </div>
-                ) : (
-                  <CustomSettingsIcon size={17} className="icon-muted" color="currentColor" />
-                )}
+                <Sliders size={22} color="currentColor" />
               </button>
             )}
           </div>
@@ -499,10 +489,13 @@ function HomeScreen({
   return (
     <div className={`home home--${tab}`}>
       {/* ── OBERES COVER-ELEMENT (LICHTWELLEN & ERSTES ELEMENT) ── */}
-      <div 
-        className="home-cover" 
+      <div
+        className="home-cover"
         style={{ "--cover-accent-rgb": rgbVal }}
       >
+        {state.user.bgImage && (
+          <img className="home-cover__bg-img" src={state.user.bgImage} alt="" aria-hidden="true" />
+        )}
         <div className="home-cover__light-wave" />
         <div className="home-cover__content">
           <div className="home-cover__header">
@@ -1530,6 +1523,25 @@ function SettingsModal({ user, theme, setTheme, lang, setLang, t, onClose, onUpd
                   onChange={(e) => onUpdateUser({ name: e.target.value })}
                   placeholder="Name..."
                 />
+              </div>
+
+              <div className="settings-section">
+                <div className="settings-label">{lang === 'de' ? 'Cover-Bild URL' : 'Cover Image URL'}</div>
+                <input
+                  className="modal__input"
+                  type="url"
+                  value={user.bgImage || ""}
+                  onChange={(e) => onUpdateUser({ bgImage: e.target.value })}
+                  placeholder="https://..."
+                />
+                {user.bgImage && (
+                  <img
+                    src={user.bgImage}
+                    alt="Cover-Vorschau"
+                    style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', marginTop: '8px' }}
+                    onError={(e) => { e.target.style.display = 'none'; }}
+                  />
+                )}
               </div>
 
               <div className="settings-section">

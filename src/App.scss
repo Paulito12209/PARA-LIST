@@ -78,6 +78,7 @@
   &--closed>&__header {
     position: relative;
     z-index: 1;
+    min-height: 80px;
     background: var(--command-panel-header-bg, #{$color-surface});
     border-radius: 0 0 $radius-lg $radius-lg;
     padding-bottom: 6px;
@@ -93,6 +94,15 @@
     align-items: center;
     justify-content: space-between;
     padding-bottom: $spacing-2xs;
+  }
+
+  &__filter-btn {
+    @include floating-btn(56px, 50%);
+    position: relative;
+    @include glass-border;
+    background: rgba($color-dim, 0.6);
+    transition: all $transition-fast;
+    color: $color-text;
   }
 
   &__greeting {
@@ -4648,7 +4658,7 @@
 .home-cover {
   position: relative;
   width: 100%;
-  min-height: 280px;
+  min-height: 350px;
   // Zieht das Cover hinter das Command Panel (+2px Überlappung gegen Anti-Alias-Lücke)
   margin-top: calc(-1 * var(--command-panel-peek) - 2px);
   padding: calc(24px + var(--command-panel-peek) + 2px) 20px 48px;
@@ -4712,6 +4722,17 @@
       // Dunkle Basis
       #1A1A2E;
     animation: wave-float 8s ease-in-out infinite alternate;
+  }
+
+  &__bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    opacity: 0.5;
   }
 
   &__content {

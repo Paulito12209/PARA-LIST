@@ -4638,12 +4638,13 @@
         transparent 165px,
         transparent 250px
       ),
-      // Nahtloser Übergang oben: Akzentfarbe beginnt direkt am Command-Panel
-      linear-gradient(to bottom,
-        rgba(var(--cover-accent-rgb), 0.42) 0%,
-        transparent 38%),
-      // Haupt-Akzentglow (Mitte der Card)
-      radial-gradient(ellipse 80% 65% at 55% 55%,
+      // Akzentfarbe baut sich von unten auf → Cover-Top bleibt dunkel = kein Seam am Panel
+      linear-gradient(to top,
+        rgba(var(--cover-accent-rgb), 0.50) 0%,
+        rgba(var(--cover-accent-rgb), 0.20) 38%,
+        transparent 60%),
+      // Haupt-Akzentglow (unterer Cover-Bereich)
+      radial-gradient(ellipse 80% 65% at 55% 70%,
         rgba(var(--cover-accent-rgb), 0.35) 0%,
         transparent 70%),
       // Dunkle Basis

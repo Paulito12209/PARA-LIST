@@ -75,37 +75,51 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
     >
 
 
-      <div className="command-panel__header" onClick={onToggle} style={{ cursor: 'pointer' }}>
-        <div>
-          <div className="command-panel__greeting">{t.greeting(new Date().getHours(), user.name)}</div>
-          <div className="command-panel__date">
-            {new Date().toLocaleDateString(t.locale, {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            })}
+      <div
+        className="command-panel__header"
+        onClick={!open ? onToggle : undefined}
+        style={!open ? { cursor: 'pointer' } : undefined}
+      >
+        <div className="command-panel__header-row">
+          <div>
+            <div className="command-panel__greeting">{t.greeting(new Date().getHours(), user.name)}</div>
+            <div className="command-panel__date">
+              {new Date().toLocaleDateString(t.locale, {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              })}
+            </div>
+          </div>
+          <div className="command-panel__actions" style={{ display: 'flex', gap: '8px' }}>
+            {!open && (
+              <button
+                className="command-panel__bell command-panel__profile-btn"
+                onClick={(e) => { e.stopPropagation(); onOpenSettings(); }}
+                style={user.avatar ? { padding: 0 } : {}}
+              >
+                {user.avatar ? (
+                  <div className="command-panel__profile-avatar">
+                    <img src={user.avatar} alt="Avatar" />
+                    <div className="command-panel__profile-hover">
+                      <CustomSettingsIcon size={18} color="#fff" />
+                    </div>
+                  </div>
+                ) : (
+                  <CustomSettingsIcon size={17} className="icon-muted" color="currentColor" />
+                )}
+              </button>
+            )}
           </div>
         </div>
-        <div className="command-panel__actions" style={{ display: 'flex', gap: '8px' }}>
-          {!open && (
-            <button
-              className="command-panel__bell command-panel__profile-btn"
-              onClick={(e) => { e.stopPropagation(); onOpenSettings(); }}
-              style={user.avatar ? { padding: 0 } : {}}
-            >
-              {user.avatar ? (
-                <div className="command-panel__profile-avatar">
-                  <img src={user.avatar} alt="Avatar" />
-                  <div className="command-panel__profile-hover">
-                    <CustomSettingsIcon size={18} color="#fff" />
-                  </div>
-                </div>
-              ) : (
-                <CustomSettingsIcon size={17} className="icon-muted" color="currentColor" />
-              )}
-            </button>
-          )}
-        </div>
+        {!open && (
+          <div className="command-panel__handle command-panel__handle--closed">
+            <div
+              className="command-panel__handle-bar"
+              style={notif ? { background: notif.color, opacity: 1 } : {}}
+            />
+          </div>
+        )}
       </div>
 
       {open && (
@@ -189,19 +203,16 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
         </div>
       )}
 
-      <div
-        className={`command-panel__handle command-panel__handle--${open ? "open" : "closed"
-          }`}
-        onClick={onToggle}
-      >
-        <div
-          className="command-panel__handle-bar"
-          style={notif ? { background: notif.color, opacity: 1 } : {}}
-        />
-        {open && (
+      {open && (
+        <div className="command-panel__footer">
+          <div
+            className="command-panel__handle command-panel__handle--open"
+            onClick={onToggle}
+          >
+            <div className="command-panel__handle-bar" />
+          </div>
           <div className="command-panel__quick-settings" onClick={(e) => e.stopPropagation()}>
             <div className="command-panel__qs-pill">
-              {/* Sprachen: DE / EN / ES */}
               <button
                 className={`command-panel__qs-btn command-panel__qs-btn--lang ${lang === 'de' ? 'command-panel__qs-btn--active' : ''}`}
                 onClick={() => setLang('de')}
@@ -224,10 +235,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
                 🇪🇸
               </button>
 
-              {/* Vertikaler Divider */}
               <div className="command-panel__qs-divider" />
 
-              {/* Darstellung: Moon / Sun */}
               <button
                 className={`command-panel__qs-btn command-panel__qs-btn--theme ${theme === 'dark' ? 'command-panel__qs-btn--active' : ''}`}
                 onClick={() => setTheme('dark')}
@@ -244,7 +253,6 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
               </button>
             </div>
 
-            {/* Settings-Button */}
             <button
               className="command-panel__qs-settings-btn command-panel__profile-btn"
               onClick={() => onOpenSettings()}
@@ -262,8 +270,8 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
               )}
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -278,6 +286,7 @@ function HomeScreen({
   tab,
   setTab,
   onOpenCatType,
+  onOpenCat,
   onAddCat,
   onAddEntry,
   onAddVoiceEntry, // Neue Prop für den Sprachassistenten
@@ -291,6 +300,7 @@ function HomeScreen({
   panelOpen,
   expandedCat,
   setExpandedCat,
+  onCoverAccentChange,
 }) {
 
   const { entries, cats } = state;
@@ -480,6 +490,12 @@ function HomeScreen({
 
   const rgbVal = getThemeColorRgb(activeCatType);
 
+  useEffect(() => {
+    if (onCoverAccentChange) {
+      onCoverAccentChange(rgbVal);
+    }
+  }, [rgbVal, onCoverAccentChange]);
+
   return (
     <div className={`home home--${tab}`}>
       {/* ── OBERES COVER-ELEMENT (LICHTWELLEN & ERSTES ELEMENT) ── */}
@@ -527,35 +543,45 @@ function HomeScreen({
 
           {firstCat ? (
             <div className="home-cover__main">
-              <h1 className="home-cover__title">{firstCat.name}</h1>
-              <p className="home-cover__desc">
-                {firstCat.desc || firstCat.body || (lang === 'de' ? 'Erfasse und verwalte deine Themen mit PARA-LIST.' : 'Organize and manage your topics with PARA-LIST.')}
-              </p>
-              
-              {/* Dynamische Pills/Tags basierend auf den Eigenschaften des Elements */}
-              <div className="home-cover__tags">
-                <span className="home-cover__tag">
-                  <Calendar size={12} className="home-cover__tag-icon" />
-                  {firstCat.date ? fmtDate(firstCat.date, t.locale) : (lang === 'de' ? 'Flexibel' : 'Flexible')}
-                </span>
-                <span className="home-cover__tag">
-                  <Link2 size={12} className="home-cover__tag-icon" />
-                  {
-                    firstCat.relatedId 
-                      ? (cats.find(c => c.id === firstCat.relatedId)?.name || (lang === 'de' ? 'Allgemein' : 'General'))
-                      : firstCat.type === 'project' 
-                        ? (lang === 'de' ? 'Projekt' : 'Project')
-                        : firstCat.type === 'area'
-                          ? (lang === 'de' ? 'Bereich' : 'Area')
-                          : (lang === 'de' ? 'Ressource' : 'Resource')
-                  }
-                </span>
-                <span className="home-cover__tag">
-                  {firstCat.tags && firstCat.tags.length > 0 ? firstCat.tags[0] : 'App'}
-                </span>
-              </div>
+              <button
+                type="button"
+                className="home-cover__primary-action"
+                onClick={() => onOpenCat(firstCat)}
+              >
+                <div className="home-cover__copy">
+                  <h1 className="home-cover__title">{firstCat.name}</h1>
+                  <p className="home-cover__desc">
+                    {firstCat.desc || firstCat.body || (lang === 'de' ? 'Erfasse und verwalte deine Themen mit PARA-LIST.' : 'Organize and manage your topics with PARA-LIST.')}
+                  </p>
+                </div>
 
-              {/* Passiver Textlink zur Detailansicht ganz unten platziert */}
+                {/* Eigener Hit-Bereich für die Pills, damit auch Leerraum rechts klickbar ist */}
+                <div className="home-cover__meta">
+                  <div className="home-cover__tags">
+                    <span className="home-cover__tag">
+                      <Calendar size={12} className="home-cover__tag-icon" />
+                      {firstCat.date ? fmtDate(firstCat.date, t.locale) : (lang === 'de' ? 'Flexibel' : 'Flexible')}
+                    </span>
+                    <span className="home-cover__tag">
+                      <Link2 size={12} className="home-cover__tag-icon" />
+                      {
+                        firstCat.relatedId 
+                          ? (cats.find(c => c.id === firstCat.relatedId)?.name || (lang === 'de' ? 'Allgemein' : 'General'))
+                          : firstCat.type === 'project' 
+                            ? (lang === 'de' ? 'Projekt' : 'Project')
+                            : firstCat.type === 'area'
+                              ? (lang === 'de' ? 'Bereich' : 'Area')
+                              : (lang === 'de' ? 'Ressource' : 'Resource')
+                      }
+                    </span>
+                    <span className="home-cover__tag">
+                      {firstCat.tags && firstCat.tags.length > 0 ? firstCat.tags[0] : 'App'}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              {/* Separater Link zur Vollansicht des gesamten Typs */}
               <div 
                 className="home-cover__textlink"
                 onClick={() => onOpenCatType(activeCatType)}
@@ -583,7 +609,7 @@ function HomeScreen({
       {/* ── GETEILTE NAVIGATION (SPLIT NAVIGATION) ── */}
       <div className="split-nav">
         {/* Linker Container (Pills mit Dotted-Textur) */}
-        <div className="split-nav__pills">
+        <div className={`split-nav__pills split-nav__pills--${activeCatType}`}>
           <div className="split-nav__dots-bg" />
           <div className="split-nav__items">
             {[
@@ -1884,6 +1910,7 @@ export default function App() {
   const [expandedCat, setExpandedCat] = useState("project");
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationBirthday, setCelebrationBirthday] = useState(null);
+  const [coverAccentRgb, setCoverAccentRgb] = useState("224, 62, 62");
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -2069,6 +2096,7 @@ export default function App() {
   return (
     <div
       className={`app ${theme === 'light' ? 'light-theme' : ''}`}
+      style={cur.view === "home" ? { "--cover-accent-rgb": coverAccentRgb } : undefined}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -2108,8 +2136,10 @@ export default function App() {
             panelOpen={panelOpen}
             expandedCat={expandedCat}
             setExpandedCat={setExpandedCat}
+            onCoverAccentChange={setCoverAccentRgb}
 
             onOpenCatType={(type) => push({ view: "catList", type })}
+            onOpenCat={(cat) => push({ view: "catDetail", catId: cat.id })}
             onAddCat={(type) => {
               setPanelOpen(false);
               setNewCatType(type);

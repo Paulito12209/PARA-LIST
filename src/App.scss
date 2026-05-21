@@ -17,6 +17,8 @@
   overflow: hidden;
   font-family: $font-body;
   color: $color-text;
+  --command-panel-header-bg: #{$color-surface};
+  --command-panel-peek: calc(80px + env(safe-area-inset-top, 0px));
 
   // PARA Pill Backgrounds (Dark Mode Default)
   --pill-project-bg: #{$color-project-dim};
@@ -40,17 +42,19 @@
   right: 0;
   z-index: 100;
   flex-shrink: 0;
-  border-bottom: 1px solid $color-border;
-  border-radius: 0 0 $radius-lg $radius-lg;
-  overflow: hidden;
   transition: background $transition-normal;
 
   &--closed {
-    background: $color-surface;
+    background: transparent;
+    border: none;
+    overflow: visible;
   }
 
   &--open {
     background: $color-hover;
+    border-bottom: 1px solid $color-border;
+    border-radius: 0 0 $radius-lg $radius-lg;
+    overflow: hidden;
     height: calc(100vh - 90px);
     height: calc(100dvh - 90px);
     display: flex;
@@ -67,9 +71,24 @@
 
   &__header {
     display: flex;
+    flex-direction: column;
+    padding: calc(#{$spacing-md} + env(safe-area-inset-top, 0px)) $spacing-md 0;
+  }
+
+  &--closed > &__header {
+    position: relative;
+    z-index: 1;
+    background: var(--command-panel-header-bg, #{$color-surface});
+    border-radius: 0 0 $radius-lg $radius-lg;
+    padding-bottom: 6px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  }
+
+  &__header-row {
+    display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: $spacing-md $spacing-md $spacing-2xs;
+    padding-bottom: $spacing-2xs;
   }
 
   &__greeting {
@@ -337,7 +356,7 @@
     padding: $spacing-sm + $spacing-2xs 0 $spacing-xs;
   }
 
-  // Handle bar
+  // Handle bar (geschlossen: im Header; offen: im Footer)
   &__handle {
     display: flex;
     justify-content: center;
@@ -347,12 +366,19 @@
     z-index: 10;
 
     &--closed {
-      padding: $spacing-xs 0 6px;
+      padding: $spacing-xs 0 0;
     }
 
     &--open {
       padding: 6px 0;
     }
+  }
+
+  &__footer {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+    min-height: 110px;
   }
 
   &__handle-bar {
@@ -465,32 +491,14 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  padding-top: 80px;
+  padding-top: var(--command-panel-peek);
 
-  // Tab-spezifischer Hintergrundverlauf — reicht bis hinter das Command Panel
-  &--tasks::before,
-  &--notes::before,
-  &--calendar::before {
-    content: "";
-    position: absolute;
-    top: -80px; // Beginnt hinter dem Command Panel
-    left: 0;
-    right: 0;
-    bottom: 0; // Reicht bis ganz nach unten
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  &--calendar::before {
-    background: linear-gradient(180deg, rgba($color-calendar, 0.08) 0%, rgba($color-calendar, 0) 100%);
-  }
-
-  &--tasks::before {
-    background: linear-gradient(180deg, rgba($color-task, 0.08) 0%, rgba($color-task, 0) 100%);
-  }
-
-  &--notes::before {
-    background: linear-gradient(180deg, rgba($color-note, 0.08) 0%, rgba($color-note, 0) 100%);
+  // Startseite: Cover darf in die Peek-Zone ragen (kein Clipping → keine grauen Ecken)
+  &--tasks,
+  &--notes,
+  &--calendar {
+    overflow: visible;
+    background: transparent;
   }
 }
 
@@ -499,8 +507,10 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
+  z-index: 1;
+  background: #0d0e1b;
 
   &__categories-container {
     // Exakte Hälfte des Viewports minus 112px
@@ -946,6 +956,10 @@
   @include card-base;
   border-radius: $radius-lg;
   transition: opacity 0.2s;
+
+  &--home {
+    border-radius: 0;
+  }
 
   &--done {
     background: rgba($color-surface, 0.5);
@@ -1932,6 +1946,26 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
+
+    &--project {
+      border-color: rgba(224, 62, 62, 0.72);
+      box-shadow: 0 0 0 1px rgba(224, 62, 62, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(224, 62, 62, 0.4);
+    }
+
+    &--area {
+      border-color: rgba(208, 144, 32, 0.72);
+      box-shadow: 0 0 0 1px rgba(208, 144, 32, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(208, 144, 32, 0.38);
+    }
+
+    &--resource {
+      border-color: rgba(48, 160, 96, 0.72);
+      box-shadow: 0 0 0 1px rgba(48, 160, 96, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(48, 160, 96, 0.34);
+    }
+
+    &--archive {
+      border-color: rgba(124, 131, 247, 0.72);
+      box-shadow: 0 0 0 1px rgba(124, 131, 247, 0.2), 0 8px 32px rgba(0, 0, 0, 0.25), 0 0 22px rgba(124, 131, 247, 0.4);
+    }
   }
 
   &__item-name {
@@ -2896,6 +2930,7 @@
 .app.light-theme {
   background: #f7f7f9;
   color: #1a1a24;
+  --command-panel-header-bg: #ffffff;
 
   // PARA Pill Backgrounds (Light Mode)
   --pill-project-bg: #{rgba($color-project, 0.12)};
@@ -2961,7 +2996,7 @@
     border-bottom-color: #e5e5f0;
 
     &--closed {
-      background: #ffffff;
+      background: transparent;
     }
 
     &--open {
@@ -4456,13 +4491,15 @@
   position: relative;
   width: 100%;
   min-height: 280px;
-  padding: 24px 20px 48px;
+  // Zieht das Cover hinter das Command Panel (+2px Überlappung gegen Anti-Alias-Lücke)
+  margin-top: calc(-1 * var(--command-panel-peek) - 2px);
+  padding: calc(24px + var(--command-panel-peek) + 2px) 20px 48px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   background: #0d0e1b;
-  border-bottom: none; // Kein harter Trennstrich – Übergang wird via Pseudo-Element gelöst
+  border-bottom: none;
 
   // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund (#07070F)
   &::after {
@@ -4483,9 +4520,14 @@
     inset: 0;
     z-index: 1;
     background:
-      radial-gradient(circle at 80% 20%, rgba(var(--cover-accent-rgb), 0.42) 0%, transparent 60%),
-      radial-gradient(circle at 10% 70%, rgba(var(--cover-accent-rgb), 0.18) 0%, transparent 50%),
-      linear-gradient(to bottom, transparent 40%, #0d0e1b 100%);
+      radial-gradient(circle at 80% 42%, rgba(var(--cover-accent-rgb), 0.34) 0%, transparent 62%),
+      radial-gradient(circle at 12% 88%, rgba(var(--cover-accent-rgb), 0.14) 0%, transparent 52%),
+      linear-gradient(to bottom,
+        rgba(var(--cover-accent-rgb), 0.08) 0%,
+        rgba(var(--cover-accent-rgb), 0.11) 24%,
+        rgba(var(--cover-accent-rgb), 0.08) 44%,
+        rgba(var(--cover-accent-rgb), 0.03) 68%,
+        #0d0e1b 100%);
     animation: wave-float 8s ease-in-out infinite alternate;
   }
 
@@ -4548,6 +4590,25 @@
     gap: 8px;
   }
 
+  &__primary-action {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  &__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
   &__title {
     font-family: $font-heading;
     font-size: 30px;
@@ -4564,6 +4625,14 @@
     line-height: 1.45;
     margin: 0;
     max-width: 90%;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 30px;
+    margin-top: 4px;
   }
 
   // Passiver Textlink zur Vollansicht
@@ -4588,8 +4657,9 @@
 
   &__tags {
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
-    margin-top: 4px;
   }
 
   &__tag {
@@ -4731,7 +4801,7 @@
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  padding: 8px 16px 20px;
+  padding: 8px 0 0px;
 }
 
 .home .entry-list {
@@ -5212,19 +5282,22 @@
 .app.light-theme {
   .home-cover {
     background: #f7f7fa;
-    border-bottom: none; // Kein harter Trennstrich im Light-Mode
+    border-bottom: none;
 
-    // Übergangsverlauf passend zum Light-Mode App-Hintergrund (#f7f7f9)
     &::after {
       background: linear-gradient(to bottom, transparent 0%, #f7f7f9 100%);
     }
 
     &__light-wave {
-      // Stärkere Deckkraft damit die Akzentfarbe (z.B. Rot bei "Projekte") im Light-Mode klar sichtbar ist
       background:
-        radial-gradient(circle at 80% 20%, rgba(var(--cover-accent-rgb), 0.38) 0%, transparent 65%),
-        radial-gradient(circle at 10% 70%, rgba(var(--cover-accent-rgb), 0.18) 0%, transparent 55%),
-        linear-gradient(to bottom, transparent 40%, #f7f7f9 100%);
+        radial-gradient(circle at 80% 42%, rgba(var(--cover-accent-rgb), 0.3) 0%, transparent 62%),
+        radial-gradient(circle at 12% 88%, rgba(var(--cover-accent-rgb), 0.12) 0%, transparent 52%),
+        linear-gradient(to bottom,
+          rgba(var(--cover-accent-rgb), 0.06) 0%,
+          rgba(var(--cover-accent-rgb), 0.09) 24%,
+          rgba(var(--cover-accent-rgb), 0.065) 44%,
+          rgba(var(--cover-accent-rgb), 0.025) 68%,
+          #f7f7fa 100%);
     }
 
     &__badge {
@@ -5261,6 +5334,16 @@
     }
   }
 
+  .main-content--tasks,
+  .main-content--notes,
+  .main-content--calendar {
+    background: transparent;
+  }
+
+  .home {
+    background: #f7f7fa;
+  }
+
   .split-nav {
     &__dots-bg {
       opacity: 0.12;
@@ -5271,6 +5354,26 @@
       background: rgba(255, 255, 255, 0.85);
       border-color: rgba(0, 0, 0, 0.06);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+      &.split-nav__pills--project {
+        border-color: rgba(224, 62, 62, 0.62);
+        box-shadow: 0 0 0 1px rgba(224, 62, 62, 0.16), 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 18px rgba(224, 62, 62, 0.28);
+      }
+
+      &.split-nav__pills--area {
+        border-color: rgba(208, 144, 32, 0.62);
+        box-shadow: 0 0 0 1px rgba(208, 144, 32, 0.16), 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 18px rgba(208, 144, 32, 0.26);
+      }
+
+      &.split-nav__pills--resource {
+        border-color: rgba(48, 160, 96, 0.62);
+        box-shadow: 0 0 0 1px rgba(48, 160, 96, 0.16), 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 18px rgba(48, 160, 96, 0.24);
+      }
+
+      &.split-nav__pills--archive {
+        border-color: rgba(124, 131, 247, 0.62);
+        box-shadow: 0 0 0 1px rgba(124, 131, 247, 0.16), 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 18px rgba(124, 131, 247, 0.28);
+      }
 
       .split-nav__btn {
         color: #5858a0; // Standardmaessige Icon-Farbe fuer inaktive Elemente
@@ -5306,4 +5409,9 @@
       background: rgba(0, 0, 0, 0.15);
     }
   }
+}
+
+// Explizit: Sass-Nesting erzeugte zuvor einen ungültigen Light-Mode-Header-Selektor
+.app.light-theme .command-panel--closed>.command-panel__header {
+  background: #ffffff;
 }

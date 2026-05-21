@@ -116,7 +116,7 @@ function CommandPanel({ user, notif, entries, open, onToggle, onOpenSettings, on
           <div className="command-panel__handle command-panel__handle--closed">
             <div
               className="command-panel__handle-bar"
-              style={notif ? { background: notif.color, opacity: 1 } : {}}
+              style={{}}
             />
           </div>
         )}
@@ -558,12 +558,12 @@ function HomeScreen({
                 {/* Eigener Hit-Bereich für die Pills, damit auch Leerraum rechts klickbar ist */}
                 <div className="home-cover__meta">
                   <div className="home-cover__tags">
-                    <span className="home-cover__tag">
+                    <span className="home-cover__tag home-cover__tag--date">
                       <Calendar size={12} className="home-cover__tag-icon" />
                       {firstCat.date ? fmtDate(firstCat.date, t.locale) : (lang === 'de' ? 'Flexibel' : 'Flexible')}
                     </span>
-                    <span className="home-cover__tag">
-                      <Link2 size={12} className="home-cover__tag-icon" />
+                    <span className="home-cover__tag home-cover__tag--area">
+                      <Triangle size={12} className="home-cover__tag-icon" />
                       {
                         firstCat.relatedId 
                           ? (cats.find(c => c.id === firstCat.relatedId)?.name || (lang === 'de' ? 'Allgemein' : 'General'))
@@ -586,9 +586,12 @@ function HomeScreen({
                 className="home-cover__textlink"
                 onClick={() => onOpenCatType(activeCatType)}
               >
-                {activeCatType === "project" && (lang === 'de' ? "Alle Projekte anzeigen →" : "Show all projects →")}
-                {activeCatType === "area" && (lang === 'de' ? "Alle Bereiche anzeigen →" : "Show all areas →")}
-                {activeCatType === "resource" && (lang === 'de' ? "Alle Ressourcen anzeigen →" : "Show all resources →")}
+                {activeCatType === "project" && (lang === 'de' ? "Alle Projekte anzeigen" : "Show all projects")}
+                {activeCatType === "area" && (lang === 'de' ? "Alle Bereiche anzeigen" : "Show all areas")}
+                {activeCatType === "resource" && (lang === 'de' ? "Alle Ressourcen anzeigen" : "Show all resources")}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" style={{ width: '11px', height: '11px', flexShrink: 0, marginLeft: '4px', verticalAlign: 'middle' }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                </svg>
               </div>
             </div>
           ) : (
@@ -634,7 +637,7 @@ function HomeScreen({
                   style={isActive ? { color: item.color } : {}}
                   title={item.label}
                 >
-                  <IconComp size={isActive ? 32 : 20} strokeWidth={isActive ? 2.5 : 2} />
+                  <IconComp size={36} strokeWidth={isActive ? 2.5 : 2} />
                 </button>
               );
             })}
@@ -645,11 +648,11 @@ function HomeScreen({
         <button
           className="split-nav__add"
           onClick={() => onAddCat(activeCatType)}
-          style={{ borderColor: `rgb(${rgbVal})` }}
+          style={{}}
           title={lang === 'de' ? "Neu erstellen" : "Create new"}
         >
           <div className="split-nav__dots-bg" />
-          <Plus size={32} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
+          <Plus size={36} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
         </button>
       </div>
 
@@ -765,16 +768,9 @@ function HomeScreen({
             className={`voice-fab ${isListening ? "voice-fab--listening" : ""}`}
             onClick={handleVoiceInput}
             style={{
-              boxShadow: isListening 
-                ? "0 0 30px rgba(239, 68, 68, 0.6)" 
-                : `0 8px 24px ${tabColor}55`,
-              background: isListening 
-                ? "linear-gradient(135deg, #ef4444, #ec4899)" 
-                : tab === "notes"
-                  ? "linear-gradient(135deg, #F59E0B, #FF8008)"
-                  : tab === "calendar"
-                    ? "linear-gradient(135deg, #1D4ED8, #3b82f6)"
-                    : `linear-gradient(135deg, #7C83F7, #9B66FF)`
+              boxShadow: isListening
+                ? "0 0 30px rgba(239, 68, 68, 0.6)"
+                : undefined
             }}
             title={
               tab === "notes"

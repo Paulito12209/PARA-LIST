@@ -467,6 +467,17 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
           className={`task-item ${e.done && !isArchive ? "task-item--done" : ""} ${isArchive ? "task-item--archive" : ""}`}
           onClick={() => { if (suppressNextClick.current) return; onOpenEntry && onOpenEntry(e); }}
         >
+          {!isArchive && (
+            <button
+              className={`task-item__type-icon ${e.done ? "task-item__type-icon--done" : ""}`}
+              onClick={(ev) => { ev.stopPropagation(); onToggle && onToggle(e.id); }}
+              aria-label={e.done ? t.markUndone || "Mark as not done" : t.markDone || "Mark as done"}
+            >
+              {e.done
+                ? <CheckCircle2 size={22} color="#7C83F7" strokeWidth={2.25} />
+                : <Circle size={22} color="#7C83F7" strokeWidth={2.25} />}
+            </button>
+          )}
           <div className="task-item__body">
             <div
               className={`task-item__title ${
@@ -475,7 +486,7 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
             >
               <AutoScrollText>{e.title}</AutoScrollText>
             </div>
-            
+
             <div className="task-item__meta">
               {e.due && (
                 <span
@@ -488,21 +499,12 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
               <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
             </div>
           </div>
-          {isArchive ? (
+          {isArchive && (
             <button
               className="task-item__archive-restore-btn"
               onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
             >
               <ArchiveRestore size={16} />
-            </button>
-          ) : (
-            <button
-              className={`task-item__checkbox ${
-                e.done ? "task-item__checkbox--checked" : ""
-              }`}
-              onClick={(ev) => { ev.stopPropagation(); onToggle(e.id); }}
-            >
-              {e.done && <Check size={12} color="#7C83F7" strokeWidth={3} />}
             </button>
           )}
         </div>
@@ -585,32 +587,39 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
 
     return (
       <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
-        <div 
-          className={`note-item ${isHome ? "note-item--home" : ""} ${isArchive ? "note-item--archive" : ""}`} 
+        <div
+          className={`note-item ${isHome ? "note-item--home" : ""} ${isArchive ? "note-item--archive" : ""}`}
           onClick={() => onOpenEntry && onOpenEntry(e)}
         >
-          <div className="note-item__header">
-            <div className="note-item__body">
-              <div className="note-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
-              {e.body && <div className="note-item__excerpt"><AutoScrollText>{e.body}</AutoScrollText></div>}
+          {!isHome && (
+            <div className="note-item__type-icon" aria-hidden="true">
+              <FileText size={22} color="#FBBF24" strokeWidth={2.25} />
             </div>
-            <button
-               className="note-item__archive-btn"
-               onClick={(ev) => {
-                 ev.stopPropagation();
-                 onArchiveEntry && onArchiveEntry(e.id);
-               }}
-            >
-               {isArchive ? <ArchiveRestore size={16} /> : <Archive size={16} />}
-            </button>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
-            {!isHome && (
-              <span className="task-item__due" style={{ marginTop: 0 }}>
-                {fmtRelative(e.createdAt, t.locale)}
-              </span>
-            )}
-            <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
+          )}
+          <div className="note-item__content">
+            <div className="note-item__header">
+              <div className="note-item__body">
+                <div className="note-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
+                {e.body && <div className="note-item__excerpt"><AutoScrollText>{e.body}</AutoScrollText></div>}
+              </div>
+              <button
+                 className="note-item__archive-btn"
+                 onClick={(ev) => {
+                   ev.stopPropagation();
+                   onArchiveEntry && onArchiveEntry(e.id);
+                 }}
+              >
+                 {isArchive ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '4px', lineHeight: 1 }}>
+              {!isHome && (
+                <span className="task-item__due" style={{ marginTop: 0 }}>
+                  {fmtRelative(e.createdAt, t.locale)}
+                </span>
+              )}
+              <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={isHome} />
+            </div>
           </div>
         </div>
       </SwipeToDelete>
@@ -709,17 +718,8 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpd
         >
           <div className="cal-item__row">
             {!isHome && (
-              <div className="cal-item__date-badge">
-                <div className="cal-item__date-month">
-                  {e.date
-                    ? new Date(e.date + "T12:00").toLocaleDateString(t.locale, {
-                        month: "short",
-                      })
-                    : ""}
-                </div>
-                <div className="cal-item__date-day">
-                  {e.date ? new Date(e.date + "T12:00").getDate() : ""}
-                </div>
+              <div className="cal-item__type-icon" aria-hidden="true">
+                <Calendar size={22} color="#1E3A8A" strokeWidth={2.25} />
               </div>
             )}
             <div className="cal-item__info">

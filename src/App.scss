@@ -1528,6 +1528,14 @@
   @include card-base;
   border-radius: $radius-lg;
   transition: opacity 0.2s, transform 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm + $spacing-xs;
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
 
 
   &__archive-btn {
@@ -1738,6 +1746,47 @@
       border: 1px solid rgba(29, 78, 216, 0.25);
     }
   }
+}
+
+// ── Type-Icons (left-side leading icon, Gemini-inspired) ─────
+.task-item__type-icon,
+.note-item__type-icon,
+.cal-item__type-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  transition: background $transition-fast, transform $transition-fast;
+}
+
+.task-item__type-icon {
+  cursor: pointer;
+  background: rgba(124, 131, 247, 0.10);
+
+  &:active {
+    transform: scale(0.94);
+    background: rgba(124, 131, 247, 0.20);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(124, 131, 247, 0.16);
+    }
+  }
+}
+
+.note-item__type-icon {
+  background: rgba(251, 191, 36, 0.10);
+}
+
+.cal-item__type-icon {
+  background: rgba(30, 58, 138, 0.10);
 }
 
 // ── Media Item ───────────────────────────────────────────────

@@ -813,7 +813,7 @@
   position: relative;
 
   &__header {
-    height: 24px;
+    min-height: 40px;
     display: flex;
     align-items: center;
     /* Zentriert Icons relativ zum Header-Block */
@@ -841,7 +841,7 @@
 
   &__label {
     font-family: $font-heading;
-    font-size: $spacing-md+4px;
+    font-size: 28px;
     font-weight: 700;
     color: $color-text;
     letter-spacing: -0.3px;
@@ -862,7 +862,7 @@
   /* Pillen-Rahmen entfernt */
 
   &__btn {
-    @include floating-btn(24px, $radius-pill);
+    @include floating-btn(36px, $radius-pill);
     transition: all $transition-fast;
     color: $color-muted;
 

@@ -679,7 +679,7 @@ function HomeScreen({
                       : {}
                   }
                 >
-                  <TabIcon size={16} />
+                  <TabIcon size={22} />
                 </button>
               );
             })}

@@ -275,20 +275,6 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
           </div>
         )}
         <div className="task-item__body">
-          <div className="task-item__side-actions">
-            <button
-              className="task-item__star-btn"
-              onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
-            >
-              <Star size={18} fill={e.starred ? '#F59E0B' : 'none'} color={e.starred ? '#F59E0B' : '#C0C0D0'} strokeWidth={e.starred ? 0 : 1.5} />
-            </button>
-            <button
-              className="task-item__menu-btn"
-              onClick={(ev) => { ev.stopPropagation(); setMenuEntryId(menuEntryId === e.id ? null : e.id); }}
-            >
-              <MoreVertical size={18} color="#C0C0D0" />
-            </button>
-          </div>
           <div className="task-item__top-row">
             <div className={`task-item__title ${e.done ? "task-item__title--done" : ""}`}>
               <AutoScrollText>{e.title}</AutoScrollText>
@@ -339,7 +325,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
                 className="task-item__date-input"
                 value={(e.type === 'calendar' ? e.date : e.due) || ""}
                 autoFocus
-                onChange={(ev) => { 
+                onChange={(ev) => {
                   const val = ev.target.value || null;
                   if (e.type === 'calendar') {
                     onUpdateEntry && onUpdateEntry(e.id, { date: val });
@@ -356,6 +342,21 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
               />
             </div>
           )}
+        </div>
+
+        <div className="task-item__side-actions">
+          <button
+            className="task-item__star-btn"
+            onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
+          >
+            <Star size={18} fill={e.starred ? '#F59E0B' : 'none'} color={e.starred ? '#F59E0B' : '#C0C0D0'} strokeWidth={e.starred ? 0 : 1.5} />
+          </button>
+          <button
+            className="task-item__menu-btn"
+            onClick={(ev) => { ev.stopPropagation(); setMenuEntryId(menuEntryId === e.id ? null : e.id); }}
+          >
+            <MoreVertical size={18} color="#C0C0D0" />
+          </button>
         </div>
 
         {menuEntryId === e.id && (

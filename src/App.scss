@@ -990,21 +990,31 @@
     border-radius: 0;
     background: #1A1A2E;
     border-color: transparent;
+    align-items: flex-start;
 
     .task-item__body {
-      position: relative;
-      padding-right: 24px;
+      position: static;
+      padding-right: 0;
+      align-self: flex-start;
     }
 
     .task-item__side-actions {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
+      position: static;
+      flex-shrink: 0;
+      align-self: flex-start;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
       align-items: center;
+      gap: $spacing-xs;
+      padding-top: 2px;
+    }
+
+    .task-item__type-icon,
+    .note-item__type-icon,
+    .cal-item__type-icon {
+      align-self: flex-start;
+      flex-shrink: 0;
     }
 
     .task-item__star-btn,

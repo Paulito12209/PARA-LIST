@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { VoiceFab } from "../components/VoiceFab";
+import { AutoScrollText } from "../components/AutoScrollText";
 import { getNextBirthday, isOld, fmtDate } from "../utils";
 
 const COVER_ACCENT_RGB = {
@@ -246,7 +247,9 @@ export function HomeScreen({
           onClick={() => onOpenCat(firstCat)}
         >
           <div className="home-cover__copy">
-            <h1 className="home-cover__title">{firstCat.name}</h1>
+            <AutoScrollText className="home-cover__title">
+              {firstCat.name}
+            </AutoScrollText>
             <p className="home-cover__desc">
               {firstCat.desc || firstCat.body || placeholderDesc}
             </p>
@@ -272,27 +275,6 @@ export function HomeScreen({
           </div>
         </button>
 
-        <div className="home-cover__textlink" onClick={() => onOpenCatType(activeCatType)}>
-          {activeCatType === "project" && (lang === "de" ? "Alle Projekte anzeigen" : "Show all projects")}
-          {activeCatType === "area" && (lang === "de" ? "Alle Bereiche anzeigen" : "Show all areas")}
-          {activeCatType === "resource" && (lang === "de" ? "Alle Ressourcen anzeigen" : "Show all resources")}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            style={{
-              width: "11px",
-              height: "11px",
-              flexShrink: 0,
-              marginLeft: "4px",
-              verticalAlign: "middle",
-            }}
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-          </svg>
-        </div>
       </div>
     );
   };
@@ -403,42 +385,67 @@ export function HomeScreen({
           </div>
           {firstCat ? renderFirstCat() : renderEmptyCover()}
         </div>
-      </div>
 
-      <div className="split-nav">
-        <div className={`split-nav__pills split-nav__pills--${activeCatType}`}>
-          <div className="split-nav__items">
-            {CAT_TYPE_CONFIG.map((item) => {
-              const IconComp = item.Icon;
-              const isActive = activeCatType === item.id;
-              return (
-                <button
-                  key={item.id}
-                  className={`split-nav__btn ${isActive ? "split-nav__btn--active" : ""}`}
-                  onClick={() => {
-                    if (item.id === "archive") {
-                      onOpenArchive(tab);
-                    } else {
-                      setActiveCatType(item.id);
-                    }
-                  }}
-                  style={isActive ? { color: item.color } : {}}
-                  title={t[item.labelKey] || item.fallback}
-                >
-                  <IconComp size={32} strokeWidth={isActive ? 2.5 : 2} />
-                </button>
-              );
-            })}
+        <div className="split-nav">
+          {firstCat && activeCatType !== "archive" && (
+            <div className="home-cover__textlink" onClick={() => onOpenCatType(activeCatType)}>
+              {activeCatType === "project" && (lang === "de" ? "Alle Projekte anzeigen" : "Show all projects")}
+              {activeCatType === "area" && (lang === "de" ? "Alle Bereiche anzeigen" : "Show all areas")}
+              {activeCatType === "resource" && (lang === "de" ? "Alle Ressourcen anzeigen" : "Show all resources")}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.5"
+                stroke="currentColor"
+                style={{
+                  width: "11px",
+                  height: "11px",
+                  flexShrink: 0,
+                  marginLeft: "4px",
+                  verticalAlign: "middle",
+                }}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+            </div>
+          )}
+          <div className="split-nav__row">
+            <div className={`split-nav__pills split-nav__pills--${activeCatType}`}>
+              <div className="split-nav__items">
+                {CAT_TYPE_CONFIG.map((item) => {
+                  const IconComp = item.Icon;
+                  const isActive = activeCatType === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      className={`split-nav__btn ${isActive ? "split-nav__btn--active" : ""}`}
+                      onClick={() => {
+                        if (item.id === "archive") {
+                          onOpenArchive(tab);
+                        } else {
+                          setActiveCatType(item.id);
+                        }
+                      }}
+                      style={isActive ? { color: item.color } : {}}
+                      title={t[item.labelKey] || item.fallback}
+                    >
+                      <IconComp size={32} strokeWidth={isActive ? 2.5 : 2} />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              className="split-nav__add"
+              onClick={() => onAddCat(activeCatType)}
+              title={lang === "de" ? "Neu erstellen" : "Create new"}
+            >
+              <Plus size={32} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
+            </button>
           </div>
         </div>
-
-        <button
-          className="split-nav__add"
-          onClick={() => onAddCat(activeCatType)}
-          title={lang === "de" ? "Neu erstellen" : "Create new"}
-        >
-          <Plus size={32} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
-        </button>
       </div>
 
       <div className="home__list-container">

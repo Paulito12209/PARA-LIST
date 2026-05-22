@@ -49,6 +49,7 @@
   &--calendar {
     overflow: visible;
     background: transparent;
+    padding-top: 0;
   }
 }
 
@@ -620,10 +621,7 @@
 .app:has(.main-content--tasks),
 .app:has(.main-content--notes),
 .app:has(.main-content--calendar) {
-  --command-panel-header-bg: transparent;
-
   .command-panel--closed {
-    background: transparent;
     // Box-Shadow bleibt: Akzent-Glow definiert die abgerundeten Panel-Ecken
   }
 }

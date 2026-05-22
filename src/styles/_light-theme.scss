@@ -1246,18 +1246,21 @@
     background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px);
   }
 
-  .voice-overlay__greeting { color: #1a1a24; }
-  .voice-overlay__hint { color: #6b7280; }
-
-  .voice-overlay__chip {
-    background: rgba(0, 0, 0, 0.05);
-    color: #1a1a24;
-    border-color: rgba(0, 0, 0, 0.08);
-  }
-
   .voice-overlay__input {
     color: #1a1a24;
     caret-color: #1a1a24;
+  }
+
+  .voice-overlay__search-hint { color: #6b7280; }
+  .voice-overlay__title-display { color: #1a1a24; }
+  .voice-overlay__done-hint { color: #6b7280; }
+
+  .voice-overlay__cal-month { color: #1a1a24; }
+  .voice-overlay__cal-wd { color: #9ca3af; }
+  .voice-overlay__cal-day { color: #1a1a24; }
+  .voice-overlay__cal-nav {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1a1a24;
   }
 
   .voice-overlay__bottom-bar {

@@ -52,6 +52,7 @@
   width: 48px;
   height: 48px;
   margin-bottom: $spacing-md;
+  animation: voice-greeting-in 0.4s ease both;
 }
 
 .voice-overlay__sparkle {
@@ -77,70 +78,159 @@
   }
 }
 
-// ── Greeting (Sage **Suche**) ─────────────────────────────
-.voice-overlay__greeting {
-  font-family: $font-heading;
-  font-size: 26px;
-  font-weight: 400;
-  color: $color-text;
-  animation: voice-greeting-in 0.5s ease 0.15s both;
-
-  strong {
-    font-weight: 700;
-  }
-}
-
-// ── Hint ──────────────────────────────────────────────────
-.voice-overlay__hint {
-  font-size: 14px;
-  color: $color-muted;
-  margin-top: 12px;
-  text-align: center;
-  animation: voice-greeting-in 0.5s ease 0.25s both;
-}
-
-// ── Quick-Action Chips ────────────────────────────────────
-.voice-overlay__chips {
-  display: flex;
-  gap: $spacing-sm;
-  margin-top: $spacing-lg;
-  animation: voice-greeting-in 0.5s ease 0.35s both;
-}
-
-.voice-overlay__chip {
-  padding: $spacing-sm $spacing-md;
-  border-radius: $radius-pill;
-  background: rgba($color-card, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: $color-text;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: $font-body;
-  cursor: pointer;
-  transition: all $transition-fast;
-
-  &:hover {
-    background: rgba($color-card, 0.9);
-  }
-}
-
-// ── Invisible input (cursor floats below chip) ────────────
+// ── Invisible input (cursor floats) ───────────────────────
 .voice-overlay__input {
   width: 100%;
   max-width: 280px;
   background: transparent;
   border: none;
   color: $color-text;
-  font-size: 16px;
+  font-size: 18px;
   font-family: $font-body;
   outline: none;
   text-align: center;
-  margin-top: $spacing-md;
+  margin-top: $spacing-sm;
   caret-color: $color-text;
-  animation: voice-greeting-in 0.5s ease 0.4s both;
+  animation: voice-greeting-in 0.4s ease 0.1s both;
 
   &::placeholder {
     color: transparent;
+  }
+}
+
+// ── Search hint / Continue hint ───────────────────────────
+.voice-overlay__search-hint {
+  font-size: 13px;
+  color: $color-muted;
+  text-align: center;
+  margin-top: $spacing-lg;
+  padding: 0 $spacing-md;
+  animation: voice-greeting-in 0.5s ease 0.3s both;
+  line-height: 1.5;
+}
+
+// ── Date phase: title display ─────────────────────────────
+.voice-overlay__title-display {
+  font-family: $font-heading;
+  font-size: 18px;
+  font-weight: 600;
+  color: $color-text;
+  text-align: center;
+  margin-bottom: $spacing-lg;
+  animation: voice-greeting-in 0.3s ease both;
+}
+
+// ── Calendar ──────────────────────────────────────────────
+.voice-overlay__calendar {
+  width: 100%;
+  max-width: 320px;
+  animation: voice-greeting-in 0.4s ease 0.1s both;
+}
+
+.voice-overlay__cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.voice-overlay__cal-month {
+  font-family: $font-heading;
+  font-size: 16px;
+  font-weight: 600;
+  color: $color-text;
+  text-transform: capitalize;
+}
+
+.voice-overlay__cal-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba($color-card, 0.6);
+  color: $color-text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: rgba($color-card, 0.9);
+  }
+}
+
+.voice-overlay__cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: $spacing-xs;
+}
+
+.voice-overlay__cal-wd {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: $color-muted;
+  padding: 4px 0;
+}
+
+.voice-overlay__cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.voice-overlay__cal-empty {
+  aspect-ratio: 1;
+}
+
+.voice-overlay__cal-day {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: transparent;
+  color: $color-text;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: $font-body;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all $transition-fast;
+
+  &--today:not(&--selected) {
+    border-color: rgba($color-text, 0.25);
+  }
+
+  &--selected {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  &:hover:not(&--selected) {
+    background: rgba($color-card, 0.6);
+  }
+}
+
+// ── "Fertig?" hint (tappable) ─────────────────────────────
+.voice-overlay__done-hint {
+  font-size: 14px;
+  font-weight: 500;
+  color: $color-muted;
+  margin-top: $spacing-md;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: $font-body;
+  padding: $spacing-xs $spacing-md;
+  animation: voice-greeting-in 0.3s ease 0.2s both;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-text;
   }
 }
 
@@ -215,7 +305,6 @@
   background: $color-muted;
   transition: height 0.15s ease;
 
-  // When listening: bars dance
   .voice-overlay__bottom-bar--listening & {
     animation: vis-bar-dance 0.65s ease-in-out infinite alternate;
     animation-delay: var(--bar-delay);
@@ -266,7 +355,6 @@
   50%      { transform: scale(1.15); opacity: 1; }
 }
 
-// Sparkle #1 needs translate preserved
 .voice-overlay__sparkle--1 {
   animation-name: voice-sparkle-pulse-center;
 }

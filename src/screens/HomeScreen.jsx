@@ -583,11 +583,9 @@ export function HomeScreen({
           t={t}
           tab={tab}
           tabColor={tabColor}
-          userName={state.user.name}
           lang={lang}
-          onTranscribed={(text) => { onAddVoiceEntry(text); setVoiceOverlayOpen(false); }}
+          onTranscribed={(title, date) => { onAddVoiceEntry(title, date); setVoiceOverlayOpen(false); }}
           onClose={() => setVoiceOverlayOpen(false)}
-          onCreateEntry={(type) => { onAddEntry(type); setVoiceOverlayOpen(false); }}
         />
       )}
     </div>

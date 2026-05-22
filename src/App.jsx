@@ -107,7 +107,7 @@ function migrateState(state) {
   return dirty ? next : state;
 }
 
-function buildVoiceEntry(tab, title) {
+function buildVoiceEntry(tab, title, date) {
   if (tab === "notes") {
     return { type: "note", title, body: "", ...VOICE_ENTRY_BASE };
   }
@@ -115,13 +115,13 @@ function buildVoiceEntry(tab, title) {
     return {
       type: "calendar",
       title,
-      date: TODAY,
+      date: date || TODAY,
       time: "",
       isBirthday: false,
       ...VOICE_ENTRY_BASE,
     };
   }
-  return { type: "task", title, due: TODAY, done: false, ...VOICE_ENTRY_BASE };
+  return { type: "task", title, due: date || TODAY, done: false, ...VOICE_ENTRY_BASE };
 }
 
 function NotFoundScreen({ Icon, iconColor, onBack }) {
@@ -426,7 +426,7 @@ export default function App() {
               const entryType = type || (tab === "tasks" ? "task" : tab === "notes" ? "note" : "calendar");
               setCreating({ type: entryType, catId: null });
             }}
-            onAddVoiceEntry={(title) => addEntry(buildVoiceEntry(tab, title))}
+            onAddVoiceEntry={(title, date) => addEntry(buildVoiceEntry(tab, title, date))}
             toggleTask={toggleTask}
             toggleStar={toggleStar}
             updateEntry={updateEntry}

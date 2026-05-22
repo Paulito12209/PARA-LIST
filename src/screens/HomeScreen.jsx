@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus } from "lucide-react";
+import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus, ChevronRight } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { VoiceFab } from "../components/VoiceFab";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -451,7 +451,10 @@ export function HomeScreen({
       <div className="home__list-container">
         <div className="list-section__header">
           <div className="list-section__header-left">
-            <span className="list-section__label">{tabCfg?.label}</span>
+            <div className="list-section__label-wrapper">
+              <span className="list-section__label">{tabCfg?.label}</span>
+              <ChevronRight size={20} className="list-section__label-chevron" />
+            </div>
           </div>
           <div className="list-switcher">
             {TABS.map((tItem) => {

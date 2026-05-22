@@ -1237,3 +1237,35 @@
     }
   }
 }
+
+// ── Voice Overlay (Light Mode) ─────────────────────────────
+.app.light-theme .voice-overlay {
+  background: #f7f7f9;
+
+  .voice-overlay__body::before {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.12) 1px, transparent 1px);
+  }
+
+  .voice-overlay__greeting { color: #1a1a24; }
+  .voice-overlay__hint { color: #6b7280; }
+
+  .voice-overlay__chip {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1a1a24;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .voice-overlay__input {
+    color: #1a1a24;
+    caret-color: #1a1a24;
+  }
+
+  .voice-overlay__bottom-bar {
+    background: rgba(255, 255, 255, 0.7);
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .voice-overlay__vis-bar {
+    background: #9ca3af;
+  }
+}

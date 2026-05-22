@@ -161,6 +161,7 @@ export default function App() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [celebrationBirthday, setCelebrationBirthday] = useState(null);
   const [coverAccentRgb, setCoverAccentRgb] = useState(DEFAULT_COVER_ACCENT_RGB);
+  const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -393,6 +394,7 @@ export default function App() {
         onOpenSettings={() => setSettingsOpen(true)}
         onToggleTask={toggleTask}
         onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+        voiceOverlayOpen={voiceOverlayOpen}
       />
 
       {panelOpen && (
@@ -419,10 +421,10 @@ export default function App() {
               setPanelOpen(false);
               setNewCatType(type);
             }}
-            onAddEntry={() => {
+            onAddEntry={(type) => {
               setPanelOpen(false);
-              const type = tab === "tasks" ? "task" : tab === "notes" ? "note" : "calendar";
-              setCreating({ type, catId: null });
+              const entryType = type || (tab === "tasks" ? "task" : tab === "notes" ? "note" : "calendar");
+              setCreating({ type: entryType, catId: null });
             }}
             onAddVoiceEntry={(title) => addEntry(buildVoiceEntry(tab, title))}
             toggleTask={toggleTask}
@@ -439,6 +441,8 @@ export default function App() {
               setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
             }
             onUpdateCat={updateCat}
+            voiceOverlayOpen={voiceOverlayOpen}
+            setVoiceOverlayOpen={setVoiceOverlayOpen}
           />
         )}
 

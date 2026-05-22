@@ -19,6 +19,7 @@ export function CommandPanel({
   setTheme,
   lang,
   setLang,
+  voiceOverlayOpen,
 }) {
   const [subTab, setSubTab] = useState("today");
   const touchStartX = useRef(0);
@@ -65,6 +66,8 @@ export function CommandPanel({
 
   const activeEntries = subTab === "today" ? todayEntries : overdueEntries;
 
+  const isVoiceMode = voiceOverlayOpen && !open;
+
   return (
     <div
       className={`command-panel command-panel--${open ? "open" : "closed"}`}
@@ -73,13 +76,15 @@ export function CommandPanel({
     >
       <div
         className="command-panel__header"
-        onClick={!open ? onToggle : undefined}
-        style={!open ? { cursor: "pointer" } : undefined}
+        onClick={!open && !isVoiceMode ? onToggle : undefined}
+        style={!open && !isVoiceMode ? { cursor: "pointer" } : undefined}
       >
         <div className="command-panel__header-row">
           <div>
             <div className="command-panel__greeting">
-              {t.greeting(new Date().getHours(), user.name)}
+              {isVoiceMode
+                ? t.voiceQuestion
+                : t.greeting(new Date().getHours(), user.name)}
             </div>
             <div className="command-panel__date">
               {new Date().toLocaleDateString(t.locale, {

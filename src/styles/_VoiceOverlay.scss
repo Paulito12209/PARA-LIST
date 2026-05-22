@@ -1,0 +1,287 @@
+// ============================================================
+// PARA·LIST – Voice Overlay
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+.voice-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 99;
+  display: flex;
+  flex-direction: column;
+  background: $color-bg;
+  animation: voice-overlay-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.voice-overlay__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-top: 80px;
+  overflow: hidden;
+
+  // Dot-Pattern (Dark Mode)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(236, 72, 153, 0.45) 1px, transparent 1px);
+    background-size: 14px 14px;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+}
+
+// ── Center content ────────────────────────────────────────
+.voice-overlay__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 $spacing-lg;
+  position: relative;
+  z-index: 2;
+}
+
+// ── Sparkles (twinkling cluster) ──────────────────────────
+.voice-overlay__sparkles {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  margin-bottom: $spacing-md;
+}
+
+.voice-overlay__sparkle {
+  position: absolute;
+  animation: voice-sparkle-pulse 3s ease-in-out infinite;
+
+  &--1 {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  &--2 {
+    top: 0;
+    right: -2px;
+    animation-delay: -1s;
+  }
+
+  &--3 {
+    bottom: 4px;
+    left: 2px;
+    animation-delay: -2s;
+  }
+}
+
+// ── Greeting (Sage **Suche**) ─────────────────────────────
+.voice-overlay__greeting {
+  font-family: $font-heading;
+  font-size: 26px;
+  font-weight: 400;
+  color: $color-text;
+  animation: voice-greeting-in 0.5s ease 0.15s both;
+
+  strong {
+    font-weight: 700;
+  }
+}
+
+// ── Hint ──────────────────────────────────────────────────
+.voice-overlay__hint {
+  font-size: 14px;
+  color: $color-muted;
+  margin-top: 12px;
+  text-align: center;
+  animation: voice-greeting-in 0.5s ease 0.25s both;
+}
+
+// ── Quick-Action Chips ────────────────────────────────────
+.voice-overlay__chips {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-lg;
+  animation: voice-greeting-in 0.5s ease 0.35s both;
+}
+
+.voice-overlay__chip {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-pill;
+  background: rgba($color-card, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: $color-text;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: $font-body;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: rgba($color-card, 0.9);
+  }
+}
+
+// ── Invisible input (cursor floats below chip) ────────────
+.voice-overlay__input {
+  width: 100%;
+  max-width: 280px;
+  background: transparent;
+  border: none;
+  color: $color-text;
+  font-size: 16px;
+  font-family: $font-body;
+  outline: none;
+  text-align: center;
+  margin-top: $spacing-md;
+  caret-color: $color-text;
+  animation: voice-greeting-in 0.5s ease 0.4s both;
+
+  &::placeholder {
+    color: transparent;
+  }
+}
+
+// ── Gradient (bottom) ─────────────────────────────────────
+.voice-overlay__gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(to top,
+    rgba(var(--vo-accent-rgb), 0.22) 0%,
+    rgba(var(--vo-accent-rgb), 0.08) 35%,
+    transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+// ── Bottom bar: close / visualizer / mic ──────────────────
+.voice-overlay__bottom-bar {
+  position: relative;
+  z-index: 3;
+  margin: 0 $spacing-md;
+  margin-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  background: rgba($color-card, 0.5);
+  backdrop-filter: blur(16px);
+  border-radius: $radius-pill;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+// Close button (red/coral)
+.voice-overlay__close-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background: #EF4444;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all $transition-fast;
+  padding: 0;
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.35);
+
+  &:hover {
+    background: #DC2626;
+  }
+}
+
+// ── WhisperFlow Visualizer ────────────────────────────────
+.voice-overlay__visualizer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5px;
+  height: 40px;
+  padding: 0 $spacing-xs;
+}
+
+.voice-overlay__vis-bar {
+  width: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: $color-muted;
+  transition: height 0.15s ease;
+
+  // When listening: bars dance
+  .voice-overlay__bottom-bar--listening & {
+    animation: vis-bar-dance 0.65s ease-in-out infinite alternate;
+    animation-delay: var(--bar-delay);
+  }
+}
+
+// Mic / Send button (tab color)
+.voice-overlay__mic-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all $transition-fast;
+  padding: 0;
+  box-shadow: 0 4px 16px rgba(var(--vo-accent-rgb), 0.4);
+
+  &--listening {
+    box-shadow:
+      0 0 24px rgba(var(--vo-accent-rgb), 0.5),
+      0 4px 16px rgba(var(--vo-accent-rgb), 0.3);
+    animation: voice-mic-pulse 1.5s ease-in-out infinite;
+  }
+
+  &--send {
+    border: none;
+  }
+}
+
+// ── Animations ────────────────────────────────────────────
+@keyframes voice-overlay-in {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes voice-greeting-in {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes voice-sparkle-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.9; }
+  50%      { transform: scale(1.15); opacity: 1; }
+}
+
+// Sparkle #1 needs translate preserved
+.voice-overlay__sparkle--1 {
+  animation-name: voice-sparkle-pulse-center;
+}
+
+@keyframes voice-sparkle-pulse-center {
+  0%, 100% { transform: translate(-50%, -50%) scale(1);    opacity: 0.9; }
+  50%      { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+@keyframes vis-bar-dance {
+  0%   { height: 4px; }
+  100% { height: var(--bar-h); }
+}
+
+@keyframes voice-mic-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.06); }
+}

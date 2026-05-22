@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus, ChevronRight, ChevronDown } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { VoiceFab } from "../components/VoiceFab";
+import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { getNextBirthday, isOld, fmtDate } from "../utils";
@@ -75,6 +76,8 @@ export function HomeScreen({
   onCoverAccentChange,
   onUpdateUser,
   onUpdateCat,
+  voiceOverlayOpen,
+  setVoiceOverlayOpen,
 }) {
   const { entries, cats } = state;
   const [activeCatType, setActiveCatType] = useState("project");
@@ -571,8 +574,21 @@ export function HomeScreen({
         />
       )}
 
-      {VOICE_TAB_TYPES.includes(tab) && !collabModalOpen && (
-        <VoiceFab tab={tab} tabColor={tabColor} lang={lang} onTranscribed={onAddVoiceEntry} />
+      {VOICE_TAB_TYPES.includes(tab) && !collabModalOpen && !voiceOverlayOpen && (
+        <VoiceFab tabColor={tabColor} onOpen={() => setVoiceOverlayOpen(true)} />
+      )}
+
+      {voiceOverlayOpen && (
+        <VoiceOverlay
+          t={t}
+          tab={tab}
+          tabColor={tabColor}
+          userName={state.user.name}
+          lang={lang}
+          onTranscribed={(text) => { onAddVoiceEntry(text); setVoiceOverlayOpen(false); }}
+          onClose={() => setVoiceOverlayOpen(false)}
+          onCreateEntry={(type) => { onAddEntry(type); setVoiceOverlayOpen(false); }}
+        />
       )}
     </div>
   );

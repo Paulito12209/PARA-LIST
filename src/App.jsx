@@ -426,6 +426,9 @@ export default function App() {
               push({ view: VIEW.ARCHIVE, tab: currentTab });
             }}
             onArchiveEntry={(id) => updateEntry(id, { archived: true })}
+            onUpdateUser={(patch) =>
+              setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
+            }
           />
         )}
 

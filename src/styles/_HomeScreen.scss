@@ -431,6 +431,12 @@
     }
   }
 
+  &__avatar-area {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   &__avatar {
     width: 48px;
     height: 48px;
@@ -438,10 +444,49 @@
     border: 2px solid rgba(255, 255, 255, 0.25);
     object-fit: cover;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
     transition: transform 0.3s ease;
 
     &:hover {
       transform: scale(1.05);
+    }
+  }
+
+  &__avatar-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.6);
+    }
+  }
+
+  &__collab-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: rgba(255, 255, 255, 0.7);
     }
   }
 

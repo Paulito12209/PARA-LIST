@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Circle, Triangle, Square, Plus, Archive, Calendar } from "lucide-react";
+import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { VoiceFab } from "../components/VoiceFab";
 import { getNextBirthday, isOld, fmtDate } from "../utils";
@@ -71,6 +71,7 @@ export function HomeScreen({
   onArchiveEntry,
   panelOpen,
   onCoverAccentChange,
+  onUpdateUser,
 }) {
   const { entries, cats } = state;
   const [activeCatType, setActiveCatType] = useState("project");
@@ -109,6 +110,16 @@ export function HomeScreen({
 
   const tabCfg = TABS.find((tCfg) => tCfg.id === tab);
   const tabColor = tabCfg?.color || "#7C83F7";
+
+  const avatarInputRef = useRef(null);
+
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => onUpdateUser({ avatar: reader.result });
+    reader.readAsDataURL(file);
+  };
 
   const entryListRef = useRef(null);
 
@@ -360,9 +371,35 @@ export function HomeScreen({
         <div className="home-cover__content">
           <div className="home-cover__header">
             <span className="home-cover__badge">{renderCoverBadge()}</span>
-            {state.user.avatar && (
-              <img src={state.user.avatar} alt="Avatar" className="home-cover__avatar" />
-            )}
+            <div className="home-cover__avatar-area">
+              {state.user.avatar ? (
+                <>
+                  <img
+                    src={state.user.avatar}
+                    alt="Avatar"
+                    className="home-cover__avatar"
+                    onClick={() => avatarInputRef.current?.click()}
+                  />
+                  <button className="home-cover__collab-btn" title="Kollaboration">
+                    <UserPlus size={14} />
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="home-cover__avatar-placeholder"
+                  onClick={() => avatarInputRef.current?.click()}
+                >
+                  <User size={20} />
+                </button>
+              )}
+              <input
+                type="file"
+                ref={avatarInputRef}
+                onChange={handleAvatarUpload}
+                accept="image/*"
+                style={{ display: "none" }}
+              />
+            </div>
           </div>
           {firstCat ? renderFirstCat() : renderEmptyCover()}
         </div>

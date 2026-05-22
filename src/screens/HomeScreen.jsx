@@ -160,8 +160,9 @@ export function HomeScreen({
 
     const left = currentGroup.dataset.groupLeft;
     const right = currentGroup.dataset.groupRight;
-    if (left && (!activeGroupHeader || activeGroupHeader.left !== left || activeGroupHeader.right !== right)) {
-      setActiveGroupHeader({ left, right });
+    const count = currentGroup.dataset.groupCount;
+    if (left && (!activeGroupHeader || activeGroupHeader.left !== left || activeGroupHeader.right !== right || activeGroupHeader.count !== count)) {
+      setActiveGroupHeader({ left, right, count });
     }
   };
 
@@ -534,6 +535,7 @@ export function HomeScreen({
         {activeGroupHeader && VOICE_TAB_TYPES.includes(tab) && (
           <div className="task-group-header task-group-header--fixed">
             <span className="task-group-header__left">{activeGroupHeader.left}</span>
+            {activeGroupHeader.count && <span className="task-group-header__badge">{activeGroupHeader.count}</span>}
             <span className="task-group-header__right">{activeGroupHeader.right}</span>
           </div>
         )}

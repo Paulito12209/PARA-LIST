@@ -297,6 +297,11 @@
     opacity: 0.85;
   }
 
+  .task-group-header__badge {
+    background: rgba(#7C83F7, 0.14);
+    color: #5a5fc7;
+  }
+
   .task-item,
   .note-item,
   .cal-item,

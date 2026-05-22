@@ -161,6 +161,17 @@ export function HomeScreen({
       }
     }
 
+    // Only show sticky header when the group's inline header has scrolled out of view
+    const inlineHeader = currentGroup.querySelector(".task-group-header:not(.task-group-header--fixed)");
+    if (inlineHeader) {
+      const headerRect = inlineHeader.getBoundingClientRect();
+      if (headerRect.bottom > containerTop) {
+        // Inline header still visible → hide sticky header to avoid duplication
+        if (activeGroupHeader) setActiveGroupHeader(null);
+        return;
+      }
+    }
+
     const left = currentGroup.dataset.groupLeft;
     const right = currentGroup.dataset.groupRight;
     const count = currentGroup.dataset.groupCount;

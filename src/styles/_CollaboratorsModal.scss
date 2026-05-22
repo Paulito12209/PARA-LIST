@@ -2,14 +2,18 @@
 @use './mixins' as *;
 
 .collab-modal {
-  max-height: 80dvh;
+  max-height: calc(100dvh - var(--command-panel-peek, 80px));
   padding-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
 
   .modal__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: $spacing-md $spacing-md 0;
+    padding: $spacing-sm 0;
+    flex-shrink: 0;
   }
 
   .modal__title {
@@ -19,29 +23,14 @@
     font-family: $font-heading;
   }
 
-  &__close-btn {
-    @include flex-center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: $color-muted;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: $color-text;
-    }
-  }
-
   &__body {
-    padding: $spacing-md;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: $spacing-md;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
   }
 
   &__empty {
@@ -56,6 +45,10 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-sm;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1;
+    // padding: 0 $spacing-md;
   }
 
   &__item {
@@ -137,9 +130,37 @@
     font-family: $font-body;
     cursor: pointer;
     transition: all $transition-fast;
+    flex-shrink: 0;
 
     &:hover {
       background: rgba($color-task, 0.2);
+    }
+  }
+
+  &__bottom-close-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: 14px;
+    border-radius: 20px;
+    background: $color-notif-red;
+    border: none;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-body;
+    cursor: pointer;
+    transition: all $transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      filter: brightness(1.1);
+    }
+
+    &:active {
+      transform: scale(0.98);
     }
   }
 

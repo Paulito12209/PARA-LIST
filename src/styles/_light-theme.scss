@@ -1138,15 +1138,10 @@
     color: #1c1c30;
   }
 
-  &__close-btn {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: rgba(0, 0, 0, 0.08);
-    color: #5858A0;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.08);
-      color: #1c1c30;
-    }
+  &__bottom-close-btn {
+    background: #ef4444;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
   }
 
   &__empty {

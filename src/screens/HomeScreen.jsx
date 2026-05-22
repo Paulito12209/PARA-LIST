@@ -560,7 +560,7 @@ export function HomeScreen({
         />
       )}
 
-      {VOICE_TAB_TYPES.includes(tab) && (
+      {VOICE_TAB_TYPES.includes(tab) && !collabModalOpen && (
         <VoiceFab tab={tab} tabColor={tabColor} lang={lang} onTranscribed={onAddVoiceEntry} />
       )}
     </div>

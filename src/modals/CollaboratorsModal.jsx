@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Trash2, Plus, Camera, X } from "lucide-react";
+import { Trash2, Plus, Camera } from "lucide-react";
 import { uid } from "../utils";
 
 const VIEW_LIST = "list";
@@ -46,9 +46,6 @@ export function CollaboratorsModal({ t, cat, onUpdateCat, onClose, initialView }
 
         <div className="modal__header">
           <h2 className="modal__title">{t.collaborators}</h2>
-          <button className="collab-modal__close-btn" onClick={onClose}>
-            <X size={18} />
-          </button>
         </div>
 
         {view === VIEW_LIST && (
@@ -83,6 +80,9 @@ export function CollaboratorsModal({ t, cat, onUpdateCat, onClose, initialView }
             >
               <Plus size={16} />
               {t.addCollaborator}
+            </button>
+            <button className="collab-modal__bottom-close-btn" onClick={onClose}>
+              {t.closeBtn}
             </button>
           </div>
         )}

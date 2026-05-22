@@ -579,12 +579,13 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
       )}
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right} data-group-count={g.items.length}>
-          {/* Gruppen-Trenner immer anzeigen – auch im Home-Modus */}
-          <div className={`task-group-header ${isHome ? "task-group-header--home" : ""}`}>
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__badge">{g.items.length}</span>
-            <span className="task-group-header__right">{g.right}</span>
-          </div>
+          {!isHome && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left}</span>
+              <span className="task-group-header__badge">{g.items.length}</span>
+              <span className="task-group-header__right">{g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
       ))}
@@ -701,13 +702,14 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
         </div>
       )}
       {futureGroups.map((g, i) => (
-        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={isHome ? g.left : g.left} data-group-right={g.right} data-group-count={g.items.length}>
-          {/* Gruppen-Trenner immer anzeigen – auch im Home-Modus */}
-          <div className={`task-group-header ${isHome ? "task-group-header--home" : ""}`}>
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__badge">{g.items.length}</span>
-            <span className="task-group-header__right">{g.right}</span>
-          </div>
+        <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right} data-group-count={g.items.length}>
+          {!isHome && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left}</span>
+              <span className="task-group-header__badge">{g.items.length}</span>
+              <span className="task-group-header__right">{g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
       ))}
@@ -814,12 +816,13 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpd
       )}
       {futureGroups.map((g, i) => (
         <div key={i} className={`task-group ${isHome ? "task-group--home" : ""}`} data-group-left={g.left} data-group-right={g.right} data-group-count={g.items.length}>
-          {/* Gruppen-Trenner immer anzeigen – auch im Home-Modus */}
-          <div className={`task-group-header ${isHome ? "task-group-header--home" : ""}`}>
-            <span className="task-group-header__left">{g.left}</span>
-            <span className="task-group-header__badge">{g.items.length}</span>
-            <span className="task-group-header__right">{g.right}</span>
-          </div>
+          {!isHome && (
+            <div className="task-group-header">
+              <span className="task-group-header__left">{g.left}</span>
+              <span className="task-group-header__badge">{g.items.length}</span>
+              <span className="task-group-header__right">{g.right}</span>
+            </div>
+          )}
           {g.items.map(renderItem)}
         </div>
       ))}

@@ -12,14 +12,14 @@ const BAR_HEIGHTS = [8,18,28,14,34,22,10,30,16,26,12,36,20,32,8,24,18,34,14,28,1
 const LOCALE_MAP = { de: "de-DE", en: "en-US", es: "es-ES" };
 
 const TRIGGER_NEXT = {
-  de: ["weiter"],
-  en: ["next", "continue"],
-  es: ["siguiente", "continuar"],
+  de: ["weiter", "ja", "datum"],
+  en: ["next", "continue", "yes", "date"],
+  es: ["siguiente", "continuar", "s\u00ed", "si", "fecha"],
 };
 const TRIGGER_DONE = {
-  de: ["fertig"],
-  en: ["done", "finish"],
-  es: ["listo", "terminar"],
+  de: ["fertig", "ja", "okay", "ok"],
+  en: ["done", "finish", "yes", "okay", "ok"],
+  es: ["listo", "terminar", "s\u00ed", "si", "vale"],
 };
 
 const WEEKDAYS = {
@@ -64,10 +64,15 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
 
     if (p === "title") {
       const nextWords = TRIGGER_NEXT[l] || TRIGGER_NEXT.en;
-      if (currentText.trim() && nextWords.includes(lower)) {
-        setPhase("date");
-        navigator.vibrate?.([15, 40, 15]);
+      if (currentText.trim()) {
+        // Title already set → only listen for trigger words to proceed
+        if (nextWords.includes(lower)) {
+          setPhase("date");
+          navigator.vibrate?.([15, 40, 15]);
+        }
+        // Otherwise ignore – don't overwrite the title
       } else {
+        // No title yet → set it
         setText(transcript);
         navigator.vibrate?.([15, 40, 15]);
       }

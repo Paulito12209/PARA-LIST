@@ -11,6 +11,15 @@ const SPARKLE_PATH = "M20,4 Q22,17 36,20 Q22,23 20,36 Q18,23 4,20 Q18,17 20,4Z";
 const BAR_HEIGHTS = [8,18,28,14,34,22,10,30,16,26,12,36,20,32,8,24,18,34,14,28,10,22,30,16];
 const LOCALE_MAP = { de: "de-DE", en: "en-US", es: "es-ES" };
 
+function renderHighlighted(text, color) {
+  const parts = text.split(/\*\*(.*?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1
+      ? <span key={i} className="voice-overlay__keyword" style={{ color }}>{part}</span>
+      : part
+  );
+}
+
 const TRIGGER_NEXT = {
   de: ["weiter", "ja", "datum"],
   en: ["next", "continue", "yes", "date"],
@@ -140,12 +149,7 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
     };
   }, []);
 
-  // Focus input on mount
-  useEffect(() => {
-    if (phase === "title") {
-      setTimeout(() => inputRef.current?.focus(), 120);
-    }
-  }, [phase]);
+  // No auto-focus – voice overlay uses speech, not keyboard
 
   // Escape to close
   useEffect(() => {
@@ -197,6 +201,10 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
   return (
     <div className="voice-overlay" style={{ "--vo-accent-rgb": accentRgb, "--vo-accent-solid": tabColor }}>
       <div className="voice-overlay__body">
+        {phase === "title" && (
+          <div className="voice-overlay__speak-clear">{t.voiceSpeakClear}</div>
+        )}
+
         <div className={`voice-overlay__content voice-overlay__content--${phase}`}>
 
           {/* ── Phase: title ── */}
@@ -219,13 +227,8 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
                 type="text"
                 placeholder=""
                 value={text}
-                onChange={(e) => setText(e.target.value)}
-                onKeyDown={handleKeyDown}
-                autoFocus
+                readOnly
               />
-              <div className="voice-overlay__search-hint">
-                {hasText ? t.voiceContinueDate : t.voiceSearchHint}
-              </div>
             </>
           )}
 
@@ -268,13 +271,19 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
                 </div>
               </div>
               <button className="voice-overlay__done-hint" onClick={handleSubmit}>
-                {t.voiceDone}
+                {renderHighlighted(t.voiceDone, tabColor)}
               </button>
             </>
           )}
         </div>
 
         <div className="voice-overlay__gradient" />
+
+        {phase === "title" && (
+          <div className="voice-overlay__search-hint">
+            {renderHighlighted(hasText ? t.voiceContinueDate : t.voiceSearchHint, tabColor)}
+          </div>
+        )}
 
         {/* ── Bottom bar ── */}
         <div className={`voice-overlay__bottom-bar ${isListening ? "voice-overlay__bottom-bar--listening" : ""}`}>
@@ -293,6 +302,17 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13" />
                 <polygon points="22 2 15 22 11 13 2 9 22 2" />
+              </svg>
+            </button>
+          ) : !hasText && phase === "title" ? (
+            <button
+              className={`voice-overlay__mic-btn ${isListening ? "voice-overlay__mic-btn--listening" : ""}`}
+              onClick={() => startListeningRef.current?.()}
+              style={{ background: tabColor }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
             </button>
           ) : (

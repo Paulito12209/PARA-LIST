@@ -98,15 +98,38 @@
   }
 }
 
-// ── Search hint / Continue hint ───────────────────────────
+// ── "Speak clearly" hint (pinned to top of body) ────────
+.voice-overlay__speak-clear {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: rgba($color-text, 0.35);
+  text-align: center;
+  padding: $spacing-sm $spacing-md 0;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+  animation: voice-greeting-in 0.4s ease 0.15s both;
+}
+
+// ── Search hint / Continue hint (above bottom bar) ───────
 .voice-overlay__search-hint {
   font-size: 13px;
   color: $color-muted;
   text-align: center;
-  margin-top: $spacing-lg;
   padding: 0 $spacing-md;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 3;
   animation: voice-greeting-in 0.5s ease 0.3s both;
   line-height: 1.5;
+}
+
+// ── Highlighted trigger keywords ─────────────────────────
+.voice-overlay__keyword {
+  font-weight: 700;
 }
 
 // ── Date phase: title display ─────────────────────────────

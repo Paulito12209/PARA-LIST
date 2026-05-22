@@ -132,9 +132,10 @@ export const I18N = {
     voiceGreeting: (name) => `Hallo, ${name}`,
     voiceHint: "wenn du etwas suchen möchtest",
     voiceQuestion: "Wie lautet der Titel?",
-    voiceSearchHint: "Klicke auf die Lupe, oder sage \u201EIch suche\u201C",
-    voiceContinueDate: "Sage weiter, um das Datum einzutragen",
-    voiceDone: "Fertig?",
+    voiceSpeakClear: "Bitte laut und deutlich sprechen",
+    voiceSearchHint: 'Klicke auf die Lupe, oder sage **\u201EIch suche\u201C**',
+    voiceContinueDate: 'Sage **\u201EWeiter\u201C**, um das Datum einzutragen',
+    voiceDone: 'Sage **\u201EFertig\u201C** oder **\u201EJa\u201C**',
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -267,9 +268,10 @@ export const I18N = {
     voiceGreeting: (name) => `Hello, ${name}`,
     voiceHint: "to find something",
     voiceQuestion: "What\u2019s the title?",
-    voiceSearchHint: "Tap the search icon, or say \u201CI\u2019m searching\u201D",
-    voiceContinueDate: "Say next to set the date",
-    voiceDone: "Done?",
+    voiceSpeakClear: "Please speak loudly and clearly",
+    voiceSearchHint: 'Tap the search icon, or say **\u201CI\u2019m searching\u201D**',
+    voiceContinueDate: 'Say **\u201CNext\u201D** to set the date',
+    voiceDone: 'Say **\u201CDone\u201D** or **\u201CYes\u201D**',
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -402,9 +404,10 @@ export const I18N = {
     voiceGreeting: (name) => `Hola, ${name}`,
     voiceHint: "para encontrar algo",
     voiceQuestion: "\u00bfCu\u00e1l es el t\u00edtulo?",
-    voiceSearchHint: "Toca la lupa, o di \u201CBuscar\u201D",
-    voiceContinueDate: "Di siguiente para poner la fecha",
-    voiceDone: "\u00bfListo?",
+    voiceSpeakClear: "Habla alto y claro, por favor",
+    voiceSearchHint: 'Toca la lupa, o di **\u201CBuscar\u201D**',
+    voiceContinueDate: 'Di **\u201CSiguiente\u201D** para poner la fecha',
+    voiceDone: 'Di **\u201CListo\u201D** o **\u201CS\u00ed\u201D**',
   }
 };
 

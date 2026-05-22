@@ -432,20 +432,23 @@
   }
 
   &__avatar-area {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    position: relative;
+    width: 40px;
+    height: 40px;
+    z-index: 5;
   }
 
   &__avatar {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.25);
     object-fit: cover;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: transform 0.3s ease;
+    position: relative;
+    z-index: 3;
 
     &:hover {
       transform: scale(1.05);
@@ -472,6 +475,42 @@
     }
   }
 
+  &__collab-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    position: absolute;
+    top: 32px; // 40px avatar - 8px overlap
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(15, 15, 30, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-body);
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    &:hover {
+      transform: translateX(-50%) scale(1.05);
+    }
+  }
+
   &__collab-btn {
     width: 28px;
     height: 28px;
@@ -484,11 +523,30 @@
     color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
     transition: all 0.2s ease;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+
+    // No collabs: directly below avatar
+    top: 36px; // 40px - 4px overlap
 
     &:hover {
       background: rgba(255, 255, 255, 0.14);
       color: rgba(255, 255, 255, 0.7);
     }
+  }
+
+  // When collab-avatar is present, push btn below it
+  &__collab-avatar + &__collab-btn {
+    top: 60px; // 32px (collab-avatar top) + 36px - 8px overlap
+  }
+
+  &__collab-count {
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+    font-family: var(--font-body);
   }
 
   &__main {

@@ -122,6 +122,13 @@ export const I18N = {
     },
     birthdayMessage: "Pro-Tipp: Wenn du das Geburtsjahr angibst, berechne ich automatisch das Alter und erinnere dich jedes Jahr daran! 🎉",
     birthdayGotIt: "Verstanden!",
+    collaborators: "Kollaborateure",
+    addCollaborator: "Kollaborateur hinzufügen",
+    removeCollaborator: "Entfernen",
+    confirmRemoveCollaborator: (name) => `"${name}" wirklich entfernen?`,
+    collaboratorNamePlaceholder: "Name eingeben…",
+    noCollaborators: "Noch keine Kollaborateure",
+    choosePhoto: "Foto wählen",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -244,6 +251,13 @@ export const I18N = {
     },
     birthdayMessage: "Pro-tip: If you enter the birth year, I'll automatically calculate the age and remind you every year! 🎉",
     birthdayGotIt: "Got it!",
+    collaborators: "Collaborators",
+    addCollaborator: "Add collaborator",
+    removeCollaborator: "Remove",
+    confirmRemoveCollaborator: (name) => `Remove "${name}"?`,
+    collaboratorNamePlaceholder: "Enter name…",
+    noCollaborators: "No collaborators yet",
+    choosePhoto: "Choose photo",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -366,6 +380,13 @@ export const I18N = {
     },
     birthdayMessage: "Pro-tip: Si ingresas el año de nacimiento, calcularé automáticamente la edad y te lo recordaré cada año! 🎉",
     birthdayGotIt: "¡Entendido!",
+    collaborators: "Colaboradores",
+    addCollaborator: "Añadir colaborador",
+    removeCollaborator: "Eliminar",
+    confirmRemoveCollaborator: (name) => `¿Eliminar a "${name}"?`,
+    collaboratorNamePlaceholder: "Introducir nombre…",
+    noCollaborators: "Aún no hay colaboradores",
+    choosePhoto: "Elegir foto",
   }
 };
 

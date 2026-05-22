@@ -3,6 +3,7 @@ import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus, Chev
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { VoiceFab } from "../components/VoiceFab";
 import { AutoScrollText } from "../components/AutoScrollText";
+import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { getNextBirthday, isOld, fmtDate } from "../utils";
 
 const COVER_ACCENT_RGB = {
@@ -73,13 +74,17 @@ export function HomeScreen({
   panelOpen,
   onCoverAccentChange,
   onUpdateUser,
+  onUpdateCat,
 }) {
   const { entries, cats } = state;
   const [activeCatType, setActiveCatType] = useState("project");
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
+  const [collabModalOpen, setCollabModalOpen] = useState(false);
+  const [collabModalInitialView, setCollabModalInitialView] = useState("list");
 
   const activeCats = cats.filter((c) => c.type === activeCatType && !c.archived);
   const firstCat = activeCats[0];
+  const firstCatCollabs = firstCat?.collaborators || [];
 
   const tabEntries = entries
     .map((e) => {
@@ -355,17 +360,12 @@ export function HomeScreen({
             <span className="home-cover__badge">{renderCoverBadge()}</span>
             <div className="home-cover__avatar-area">
               {state.user.avatar ? (
-                <>
-                  <img
-                    src={state.user.avatar}
-                    alt="Avatar"
-                    className="home-cover__avatar"
-                    onClick={() => avatarInputRef.current?.click()}
-                  />
-                  <button className="home-cover__collab-btn" title="Kollaboration">
-                    <UserPlus size={14} />
-                  </button>
-                </>
+                <img
+                  src={state.user.avatar}
+                  alt="Avatar"
+                  className="home-cover__avatar"
+                  onClick={() => avatarInputRef.current?.click()}
+                />
               ) : (
                 <button
                   className="home-cover__avatar-placeholder"
@@ -374,6 +374,36 @@ export function HomeScreen({
                   <User size={20} />
                 </button>
               )}
+              {firstCatCollabs.length > 0 && (
+                <button
+                  className="home-cover__collab-avatar"
+                  onClick={() => {
+                    setCollabModalInitialView("list");
+                    setCollabModalOpen(true);
+                  }}
+                >
+                  {firstCatCollabs[0].avatar ? (
+                    <img src={firstCatCollabs[0].avatar} alt={firstCatCollabs[0].name} />
+                  ) : (
+                    <span>{firstCatCollabs[0].name.charAt(0).toUpperCase()}</span>
+                  )}
+                </button>
+              )}
+              <button
+                className="home-cover__collab-btn"
+                onClick={() => {
+                  if (firstCat) {
+                    setCollabModalInitialView(firstCatCollabs.length === 0 ? "add" : "list");
+                    setCollabModalOpen(true);
+                  }
+                }}
+              >
+                {firstCatCollabs.length >= 2 ? (
+                  <span className="home-cover__collab-count">+{firstCatCollabs.length - 1}</span>
+                ) : (
+                  <UserPlus size={14} />
+                )}
+              </button>
               <input
                 type="file"
                 ref={avatarInputRef}
@@ -500,6 +530,16 @@ export function HomeScreen({
           {renderTabList()}
         </div>
       </div>
+
+      {collabModalOpen && firstCat && (
+        <CollaboratorsModal
+          t={t}
+          cat={firstCat}
+          onUpdateCat={onUpdateCat}
+          onClose={() => setCollabModalOpen(false)}
+          initialView={collabModalInitialView}
+        />
+      )}
 
       {VOICE_TAB_TYPES.includes(tab) && (
         <VoiceFab tab={tab} tabColor={tabColor} lang={lang} onTranscribed={onAddVoiceEntry} />

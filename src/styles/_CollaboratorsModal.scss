@@ -1,0 +1,235 @@
+@use './variables' as *;
+@use './mixins' as *;
+
+.collab-modal {
+  max-height: 80dvh;
+  padding-bottom: 24px;
+
+  .modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacing-md $spacing-md 0;
+  }
+
+  .modal__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: $color-text;
+    font-family: $font-heading;
+  }
+
+  &__close-btn {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: $color-muted;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: $color-text;
+    }
+  }
+
+  &__body {
+    padding: $spacing-md;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+  }
+
+  &__empty {
+    color: $color-muted;
+    font-size: 14px;
+    text-align: center;
+    padding: $spacing-lg 0;
+  }
+
+  &__list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: $radius-sm;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.07);
+    }
+  }
+
+  &__item-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-text;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: $font-body;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__item-name {
+    flex: 1;
+    font-size: 15px;
+    color: $color-text;
+    font-family: $font-body;
+    @include text-truncate;
+  }
+
+  &__item-remove {
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: $color-muted;
+    cursor: pointer;
+    transition: all $transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba($color-notif-red, 0.15);
+      color: $color-notif-red;
+    }
+  }
+
+  &__add-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: 12px;
+    border-radius: $radius-sm;
+    background: rgba($color-task, 0.12);
+    border: 1px solid rgba($color-task, 0.2);
+    color: $color-task;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: $font-body;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: rgba($color-task, 0.2);
+    }
+  }
+
+  &__avatar-picker {
+    @include flex-center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 2px dashed rgba(255, 255, 255, 0.15);
+    color: $color-muted;
+    cursor: pointer;
+    transition: all $transition-fast;
+    overflow: hidden;
+    padding: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: $color-text;
+    }
+  }
+
+  &__avatar-label {
+    font-size: 12px;
+    color: $color-muted;
+    margin-top: -8px;
+  }
+
+  &__name-input {
+    @include input-base;
+    font-size: 15px;
+    text-align: center;
+
+    &::placeholder {
+      color: $color-muted;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: $spacing-sm;
+    width: 100%;
+  }
+
+  &__cancel-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: $radius-sm;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: $color-muted;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: $font-body;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  &__submit-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: $radius-sm;
+    background: $color-task;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: $font-body;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    &:not(:disabled):hover {
+      filter: brightness(1.1);
+    }
+  }
+}

@@ -96,6 +96,14 @@ function migrateState(state) {
     return c;
   });
 
+  next.cats = next.cats.map((c) => {
+    if (!c.collaborators) {
+      dirty = true;
+      return { ...c, collaborators: [] };
+    }
+    return c;
+  });
+
   return dirty ? next : state;
 }
 
@@ -244,6 +252,7 @@ export default function App() {
           tags: [],
           relatedId: null,
           archived: false,
+          collaborators: [],
           createdAt: new Date().toISOString(),
         },
       ],
@@ -429,6 +438,7 @@ export default function App() {
             onUpdateUser={(patch) =>
               setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
             }
+            onUpdateCat={updateCat}
           />
         )}
 

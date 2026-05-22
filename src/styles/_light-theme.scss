@@ -969,6 +969,32 @@
       }
     }
 
+    &__collab-avatar {
+      border-color: rgba(0, 0, 0, 0.1);
+      background: #eeeef5;
+      color: #3a3a6a;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+      &:hover {
+        background: #e5e5f0;
+      }
+    }
+
+    &__collab-btn {
+      background: rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.1);
+      color: #3a3a6a;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.08);
+        color: #1a1a24;
+      }
+    }
+
+    &__collab-count {
+      color: #3a3a6a;
+    }
+
     &__title {
       color: #1c1c30;
     }
@@ -1101,4 +1127,98 @@
     0 0 0 1px rgba(var(--cover-accent-rgb), 0.14),
     0 12px 56px rgba(var(--cover-accent-rgb), 0.32),
     0 4px 24px rgba(var(--cover-accent-rgb), 0.20);
+}
+
+.app.light-theme .collab-modal {
+  .modal__title {
+    color: #1c1c30;
+  }
+
+  &__close-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #5858A0;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.08);
+      color: #1c1c30;
+    }
+  }
+
+  &__empty {
+    color: #5858A0;
+  }
+
+  &__item {
+    background: rgba(0, 0, 0, 0.03);
+    border-color: rgba(0, 0, 0, 0.06);
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  &__item-avatar {
+    background: #eeeef5;
+    color: #3a3a6a;
+  }
+
+  &__item-name {
+    color: #1c1c30;
+  }
+
+  &__item-remove {
+    color: #5858A0;
+
+    &:hover {
+      background: rgba(#F26565, 0.12);
+      color: #F26565;
+    }
+  }
+
+  &__add-btn {
+    background: rgba(#7C83F7, 0.1);
+    border-color: rgba(#7C83F7, 0.18);
+    color: #7C83F7;
+
+    &:hover {
+      background: rgba(#7C83F7, 0.16);
+    }
+  }
+
+  &__avatar-picker {
+    background: #f7f7f9;
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #5858A0;
+
+    &:hover {
+      background: #f0f0f5;
+      border-color: rgba(0, 0, 0, 0.2);
+      color: #1c1c30;
+    }
+  }
+
+  &__avatar-label {
+    color: #5858A0;
+  }
+
+  &__name-input {
+    background: #f7f7f9;
+    border-color: #e5e5f0;
+    color: #1c1c30;
+
+    &::placeholder {
+      color: #5858A0;
+    }
+  }
+
+  &__cancel-btn {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #5858A0;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.07);
+    }
+  }
 }

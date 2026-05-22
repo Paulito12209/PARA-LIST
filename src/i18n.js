@@ -132,7 +132,7 @@ export const I18N = {
     voiceGreeting: (name) => `Hallo, ${name}`,
     voiceHint: "wenn du etwas suchen möchtest",
     voiceQuestion: "Wie lautet der Titel?",
-    voiceSpeakClear: "Bitte laut und deutlich sprechen",
+    voiceSpeakClear: "Bitte deutlich ins Mikro sprechen",
     voiceSearchHint: 'Klicke auf die Lupe, oder sage **\u201EIch suche\u201C**',
     voiceContinueDate: 'Sage **\u201EWeiter\u201C**, um das Datum einzutragen',
     voiceDone: 'Sage **\u201EFertig\u201C** oder **\u201EJa\u201C**',

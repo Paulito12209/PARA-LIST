@@ -202,9 +202,6 @@ export function CommandPanel({
 
       {open && (
         <div className="command-panel__footer">
-          <div className="command-panel__handle command-panel__handle--open" onClick={onToggle}>
-            <div className="command-panel__handle-bar" />
-          </div>
           <div className="command-panel__quick-settings" onClick={(e) => e.stopPropagation()}>
             <div className="command-panel__qs-pill">
               {["de", "en", "es"].map((l) => (
@@ -243,21 +240,14 @@ export function CommandPanel({
             </div>
 
             <button
-              className="command-panel__qs-settings-btn command-panel__profile-btn"
+              className="command-panel__qs-settings-btn"
               onClick={() => onOpenSettings()}
-              style={user.avatar ? { padding: 0 } : {}}
             >
-              {user.avatar ? (
-                <div className="command-panel__profile-avatar">
-                  <img src={user.avatar} alt="Avatar" />
-                  <div className="command-panel__profile-hover">
-                    <CustomSettingsIcon size={18} color="#fff" />
-                  </div>
-                </div>
-              ) : (
-                <CustomSettingsIcon size={18} />
-              )}
+              <CustomSettingsIcon size={18} />
             </button>
+          </div>
+          <div className="command-panel__handle command-panel__handle--open" onClick={onToggle}>
+            <div className="command-panel__handle-bar" />
           </div>
         </div>
       )}

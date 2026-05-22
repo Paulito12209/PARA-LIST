@@ -923,23 +923,19 @@
     &__light-wave {
       // Light Mode: Farbige Akzentstreifen über weißem Grund
       background:
-        repeating-linear-gradient(
-          135deg,
+        repeating-linear-gradient(135deg,
           transparent 0px,
           transparent 60px,
           rgba(var(--cover-accent-rgb), 0.25) 82px,
           rgba(var(--cover-accent-rgb), 0.09) 110px,
           transparent 140px,
-          transparent 200px
-        ),
-        repeating-linear-gradient(
-          132deg,
+          transparent 200px),
+        repeating-linear-gradient(132deg,
           transparent 0px,
           transparent 95px,
           rgba(var(--cover-accent-rgb), 0.14) 130px,
           transparent 165px,
-          transparent 250px
-        ),
+          transparent 250px),
         radial-gradient(ellipse 65% 55% at 62% 55%,
           rgba(var(--cover-accent-rgb), 0.22) 0%,
           transparent 70%),
@@ -1099,7 +1095,11 @@
   box-shadow:
     inset 0 0 12px rgba($color-task, 0.15),
     0 4px 12px rgba(0, 0, 0, 0.12);
-  .voice-fab__icon { color: $color-task; }
+
+  .voice-fab__icon {
+    color: $color-task;
+  }
+
   &:hover {
     background: rgba(255, 255, 255, 0.3);
     box-shadow:
@@ -1112,7 +1112,8 @@
 .app.light-theme .command-panel--closed {
   background: #ffffff;
   box-shadow:
-    0 6px 40px rgba(0, 0, 0, 0.06),
+    0 20px 60px rgba(0, 0, 0, 0.25),
+    0 8px 24px rgba(0, 0, 0, 0.15),
     0 0 0 1px rgba(var(--cover-accent-rgb), 0.14),
     0 12px 56px rgba(var(--cover-accent-rgb), 0.32),
     0 4px 24px rgba(var(--cover-accent-rgb), 0.20);

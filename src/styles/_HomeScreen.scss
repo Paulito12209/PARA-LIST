@@ -409,7 +409,7 @@
   }
 
   &__badge {
-    background: rgba(15, 15, 30, 0.25);
+    background: rgba(15, 15, 30, 0.17);
     border: 1px solid rgba(255, 255, 255, 0.12);
     padding: 6px 12px;
     border-radius: 20px;
@@ -648,7 +648,7 @@
       radial-gradient(ellipse 60% 80% at 50% 50%,
         rgba(var(--cover-accent-rgb), 0.15) 0%,
         transparent 70%),
-      rgba(15, 15, 30, 0.25);
+      rgba(15, 15, 30, 0.17);
     border: 1.5px solid rgba(255, 255, 255, 0.15);
     border-top-left-radius: 28px;
     border-bottom-left-radius: 28px;
@@ -709,7 +709,7 @@
       radial-gradient(ellipse 80% 80% at 50% 50%,
         rgba(var(--cover-accent-rgb), 0.15) 0%,
         transparent 70%),
-      rgba(15, 15, 30, 0.25);
+      rgba(15, 15, 30, 0.17);
     border: 1.5px solid rgba(255, 255, 255, 0.15);
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;

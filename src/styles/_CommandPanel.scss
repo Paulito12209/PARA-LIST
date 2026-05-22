@@ -19,8 +19,10 @@
     border: none;
     border-radius: 0 0 $radius-lg $radius-lg;
     overflow: visible;
+
     box-shadow:
-      0 6px 40px rgba(0, 0, 0, 0.08),
+      0 20px 60px rgba(0, 0, 0, 0.25),
+      0 8px 24px rgba(0, 0, 0, 0.5),
       0 0 0 1px rgba(var(--cover-accent-rgb), 0.12),
       0 12px 56px rgba(var(--cover-accent-rgb), 0.28),
       0 4px 24px rgba(var(--cover-accent-rgb), 0.18);
@@ -116,49 +118,6 @@
     height: 7px;
     border-radius: 50%;
     border: 2px solid $color-hover;
-  }
-
-  &__profile-btn {
-    overflow: hidden;
-
-    @media (hover: hover) {
-      &:hover {
-        .command-panel__profile-hover {
-          opacity: 1;
-        }
-
-        .command-panel__profile-avatar img {
-          filter: blur(2px) brightness(0.8);
-        }
-      }
-    }
-  }
-
-  &__profile-avatar {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    border-radius: inherit;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: filter $transition-fast;
-    }
-  }
-
-  &__profile-hover {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transition: opacity $transition-fast;
-    border-radius: inherit;
-    z-index: 2;
   }
 
   // Pull-down drawer content
@@ -266,7 +225,7 @@
   &__list {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 52px; // Platz für Quick-Settings-Leiste
+    padding-bottom: 12px; // Platz für Quick-Settings-Leiste
     animation: fade-in 0.25s ease-out;
     will-change: opacity, transform;
   }
@@ -362,7 +321,10 @@
     flex-shrink: 0;
     position: relative;
     z-index: 10;
-    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
   &__handle-bar {
@@ -375,16 +337,15 @@
 
   // Quick-Settings-Leiste (ersetzt den einzelnen Settings-Button)
   &__quick-settings {
-    position: absolute;
-    left: $spacing-md;
-    right: $spacing-md;
-    bottom: $spacing-md;
+    width: 100%;
+    padding: 0 $spacing-md;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: $spacing-sm;
     animation: fade-in 0.3s ease;
     z-index: 10;
+    box-sizing: border-box;
   }
 
   &__qs-pill {

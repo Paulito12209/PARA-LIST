@@ -548,6 +548,15 @@ export function HomeScreen({
         >
           {renderTabList()}
         </div>
+
+        {listExpanded && (
+          <button
+            className="home__collapse-btn"
+            onClick={() => setListExpanded(false)}
+          >
+            <ChevronDown size={20} />
+          </button>
+        )}
       </div>
 
       {collabModalOpen && firstCat && (

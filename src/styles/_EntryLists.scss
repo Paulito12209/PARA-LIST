@@ -210,18 +210,6 @@
       align-self: flex-start;
     }
 
-    .task-item__side-actions {
-      position: static;
-      flex-shrink: 0;
-      align-self: flex-start;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      gap: $spacing-xs;
-      padding-top: 2px;
-    }
-
     .task-item__type-icon,
     .note-item__type-icon,
     .cal-item__type-icon {
@@ -229,7 +217,6 @@
       flex-shrink: 0;
     }
 
-    .task-item__star-btn,
     .task-item__menu-btn {
       background: none;
       border: none;
@@ -238,6 +225,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .task-item__menu-btn svg {
@@ -421,7 +409,6 @@
     margin-top: -2px;
   }
 
-  &__star-btn,
   &__menu-btn {
     padding: $spacing-2xs;
     background: transparent;
@@ -449,6 +436,15 @@
     text-overflow: clip; // Ellipsis entfernen
   }
 
+  // Wrapper: Pills links + Menü-Button rechts
+  &__pills-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    margin-top: $spacing-sm;
+  }
+
   // Pillen-Zeile
   &__pills {
     display: flex;
@@ -456,7 +452,8 @@
     overflow-x: auto;
     gap: 5px;
     align-items: center;
-    margin-top: $spacing-sm;
+    flex: 1;
+    min-width: 0;
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
@@ -1008,10 +1005,51 @@
 
 .note-item__type-icon {
   background: rgba(251, 191, 36, 0.10);
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.94);
+    background: rgba(251, 191, 36, 0.20);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(251, 191, 36, 0.16);
+    }
+  }
 }
 
 .cal-item__type-icon {
   background: rgba(30, 58, 138, 0.10);
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.94);
+    background: rgba(30, 58, 138, 0.20);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(30, 58, 138, 0.16);
+    }
+  }
+}
+
+// Starred state for all type icons
+.task-item__type-icon--starred,
+.note-item__type-icon--starred,
+.cal-item__type-icon--starred {
+  background: rgba(245, 158, 11, 0.15);
+
+  &:active {
+    background: rgba(245, 158, 11, 0.25);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background: rgba(245, 158, 11, 0.20);
+    }
+  }
 }
 
 // ── Media Item ───────────────────────────────────────────────

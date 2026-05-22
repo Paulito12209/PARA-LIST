@@ -729,6 +729,17 @@
     }
   }
 
+  .home__collapse-btn {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #5858A0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+    &:active {
+      background: #f0f0f5;
+    }
+  }
+
   .settings-modal__footer-close {
     background: #ef4444;
     color: #fff;

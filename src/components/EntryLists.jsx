@@ -256,24 +256,35 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
       >
         {e.type === 'task' && (
           <button
-            className={`task-item__type-icon ${e.done ? "task-item__type-icon--done" : ""}`}
-            onClick={(ev) => { ev.stopPropagation(); onToggle && onToggle(e.id); }}
-            aria-label={e.done ? (t.markUndone || "Mark as not done") : (t.markDone || "Mark as done")}
+            className={`task-item__type-icon ${e.starred ? "task-item__type-icon--starred" : ""} ${e.done ? "task-item__type-icon--done" : ""}`}
+            onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
           >
-            {e.done
-              ? <CheckCircle2 size={22} color="#7C83F7" strokeWidth={2.25} />
-              : <Circle size={22} color="#7C83F7" strokeWidth={2.25} />}
+            {e.starred
+              ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+              : e.done
+                ? <CheckCircle2 size={22} color="#7C83F7" strokeWidth={2.25} />
+                : <Circle size={22} color="#7C83F7" strokeWidth={2.25} />}
           </button>
         )}
         {e.type === 'note' && (
-          <div className="note-item__type-icon" aria-hidden="true">
-            <FileText size={22} color="#FBBF24" strokeWidth={2.25} />
-          </div>
+          <button
+            className={`note-item__type-icon ${e.starred ? "note-item__type-icon--starred" : ""}`}
+            onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
+          >
+            {e.starred
+              ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+              : <FileText size={22} color="#FBBF24" strokeWidth={2.25} />}
+          </button>
         )}
         {e.type === 'calendar' && (
-          <div className="cal-item__type-icon" aria-hidden="true">
-            <Calendar size={22} color="#1E3A8A" strokeWidth={2.25} />
-          </div>
+          <button
+            className={`cal-item__type-icon ${e.starred ? "cal-item__type-icon--starred" : ""}`}
+            onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
+          >
+            {e.starred
+              ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+              : <Calendar size={22} color="#1E3A8A" strokeWidth={2.25} />}
+          </button>
         )}
         <div className="task-item__body">
           <div className="task-item__top-row">
@@ -286,37 +297,46 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
             <AutoScrollText>{e.body || e.note || t.addNotePlaceholder}</AutoScrollText>
           </div>
 
-          <div className="task-item__pills">
-            {e.type === 'note' ? (
-              <span className="task-item__pill task-item__pill--date" style={{ cursor: 'default' }}>
-                <Clock size={12} />
-                <span>{new Date(e.createdAt).toLocaleDateString(t.locale, { day: 'numeric', month: 'short' })}</span>
-              </span>
-            ) : (e.type === 'task' || e.type === 'calendar') ? (
-              <button
-                className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
-                onClick={(ev) => { ev.stopPropagation(); setDateEntryId(dateEntryId === e.id ? null : e.id); }}
-              >
-                {isToday(e.type === 'calendar' ? e.date : e.due) ? (
-                  <>
-                    <Clock size={12} />
-                    {e.time && <span>{e.time} {t.oclock}</span>}
-                  </>
-                ) : (
-                  <>
-                    <Calendar size={12} />
-                    {(e.type === 'calendar' ? e.date : e.due) && (
-                      <span>{fmtDate(e.type === 'calendar' ? e.date : e.due, t.locale)}</span>
-                    )}
-                    {e.time && <span>· {e.time} {t.oclock}</span>}
-                  </>
-                )}
-              </button>
-            ) : null}
+          <div className="task-item__pills-row">
+            <div className="task-item__pills">
+              {e.type === 'note' ? (
+                <span className="task-item__pill task-item__pill--date" style={{ cursor: 'default' }}>
+                  <Clock size={12} />
+                  <span>{new Date(e.createdAt).toLocaleDateString(t.locale, { day: 'numeric', month: 'short' })}</span>
+                </span>
+              ) : (e.type === 'task' || e.type === 'calendar') ? (
+                <button
+                  className={`task-item__pill task-item__pill--date ${overdue ? 'task-item__pill--overdue' : ''}`}
+                  onClick={(ev) => { ev.stopPropagation(); setDateEntryId(dateEntryId === e.id ? null : e.id); }}
+                >
+                  {isToday(e.type === 'calendar' ? e.date : e.due) ? (
+                    <>
+                      <Clock size={12} />
+                      {e.time && <span>{e.time} {t.oclock}</span>}
+                    </>
+                  ) : (
+                    <>
+                      <Calendar size={12} />
+                      {(e.type === 'calendar' ? e.date : e.due) && (
+                        <span>{fmtDate(e.type === 'calendar' ? e.date : e.due, t.locale)}</span>
+                      )}
+                      {e.time && <span>· {e.time} {t.oclock}</span>}
+                    </>
+                  )}
+                </button>
+              ) : null}
 
-            {renderParaPill('project', projs)}
-            {renderParaPill('area', areas)}
-            {renderParaPill('resource', ress)}
+              {renderParaPill('project', projs)}
+              {renderParaPill('area', areas)}
+              {renderParaPill('resource', ress)}
+            </div>
+
+            <button
+              className="task-item__menu-btn"
+              onClick={(ev) => { ev.stopPropagation(); setMenuEntryId(menuEntryId === e.id ? null : e.id); }}
+            >
+              <MoreVertical size={18} color="#C0C0D0" />
+            </button>
           </div>
 
           {dateEntryId === e.id && (
@@ -343,21 +363,6 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
               />
             </div>
           )}
-        </div>
-
-        <div className="task-item__side-actions">
-          <button
-            className="task-item__star-btn"
-            onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
-          >
-            <Star size={18} fill={e.starred ? '#F59E0B' : 'none'} color={e.starred ? '#F59E0B' : '#C0C0D0'} strokeWidth={e.starred ? 0 : 1.5} />
-          </button>
-          <button
-            className="task-item__menu-btn"
-            onClick={(ev) => { ev.stopPropagation(); setMenuEntryId(menuEntryId === e.id ? null : e.id); }}
-          >
-            <MoreVertical size={18} color="#C0C0D0" />
-          </button>
         </div>
 
         {menuEntryId === e.id && (

@@ -826,6 +826,7 @@
     opacity: 0.9;
     transform: translateY(30%);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -836,10 +837,39 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 0 0 96px !important;
-  margin-top: 12px;
+  padding: 0 !important;
+  // margin-top: 12px;
   overflow-y: auto;
   flex: 1;
+}
+
+.home__list-container--expanded .entry-list {
+  padding-bottom: 96px !important;
+}
+
+// Collapse-FAB unten links (nur im expandierten Zustand)
+.home__collapse-btn {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid $color-border;
+  background: $color-surface;
+  color: $color-text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 12;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+
+  &:active {
+    transform: scale(0.92);
+    background: $color-hover;
+  }
 }
 
 // ── Page-Dots unten in der Mitte ──

@@ -456,18 +456,19 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    background: rgba(15, 15, 30, 0.17);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba(255, 255, 255, 0.4);
+    color: rgba(255, 255, 255, 0.6);
     cursor: pointer;
     transition: all 0.2s ease;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.14);
-      color: rgba(255, 255, 255, 0.6);
+      background: rgba(15, 15, 30, 0.25);
+      color: rgba(255, 255, 255, 0.8);
     }
   }
 
@@ -579,10 +580,11 @@
     font-size: 11px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.4);
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(15, 15, 30, 0.17);
     padding: 4px 10px;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
 
     &--date {
       color: #1D4ED8;

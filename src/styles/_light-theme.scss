@@ -1031,22 +1031,6 @@
         inset 0 0 22px rgba(var(--cover-accent-rgb), 0.14),
         0 8px 32px rgba(255, 255, 255, 0.85);
 
-      &.split-nav__pills--project {
-        border-color: rgba(224, 62, 62, 0.62);
-      }
-
-      &.split-nav__pills--area {
-        border-color: rgba(208, 144, 32, 0.62);
-      }
-
-      &.split-nav__pills--resource {
-        border-color: rgba(48, 160, 96, 0.62);
-      }
-
-      &.split-nav__pills--archive {
-        border-color: rgba(124, 131, 247, 0.62);
-      }
-
       .split-nav__btn {
         color: #5858a0; // Standardmaessige Icon-Farbe fuer inaktive Elemente
 
@@ -1066,7 +1050,7 @@
 
     &__add {
       background: rgba(255, 255, 255, 0.85);
-      border-color: rgba(var(--cover-accent-rgb), 0.62);
+      border-color: rgba(0, 0, 0, 0.06);
       // Inset-Glow in theme-Farbe + weißer äußerer Drop Shadow (Light Mode)
       box-shadow:
         inset 0 0 22px rgba(var(--cover-accent-rgb), 0.18),

@@ -401,15 +401,11 @@
   }
 
   &__qs-settings-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 24px;
-    background: rgba($color-card, 0.6);
+    @include floating-btn(48px, 50%);
+    position: relative;
     @include glass-border;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: $color-muted;
+    background: rgba($color-dim, 0.6);
+    color: $color-text;
     cursor: pointer;
     flex-shrink: 0;
     transition: all $transition-fast;

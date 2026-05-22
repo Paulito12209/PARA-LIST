@@ -529,7 +529,7 @@
     z-index: 1;
 
     // No collabs: directly below avatar
-    top: 36px; // 40px - 4px overlap
+    top: 40px; // 40px - 4px overlap
 
     &:hover {
       background: rgba(255, 255, 255, 0.14);
@@ -538,7 +538,7 @@
   }
 
   // When collab-avatar is present, push btn below it
-  &__collab-avatar + &__collab-btn {
+  &__collab-avatar+&__collab-btn {
     top: 60px; // 32px (collab-avatar top) + 36px - 8px overlap
   }
 

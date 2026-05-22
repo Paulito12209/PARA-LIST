@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Check, Moon, Sun, Sliders } from "lucide-react";
+import { Check, Moon, Sun } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon } from "./AppIcons";
 
@@ -98,7 +98,7 @@ export function CommandPanel({
                   onOpenSettings();
                 }}
               >
-                <Sliders size={22} color="currentColor" />
+                <CustomSettingsIcon size={22} color="currentColor" />
               </button>
             )}
           </div>

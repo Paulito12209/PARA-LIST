@@ -962,6 +962,17 @@
       border-color: rgba(0, 0, 0, 0.08);
     }
 
+    &__avatar-placeholder {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+      color: #1a1a24;
+
+      &:hover {
+        background: #f0f0f5;
+        color: #1a1a24;
+      }
+    }
+
     &__title {
       color: #1c1c30;
     }
@@ -1101,8 +1112,8 @@
 .app.light-theme .command-panel--closed {
   background: #ffffff;
   box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.05),
+    0 6px 40px rgba(0, 0, 0, 0.06),
     0 0 0 1px rgba(var(--cover-accent-rgb), 0.14),
-    0 8px 36px rgba(var(--cover-accent-rgb), 0.28),
-    0 2px 14px rgba(var(--cover-accent-rgb), 0.16);
+    0 12px 56px rgba(var(--cover-accent-rgb), 0.32),
+    0 4px 24px rgba(var(--cover-accent-rgb), 0.20);
 }

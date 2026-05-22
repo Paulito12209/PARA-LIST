@@ -20,10 +20,10 @@
     border-radius: 0 0 $radius-lg $radius-lg;
     overflow: visible;
     box-shadow:
-      0 4px 24px rgba(0, 0, 0, 0.06),
+      0 6px 40px rgba(0, 0, 0, 0.08),
       0 0 0 1px rgba(var(--cover-accent-rgb), 0.12),
-      0 8px 32px rgba(var(--cover-accent-rgb), 0.22),
-      0 2px 12px rgba(var(--cover-accent-rgb), 0.14);
+      0 12px 56px rgba(var(--cover-accent-rgb), 0.28),
+      0 4px 24px rgba(var(--cover-accent-rgb), 0.18);
   }
 
   &--open {

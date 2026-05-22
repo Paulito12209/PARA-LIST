@@ -25,3 +25,6 @@ dist-ssr
 
 # Claude settings
 .claude/
+
+# Internal docs (not for git)
+CLAUDE.md

@@ -55,6 +55,7 @@
   &__label-chevron {
     color: $color-muted;
     flex-shrink: 0;
+    transition: transform 0.2s ease;
   }
 }
 

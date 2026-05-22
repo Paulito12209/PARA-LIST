@@ -1093,6 +1093,10 @@
       background: rgba(0, 0, 0, 0.15);
     }
   }
+
+  .home__list-container--expanded {
+    background: #f7f7fa;
+  }
 }
 
 // Explizit: Sass-Nesting erzeugte zuvor einen ungültigen Light-Mode-Header-Selektor

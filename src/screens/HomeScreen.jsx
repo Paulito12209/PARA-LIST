@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus, ChevronRight } from "lucide-react";
+import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus, ChevronRight, ChevronDown } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { VoiceFab } from "../components/VoiceFab";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -81,6 +81,8 @@ export function HomeScreen({
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
   const [collabModalOpen, setCollabModalOpen] = useState(false);
   const [collabModalInitialView, setCollabModalInitialView] = useState("list");
+  const [listExpanded, setListExpanded] = useState(false);
+  const lastScrollTop = useRef(0);
 
   const activeCats = cats.filter((c) => c.type === activeCatType && !c.archived);
   const firstCat = activeCats[0];
@@ -132,6 +134,13 @@ export function HomeScreen({
   const handleListScroll = () => {
     const container = entryListRef.current;
     if (!container) return;
+
+    const scrollTop = container.scrollTop;
+    if (scrollTop > lastScrollTop.current && tabEntries.length > 1 && !listExpanded) {
+      setListExpanded(true);
+    }
+    lastScrollTop.current = scrollTop;
+
     const groups = container.querySelectorAll(".task-group");
     if (!groups.length) {
       if (activeGroupHeader) setActiveGroupHeader(null);
@@ -162,6 +171,10 @@ export function HomeScreen({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, tabEntries.length]);
+
+  useEffect(() => {
+    if (tabEntries.length <= 1) setListExpanded(false);
+  }, [tabEntries.length]);
 
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
@@ -478,12 +491,18 @@ export function HomeScreen({
         </div>
       </div>
 
-      <div className="home__list-container">
+      <div className={`home__list-container${listExpanded ? ' home__list-container--expanded' : ''}`}>
         <div className="list-section__header">
           <div className="list-section__header-left">
-            <div className="list-section__label-wrapper">
+            <div
+              className="list-section__label-wrapper"
+              onClick={listExpanded ? () => setListExpanded(false) : undefined}
+            >
               <span className="list-section__label">{tabCfg?.label}</span>
-              <ChevronRight size={20} className="list-section__label-chevron" />
+              {listExpanded
+                ? <ChevronDown size={20} className="list-section__label-chevron" />
+                : <ChevronRight size={20} className="list-section__label-chevron" />
+              }
             </div>
           </div>
           <div className="list-switcher">

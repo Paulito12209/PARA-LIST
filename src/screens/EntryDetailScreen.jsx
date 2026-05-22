@@ -40,9 +40,13 @@ export function EntryDetailScreen({ t, CC, theme, entry, cat: _cat, allCats, onU
   }[entry.type] || FileText;
   
   const TypeIcon = typeIcon;
-  const cfgColor = entry.type === "task" ? "#7C83F7" : 
-    entry.type === "note" ? "#F59E0B" : 
+  const cfgColor = entry.type === "task" ? "#7C83F7" :
+    entry.type === "note" ? "#F59E0B" :
     entry.type === "calendar" ? "#1D4ED8" : "#9CA3AF";
+
+  const entryAccentRgb = entry.type === "task" ? "124, 131, 247" :
+    entry.type === "note" ? "245, 158, 11" :
+    entry.type === "calendar" ? "29, 78, 216" : "156, 163, 175";
 
   const alpha = theme === 'light' ? "0C" : "18";
 
@@ -52,6 +56,7 @@ export function EntryDetailScreen({ t, CC, theme, entry, cat: _cat, allCats, onU
       <div
         className="cat-detail__header"
         style={{
+          "--entry-accent-rgb": entryAccentRgb,
           background: entry.type === "calendar"
             ? "linear-gradient(135deg, rgba(29,78,216,0.10) 0%, rgba(29,78,216,0.03) 100%)"
             : cfgColor + alpha,

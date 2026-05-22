@@ -5,6 +5,7 @@ export function VoiceFab({ tabColor, onOpen }) {
         className="voice-fab"
         onClick={onOpen}
         style={{
+          "--fab-tab-color": tabColor,
           border: `1.5px solid ${tabColor}73`,
           boxShadow: `inset 0 0 22px ${tabColor}38, 0 8px 32px rgba(15, 15, 30, 0.55)`,
         }}

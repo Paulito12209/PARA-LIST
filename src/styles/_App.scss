@@ -6,7 +6,10 @@
 
 .app {
   width: 100%;
-  max-width: 420px;
+  // Fill the full viewport width on phones (portrait) instead of capping at a
+  // fixed 420px column. The desktop layout (>=920px) renders the separate
+  // .dsk-app, so this only affects the mobile/tablet view.
+  max-width: 100%;
   height: 100dvh;
   margin: 0 auto;
   background: $color-bg;

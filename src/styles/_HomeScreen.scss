@@ -410,6 +410,11 @@
     object-position: center;
     z-index: 0;
     opacity: 0.5;
+    // Only show the image in the upper hero band (behind the title + pill
+    // tags). Fade it out before the bottom of the cover so it doesn't bleed
+    // behind the category nav / "Alle Projekte" row above the white content.
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 80%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 55%, transparent 80%);
   }
 
   &__content {

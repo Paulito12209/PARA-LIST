@@ -193,16 +193,16 @@ export function EntryDetailScreen({
         onChange={handleCoverUpload}
       />
 
-      {/* Ganzseitiges Cover-Bild + Lichtwelle */}
-      {hasEntryCoverImg && (
-        <>
-          <img className="cat-detail__cover-bg" src={entry.coverImage} alt="" />
-          <div className="cat-detail__cover-wave" />
-        </>
-      )}
-
       {/* Header */}
       <div className="cat-detail__header">
+
+        {/* Cover-Bild + Lichtwelle — nur innerhalb des Headers */}
+        {hasEntryCoverImg && (
+          <>
+            <img className="cat-detail__cover-bg" src={entry.coverImage} alt="" />
+            <div className="cat-detail__cover-wave" />
+          </>
+        )}
 
         <div className="cat-detail__header-pattern" />
         <div className="cat-detail__title-row">

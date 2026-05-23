@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Trash2, Plus, Camera } from "lucide-react";
 import { uid } from "../utils";
 
@@ -39,7 +40,19 @@ export function CollaboratorsModal({ t, cat, onUpdateCat, onClose, initialView }
     });
   };
 
-  return (
+  // Render through a portal to <body> so the overlay escapes the desktop
+  // main column (which is a `container-type` containing block that would
+  // otherwise trap even position:fixed) and covers the whole window. The
+  // wrapper carries the theme classes — `display: contents` (see CSS) means
+  // it adds no box of its own, but it stays an ancestor in the selector tree
+  // so the existing `.app.light-theme .modal/.collab-modal` styles still apply
+  // and the dark-mode CSS variables continue to inherit.
+  const isLight =
+    typeof document !== "undefined" &&
+    !!document.querySelector(".dsk-app--light, .app.light-theme");
+
+  return createPortal(
+    <div className={`modal-portal app${isLight ? " light-theme" : ""}`}>
     <div className="modal" onClick={onClose}>
       <div className="modal__sheet collab-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
@@ -139,5 +152,7 @@ export function CollaboratorsModal({ t, cat, onUpdateCat, onClose, initialView }
         )}
       </div>
     </div>
+    </div>,
+    document.body
   );
 }

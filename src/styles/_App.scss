@@ -228,6 +228,22 @@
 
 // ── Category Detail Screen ──────────────────────────────────
 
+// Portal wrapper for modals rendered into <body> (e.g. CollaboratorsModal on
+// desktop). `display: contents` means it produces no box — so `.app`'s
+// max-width / position / overflow don't apply and can't trap or shrink the
+// overlay — while it stays an ancestor in the selector tree so the theme
+// classes (`app`, `light-theme`) still drive styling and inherited tokens.
+.modal-portal.app {
+  display: contents;
+}
+// Once portaled to the full window, give the sheet a sane centered width on
+// larger screens instead of stretching edge-to-edge.
+@media (min-width: 480px) {
+  .modal-portal .modal__sheet {
+    max-width: 460px;
+  }
+}
+
 .modal {
   position: absolute;
   inset: 0;

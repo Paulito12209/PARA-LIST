@@ -173,6 +173,7 @@ export function CatDetailScreen({
   const catAccentRgb = cat.coverColor
     ? COVER_COLORS.find(c => c.hex === cat.coverColor)?.rgb || CAT_ACCENT_RGB[safeType] || "88, 88, 160"
     : CAT_ACCENT_RGB[safeType] || "88, 88, 160";
+  const hasCoverImg = !!cat.coverImage;
   const coverAlpha = theme === 'light' ? "0C" : "18";
   const coverBgColor = cat.coverColor || cfg.color;
 
@@ -344,13 +345,13 @@ export function CatDetailScreen({
     <div className="cat-detail" onClick={handleClickOutside}>
       {/* Header */}
       <div
-        className="cat-detail__header"
+        className={`cat-detail__header ${hasCoverImg ? "cat-detail__header--has-img" : ""}`}
         style={{
           "--entry-accent-rgb": catAccentRgb,
-          background: coverBgColor + coverAlpha,
+          background: hasCoverImg ? undefined : coverBgColor + coverAlpha,
         }}
       >
-        {cat.coverImage && (
+        {hasCoverImg && (
           <img className="cat-detail__cover-img" src={cat.coverImage} alt="" />
         )}
         <div className="cat-detail__header-pattern" />

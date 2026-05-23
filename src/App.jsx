@@ -21,6 +21,8 @@ import { NewCatModal } from "./modals/NewCatModal";
 import { OnboardingModal } from "./modals/OnboardingModal";
 import { SettingsModal } from "./modals/SettingsModal";
 import { TaskDoneCelebration, BirthdayCelebration } from "./modals/Celebrations";
+import { useIsDesktop } from "./hooks/useMediaQuery";
+import { DesktopApp } from "./desktop/DesktopApp";
 import "./App.scss";
 
 const SWIPE_BACK_DX_PX = 75;
@@ -159,6 +161,7 @@ function NotFoundScreen({ Icon, iconColor, onBack }) {
 
 export default function App() {
   const [state, setState, isLoaded] = usePersistedState(SEED);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     if (isLoaded) setState(migrateState);
@@ -459,6 +462,110 @@ export default function App() {
     );
   }
 
+  const renderRootModals = () => (
+    <>
+      {settingsOpen && (
+        <SettingsModal
+          t={t}
+          lang={lang}
+          setLang={(l) => setState((s) => ({ ...s, lang: l }))}
+          theme={theme}
+          setTheme={(th) => setState((s) => ({ ...s, theme: th }))}
+          user={state.user}
+          onUpdateUser={(patch) =>
+            setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
+          }
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
+
+      {state.user.name === "" && (
+        <OnboardingModal
+          onComplete={(l, n) =>
+            setState((s) => ({ ...s, lang: l, user: { ...s.user, name: n } }))
+          }
+        />
+      )}
+
+      {creating && (
+        <CreateModal
+          t={t}
+          CC={CC}
+          type={creating.type}
+          cats={state.cats}
+          initialCatId={creating.catId}
+          onSave={(entry) => {
+            if (creating.linkToEntryId) {
+              addLinkedEntry(entry, creating.linkToEntryId);
+            } else if (creating.parentEntryId) {
+              addSubtask(entry, creating.parentEntryId);
+            } else {
+              addEntry(entry);
+            }
+            setCreating(null);
+          }}
+          onClose={() => setCreating(null)}
+        />
+      )}
+
+      {newCatType && (
+        <NewCatModal
+          t={t}
+          CC={CC}
+          type={newCatType}
+          onSave={(name) => {
+            addCat(newCatType, name);
+            setNewCatType(null);
+          }}
+          onClose={() => setNewCatType(null)}
+        />
+      )}
+
+      {showCelebration && (
+        <TaskDoneCelebration
+          t={t}
+          count={state.entries.filter((e) => e.type === "task" && e.done).length}
+          onClose={() => setShowCelebration(false)}
+        />
+      )}
+
+      {celebrationBirthday && (
+        <BirthdayCelebration
+          t={t}
+          entry={celebrationBirthday}
+          userName={state.user.name}
+          onClose={() => setCelebrationBirthday(null)}
+        />
+      )}
+    </>
+  );
+
+  // ── Desktop branch: HOME view renders the 3-column layout ──
+  if (isDesktop && cur.view === VIEW.HOME) {
+    const desktopCtx = {
+      t,
+      lang,
+      CC,
+      theme,
+      state,
+      push,
+      mutations: {
+        toggleTask,
+        updateCat,
+        addCatModal: (type) => setNewCatType(type),
+      },
+      openSettings: () => setSettingsOpen(true),
+      openArchive: (archiveTab) => push({ view: VIEW.ARCHIVE, tab: archiveTab }),
+      focusTab: (focusedTab) => setTab(focusedTab),
+    };
+    return (
+      <div className={theme === "light" ? "light-theme" : ""}>
+        <DesktopApp ctx={desktopCtx} />
+        {renderRootModals()}
+      </div>
+    );
+  }
+
   return (
     <div
       className={`app ${theme === "light" ? "light-theme" : ""}`}
@@ -660,79 +767,7 @@ export default function App() {
         })()}
       </div>
 
-      {settingsOpen && (
-        <SettingsModal
-          t={t}
-          lang={lang}
-          setLang={(l) => setState((s) => ({ ...s, lang: l }))}
-          theme={theme}
-          setTheme={(th) => setState((s) => ({ ...s, theme: th }))}
-          user={state.user}
-          onUpdateUser={(patch) =>
-            setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
-          }
-          onClose={() => setSettingsOpen(false)}
-        />
-      )}
-
-      {state.user.name === "" && (
-        <OnboardingModal
-          onComplete={(l, n) =>
-            setState((s) => ({ ...s, lang: l, user: { ...s.user, name: n } }))
-          }
-        />
-      )}
-
-      {creating && (
-        <CreateModal
-          t={t}
-          CC={CC}
-          type={creating.type}
-          cats={state.cats}
-          initialCatId={creating.catId}
-          onSave={(entry) => {
-            if (creating.linkToEntryId) {
-              addLinkedEntry(entry, creating.linkToEntryId);
-            } else if (creating.parentEntryId) {
-              addSubtask(entry, creating.parentEntryId);
-            } else {
-              addEntry(entry);
-            }
-            setCreating(null);
-          }}
-          onClose={() => setCreating(null)}
-        />
-      )}
-
-      {newCatType && (
-        <NewCatModal
-          t={t}
-          CC={CC}
-          type={newCatType}
-          onSave={(name) => {
-            addCat(newCatType, name);
-            setNewCatType(null);
-          }}
-          onClose={() => setNewCatType(null)}
-        />
-      )}
-
-      {showCelebration && (
-        <TaskDoneCelebration
-          t={t}
-          count={state.entries.filter((e) => e.type === "task" && e.done).length}
-          onClose={() => setShowCelebration(false)}
-        />
-      )}
-
-      {celebrationBirthday && (
-        <BirthdayCelebration
-          t={t}
-          entry={celebrationBirthday}
-          userName={state.user.name}
-          onClose={() => setCelebrationBirthday(null)}
-        />
-      )}
+      {renderRootModals()}
     </div>
   );
 }

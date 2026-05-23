@@ -29,5 +29,8 @@
 // Gemeinsame Komponenten (Swipe-To-Delete, etc.)
 @use './styles/shared';
 
+// Desktop Layout (>=920px)
+@use './styles/DesktopLayout';
+
 // Light-Theme Overrides (zentralisiert für Übersicht)
 @use './styles/light-theme';

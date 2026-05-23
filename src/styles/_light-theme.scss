@@ -396,12 +396,32 @@
   }
 
   .cat-detail {
+    background: #f7f7f9;
+
     &__header {
       border-bottom-color: #e5e5f0;
       background:
+        // Akzent-farbige Diagonalstreifen (Light Mode)
+        repeating-linear-gradient(135deg,
+          transparent 0px,
+          transparent 60px,
+          rgba(var(--entry-accent-rgb), 0.25) 82px,
+          rgba(var(--entry-accent-rgb), 0.09) 110px,
+          transparent 140px,
+          transparent 200px),
+        repeating-linear-gradient(132deg,
+          transparent 0px,
+          transparent 95px,
+          rgba(var(--entry-accent-rgb), 0.14) 130px,
+          transparent 165px,
+          transparent 250px),
+        // Punkt-Textur
+        radial-gradient(rgba(0, 0, 0, 0.10) 1px, transparent 1px) 0 0 / 14px 14px,
+        // Akzent-Gradient
         linear-gradient(to bottom,
           rgba(var(--entry-accent-rgb), 0.15) 0%,
-          rgba(var(--entry-accent-rgb), 0.04) 100%);
+          rgba(var(--entry-accent-rgb), 0.04) 100%),
+        #f7f7f9;
 
       &::before {
         opacity: 0.45;

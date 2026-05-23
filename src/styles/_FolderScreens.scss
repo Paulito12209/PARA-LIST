@@ -150,13 +150,20 @@
     border-bottom: 1px solid $color-border;
     transition: background $transition-normal;
     position: relative;
+    overflow: visible;
+  }
+
+  &__header-pattern {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
     overflow: hidden;
+    pointer-events: none;
 
     &::before {
       content: '';
       position: absolute;
       inset: 0;
-      z-index: 0;
       opacity: 0.6;
       background:
         repeating-linear-gradient(
@@ -178,7 +185,6 @@
         ),
         radial-gradient(rgba(var(--entry-accent-rgb), 0.12) 1px, transparent 1px);
       background-size: auto, auto, 10px 10px;
-      pointer-events: none;
     }
   }
 
@@ -256,6 +262,15 @@
 
   &__delete-btn {
     margin-left: auto;
+
+    &--entry {
+      margin-left: 0;
+      margin-right: -8px;
+
+      svg {
+        transform: rotate(90deg);
+      }
+    }
   }
 
   &__birthday-toggle {

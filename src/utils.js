@@ -190,13 +190,13 @@ export const SEED = {
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
-    { id: "e1", type: "task", title: "Aufgaben erledigen: Im Menu auswählen", done: false, note: "Onboarding abschließen", due: TODAY, catId: "p1" },
-    { id: "e2", type: "task", title: "Aufgabe löschen: Nach links ziehen", done: false, note: "", due: TODAY, catId: "p1" },
-    { id: "e3", type: "task", title: "Swipe nach links & erstelle eine Notiz", done: false, note: "", due: TODAY, catId: "p1" },
-    { id: "e4", type: "task", title: "Erstelle dein Geburtstag im Kalender", done: false, note: "", due: TODAY, catId: "p1" },
-    { id: "e5", type: "task", title: "Ändere dein Profilbild in den Einstellungen", done: false, note: "", due: TODAY, catId: "p1" },
-    { id: "e6", type: "task", title: "Klicke auf Ressourcen & öffne 'PARA-Methode'", done: false, note: "", due: TODAY, catId: "p1" },
-    { id: "e-para-vid", type: "link", title: "Vorstellung der PARA-Methode", url: "https://www.youtube.com/watch?v=8sdnM-vdqvI", catId: "r5" },
+    { id: "e1", type: "task", title: "Aufgaben erledigen: Im Menu auswählen", done: false, note: "Onboarding abschließen", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e2", type: "task", title: "Aufgabe löschen: Nach links ziehen", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e3", type: "task", title: "Swipe nach links & erstelle eine Notiz", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e4", type: "task", title: "Erstelle dein Geburtstag im Kalender", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e5", type: "task", title: "Ändere dein Profilbild in den Einstellungen", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e6", type: "task", title: "Klicke auf Ressourcen & öffne 'PARA-Methode'", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e-para-vid", type: "link", title: "Vorstellung der PARA-Methode", url: "https://www.youtube.com/watch?v=8sdnM-vdqvI", catId: "r5", linkedEntryIds: [], parentId: null },
   ],
 };
 

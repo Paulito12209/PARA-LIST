@@ -81,11 +81,11 @@ export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive
 }
 
 
-export function BookmarkRail({ active, onSelect, baseColor }) {
+export function BookmarkRail({ active, onSelect, baseColor, iconOverrides }) {
   return (
     <div className="bookmark-rail">
       {BOOKMARKS.map((bm) => {
-        const BmIcon = bm.Icon;
+        const BmIcon = iconOverrides?.[bm.id] || bm.Icon;
         const isActive = active === bm.id;
         const color = (bm.id === 'canvas' && baseColor) ? baseColor : bm.color;
         
@@ -296,6 +296,7 @@ export function CatDetailScreen({
     <div className="cat-detail" onClick={handleClickOutside}>
       {/* Header */}
       <div className="cat-detail__header">
+        <div className="cat-detail__header-pattern" />
         <div className="cat-detail__title-row">
           <CatIcon size={18} color={cfg.color} />
           <input

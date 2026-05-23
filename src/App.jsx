@@ -104,6 +104,19 @@ function migrateState(state) {
     return c;
   });
 
+  next.entries = next.entries.map((e) => {
+    let patched = e;
+    if (!Array.isArray(patched.linkedEntryIds)) {
+      dirty = true;
+      patched = { ...patched, linkedEntryIds: [] };
+    }
+    if (patched.parentId === undefined) {
+      dirty = true;
+      patched = { ...patched, parentId: null };
+    }
+    return patched;
+  });
+
   return dirty ? next : state;
 }
 
@@ -278,7 +291,7 @@ export default function App() {
       }
       return {
         ...s,
-        entries: [...s.entries, { id: newId, createdAt: Date.now(), ...entry }],
+        entries: [...s.entries, { id: newId, createdAt: Date.now(), linkedEntryIds: [], parentId: null, ...entry }],
       };
     });
 
@@ -316,7 +329,80 @@ export default function App() {
     }));
 
   const deleteEntry = (id) =>
-    setState((s) => ({ ...s, entries: s.entries.filter((e) => e.id !== id) }));
+    setState((s) => ({
+      ...s,
+      entries: s.entries
+        .filter((e) => e.id !== id)
+        .map((e) => {
+          let patched = e;
+          if (patched.linkedEntryIds?.includes(id)) {
+            patched = { ...patched, linkedEntryIds: patched.linkedEntryIds.filter((lid) => lid !== id) };
+          }
+          if (patched.parentId === id) {
+            patched = { ...patched, parentId: null };
+          }
+          return patched;
+        }),
+    }));
+
+  const linkEntries = (idA, idB) =>
+    setState((s) => ({
+      ...s,
+      entries: s.entries.map((e) => {
+        if (e.id === idA && !e.linkedEntryIds?.includes(idB)) {
+          return { ...e, linkedEntryIds: [...(e.linkedEntryIds || []), idB] };
+        }
+        if (e.id === idB && !e.linkedEntryIds?.includes(idA)) {
+          return { ...e, linkedEntryIds: [...(e.linkedEntryIds || []), idA] };
+        }
+        return e;
+      }),
+    }));
+
+  const unlinkEntries = (idA, idB) =>
+    setState((s) => ({
+      ...s,
+      entries: s.entries.map((e) => {
+        if (e.id === idA) {
+          return { ...e, linkedEntryIds: (e.linkedEntryIds || []).filter((lid) => lid !== idB) };
+        }
+        if (e.id === idB) {
+          return { ...e, linkedEntryIds: (e.linkedEntryIds || []).filter((lid) => lid !== idA) };
+        }
+        return e;
+      }),
+    }));
+
+  const addLinkedEntry = (entry, linkToEntryId) =>
+    setState((s) => {
+      const newId = uid();
+      if (entry.type === "calendar" && entry.isBirthday) {
+        setCelebrationBirthday({ ...entry, id: newId });
+      }
+      return {
+        ...s,
+        entries: [
+          ...s.entries.map((e) =>
+            e.id === linkToEntryId
+              ? { ...e, linkedEntryIds: [...(e.linkedEntryIds || []), newId] }
+              : e
+          ),
+          { id: newId, createdAt: Date.now(), linkedEntryIds: [linkToEntryId], parentId: null, ...entry },
+        ],
+      };
+    });
+
+  const addSubtask = (entry, parentEntryId) =>
+    setState((s) => {
+      const newId = uid();
+      return {
+        ...s,
+        entries: [
+          ...s.entries,
+          { id: newId, createdAt: Date.now(), linkedEntryIds: [], parentId: parentEntryId, ...entry },
+        ],
+      };
+    });
 
   const notif = computeNotif(state.entries);
 
@@ -547,6 +633,7 @@ export default function App() {
               t={t}
               CC={CC}
               theme={theme}
+              lang={lang}
               entry={entry}
               cat={cat}
               allCats={state.cats}
@@ -556,6 +643,17 @@ export default function App() {
                 pop();
               }}
               onBack={handleSmartBack}
+              entries={state.entries}
+              onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+              toggleTask={toggleTask}
+              deleteEntry={deleteEntry}
+              onAddLinkedEntry={(type) => setCreating({ type, catId: entry.catIds?.[0] || null, linkToEntryId: entry.id })}
+              onAddSubtask={() => setCreating({ type: "task", catId: entry.catIds?.[0] || null, parentEntryId: entry.id })}
+              onUnlinkEntry={(linkedId) => unlinkEntries(entry.id, linkedId)}
+              tags={state.tags}
+              onCreateTag={createGlobalTag}
+              onUpdateTag={updateGlobalTag}
+              onDeleteTag={deleteGlobalTag}
             />
           );
         })()}
@@ -592,7 +690,13 @@ export default function App() {
           cats={state.cats}
           initialCatId={creating.catId}
           onSave={(entry) => {
-            addEntry(entry);
+            if (creating.linkToEntryId) {
+              addLinkedEntry(entry, creating.linkToEntryId);
+            } else if (creating.parentEntryId) {
+              addSubtask(entry, creating.parentEntryId);
+            } else {
+              addEntry(entry);
+            }
             setCreating(null);
           }}
           onClose={() => setCreating(null)}

@@ -964,6 +964,22 @@
         #ffffff;
     }
 
+    &--has-cover-img &__light-wave {
+      background:
+        repeating-linear-gradient(135deg,
+          transparent 0px,
+          transparent 60px,
+          rgba(var(--cover-accent-rgb), 0.15) 82px,
+          rgba(var(--cover-accent-rgb), 0.05) 110px,
+          transparent 140px,
+          transparent 200px),
+        linear-gradient(to top,
+          rgba(255, 255, 255, 0.55) 0%,
+          rgba(255, 255, 255, 0.25) 40%,
+          transparent 100%),
+        radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 14px 14px;
+    }
+
     &__badge {
       background: rgba(255, 255, 255, 0.45);
       border: 1.5px solid rgba(255, 255, 255, 0.85);

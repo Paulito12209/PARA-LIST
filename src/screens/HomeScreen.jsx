@@ -227,7 +227,20 @@ export function HomeScreen({
     [onAddEntry]
   );
 
-  const rgbVal = COVER_ACCENT_RGB[activeCatType] || COVER_ACCENT_RGB.archive;
+  const defaultRgb = COVER_ACCENT_RGB[activeCatType] || COVER_ACCENT_RGB.archive;
+  const rgbVal = (() => {
+    if (!firstCat?.coverColor) return defaultRgb;
+    const HEX_TO_RGB = {
+      "#30A060": "48, 160, 96",
+      "#D09020": "208, 144, 32",
+      "#F59E0B": "245, 158, 11",
+      "#1D4ED8": "29, 78, 216",
+      "#7C83F7": "124, 131, 247",
+      "#E03E3E": "224, 62, 62",
+      "#5858A0": "88, 88, 160",
+    };
+    return HEX_TO_RGB[firstCat.coverColor] || defaultRgb;
+  })();
 
   useEffect(() => {
     onCoverAccentChange?.(rgbVal);
@@ -378,9 +391,12 @@ export function HomeScreen({
 
   return (
     <div className={`home home--${tab}`}>
-      <div className="home-cover" style={{ "--cover-accent-rgb": rgbVal }}>
+      <div className={`home-cover ${firstCat?.coverImage ? "home-cover--has-cover-img" : ""}`} style={{ "--cover-accent-rgb": rgbVal }}>
         {state.user.bgImage && (
           <img className="home-cover__bg-img" src={state.user.bgImage} alt="" aria-hidden="true" />
+        )}
+        {firstCat?.coverImage && (
+          <img className="home-cover__bg-img" src={firstCat.coverImage} alt="" aria-hidden="true" />
         )}
         <div className="home-cover__light-wave" />
         <div className="home-cover__content">

@@ -380,6 +380,27 @@
       #1A1A2E;
   }
 
+  // Wenn ein Cover-Bild vorhanden ist: Light-Wave wird halbtransparent,
+  // damit das Bild durchscheint
+  &--has-cover-img &__light-wave {
+    background:
+      linear-gradient(to bottom,
+        rgba(var(--cover-accent-rgb), 0.30) 0%,
+        transparent 38%),
+      repeating-linear-gradient(135deg,
+        transparent 0px,
+        transparent 60px,
+        rgba(255, 255, 255, 0.12) 82px,
+        rgba(255, 255, 255, 0.04) 110px,
+        transparent 140px,
+        transparent 200px),
+      linear-gradient(to top,
+        rgba(0, 0, 0, 0.55) 0%,
+        rgba(0, 0, 0, 0.30) 40%,
+        rgba(var(--cover-accent-rgb), 0.10) 100%),
+      radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px) 0 0 / 14px 14px;
+  }
+
   &__bg-img {
     position: absolute;
     inset: 0;

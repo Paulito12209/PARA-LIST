@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { CheckCircle2, Pencil, Calendar, Circle, Triangle, Square, Maximize2, Clock } from "lucide-react";
+import { CheckCircle2, Pencil, Calendar, Circle, Triangle, Square, Plus, Clock } from "lucide-react";
 import { TODAY, isOld, isToday, getTaskGroup } from "../utils";
 
 const TILE_CFG = {
@@ -171,10 +171,12 @@ function EntryCard({ entry, cats, type, CC, onOpenEntry, toggleTask }) {
   );
 }
 
-function Tile({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask, onFocusTab }) {
+function Tile({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask, onAddEntry }) {
   const cfg = TILE_CFG[type];
   const Icon = cfg.Icon;
   const groups = useMemo(() => buildGroups(entries, t, lang), [entries, t, lang]);
+
+  const addLabel = lang === "en" ? "Add" : lang === "es" ? "Añadir" : "Hinzufügen";
 
   return (
     <div className="dsk-tile">
@@ -185,12 +187,12 @@ function Tile({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask, onFoc
         <span className="dsk-tile__header-title">{t?.[cfg.labelKey] || cfg.fallback}</span>
         <button
           type="button"
-          className="dsk-tile__header-focus"
-          onClick={() => onFocusTab?.(type)}
-          title={lang === "en" ? "Focus" : "Fokus"}
-          aria-label={lang === "en" ? "Focus" : "Fokus"}
+          className="dsk-tile__header-add"
+          onClick={() => onAddEntry?.(type)}
+          title={addLabel}
+          aria-label={addLabel}
         >
-          <Maximize2 size={14} strokeWidth={2} />
+          <Plus size={16} strokeWidth={2.4} />
         </button>
       </div>
       <div className="dsk-tile__body">
@@ -227,6 +229,8 @@ function Tile({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask, onFoc
   );
 }
 
+const TILE_TO_ENTRY_TYPE = { tasks: "task", notes: "note", calendar: "calendar" };
+
 export function ListArea({
   t,
   lang,
@@ -235,17 +239,19 @@ export function ListArea({
   cats,
   onOpenEntry,
   toggleTask,
-  onFocusTab,
+  onAddEntry,
 }) {
   const tasks    = entries.filter((e) => e.type === "task" && !e.done && !isOld(e.due));
   const notes    = entries.filter((e) => e.type === "note" && !e.archived);
   const calendar = entries.filter((e) => e.type === "calendar" && (!e.date || e.date >= TODAY) && !e.done);
 
+  const handleAdd = (tileType) => onAddEntry?.(TILE_TO_ENTRY_TYPE[tileType]);
+
   return (
     <div className="dsk-list-area">
-      <Tile type="tasks"    t={t} lang={lang} CC={CC} entries={tasks}    cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onFocusTab={onFocusTab} />
-      <Tile type="notes"    t={t} lang={lang} CC={CC} entries={notes}    cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onFocusTab={onFocusTab} />
-      <Tile type="calendar" t={t} lang={lang} CC={CC} entries={calendar} cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onFocusTab={onFocusTab} />
+      <Tile type="tasks"    t={t} lang={lang} CC={CC} entries={tasks}    cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
+      <Tile type="notes"    t={t} lang={lang} CC={CC} entries={notes}    cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
+      <Tile type="calendar" t={t} lang={lang} CC={CC} entries={calendar} cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
     </div>
   );
 }

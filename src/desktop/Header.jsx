@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { Search, Settings } from "lucide-react";
+import { Search } from "lucide-react";
+import { CustomSettingsIcon } from "../components/AppIcons";
 
 function getGreeting(lang) {
   const h = new Date().getHours();
@@ -64,7 +65,11 @@ export function Header({
         <div className="dsk-header__date">{formatToday(lang)}</div>
       </div>
 
-      <div className="dsk-header__search">
+      <div
+        className="dsk-header__search"
+        onClick={() => searchRef.current?.focus()}
+        role="search"
+      >
         <Search size={18} strokeWidth={2} className="dsk-header__search-icon" aria-hidden="true" />
         <input
           ref={searchRef}
@@ -92,7 +97,7 @@ export function Header({
           title={lang === "en" ? "Settings" : "Einstellungen"}
           aria-label={lang === "en" ? "Settings" : "Einstellungen"}
         >
-          <Settings size={20} strokeWidth={2} />
+          <CustomSettingsIcon size={22} color="currentColor" />
         </button>
       )}
     </header>

@@ -553,6 +553,7 @@ export default function App() {
         toggleTask,
         updateCat,
         addCatModal: (type) => setNewCatType(type),
+        addEntryModal: (type) => setCreating({ type, catId: null }),
       },
       openSettings: () => setSettingsOpen(true),
       openArchive: (archiveTab) => push({ view: VIEW.ARCHIVE, tab: archiveTab }),

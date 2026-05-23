@@ -21,7 +21,14 @@ const STEP_H_COMPACT  = 70;
  * @param {Array} items - mixed list of activity items and milestones (newest first)
  * @param {boolean} compact - collapsed-mode rendering (straight vertical line)
  */
-export function ZigzagPath({ items, compact = false }) {
+export function ZigzagPath({ items, compact = false, onOpenEntry, onOpenCat }) {
+  // item.id is "entry-<id>" / "cat-<id>" / "milestone-<level>" — see activity.js
+  const handleActivate = (item) => {
+    if (item.kind === "milestone") return;
+    const rawId = item.id.replace(/^(entry|cat)-/, "");
+    if (item.kind === "entry") onOpenEntry?.(rawId);
+    else if (item.kind === "cat") onOpenCat?.(rawId);
+  };
   const stepH = compact ? STEP_H_COMPACT : STEP_H_EXPANDED;
   const totalH = Math.max(stepH, items.length * stepH);
   const width = 100; // percent — we render the path in a 100×totalH viewBox
@@ -88,17 +95,27 @@ export function ZigzagPath({ items, compact = false }) {
             className={`dsk-zigzag__step dsk-zigzag__step--${isLeftSide ? "left" : "right"}`}
             style={{ left, top, transform: "translate(-50%, -50%)" }}
           >
-            <span className={`dsk-zigzag__token dsk-zigzag__token--${item.token}`}>
+            <button
+              type="button"
+              className={`dsk-zigzag__token dsk-zigzag__token--${item.token}`}
+              onClick={() => handleActivate(item)}
+              title={item.title || ""}
+              aria-label={item.title || item.kind}
+            >
               <TokenIcon size={14} strokeWidth={2.2} />
-            </span>
+            </button>
             {!compact && (
-              <div className="dsk-zigzag__card">
+              <button
+                type="button"
+                className="dsk-zigzag__card"
+                onClick={() => handleActivate(item)}
+              >
                 <div className="dsk-zigzag__card-title">{item.title}</div>
                 <div className="dsk-zigzag__card-xp">+ {item.xp} XP</div>
                 <div className="dsk-zigzag__card-meta">
                   {item.subType} · {item.subTime}
                 </div>
-              </div>
+              </button>
             )}
           </div>
         );

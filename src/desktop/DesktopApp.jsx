@@ -1,17 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { PanelLeft } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { Cover } from "./Cover";
 import { ListArea } from "./ListArea";
 import { Rail } from "./Rail";
-import { TweaksPanel } from "./TweaksPanel";
 import { useTweaks, TWEAK_DEFAULTS } from "./useTweaks";
 import { buildActivityState } from "./activity";
+
+const PEEK_CLOSE_DELAY = 180; // ms — debounce before auto-closing the hover overlay
 
 /**
  * DesktopApp wires the existing data + mutation context (passed via `ctx`)
  * into the desktop layout primitives. State that is *only* meaningful on
- * desktop (sidebar/rail open, active cat type selection, search query) is
+ * desktop (sidebar mode, active cat type selection, search query) is
  * owned here. Anything related to entries/cats is delegated upward.
  */
 export function DesktopApp({ ctx }) {
@@ -23,17 +25,46 @@ export function DesktopApp({ ctx }) {
   });
   const [activeCatType, setActiveCatType] = useState("project");
   const [searchValue, setSearchValue] = useState("");
+  const [peeking, setPeeking] = useState(false);
+  const peekTimer = useRef(null);
 
-  // Sidebar/Rail open state is owned by the Tweaks panel so it can be set
-  // both via the in-layout toggle buttons and the dev panel.
-  const sidebarExpanded = tweaks.sidebarOpen;
+  const sidebarMode = tweaks.sidebarMode || "locked";
+  const treeOpen = tweaks.sidebarTreeOpen || TWEAK_DEFAULTS.sidebarTreeOpen;
+  const catOpen = tweaks.sidebarCatOpen || {};
   const railOpen = tweaks.railVisible;
-  const setSidebarExpanded = (v) =>
-    setTweaks({ sidebarOpen: typeof v === "function" ? v(sidebarExpanded) : v });
+
+  const setSidebarMode = (m) =>
+    setTweaks({ sidebarMode: typeof m === "function" ? m(sidebarMode) : m });
   const setRailOpen = (v) =>
     setTweaks({ railVisible: typeof v === "function" ? v(railOpen) : v });
 
-  // ⌘1–4 swaps category in sidebar
+  const toggleSection = (sectionId) => {
+    const next = { ...treeOpen, [sectionId]: !treeOpen[sectionId] };
+    setTweaks({ sidebarTreeOpen: next });
+  };
+  const toggleCat = (catId) => {
+    const next = { ...catOpen, [catId]: !catOpen[catId] };
+    setTweaks({ sidebarCatOpen: next });
+  };
+
+  const openPeek = () => {
+    if (peekTimer.current) {
+      clearTimeout(peekTimer.current);
+      peekTimer.current = null;
+    }
+    setPeeking(true);
+  };
+  const schedulePeekClose = () => {
+    if (peekTimer.current) clearTimeout(peekTimer.current);
+    peekTimer.current = setTimeout(() => setPeeking(false), PEEK_CLOSE_DELAY);
+  };
+
+  // Close peek when mode flips to locked
+  useEffect(() => {
+    if (sidebarMode === "locked") setPeeking(false);
+  }, [sidebarMode]);
+
+  // ⌘1–4 — open & scroll to section in tree
   useEffect(() => {
     const onKey = (e) => {
       const mod = e.metaKey || e.ctrlKey;
@@ -42,15 +73,13 @@ export function DesktopApp({ ctx }) {
       const next = map[e.key];
       if (!next) return;
       e.preventDefault();
-      if (next === "archive") {
-        ctx.openArchive("tasks");
-      } else {
-        setActiveCatType(next);
-      }
+      setActiveCatType(next === "archive" ? "project" : next);
+      setTweaks({ sidebarTreeOpen: { ...treeOpen, [next]: true } });
+      if (sidebarMode === "hidden") openPeek();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ctx]);
+  }, [treeOpen, sidebarMode]);
 
   const activity = useMemo(
     () => buildActivityState({ entries: state.entries, cats: state.cats, lang }),
@@ -62,26 +91,67 @@ export function DesktopApp({ ctx }) {
 
   const appClass = [
     "dsk-app",
-    sidebarExpanded ? "dsk-app--sidebar-expanded" : "",
+    `dsk-app--sidebar-${sidebarMode}`,
+    sidebarMode === "hidden" && peeking ? "dsk-app--sidebar-peek" : "",
     railOpen ? "" : "dsk-app--rail-collapsed",
     theme === "light" ? "dsk-app--light" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
+  const openCat = (cat) => {
+    setActiveCatType(cat.type || activeCatType);
+    push({ view: "catDetail", catId: cat.id });
+  };
+  const openEntry = (entry) => push({ view: "entryDetail", entryId: entry.id });
+  const toggleCatStar = (catId, nextValue) =>
+    mutations.updateCat(catId, { starred: nextValue });
+
   return (
     <div className={appClass}>
+      {sidebarMode === "hidden" && (
+        <div
+          className="dsk-hover-zone"
+          aria-hidden="true"
+          onPointerEnter={openPeek}
+          onPointerLeave={schedulePeekClose}
+        />
+      )}
+
       <Sidebar
         t={t}
-        expanded={sidebarExpanded}
-        activeCat={activeCatType}
-        onSelectCat={setActiveCatType}
-        onOpenArchive={() => ctx.openArchive("tasks")}
-        onCreateNew={() => mutations.addCatModal(activeCatType)}
-        onToggle={() => setSidebarExpanded((v) => !v)}
+        mode={sidebarMode}
+        peeking={peeking}
+        treeOpen={treeOpen}
+        catOpen={catOpen}
+        onToggleSection={toggleSection}
+        onToggleCat={toggleCat}
+        cats={state.cats}
+        entries={state.entries}
+        onOpenCat={openCat}
+        onOpenEntry={openEntry}
+        onAddCat={(type) => mutations.addCatModal(type)}
+        onOpenSettings={ctx.openSettings}
+        onToggleMode={() => setSidebarMode((m) => (m === "locked" ? "hidden" : "locked"))}
+        onToggleCatStar={toggleCatStar}
+        onSectionMenu={() => { /* TODO: open section menu */ }}
+        onPointerEnter={sidebarMode === "hidden" ? openPeek : undefined}
+        onPointerLeave={sidebarMode === "hidden" ? schedulePeekClose : undefined}
       />
 
       <main className="dsk-main">
+        {sidebarMode === "hidden" && (
+          <button
+            type="button"
+            className="dsk-main__sidebar-toggle"
+            onClick={() => setSidebarMode("locked")}
+            title="Sidebar einblenden"
+            aria-label="Sidebar einblenden"
+          >
+            <PanelLeft size={18} strokeWidth={2} />
+          </button>
+        )}
+
         <Header
           userName={state.user?.name || tweaks.userName}
           lang={lang}
@@ -111,35 +181,21 @@ export function DesktopApp({ ctx }) {
           cats={state.cats}
           onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
           toggleTask={mutations.toggleTask}
-          onFocusTab={(tab) => ctx.focusTab(tab)}
+          onAddEntry={(type) => mutations.addEntryModal(type)}
         />
       </main>
 
-      {railOpen ? (
-        <Rail
-          t={t}
-          lang={lang}
-          expanded
-          activity={activity}
-          onToggle={() => setRailOpen(false)}
-          onOpenSettings={ctx.openSettings}
-          onOpenProfile={ctx.openSettings}
-          user={state.user}
-        />
-      ) : (
-        <Rail
-          t={t}
-          lang={lang}
-          expanded={false}
-          activity={activity}
-          onToggle={() => setRailOpen(true)}
-          onOpenSettings={ctx.openSettings}
-          onOpenProfile={ctx.openSettings}
-          user={state.user}
-        />
-      )}
+      <Rail
+        t={t}
+        lang={lang}
+        expanded={railOpen}
+        activity={activity}
+        onToggle={() => setRailOpen((v) => !v)}
+        onOpenSettings={ctx.openSettings}
+        onOpenEntry={(entryId) => push({ view: "entryDetail", entryId })}
+        onOpenCat={(catId) => push({ view: "catDetail", catId })}
+      />
 
-      <TweaksPanel tweaks={tweaks} setTweaks={setTweaks} />
     </div>
   );
 }

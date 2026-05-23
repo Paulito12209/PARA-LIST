@@ -1,4 +1,5 @@
-import { Settings, Trophy, ChevronRight } from "lucide-react";
+import { Trophy } from "lucide-react";
+import { CustomSettingsIcon } from "../components/AppIcons";
 import { ZigzagPath } from "./ZigzagPath";
 
 function LevelBadge({ level, size = 40 }) {
@@ -16,12 +17,9 @@ export function Rail({
   activity,
   onToggle,
   onOpenSettings,
-  onOpenProfile,
-  user,
+  onOpenEntry,
+  onOpenCat,
 }) {
-  const userName = user?.name || (lang === "en" ? "Profile" : "Profil");
-  const profileLabel =
-    lang === "en" ? "Profile & Settings" : lang === "es" ? "Perfil y ajustes" : "Profil & Einstellungen";
   const pathHeader = lang === "en" ? "ACTIVITY PATH · NEXT GOAL" : "AKTIVITÄTS-PFAD · NÄCHSTES ZIEL";
 
   return (
@@ -44,7 +42,7 @@ export function Rail({
               title={t?.settings || "Einstellungen"}
               aria-label={t?.settings || "Einstellungen"}
             >
-              <Settings size={20} strokeWidth={2} />
+              <CustomSettingsIcon size={22} color="currentColor" />
             </button>
           )}
           <button
@@ -110,25 +108,14 @@ export function Rail({
             </div>
           </div>
         )}
-        <ZigzagPath items={activity.path} compact={!expanded} />
+        <ZigzagPath
+          items={activity.path}
+          compact={!expanded}
+          onOpenEntry={onOpenEntry}
+          onOpenCat={onOpenCat}
+        />
       </div>
 
-      {expanded && (
-        <button type="button" className="dsk-rail__profile" onClick={onOpenProfile}>
-          <span className="dsk-rail__profile-avatar">
-            {user?.avatar ? (
-              <img src={user.avatar} alt={userName} />
-            ) : (
-              <span>{(userName || "?").charAt(0).toUpperCase()}</span>
-            )}
-          </span>
-          <span className="dsk-rail__profile-body">
-            <span className="dsk-rail__profile-name">{userName}</span>
-            <span className="dsk-rail__profile-sub">{profileLabel}</span>
-          </span>
-          <ChevronRight size={16} strokeWidth={2} />
-        </button>
-      )}
     </aside>
   );
 }

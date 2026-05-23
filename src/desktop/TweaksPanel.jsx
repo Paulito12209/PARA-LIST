@@ -70,12 +70,14 @@ export function TweaksPanel({ tweaks, setTweaks }) {
           </select>
         </label>
         <label className="dsk-tweaks__row">
-          <span>Sidebar open</span>
-          <input
-            type="checkbox"
-            checked={tweaks.sidebarOpen}
-            onChange={(e) => setTweaks({ sidebarOpen: e.target.checked })}
-          />
+          <span>Sidebar mode</span>
+          <select
+            value={tweaks.sidebarMode}
+            onChange={(e) => setTweaks({ sidebarMode: e.target.value })}
+          >
+            <option value="locked">Locked open</option>
+            <option value="hidden">Auto-hide</option>
+          </select>
         </label>
         <label className="dsk-tweaks__row">
           <span>Rail visible</span>

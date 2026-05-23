@@ -6,8 +6,7 @@
 
 // ── Layout tokens (Dark default) ────────────────────────────
 .dsk-app {
-  --sidebar-w: 76px;
-  --sidebar-w-expanded: 232px;
+  --sidebar-w-locked: 264px;
   --rail-w: 384px;
   --rail-w-collapsed: 64px;
   --header-h: 68px;
@@ -37,17 +36,17 @@
   color: var(--text);
   font-family: $font-body;
   display: grid;
-  grid-template-columns: var(--sidebar-w) 1fr var(--rail-w);
+  grid-template-columns: var(--sidebar-w-locked) 1fr var(--rail-w);
   transition: grid-template-columns 0.3s var(--easing);
 
-  &.dsk-app--sidebar-expanded {
-    grid-template-columns: var(--sidebar-w-expanded) 1fr var(--rail-w);
+  &.dsk-app--sidebar-hidden {
+    grid-template-columns: 0 1fr var(--rail-w);
   }
   &.dsk-app--rail-collapsed {
-    grid-template-columns: var(--sidebar-w) 1fr var(--rail-w-collapsed);
+    grid-template-columns: var(--sidebar-w-locked) 1fr var(--rail-w-collapsed);
   }
-  &.dsk-app--sidebar-expanded.dsk-app--rail-collapsed {
-    grid-template-columns: var(--sidebar-w-expanded) 1fr var(--rail-w-collapsed);
+  &.dsk-app--sidebar-hidden.dsk-app--rail-collapsed {
+    grid-template-columns: 0 1fr var(--rail-w-collapsed);
   }
 
   &.dsk-app--light {
@@ -62,33 +61,67 @@
   }
 }
 
-// ── Sidebar ─────────────────────────────────────────────────
+// ── Hover-zone (left edge trigger when sidebar is auto-hidden) ──
+// Starts BELOW the header plus an extra 40 px buffer so the header UI
+// (sidebar toggle, greeting, search) and the upper edge of the cover
+// can be interacted with freely without accidentally triggering the peek.
+.dsk-hover-zone {
+  position: fixed;
+  top: calc(var(--header-h) + 40px);
+  left: 0;
+  width: 56px;
+  height: calc(100dvh - var(--header-h) - 40px);
+  z-index: 9;
+  pointer-events: auto;
+}
+
+// ── Sidebar (tree, Codex-inspired) ──────────────────────────
 .dsk-sidebar {
+  grid-column: 1;     // pin to first grid column even when other items reshuffle
+  grid-row: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 10px 14px;
-  border-right: 1px solid var(--border);
-  background: var(--bg);
+  width: var(--sidebar-w-locked);
   height: 100dvh;
-  position: sticky;
-  top: 0;
-  gap: 10px;
-  z-index: 5;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  z-index: 10;
+
+  // Locked: takes its grid column, sticky to top
+  &--locked {
+    position: sticky;
+    top: 0;
+  }
+
+  // Hidden: positioned overlay, slides in from the left when peeking
+  &--hidden {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform 0.22s var(--easing), box-shadow 0.22s var(--easing);
+    box-shadow: none;
+    pointer-events: none;
+
+    &.dsk-sidebar--peek {
+      transform: translateX(0);
+      box-shadow: 24px 0 60px rgba(0, 0, 0, 0.45);
+      pointer-events: auto;
+    }
+  }
 
   &__brand {
     height: var(--header-h);
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 10px;
-    padding: 0;
-    overflow: hidden;
+    padding: 0 12px;
   }
   &__brand-logo {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -103,110 +136,77 @@
     }
   }
   &__brand-label {
-    display: none;
+    flex: 1;
     font-family: $font-heading;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: -0.2px;
+    letter-spacing: 0.4px;
     color: var(--text);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-
-  &__nav {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    margin-top: 12px;
-  }
-  &__nav-btn {
-    width: 44px;
-    height: 44px;
+  &__brand-toggle {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--text-2);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 0;
-    border-radius: 12px;
-    background: transparent;
-    border: none;
-    color: var(--text-2);
     cursor: pointer;
-    transition: background 0.18s var(--easing), color 0.18s var(--easing), transform 0.18s var(--easing);
-    overflow: hidden;
+    flex-shrink: 0;
+    transition: background 0.18s var(--easing), color 0.18s var(--easing);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text);
-    }
-    &--active {
       background: rgba(255, 255, 255, 0.06);
       color: var(--text);
     }
-  }
-  &__nav-icon {
-    width: 24px;
-    height: 24px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  &__nav-label,
-  &__nav-kbd {
-    display: none;
-    white-space: nowrap;
-  }
-  &__nav-label {
-    text-align: left;
-    font-size: 13.5px;
-    font-weight: 500;
-  }
-  &__nav-kbd {
-    font-size: 11px;
-    color: var(--text-3);
-    letter-spacing: 0.4px;
+    .dsk-app--light & {
+      &:hover { background: rgba(0, 0, 0, 0.05); }
+    }
   }
 
-  &__bottom {
+  &__tree {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 6px 8px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 8px;
-  }
-  &__create {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    border: none;
-    background: var(--cat-task);
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: filter 0.18s var(--easing), transform 0.18s var(--easing), width 0.25s var(--easing);
+    gap: 2px;
 
-    &:hover { filter: brightness(1.1); }
-    &:active { transform: translateY(1px); }
+    // subtle scrollbar
+    &::-webkit-scrollbar { width: 8px; }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+    }
+    .dsk-app--light & {
+      &::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.08); }
+    }
   }
-  &__create-label {
-    display: none;
-    white-space: nowrap;
-    font-weight: 600;
-    font-size: 13.5px;
+
+  &__footer {
+    flex-shrink: 0;
+    padding: 8px 6px 10px;
+    border-top: 1px solid var(--border);
   }
-  &__toggle {
-    height: 36px;
-    border-radius: 10px;
+  &__settings-btn {
+    width: 100%;
+    height: 34px;
+    border-radius: 8px;
     border: none;
     background: transparent;
     color: var(--text-2);
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 10px;
+    padding: 0 10px;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
     transition: background 0.18s var(--easing), color 0.18s var(--easing);
 
@@ -214,53 +214,307 @@
       background: rgba(255, 255, 255, 0.05);
       color: var(--text);
     }
+    .dsk-app--light & {
+      &:hover { background: rgba(0, 0, 0, 0.04); }
+    }
+  }
+}
+
+// ── Tree primitives ─────────────────────────────────────────
+.dsk-tree {
+  &__section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+
+    &:first-child { margin-top: 0; }
   }
 
-  // expanded reveals
-  &--expanded {
-    .dsk-sidebar__brand {
-      justify-content: flex-start;
-      padding: 0 8px;
+  &__section-head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    height: 30px;
+    border-radius: 8px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.03);
+
+      .dsk-app--light & { background: rgba(0, 0, 0, 0.03); }
+
+      .dsk-tree__section-actions {
+        opacity: 1;
+        pointer-events: auto;
+      }
     }
-    .dsk-sidebar__brand-label {
-      display: block;
+  }
+  &__section-title {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+    background: transparent;
+    border: none;
+    color: var(--text-2);
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: none;
+    cursor: pointer;
+    text-align: left;
+
+    &:hover { color: var(--text); }
+  }
+  &__section-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  &__section-label {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  &__section-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s var(--easing);
+  }
+  &__action {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s var(--easing), color 0.15s var(--easing);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
     }
-    .dsk-sidebar__create-label {
-      display: block;
+    .dsk-app--light & {
+      &:hover { background: rgba(0, 0, 0, 0.06); }
     }
-    .dsk-sidebar__nav {
-      align-items: stretch;
+  }
+
+  &__cats {
+    list-style: none;
+    margin: 0;
+    padding: 2px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  &__empty {
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--text-3);
+    font-style: italic;
+  }
+  &__cat {
+    display: flex;
+    flex-direction: column;
+  }
+  &__row-wrap {
+    display: flex;
+    align-items: center;
+    border-radius: 6px;
+    transition: background 0.15s var(--easing);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+      .dsk-app--light & { background: rgba(0, 0, 0, 0.03); }
     }
-    .dsk-sidebar__nav-btn {
-      width: 100%;
-      justify-content: flex-start;
-      padding: 0 12px;
-      gap: 10px;
+    &--active {
+      background: rgba(124, 131, 247, 0.12);
     }
-    .dsk-sidebar__nav-label {
-      display: block;
-      flex: 1;
+  }
+  &__row {
+    min-width: 0;             // shrink-to-fit; allows label to ellipsize
+    max-width: 100%;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 0 8px;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+  }
+  &__row-toggle {
+    flex: 1;                  // fills the gap between title and chevron — clickable area
+    min-width: 22px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    cursor: pointer;
+    padding: 0 8px 0 0;
+    border-radius: 6px;
+
+    &:hover {
+      color: var(--text);
     }
-    .dsk-sidebar__nav-kbd {
-      display: block;
+  }
+  &__row-toggle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+  &__row-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--text-3);
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover { color: var(--text); }
+    &--star { color: #F5C53B; }
+  }
+  &__row-label {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__entries {
+    list-style: none;
+    margin: 0;
+    padding: 1px 0 2px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  &__entry-row {
+    width: 100%;
+    height: 26px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text-2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 8px;
+    font-family: $font-body;
+    font-size: 12.5px;
+    font-weight: 400;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s var(--easing), color 0.15s var(--easing);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      .dsk-app--light & { background: rgba(0, 0, 0, 0.025); }
     }
-    .dsk-sidebar__bottom {
-      align-items: stretch;
+    &--active {
+      background: rgba(124, 131, 247, 0.10);
+      color: var(--text);
     }
-    .dsk-sidebar__create {
-      width: 100%;
-    }
+  }
+  &__entry-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--text-3);
+  }
+  &__entry-label {
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+// ── Floating sidebar toggle (when sidebar is auto-hidden) ───
+.dsk-main .dsk-main__sidebar-toggle {
+  position: absolute;
+  top: 18px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 11;
+  transition: background 0.18s var(--easing), color 0.18s var(--easing);
+
+  > * { cursor: pointer; pointer-events: none; }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+  }
+  .dsk-app--light & {
+    background: rgba(255, 255, 255, 0.55);
+    &:hover { background: rgba(255, 255, 255, 0.75); }
   }
 }
 
 // ── Main column ─────────────────────────────────────────────
 .dsk-main {
+  grid-column: 2;     // always second column, even when sidebar is fixed-overlay
+  grid-row: 1;
   position: relative;
   min-width: 0;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
+
+  // Establish a container-query scope so the header can collapse the
+  // search bar based on the actual main-column width (which depends on
+  // sidebar/rail state), not the viewport width.
+  container-type: inline-size;
+  container-name: dskmain;
 }
 
 // ── Header (floating absolute, on top of cover) ─────────────
@@ -268,8 +522,13 @@
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  // explicit width (rather than right: 0) so the flex container has a
+  // *definite* main size — required for percentage flex-basis on the
+  // search child to resolve correctly (Chrome/Webkit treat L+R as
+  // indefinite for flex %s, which made the search collapse to min-width).
+  width: 100%;
   height: var(--header-h);
+  // flex: greeting (natural, left) | min 80 px gap | search (right, up to 50%) | settings
   display: flex;
   align-items: center;
   gap: 16px;
@@ -279,12 +538,18 @@
   .dsk-app--rail-collapsed & {
     padding-right: 6px;
   }
+  .dsk-app--sidebar-hidden & {
+    // leave room for the floating sidebar toggle button at top-left of main
+    padding-left: 68px;
+  }
 
   &__greeting {
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     line-height: 1.2;
-    min-width: 0;
+    min-width: max-content;   // never shrinks — greeting always fully visible
+    margin-right: 64px;       // + 16 px gap = 80 px min to next item
   }
   &__greeting-line {
     font-family: $font-heading;
@@ -292,17 +557,25 @@
     font-weight: 700;
     letter-spacing: -0.3px;
     color: var(--text);
+    white-space: nowrap;
   }
   &__date {
     font-size: 12px;
     color: var(--text-2);
     margin-top: 2px;
+    white-space: nowrap;
   }
 
   &__search {
+    // Push to the right edge of the header (after any greeting margin).
+    // Width: up to 50 % of the header (flex container); shrinks if the
+    // greeting + min-gap + settings don't leave room.
     margin-left: auto;
+    flex: 0 1 50%;
+    width: 50%;
+    max-width: 50%;
+    min-width: 46px;
     height: 46px;
-    width: clamp(280px, 36vw, 480px);
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid var(--border);
@@ -313,6 +586,7 @@
     backdrop-filter: blur(18px) saturate(160%);
     -webkit-backdrop-filter: blur(18px) saturate(160%);
     color: var(--text);
+    overflow: hidden;
 
     .dsk-app--light & {
       background: rgba(255, 255, 255, 0.55);
@@ -348,6 +622,7 @@
   }
 
   &__settings {
+    flex-shrink: 0;
     width: 46px;
     height: 46px;
     border-radius: 50%;
@@ -375,6 +650,63 @@
         background: rgba(255, 255, 255, 0.75);
       }
     }
+  }
+}
+
+// The search bar renders as a pill at up to 50 % of the main column
+// (see `flex: 0 1 50%` above) and shrinks responsively as the column
+// narrows. Hide the ⌘K hint once there's no longer comfortable room for it.
+@container dskmain (max-width: 880px) {
+  .dsk-header__search-kbd {
+    display: none;
+  }
+}
+
+// Once the main column gets narrow enough that the pill can no longer show
+// the "Suchen" placeholder without truncating it, collapse the bar to just
+// the 46×46 lupe-icon circle. Still fully responsive: widen the window again
+// and the container query releases, restoring the pill. Clicking the circle
+// (or ⌘K) expands it back inline so the user can still type.
+@container dskmain (max-width: 500px) {
+  .dsk-header__search {
+    flex: 0 0 46px;
+    width: 46px;
+    min-width: 46px;
+    max-width: 46px;
+    padding: 0;
+    gap: 0;
+    justify-content: center;
+    cursor: pointer;
+    transition:
+      flex-basis 0.22s var(--easing),
+      width 0.22s var(--easing),
+      max-width 0.22s var(--easing),
+      padding 0.22s var(--easing),
+      gap 0.22s var(--easing);
+
+    &:focus-within {
+      flex: 0 1 50%;
+      width: 50%;
+      max-width: 50%;
+      min-width: 220px;
+      padding: 0 14px 0 16px;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+  }
+  // Collapse the input to zero so the placeholder ("Suchen…") is fully
+  // hidden behind the icon-only circle. flex-grow must be 0 here, otherwise
+  // it stretches back to fill the circle and the text bleeds out again.
+  .dsk-header__search-input {
+    flex: 0 0 0;
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    transition: width 0.22s var(--easing);
+  }
+  .dsk-header__search:focus-within .dsk-header__search-input {
+    flex: 1;
+    width: 100%;
   }
 }
 
@@ -562,13 +894,29 @@
 // ── List Area (3 tiles) ─────────────────────────────────────
 .dsk-list-area {
   display: grid;
-  grid-template-columns: repeat(3, minmax(320px, 1fr));
+  grid-template-columns: repeat(3, minmax(360px, 1fr));
+  grid-template-areas: "tasks notes calendar";
   gap: 16px;
-  padding: 24px 0 32px 28px;
-  padding-right: clamp(0px, (100% - 1020px) * 999, 28px);
-  overflow-x: auto;
-  overflow-y: hidden;
-  scroll-snap-type: x proximity;
+  // symmetric padding that always holds — left edge to (collapsed) sidebar,
+  // right edge to the rail/progressbar.
+  padding: 24px 28px 32px;
+  overflow: visible;
+}
+
+// When 3 tiles at min-width can no longer fit the available main-column width,
+// the calendar drops below the tasks/notes pair and spans the full width while
+// keeping the same left/right padding. Uses the `dskmain` container scope so
+// this reacts to the real content width (sidebar/rail aware), not the viewport.
+@container dskmain (max-width: 1168px) {
+  .dsk-list-area {
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
+    grid-template-areas:
+      "tasks notes"
+      "calendar calendar";
+  }
+  .dsk-list-area > .dsk-tile:nth-child(1) { grid-area: tasks; }
+  .dsk-list-area > .dsk-tile:nth-child(2) { grid-area: notes; }
+  .dsk-list-area > .dsk-tile:nth-child(3) { grid-area: calendar; }
 }
 
 .dsk-tile {
@@ -610,21 +958,28 @@
     font-weight: 700;
     color: var(--text);
   }
-  &__header-focus {
+  &__header-add {
     width: 28px;
     height: 28px;
     border-radius: 8px;
     border: none;
-    background: transparent;
-    color: var(--text-3);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background 0.15s var(--easing), transform 0.15s var(--easing);
 
     &:hover {
-      background: rgba(255, 255, 255, 0.05);
+      background: rgba(255, 255, 255, 0.12);
+    }
+    &:active { transform: scale(0.95); }
+
+    .dsk-app--light & {
+      background: rgba(0, 0, 0, 0.06);
       color: var(--text);
+      &:hover { background: rgba(0, 0, 0, 0.12); }
     }
   }
 
@@ -788,8 +1143,10 @@
   }
 }
 
-// ── Rail (right) ────────────────────────────────────────────
+// ── Rail (right / a-bar) ────────────────────────────────────
 .dsk-rail {
+  grid-column: 3;     // always third column
+  grid-row: 1;
   background: var(--bg);
   border-left: 1px solid var(--border);
   height: 100dvh;
@@ -1062,6 +1419,8 @@
     width: 28px;
     height: 28px;
     border-radius: 50%;
+    border: none;
+    padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1072,6 +1431,14 @@
     box-shadow: 0 0 0 5px var(--bg);
     position: relative;
     flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.15s var(--easing), box-shadow 0.15s var(--easing);
+
+    &:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 5px var(--bg), 0 0 0 6px rgba(124, 131, 247, 0.5);
+    }
+    &:active { transform: scale(0.95); }
 
     &--project  { --token-c1: rgba(224, 62, 62, 0.95);   --token-c2: rgba(224, 62, 62, 0.6);  }
     &--area     { --token-c1: rgba(208, 144, 32, 0.95);  --token-c2: rgba(208, 144, 32, 0.6); }
@@ -1090,6 +1457,16 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
+    cursor: pointer;
+    text-align: left;
+    font-family: $font-body;
+    color: inherit;
+    transition: background 0.15s var(--easing), border-color 0.15s var(--easing);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--border-strong);
+    }
   }
   &__card-title {
     font-size: 12px;
@@ -1227,12 +1604,12 @@
 @media (max-width: 1320px) {
   .dsk-app {
     --rail-w: 340px;
-    --sidebar-w: 72px;
+    --sidebar-w-locked: 240px;
   }
   .dsk-cover { padding: 72px 32px 24px; }
   .dsk-list-area {
     padding-left: 32px;
-    padding-right: clamp(0px, (100% - 1020px) * 999, 32px);
+    padding-right: 32px;
   }
   .dsk-header { padding: 16px 22px; }
 }
@@ -1245,9 +1622,9 @@
   // Desktop is replaced by mobile at the React layer; ensure rail is hidden if rendered
   .dsk-rail { display: none; }
   .dsk-app {
-    grid-template-columns: var(--sidebar-w) 1fr;
-    &.dsk-app--sidebar-expanded {
-      grid-template-columns: var(--sidebar-w-expanded) 1fr;
+    grid-template-columns: var(--sidebar-w-locked) 1fr;
+    &.dsk-app--sidebar-hidden {
+      grid-template-columns: 0 1fr;
     }
   }
 }

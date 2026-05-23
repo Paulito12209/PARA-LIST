@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -149,7 +149,7 @@ export function CatDetailScreen({
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
   const [resSearch, setResSearch] = useState("");
-  const [showMenu, setShowMenu] = useState(false);
+  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
 
   // Sub-Tab für das Ressource-Lesezeichen (standardmäßig "resources")
   const [resSubTab, setResSubTab] = useState("resources");
@@ -162,8 +162,7 @@ export function CatDetailScreen({
   const datePillRef = useRef(null);
   const tagPopupRef = useRef(null);
   const tagTriggerRef = useRef(null);
-  const menuPopupRef = useRef(null);
-  const menuButtonRef = useRef(null);
+  const prevBmRef = useRef("canvas");
 
   // Swipe-Refs für Sub-Tab-Wechsel (wiederverwendbar)
   const subTabTouchX = useRef(0);
@@ -205,16 +204,24 @@ export function CatDetailScreen({
         tagTriggerRef.current && !tagTriggerRef.current.contains(e.target)) {
       setShowTagSelect(false);
     }
-    // Kontextmenü schließen
-    if (showMenu &&
-        menuPopupRef.current && !menuPopupRef.current.contains(e.target) &&
-        menuButtonRef.current && !menuButtonRef.current.contains(e.target)) {
-      setShowMenu(false);
-    }
-  }, [showConnSelect, showDate, showTagSelect, showMenu]);
+  }, [showConnSelect, showDate, showTagSelect]);
 
   // Event-Listener für Click-Outside
   // (useRef + useCallback statt useEffect, da wir den Handler auf dem cat-detail div setzen)
+
+  // Settings bookmark handler
+  const handleBmSelect = useCallback((id) => {
+    if (id === "settings") {
+      prevBmRef.current = bm;
+      setShowSettingsSheet(true);
+    } else {
+      setBm(id);
+    }
+  }, [bm]);
+
+  const closeSettingsSheet = useCallback(() => {
+    setShowSettingsSheet(false);
+  }, []);
 
   // Mapping: Bookmark → Entry-Typ (inkl. Sub-Tab bei Ressource)
   const getEntryTypeFromBookmark = useCallback(() => {
@@ -305,43 +312,6 @@ export function CatDetailScreen({
             onChange={(e) => onUpdate({ name: e.target.value })}
             placeholder="Titel..."
           />
-          <button 
-            ref={menuButtonRef}
-            className="cat-detail__delete-btn" 
-            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-          >
-            <MoreVertical size={18} color="#5858A0" />
-          </button>
-
-          {showMenu && (
-            <div className="cat-detail__conn-popup" ref={menuPopupRef} style={{ top: '40px', right: '0', left: 'auto' }}>
-              <div className="cat-detail__conn-list">
-                <button 
-                  className="cat-detail__conn-item"
-                  onClick={() => { onUpdate({ starred: !cat.starred }); setShowMenu(false); }}
-                >
-                  <Star size={16} fill={cat.starred ? "#F59E0B" : "none"} color={cat.starred ? "#F59E0B" : "#5858A0"} style={{ marginRight: '10px' }} />
-                  <span>{cat.starred ? t.unmarkFavorite : t.markFavorite}</span>
-                </button>
-                <button 
-                  className="cat-detail__conn-item"
-                  onClick={() => { onUpdate({ archived: !cat.archived }); setShowMenu(false); }}
-                >
-                  {cat.archived ? <ArchiveRestore size={16} color="#5858A0" style={{ marginRight: '10px' }} /> : <Archive size={16} color="#5858A0" style={{ marginRight: '10px' }} />}
-                  <span>{cat.archived ? t.restore : t.archive}</span>
-                </button>
-                <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
-                <button 
-                  className="cat-detail__conn-item"
-                  onClick={() => { onDelete(); setShowMenu(false); }}
-                  style={{ color: '#F26565' }}
-                >
-                  <Trash2 size={16} color="#F26565" style={{ marginRight: '10px' }} />
-                  <span>{t.delete}</span>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
         <div className="cat-detail__pills">
           <div className="cat-detail__pills-group">
@@ -762,7 +732,40 @@ export function CatDetailScreen({
         )}
       </div>
 
-      <BookmarkRail active={bm} onSelect={setBm} baseColor={cfg.color} />
+      {/* Settings Bottom Sheet */}
+      {showSettingsSheet && (
+        <div className="settings-sheet-overlay" onClick={closeSettingsSheet}>
+          <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-sheet__handle" />
+            <div className="settings-sheet__list">
+              <button
+                className="settings-sheet__item"
+                onClick={() => { onUpdate({ starred: !cat.starred }); closeSettingsSheet(); }}
+              >
+                <Star size={18} fill={cat.starred ? "#F59E0B" : "none"} color={cat.starred ? "#F59E0B" : "#5858A0"} />
+                <span>{cat.starred ? t.unmarkFavorite : t.markFavorite}</span>
+              </button>
+              <button
+                className="settings-sheet__item"
+                onClick={() => { onUpdate({ archived: !cat.archived }); closeSettingsSheet(); }}
+              >
+                {cat.archived ? <ArchiveRestore size={18} color="#5858A0" /> : <Archive size={18} color="#5858A0" />}
+                <span>{cat.archived ? t.restore : t.archive}</span>
+              </button>
+              <div className="settings-sheet__divider" />
+              <button
+                className="settings-sheet__item settings-sheet__item--danger"
+                onClick={() => { onDelete(); closeSettingsSheet(); }}
+              >
+                <Trash2 size={18} color="#F26565" />
+                <span>{t.delete}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BookmarkRail active={bm} onSelect={handleBmSelect} baseColor={cfg.color} />
 
       {/* Bottom nav */}
       <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`} style={{ position: "relative" }}>

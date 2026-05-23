@@ -4,7 +4,7 @@
 // reliably across the codebase.
 // ============================================================
 import { Circle, Triangle, Square, FileText, CheckCircle2, Calendar, Paperclip } from "lucide-react";
-import { BookmarkIcon, TagIcon } from "./components/AppIcons";
+import { BookmarkIcon, TagIcon, CustomSettingsIcon } from "./components/AppIcons";
 import { I18N } from "./i18n";
 
 /* ── ID helpers ──────────────────────────────────────────────── */
@@ -151,6 +151,7 @@ export const BOOKMARKS = [
   { id: "media", color: "#10B981", Icon: Paperclip },
   { id: "link", color: "#7C3AED", Icon: BookmarkIcon },
   { id: "tags", color: "#EC4899", Icon: TagIcon },
+  { id: "settings", color: "#5858A0", Icon: CustomSettingsIcon },
 ];
 
 export const NOTIF_RED = "#F26565";

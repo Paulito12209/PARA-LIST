@@ -1281,3 +1281,35 @@
     background: #9ca3af;
   }
 }
+
+// ── Settings Bottom Sheet (Light Mode) ──────────────────────
+.app.light-theme {
+  .settings-sheet-overlay {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .settings-sheet {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+
+    &__handle {
+      background: #e5e5f0;
+    }
+
+    &__item {
+      color: #1c1c30;
+
+      &:hover {
+        background: #f7f7f9;
+      }
+
+      &--danger {
+        color: #F26565;
+      }
+    }
+
+    &__divider {
+      background: #e5e5f0;
+    }
+  }
+}

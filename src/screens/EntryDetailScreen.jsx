@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical, ListChecks } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks } from 'lucide-react';
 import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
@@ -20,7 +20,7 @@ export function EntryDetailScreen({
   const fabVisible = useInactivity(5000);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showDate, setShowDate] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
+  const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [bm, setBm] = useState("canvas");
   const [taskSubTab, setTaskSubTab] = useState("open");
   const [resSubTab, setResSubTab] = useState("resources");
@@ -30,8 +30,7 @@ export function EntryDetailScreen({
   const connPillRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
-  const menuPopupRef = useRef(null);
-  const menuButtonRef = useRef(null);
+  const prevBmRef = useRef("canvas");
   const subTabTouchX = useRef(0);
 
   const handleClickOutside = useCallback((e) => {
@@ -41,10 +40,7 @@ export function EntryDetailScreen({
     if (showDate && dateInputRef.current && !dateInputRef.current.contains(e.target) && datePillRef.current && !datePillRef.current.contains(e.target)) {
       setShowDate(false);
     }
-    if (showMenu && menuPopupRef.current && !menuPopupRef.current.contains(e.target) && menuButtonRef.current && !menuButtonRef.current.contains(e.target)) {
-      setShowMenu(false);
-    }
-  }, [showConnSelect, showDate, showMenu]);
+  }, [showConnSelect, showDate]);
 
   const typeIcon = {
     task: CheckCircle2,
@@ -81,6 +77,20 @@ export function EntryDetailScreen({
 
   // All tasks for tasks tab (subtasks + linked tasks)
   const allTasksForTab = entry.type === "task" ? [...subtasks, ...linkedTasks] : linkedTasks;
+
+  // Settings bookmark handler
+  const handleBmSelect = useCallback((id) => {
+    if (id === "settings") {
+      prevBmRef.current = bm;
+      setShowSettingsSheet(true);
+    } else {
+      setBm(id);
+    }
+  }, [bm]);
+
+  const closeSettingsSheet = useCallback(() => {
+    setShowSettingsSheet(false);
+  }, []);
 
   // FAB color based on active bookmark
   const getFabColor = useCallback(() => {
@@ -299,56 +309,6 @@ export function EntryDetailScreen({
             </div>
           )}
 
-          <div className="cat-detail__archive-placeholder" style={{ flex: 1 }} />
-
-          <button
-            ref={menuButtonRef}
-            className="cat-detail__delete-btn cat-detail__delete-btn--entry"
-            onClick={(e) => { e.stopPropagation(); setShowMenu(!showMenu); }}
-          >
-            <MoreVertical size={18} color="#5858A0" />
-          </button>
-
-          {showMenu && (
-            <div className="cat-detail__conn-popup" ref={menuPopupRef} style={{ top: 'calc(100% + 8px)', right: '0', left: 'auto' }}>
-              <div className="cat-detail__conn-list">
-                <button
-                  className="cat-detail__conn-item"
-                  onClick={() => { onUpdate({ starred: !entry.starred }); setShowMenu(false); }}
-                >
-                  <Star size={16} fill={entry.starred ? "#F59E0B" : "none"} color={entry.starred ? "#F59E0B" : "#5858A0"} style={{ marginRight: '10px' }} />
-                  <span>{entry.starred ? t.unmarkFavorite : t.markFavorite}</span>
-                </button>
-                <button
-                  className="cat-detail__conn-item"
-                  onClick={() => { onUpdate({ archived: !entry.archived }); setShowMenu(false); }}
-                >
-                  {entry.archived ? <ArchiveRestore size={16} color="#5858A0" style={{ marginRight: '10px' }} /> : <Archive size={16} color="#5858A0" style={{ marginRight: '10px' }} />}
-                  <span>{entry.archived ? t.restore : t.archive}</span>
-                </button>
-                {entry.type === "calendar" && (
-                  <button
-                    className="cat-detail__conn-item"
-                    onClick={() => { onUpdate({ isBirthday: !entry.isBirthday }); setShowMenu(false); }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke={entry.isBirthday ? "#F59E0B" : "#5858A0"} style={{ width: 16, height: 16, marginRight: '10px' }}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056-4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
-                    </svg>
-                    <span>{entry.isBirthday ? t.unsetBirthday : t.setBirthday}</span>
-                  </button>
-                )}
-                <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
-                <button
-                  className="cat-detail__conn-item"
-                  onClick={() => { onDelete(); setShowMenu(false); }}
-                  style={{ color: '#F26565' }}
-                >
-                  <Trash2 size={16} color="#F26565" style={{ marginRight: '10px' }} />
-                  <span>{t.delete}</span>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Date/Time Popup */}
@@ -644,7 +604,51 @@ export function EntryDetailScreen({
         )}
       </div>
 
-      <BookmarkRail active={bm} onSelect={setBm} baseColor={cfgColor} iconOverrides={iconOverrides} />
+      {/* Settings Bottom Sheet */}
+      {showSettingsSheet && (
+        <div className="settings-sheet-overlay" onClick={closeSettingsSheet}>
+          <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-sheet__handle" />
+            <div className="settings-sheet__list">
+              <button
+                className="settings-sheet__item"
+                onClick={() => { onUpdate({ starred: !entry.starred }); closeSettingsSheet(); }}
+              >
+                <Star size={18} fill={entry.starred ? "#F59E0B" : "none"} color={entry.starred ? "#F59E0B" : "#5858A0"} />
+                <span>{entry.starred ? t.unmarkFavorite : t.markFavorite}</span>
+              </button>
+              <button
+                className="settings-sheet__item"
+                onClick={() => { onUpdate({ archived: !entry.archived }); closeSettingsSheet(); }}
+              >
+                {entry.archived ? <ArchiveRestore size={18} color="#5858A0" /> : <Archive size={18} color="#5858A0" />}
+                <span>{entry.archived ? t.restore : t.archive}</span>
+              </button>
+              {entry.type === "calendar" && (
+                <button
+                  className="settings-sheet__item"
+                  onClick={() => { onUpdate({ isBirthday: !entry.isBirthday }); closeSettingsSheet(); }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke={entry.isBirthday ? "#F59E0B" : "#5858A0"} style={{ width: 18, height: 18 }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056-4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
+                  </svg>
+                  <span>{entry.isBirthday ? t.unsetBirthday : t.setBirthday}</span>
+                </button>
+              )}
+              <div className="settings-sheet__divider" />
+              <button
+                className="settings-sheet__item settings-sheet__item--danger"
+                onClick={() => { onDelete(); closeSettingsSheet(); }}
+              >
+                <Trash2 size={18} color="#F26565" />
+                <span>{t.delete}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <BookmarkRail active={bm} onSelect={handleBmSelect} baseColor={cfgColor} iconOverrides={iconOverrides} />
 
       {/* Bottom nav */}
       <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`} style={{ position: "relative" }}>

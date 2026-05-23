@@ -609,4 +609,69 @@
   }
 }
 
+// ── Settings Bottom Sheet ────────────────────────────────────
+
+.settings-sheet-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+}
+
+.settings-sheet {
+  width: 100%;
+  background: $color-surface;
+  border-radius: $radius-xl $radius-xl 0 0;
+  padding: $spacing-sm $spacing-md $spacing-xl;
+  border: 1px solid $color-border;
+  border-bottom: none;
+  animation: slide-up $transition-normal;
+
+  &__handle {
+    width: 36px;
+    height: 4px;
+    border-radius: $radius-pill;
+    background: $color-dim;
+    margin: 0 auto $spacing-md;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2xs;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-xs;
+    padding: $spacing-sm + $spacing-xs $spacing-md;
+    border-radius: $radius-md;
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-text;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+
+    &--danger {
+      color: #F26565;
+    }
+  }
+
+  &__divider {
+    height: 1px;
+    background: $color-border;
+    margin: $spacing-xs 0;
+  }
+}
+
 // ── Modal Overlay ───────────────────────────────────────────

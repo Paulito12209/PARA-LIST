@@ -209,12 +209,12 @@
 
   &__pills {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     gap: $spacing-sm;
     position: relative;
     z-index: 1;
-    padding: 0; // Removed to control gaps via button height
+    padding: 0;
   }
 
   &__pills-group {
@@ -285,14 +285,16 @@
     line-height: 1;
     font-weight: 600;
     font-family: $font-body;
-    background: var(--pill-date-bg);
-    border: 1px solid var(--pill-date-border);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     color: var(--pill-date-color);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition: all $transition-fast;
     cursor: pointer;
 
     &:hover {
-      background: var(--pill-date-border);
+      background: rgba(255, 255, 255, 0.18);
     }
 
     &--static {

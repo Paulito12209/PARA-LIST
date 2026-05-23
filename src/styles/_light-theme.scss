@@ -1312,4 +1312,20 @@
       background: #e5e5f0;
     }
   }
+
+  .settings-sheet__bubble {
+    background: #f0f0f5;
+    border-color: #e5e5f0;
+    color: #5858A0;
+
+    &--active {
+      background: rgba(#7C83F7, 0.1);
+      border-color: rgba(#7C83F7, 0.3);
+      color: #7C83F7;
+    }
+  }
+
+  .settings-sheet__color-swatch--active {
+    border-color: #1c1c30;
+  }
 }

@@ -136,6 +136,11 @@ export const I18N = {
     voiceSearchHint: 'Klicke auf die Lupe, oder sage **\u201EIch suche\u201C**',
     voiceContinueDate: 'Sage **\u201EWeiter\u201C**, um das Datum einzutragen',
     voiceDone: 'Sage **\u201EFertig\u201C** oder **\u201EJa\u201C**',
+    coverColors: "Farben",
+    coverPhoto: "Fotos",
+    coverCamera: "Kamera",
+    coverDefault: "Standard",
+    removeCover: "Cover entfernen",
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
@@ -272,6 +277,11 @@ export const I18N = {
     voiceSearchHint: 'Tap the search icon, or say **\u201CI\u2019m searching\u201D**',
     voiceContinueDate: 'Say **\u201CNext\u201D** to set the date',
     voiceDone: 'Say **\u201CDone\u201D** or **\u201CYes\u201D**',
+    coverColors: "Colors",
+    coverPhoto: "Photos",
+    coverCamera: "Camera",
+    coverDefault: "Default",
+    removeCover: "Remove cover",
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
@@ -408,6 +418,11 @@ export const I18N = {
     voiceSearchHint: 'Toca la lupa, o di **\u201CBuscar\u201D**',
     voiceContinueDate: 'Di **\u201CSiguiente\u201D** para poner la fecha',
     voiceDone: 'Di **\u201CListo\u201D** o **\u201CS\u00ed\u201D**',
+    coverColors: "Colores",
+    coverPhoto: "Fotos",
+    coverCamera: "Cámara",
+    coverDefault: "Predeterminado",
+    removeCover: "Quitar portada",
   }
 };
 

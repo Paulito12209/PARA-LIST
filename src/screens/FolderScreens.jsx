@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -113,6 +113,22 @@ export function BookmarkRail({ active, onSelect, baseColor, iconOverrides }) {
   );
 }
 
+const CAT_ACCENT_RGB = {
+  project: "224, 62, 62",
+  area: "208, 144, 32",
+  resource: "48, 160, 96",
+};
+
+const COVER_COLORS = [
+  { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
+  { hex: "#D09020", rgb: "208, 144, 32",  label: "area" },
+  { hex: "#F59E0B", rgb: "245, 158, 11",  label: "note" },
+  { hex: "#1D4ED8", rgb: "29, 78, 216",   label: "calendar" },
+  { hex: "#7C83F7", rgb: "124, 131, 247", label: "task" },
+  { hex: "#E03E3E", rgb: "224, 62, 62",   label: "project" },
+  { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
+];
+
 const RES_SUB_TAB_ORDER = ["resources", "notes", "media"];
 const TASK_SUB_TAB_ORDER = ["open", "completed"];
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
@@ -120,6 +136,7 @@ const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 export function CatDetailScreen({
   t,
   CC,
+  theme,
   lang,
   cat,
   allCats,
@@ -150,6 +167,18 @@ export function CatDetailScreen({
   const [showTagSelect, setShowTagSelect] = useState(false);
   const [resSearch, setResSearch] = useState("");
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
+  const [coverMode, setCoverMode] = useState(null);
+
+  // Cover-Akzent berechnen
+  const catAccentRgb = cat.coverColor
+    ? COVER_COLORS.find(c => c.hex === cat.coverColor)?.rgb || CAT_ACCENT_RGB[safeType] || "88, 88, 160"
+    : CAT_ACCENT_RGB[safeType] || "88, 88, 160";
+  const coverAlpha = theme === 'light' ? "0C" : "18";
+  const coverBgColor = cat.coverColor || cfg.color;
+
+  // Refs für Cover-Upload
+  const coverInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   // Sub-Tab für das Ressource-Lesezeichen (standardmäßig "resources")
   const [resSubTab, setResSubTab] = useState("resources");
@@ -221,7 +250,19 @@ export function CatDetailScreen({
 
   const closeSettingsSheet = useCallback(() => {
     setShowSettingsSheet(false);
+    setCoverMode(null);
   }, []);
+
+  const handleCoverUpload = useCallback((e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      onUpdate({ coverImage: reader.result });
+      closeSettingsSheet();
+    };
+    reader.readAsDataURL(file);
+  }, [onUpdate, closeSettingsSheet]);
 
   // Mapping: Bookmark → Entry-Typ (inkl. Sub-Tab bei Ressource)
   const getEntryTypeFromBookmark = useCallback(() => {
@@ -302,7 +343,16 @@ export function CatDetailScreen({
   return (
     <div className="cat-detail" onClick={handleClickOutside}>
       {/* Header */}
-      <div className="cat-detail__header">
+      <div
+        className="cat-detail__header"
+        style={{
+          "--entry-accent-rgb": catAccentRgb,
+          background: coverBgColor + coverAlpha,
+        }}
+      >
+        {cat.coverImage && (
+          <img className="cat-detail__cover-img" src={cat.coverImage} alt="" />
+        )}
         <div className="cat-detail__header-pattern" />
         <div className="cat-detail__title-row">
           <CatIcon size={18} color={cfg.color} />
@@ -732,11 +782,81 @@ export function CatDetailScreen({
         )}
       </div>
 
+      {/* Hidden file inputs for cover upload */}
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleCoverUpload}
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: "none" }}
+        onChange={handleCoverUpload}
+      />
+
       {/* Settings Bottom Sheet */}
       {showSettingsSheet && (
         <div className="settings-sheet-overlay" onClick={closeSettingsSheet}>
           <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="settings-sheet__handle" />
+
+            {/* Cover Picker Bubbles */}
+            <div className="settings-sheet__bubbles">
+              <button
+                className={`settings-sheet__bubble ${coverMode === "colors" ? "settings-sheet__bubble--active" : ""}`}
+                onClick={() => setCoverMode(coverMode === "colors" ? null : "colors")}
+              >
+                <Palette size={20} />
+                <span>{t.coverColors}</span>
+              </button>
+              <button
+                className={`settings-sheet__bubble ${coverMode === "photo" ? "settings-sheet__bubble--active" : ""}`}
+                onClick={() => { setCoverMode("photo"); coverInputRef.current?.click(); }}
+              >
+                <ImageIcon size={20} />
+                <span>{t.coverPhoto}</span>
+              </button>
+              <button
+                className={`settings-sheet__bubble ${coverMode === "camera" ? "settings-sheet__bubble--active" : ""}`}
+                onClick={() => { setCoverMode("camera"); cameraInputRef.current?.click(); }}
+              >
+                <Camera size={20} />
+                <span>{t.coverCamera}</span>
+              </button>
+            </div>
+
+            {/* Color Grid (visible when coverMode === "colors") */}
+            {coverMode === "colors" && (
+              <div className="settings-sheet__color-grid">
+                {COVER_COLORS.map((c) => (
+                  <button
+                    key={c.hex}
+                    className={`settings-sheet__color-swatch ${cat.coverColor === c.hex ? "settings-sheet__color-swatch--active" : ""}`}
+                    style={{ background: c.hex, color: c.hex }}
+                    onClick={() => {
+                      onUpdate({ coverColor: c.hex, coverImage: null });
+                      closeSettingsSheet();
+                    }}
+                  />
+                ))}
+                <button
+                  className={`settings-sheet__color-swatch settings-sheet__color-swatch--default ${!cat.coverColor && !cat.coverImage ? "settings-sheet__color-swatch--active" : ""}`}
+                  onClick={() => {
+                    onUpdate({ coverColor: null, coverImage: null });
+                    closeSettingsSheet();
+                  }}
+                  title={t.coverDefault}
+                />
+              </div>
+            )}
+
+            <div className="settings-sheet__divider" />
+
             <div className="settings-sheet__list">
               <button
                 className="settings-sheet__item"

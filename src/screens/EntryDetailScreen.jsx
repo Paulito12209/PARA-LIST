@@ -1,11 +1,21 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera } from 'lucide-react';
 import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
 import { useInactivity } from "../hooks/useInactivity";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { BookmarkRail } from "./FolderScreens";
+
+const COVER_COLORS = [
+  { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
+  { hex: "#D09020", rgb: "208, 144, 32",  label: "area" },
+  { hex: "#F59E0B", rgb: "245, 158, 11",  label: "note" },
+  { hex: "#1D4ED8", rgb: "29, 78, 216",   label: "calendar" },
+  { hex: "#7C83F7", rgb: "124, 131, 247", label: "task" },
+  { hex: "#E03E3E", rgb: "224, 62, 62",   label: "project" },
+  { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
+];
 
 const RES_SUB_TAB_ORDER = ["resources", "notes", "media"];
 const TASK_SUB_TAB_ORDER = ["open", "completed"];
@@ -21,6 +31,7 @@ export function EntryDetailScreen({
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showDate, setShowDate] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
+  const [coverMode, setCoverMode] = useState(null);
   const [bm, setBm] = useState("canvas");
   const [taskSubTab, setTaskSubTab] = useState("open");
   const [resSubTab, setResSubTab] = useState("resources");
@@ -32,6 +43,8 @@ export function EntryDetailScreen({
   const datePillRef = useRef(null);
   const prevBmRef = useRef("canvas");
   const subTabTouchX = useRef(0);
+  const coverInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const handleClickOutside = useCallback((e) => {
     if (showConnSelect && connPopupRef.current && !connPopupRef.current.contains(e.target) && connPillRef.current && !connPillRef.current.contains(e.target)) {
@@ -55,9 +68,13 @@ export function EntryDetailScreen({
     entry.type === "note" ? "#F59E0B" :
     entry.type === "calendar" ? "#1D4ED8" : "#9CA3AF";
 
-  const entryAccentRgb = entry.type === "task" ? "124, 131, 247" :
+  const defaultAccentRgb = entry.type === "task" ? "124, 131, 247" :
     entry.type === "note" ? "245, 158, 11" :
     entry.type === "calendar" ? "29, 78, 216" : "156, 163, 175";
+  const entryAccentRgb = entry.coverColor
+    ? (COVER_COLORS.find(c => c.hex === entry.coverColor)?.rgb || defaultAccentRgb)
+    : defaultAccentRgb;
+  const entryCoverBgColor = entry.coverColor || cfgColor;
 
   const alpha = theme === 'light' ? "0C" : "18";
 
@@ -90,7 +107,19 @@ export function EntryDetailScreen({
 
   const closeSettingsSheet = useCallback(() => {
     setShowSettingsSheet(false);
+    setCoverMode(null);
   }, []);
+
+  const handleCoverUpload = useCallback((e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      onUpdate({ coverImage: reader.result });
+      closeSettingsSheet();
+    };
+    reader.readAsDataURL(file);
+  }, [onUpdate, closeSettingsSheet]);
 
   // FAB color based on active bookmark
   const getFabColor = useCallback(() => {
@@ -145,17 +174,37 @@ export function EntryDetailScreen({
 
   return (
     <div className="cat-detail" onClick={handleClickOutside}>
+      {/* Hidden file inputs for cover upload */}
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleCoverUpload}
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        style={{ display: "none" }}
+        onChange={handleCoverUpload}
+      />
+
       {/* Header */}
       <div
         className="cat-detail__header"
         style={{
           "--entry-accent-rgb": entryAccentRgb,
-          background: entry.type === "calendar"
+          background: entry.type === "calendar" && !entry.coverColor
             ? "linear-gradient(135deg, rgba(29,78,216,0.10) 0%, rgba(29,78,216,0.03) 100%)"
-            : cfgColor + alpha,
-          borderBottomColor: entry.type === "calendar" ? "rgba(29,78,216,0.18)" : undefined,
+            : entryCoverBgColor + alpha,
+          borderBottomColor: entry.type === "calendar" && !entry.coverColor ? "rgba(29,78,216,0.18)" : undefined,
         }}
       >
+        {entry.coverImage && (
+          <img className="cat-detail__cover-img" src={entry.coverImage} alt="" />
+        )}
         <div className="cat-detail__header-pattern" />
         <div className="cat-detail__title-row">
           <TypeIcon size={18} color={cfgColor} />
@@ -609,6 +658,59 @@ export function EntryDetailScreen({
         <div className="settings-sheet-overlay" onClick={closeSettingsSheet}>
           <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="settings-sheet__handle" />
+
+            {/* Cover Picker Bubbles */}
+            <div className="settings-sheet__bubbles">
+              <button
+                className={`settings-sheet__bubble ${coverMode === "colors" ? "settings-sheet__bubble--active" : ""}`}
+                onClick={() => setCoverMode(coverMode === "colors" ? null : "colors")}
+              >
+                <Palette size={20} />
+                <span>{t.coverColors}</span>
+              </button>
+              <button
+                className={`settings-sheet__bubble ${coverMode === "photo" ? "settings-sheet__bubble--active" : ""}`}
+                onClick={() => { setCoverMode("photo"); coverInputRef.current?.click(); }}
+              >
+                <ImageIcon size={20} />
+                <span>{t.coverPhoto}</span>
+              </button>
+              <button
+                className={`settings-sheet__bubble ${coverMode === "camera" ? "settings-sheet__bubble--active" : ""}`}
+                onClick={() => { setCoverMode("camera"); cameraInputRef.current?.click(); }}
+              >
+                <Camera size={20} />
+                <span>{t.coverCamera}</span>
+              </button>
+            </div>
+
+            {/* Color Grid */}
+            {coverMode === "colors" && (
+              <div className="settings-sheet__color-grid">
+                {COVER_COLORS.map((c) => (
+                  <button
+                    key={c.hex}
+                    className={`settings-sheet__color-swatch ${entry.coverColor === c.hex ? "settings-sheet__color-swatch--active" : ""}`}
+                    style={{ background: c.hex, color: c.hex }}
+                    onClick={() => {
+                      onUpdate({ coverColor: c.hex, coverImage: null });
+                      closeSettingsSheet();
+                    }}
+                  />
+                ))}
+                <button
+                  className={`settings-sheet__color-swatch settings-sheet__color-swatch--default ${!entry.coverColor && !entry.coverImage ? "settings-sheet__color-swatch--active" : ""}`}
+                  onClick={() => {
+                    onUpdate({ coverColor: null, coverImage: null });
+                    closeSettingsSheet();
+                  }}
+                  title={t.coverDefault}
+                />
+              </div>
+            )}
+
+            <div className="settings-sheet__divider" />
+
             <div className="settings-sheet__list">
               <button
                 className="settings-sheet__item"

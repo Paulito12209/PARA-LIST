@@ -598,6 +598,7 @@ export default function App() {
             <CatDetailScreen
               t={t}
               CC={CC}
+              theme={theme}
               lang={lang}
               cat={cat}
               allCats={state.cats}

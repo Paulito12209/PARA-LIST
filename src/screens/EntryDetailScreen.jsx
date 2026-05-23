@@ -74,10 +74,7 @@ export function EntryDetailScreen({
   const entryAccentRgb = entry.coverColor
     ? (COVER_COLORS.find(c => c.hex === entry.coverColor)?.rgb || defaultAccentRgb)
     : defaultAccentRgb;
-  const entryCoverBgColor = entry.coverColor || cfgColor;
   const hasEntryCoverImg = !!entry.coverImage;
-
-  const alpha = theme === 'light' ? "0C" : "18";
 
   // BookmarkRail icon override for task pages
   const iconOverrides = entry.type === "task" ? { tasks: ListChecks } : undefined;
@@ -174,7 +171,11 @@ export function EntryDetailScreen({
   }, [bm, entry.type, resSubTab, onAddSubtask, onAddLinkedEntry, onCreateTag]);
 
   return (
-    <div className="cat-detail" onClick={handleClickOutside}>
+    <div
+      className={`cat-detail ${hasEntryCoverImg ? "cat-detail--has-cover" : ""}`}
+      onClick={handleClickOutside}
+      style={{ "--entry-accent-rgb": entryAccentRgb }}
+    >
       {/* Hidden file inputs for cover upload */}
       <input
         ref={coverInputRef}
@@ -192,22 +193,17 @@ export function EntryDetailScreen({
         onChange={handleCoverUpload}
       />
 
+      {/* Ganzseitiges Cover-Bild + Lichtwelle */}
+      {hasEntryCoverImg && (
+        <>
+          <img className="cat-detail__cover-bg" src={entry.coverImage} alt="" />
+          <div className="cat-detail__cover-wave" />
+        </>
+      )}
+
       {/* Header */}
-      <div
-        className={`cat-detail__header ${hasEntryCoverImg ? "cat-detail__header--has-img" : ""}`}
-        style={{
-          "--entry-accent-rgb": entryAccentRgb,
-          background: hasEntryCoverImg
-            ? undefined
-            : entry.type === "calendar" && !entry.coverColor
-              ? "linear-gradient(135deg, rgba(29,78,216,0.10) 0%, rgba(29,78,216,0.03) 100%)"
-              : entryCoverBgColor + alpha,
-          borderBottomColor: entry.type === "calendar" && !entry.coverColor ? "rgba(29,78,216,0.18)" : undefined,
-        }}
-      >
-        {hasEntryCoverImg && (
-          <img className="cat-detail__cover-img" src={entry.coverImage} alt="" />
-        )}
+      <div className="cat-detail__header">
+
         <div className="cat-detail__header-pattern" />
         <div className="cat-detail__title-row">
           <TypeIcon size={18} color={cfgColor} />

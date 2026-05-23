@@ -151,6 +151,12 @@
     transition: background $transition-normal;
     position: relative;
     overflow: visible;
+
+    // Kräftiger Akzent-Gradient (wie HomeScreen Cover)
+    background:
+      linear-gradient(to bottom,
+        rgba(var(--entry-accent-rgb), 0.38) 0%,
+        rgba(var(--entry-accent-rgb), 0.12) 100%);
   }
 
   &__header-pattern {
@@ -164,14 +170,14 @@
       content: '';
       position: absolute;
       inset: 0;
-      opacity: 0.6;
+      opacity: 0.85;
       background:
         repeating-linear-gradient(
           135deg,
           transparent 0px,
           transparent 40px,
-          rgba(var(--entry-accent-rgb), 0.15) 55px,
-          rgba(var(--entry-accent-rgb), 0.05) 70px,
+          rgba(var(--entry-accent-rgb), 0.18) 55px,
+          rgba(var(--entry-accent-rgb), 0.06) 70px,
           transparent 90px,
           transparent 130px
         ),
@@ -179,11 +185,11 @@
           132deg,
           transparent 0px,
           transparent 60px,
-          rgba(var(--entry-accent-rgb), 0.08) 80px,
+          rgba(var(--entry-accent-rgb), 0.10) 80px,
           transparent 100px,
           transparent 150px
         ),
-        radial-gradient(rgba(var(--entry-accent-rgb), 0.12) 1px, transparent 1px);
+        radial-gradient(rgba(var(--entry-accent-rgb), 0.14) 1px, transparent 1px);
       background-size: auto, auto, 10px 10px;
     }
   }
@@ -674,16 +680,46 @@
   }
 }
 
-// ── Cover Image im Header ──────────────────────────────────
+// ── Cover Image (ganzseitig) ───────────────────────────────
 
-.cat-detail__header--has-img {
-  background:
-    linear-gradient(to bottom,
-      rgba(var(--entry-accent-rgb), 0.35) 0%,
-      rgba(0, 0, 0, 0.50) 100%);
-  overflow: hidden;
+.cat-detail--has-cover {
+  // Header transparent machen, da das Bild dahinter liegt
+  .cat-detail__header {
+    background: transparent !important;
+  }
 }
 
+.cat-detail__cover-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+.cat-detail__cover-wave {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    // Akzent-Glow oben
+    linear-gradient(to bottom,
+      rgba(var(--entry-accent-rgb), 0.30) 0%,
+      transparent 30%),
+    // Dunkler Gradient von unten für Lesbarkeit
+    linear-gradient(to top,
+      rgba(7, 7, 15, 0.75) 0%,
+      rgba(7, 7, 15, 0.45) 35%,
+      rgba(var(--entry-accent-rgb), 0.08) 100%),
+    // Punkt-Textur
+    radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px) 0 0 / 14px 14px;
+}
+
+// Legacy: Cover-Img im Header (für EntryDetailScreen)
 .cat-detail__cover-img {
   position: absolute;
   inset: 0;

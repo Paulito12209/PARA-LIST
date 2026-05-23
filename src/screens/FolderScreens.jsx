@@ -174,8 +174,6 @@ export function CatDetailScreen({
     ? COVER_COLORS.find(c => c.hex === cat.coverColor)?.rgb || CAT_ACCENT_RGB[safeType] || "88, 88, 160"
     : CAT_ACCENT_RGB[safeType] || "88, 88, 160";
   const hasCoverImg = !!cat.coverImage;
-  const coverAlpha = theme === 'light' ? "0C" : "18";
-  const coverBgColor = cat.coverColor || cfg.color;
 
   // Refs für Cover-Upload
   const coverInputRef = useRef(null);
@@ -342,18 +340,22 @@ export function CatDetailScreen({
   );
 
   return (
-    <div className="cat-detail" onClick={handleClickOutside}>
+    <div
+      className={`cat-detail ${hasCoverImg ? "cat-detail--has-cover" : ""}`}
+      onClick={handleClickOutside}
+      style={{ "--entry-accent-rgb": catAccentRgb }}
+    >
+      {/* Ganzseitiges Cover-Bild + Lichtwelle */}
+      {hasCoverImg && (
+        <>
+          <img className="cat-detail__cover-bg" src={cat.coverImage} alt="" />
+          <div className="cat-detail__cover-wave" />
+        </>
+      )}
+
       {/* Header */}
-      <div
-        className={`cat-detail__header ${hasCoverImg ? "cat-detail__header--has-img" : ""}`}
-        style={{
-          "--entry-accent-rgb": catAccentRgb,
-          background: hasCoverImg ? undefined : coverBgColor + coverAlpha,
-        }}
-      >
-        {hasCoverImg && (
-          <img className="cat-detail__cover-img" src={cat.coverImage} alt="" />
-        )}
+      <div className="cat-detail__header">
+
         <div className="cat-detail__header-pattern" />
         <div className="cat-detail__title-row">
           <CatIcon size={18} color={cfg.color} />

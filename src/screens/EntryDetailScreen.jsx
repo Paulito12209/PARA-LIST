@@ -75,6 +75,7 @@ export function EntryDetailScreen({
     ? (COVER_COLORS.find(c => c.hex === entry.coverColor)?.rgb || defaultAccentRgb)
     : defaultAccentRgb;
   const entryCoverBgColor = entry.coverColor || cfgColor;
+  const hasEntryCoverImg = !!entry.coverImage;
 
   const alpha = theme === 'light' ? "0C" : "18";
 
@@ -193,16 +194,18 @@ export function EntryDetailScreen({
 
       {/* Header */}
       <div
-        className="cat-detail__header"
+        className={`cat-detail__header ${hasEntryCoverImg ? "cat-detail__header--has-img" : ""}`}
         style={{
           "--entry-accent-rgb": entryAccentRgb,
-          background: entry.type === "calendar" && !entry.coverColor
-            ? "linear-gradient(135deg, rgba(29,78,216,0.10) 0%, rgba(29,78,216,0.03) 100%)"
-            : entryCoverBgColor + alpha,
+          background: hasEntryCoverImg
+            ? undefined
+            : entry.type === "calendar" && !entry.coverColor
+              ? "linear-gradient(135deg, rgba(29,78,216,0.10) 0%, rgba(29,78,216,0.03) 100%)"
+              : entryCoverBgColor + alpha,
           borderBottomColor: entry.type === "calendar" && !entry.coverColor ? "rgba(29,78,216,0.18)" : undefined,
         }}
       >
-        {entry.coverImage && (
+        {hasEntryCoverImg && (
           <img className="cat-detail__cover-img" src={entry.coverImage} alt="" />
         )}
         <div className="cat-detail__header-pattern" />

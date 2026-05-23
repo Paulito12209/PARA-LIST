@@ -20,15 +20,7 @@ export function Sidebar({
     <aside className={`dsk-sidebar${expanded ? " dsk-sidebar--expanded" : ""}`}>
       <div className="dsk-sidebar__brand" title="Paralist">
         <div className="dsk-sidebar__brand-logo">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true">
-            <path
-              d="M5 18.5c2-1 3.2-2.6 4-4.4M8 4.5l4.5 5M13 17.5c1.4-2 2.2-4.2 2.2-6.5M12 4.5c3 1.5 4.5 4 4.5 7M19 4.5c-1.5 5-1.5 10 0 15"
-              stroke="currentColor"
-              strokeWidth="1.7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <img src="/paralist_logo.png" alt="Paralist" />
         </div>
         <span className="dsk-sidebar__brand-label">Paralist</span>
       </div>
@@ -50,7 +42,7 @@ export function Sidebar({
               style={isActive ? { color: item.color } : undefined}
             >
               <span className="dsk-sidebar__nav-icon">
-                <Icon size={expanded ? 20 : 24} strokeWidth={isActive ? 2.6 : 2} />
+                <Icon size={20} strokeWidth={2} />
               </span>
               <span className="dsk-sidebar__nav-label">{label}</span>
               <span className="dsk-sidebar__nav-kbd">{item.hint}</span>

@@ -140,7 +140,7 @@
   flex-direction: column;
   position: relative;
   animation: slide-in-right $transition-normal;
-  background: #1E1E1E;
+  background: #1A1A2E;
 
   &__header {
     margin-top: -80px;
@@ -161,38 +161,7 @@
   }
 
   &__header-pattern {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    overflow: hidden;
-    pointer-events: none;
-
-    &::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0.85;
-      background:
-        repeating-linear-gradient(
-          135deg,
-          transparent 0px,
-          transparent 40px,
-          rgba(var(--entry-accent-rgb), 0.18) 55px,
-          rgba(var(--entry-accent-rgb), 0.06) 70px,
-          transparent 90px,
-          transparent 130px
-        ),
-        repeating-linear-gradient(
-          132deg,
-          transparent 0px,
-          transparent 60px,
-          rgba(var(--entry-accent-rgb), 0.10) 80px,
-          transparent 100px,
-          transparent 150px
-        ),
-        radial-gradient(rgba(var(--entry-accent-rgb), 0.14) 1px, transparent 1px);
-      background-size: auto, auto, 10px 10px;
-    }
+    display: none;
   }
 
   &--calendar>&__header {
@@ -713,8 +682,8 @@
       transparent 30%),
     // Dunkler Gradient von unten für Lesbarkeit
     linear-gradient(to top,
-      rgba(30, 30, 30, 0.75) 0%,
-      rgba(30, 30, 30, 0.45) 35%,
+      rgba(7, 7, 15, 0.75) 0%,
+      rgba(7, 7, 15, 0.45) 35%,
       rgba(var(--entry-accent-rgb), 0.08) 100%),
     // Punkt-Textur
     radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px) 0 0 / 14px 14px;

@@ -117,7 +117,7 @@ export function Sidebar({
     >
       <div className="dsk-sidebar__brand">
         <div className="dsk-sidebar__brand-logo">
-          <img src="/paralist_logo.png" alt="Paralist" />
+          <img src={`${import.meta.env.BASE_URL}paralist_logo.png`} alt="Paralist" />
         </div>
         <span className="dsk-sidebar__brand-label">PARA·LIST</span>
         <button

@@ -785,14 +785,17 @@
     }
   }
 
-  .home__collapse-btn {
-    background: #ffffff;
-    border-color: #e5e5f0;
+  .home__floating-btn {
     color: #5858A0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    // Liquid-Glass-Körper (Light Mode): weißes Frosted-Glas, indigo Icon
+    background: rgba(255, 255, 255, 0.72);
+    border-color: rgba(255, 255, 255, 0.9);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      inset 0 1px 2px rgba(255, 255, 255, 0.9);
 
     &:active {
-      background: #f0f0f5;
+      background: rgba(255, 255, 255, 0.85);
     }
   }
 
@@ -1407,9 +1410,9 @@
 // ── Command Dock + Startseiten-Liste (Light Mode) ──────────────
 .app.light-theme {
   .command-dock {
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.85);
     border-top-color: rgba(0, 0, 0, 0.06);
-    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.12);
 
     &__type {
       color: #8e8eb2;

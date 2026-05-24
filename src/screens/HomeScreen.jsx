@@ -70,6 +70,7 @@ export function HomeScreen({
   onUpdateCat,
   voiceOverlayOpen,
   setVoiceOverlayOpen,
+  onHeaderTitleChange,
 }) {
   const { entries, cats } = state;
   // Cover zeigt vorerst immer das erste Projekt (Fallback für das spätere Pin-/Favoriten-Feature)
@@ -94,10 +95,17 @@ export function HomeScreen({
     setActiveType(type);
     if (ENTRY_TYPES.includes(type)) setTab(type);
   };
+
   const [collabModalOpen, setCollabModalOpen] = useState(false);
   const [collabModalInitialView, setCollabModalInitialView] = useState("list");
   const [listExpanded, setListExpanded] = useState(false);
   const lastScrollTop = useRef(0);
+
+  // Beim Aufklappen der Liste wandert der Abschnittstitel in den Header (statt "Startseite")
+  useEffect(() => {
+    onHeaderTitleChange?.(listExpanded ? activeLabel : null);
+    return () => onHeaderTitleChange?.(null);
+  }, [listExpanded, activeLabel, onHeaderTitleChange]);
 
   const activeCats = cats.filter((c) => c.type === activeCatType && !c.archived);
   const firstCat = activeCats[0];
@@ -498,7 +506,7 @@ export function HomeScreen({
       <div className={`home__list-container${listExpanded ? ' home__list-container--expanded' : ''}`}>
         <div className="list-section__header">
           <div className="list-section__header-left">
-            <span className="list-section__label">{activeLabel}</span>
+            {!listExpanded && <span className="list-section__label">{activeLabel}</span>}
             <button
               className="list-section__expand"
               onClick={() => setListExpanded((v) => !v)}

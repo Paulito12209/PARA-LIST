@@ -15,10 +15,10 @@
   gap: $spacing-sm;
   padding: $spacing-sm $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
 
-  // Liquid-Glass-Container (wie Sonos: abgerundetes Rechteck, durchsichtig)
-  background: rgba(18, 18, 34, 0.55);
-  backdrop-filter: blur(22px) saturate(150%);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  // Liquid-Glass-Container (Notion-Stil: Content scheint leicht durch)
+  background: rgba(18, 18, 34, 0.4);
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: $radius-xl $radius-xl 0 0;
   box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.38);

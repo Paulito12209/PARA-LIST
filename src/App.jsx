@@ -178,6 +178,8 @@ export default function App() {
   const [celebrationBirthday, setCelebrationBirthday] = useState(null);
   const [coverAccentRgb, setCoverAccentRgb] = useState(DEFAULT_COVER_ACCENT_RGB);
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
+  // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
+  const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -576,6 +578,7 @@ export default function App() {
     >
       <CommandPanel
         t={t}
+        title={cur.view === VIEW.HOME ? homeHeaderTitle : null}
         lang={lang}
         setLang={(l) => setState((s) => ({ ...s, lang: l }))}
         theme={theme}
@@ -641,6 +644,7 @@ export default function App() {
             onUpdateCat={updateCat}
             voiceOverlayOpen={voiceOverlayOpen}
             setVoiceOverlayOpen={setVoiceOverlayOpen}
+            onHeaderTitleChange={setHomeHeaderTitle}
           />
         )}
 

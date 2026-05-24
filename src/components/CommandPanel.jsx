@@ -7,6 +7,7 @@ const SWIPE_THRESHOLD_PX = 60;
 const HAPTIC_TAP_MS = 10;
 
 export function CommandPanel({
+  title,
   entries,
   open,
   onToggle,
@@ -87,7 +88,7 @@ export function CommandPanel({
             />
             <div className="command-panel__titles">
               <div className="command-panel__greeting">
-                {isVoiceMode ? t.voiceQuestion : t.home}
+                {isVoiceMode ? t.voiceQuestion : (title || t.home)}
               </div>
               <div className="command-panel__date">
                 {new Date().toLocaleDateString(t.locale, {

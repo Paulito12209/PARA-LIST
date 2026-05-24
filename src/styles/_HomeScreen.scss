@@ -968,28 +968,47 @@
   }
 }
 
-// Collapse-FAB unten links (nur im expandierten Zustand)
-.home__collapse-btn {
+// Schwebende Aktions-Buttons (nur im expandierten Zustand):
+// Zuklappen (links) + Archiv (rechts) über dem Input-Dock, Liquid-Glass-Körper.
+// Listeneinträge bleiben darunter durch das Glas sichtbar.
+.home__floating-actions {
   position: absolute;
-  bottom: 16px;
   left: 16px;
+  right: 16px;
+  // Über dem Input-Dock (entspricht dem entry-list padding-bottom)
+  bottom: 164px;
+  display: flex;
+  justify-content: space-between;
+  // Liste darunter bleibt scroll-/klickbar; nur die Buttons fangen Klicks ab
+  pointer-events: none;
+  z-index: 15;
+}
+
+.home__floating-btn {
+  pointer-events: auto;
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  border: 1px solid $color-border;
-  background: $color-surface;
-  color: $color-text;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  z-index: 12;
+  color: $color-text;
+
+  // Liquid-Glass-Körper
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow:
+    0 8px 28px rgba(0, 0, 0, 0.35),
+    0 0 10px rgba(255, 255, 255, 0.06),
+    inset 0 0 6px rgba(255, 255, 255, 0.12);
   transition: all 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 
   &:active {
     transform: scale(0.92);
-    background: $color-hover;
+    background: rgba(255, 255, 255, 0.14);
   }
 }
 

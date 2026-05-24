@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, User, UserPlus, ChevronRight, ChevronDown, Maximize2, Minimize2 } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, User, UserPlus, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
@@ -509,26 +509,30 @@ export function HomeScreen({
       </div>
 
       <div className={`home__list-container${listExpanded ? ' home__list-container--expanded' : ''}`}>
-        <div className="list-section__header">
-          <div className="list-section__header-left">
-            {!listExpanded && <span className="list-section__label">{activeLabel}</span>}
+        {/* Eingeklappt: Titel · Aufklappen · Archiv im Section-Header.
+            Aufgeklappt: Zuklappen + Archiv wandern als schwebende Glas-Buttons nach unten. */}
+        {!listExpanded && (
+          <div className="list-section__header">
+            <div className="list-section__header-left">
+              <span className="list-section__label">{activeLabel}</span>
+              <button
+                className="list-section__expand"
+                onClick={() => setListExpanded(true)}
+                aria-label={t.open}
+              >
+                <Maximize2 size={18} />
+              </button>
+            </div>
+            {/* Archiv-Zugang – immer gegenüber vom Abschnittstitel */}
             <button
-              className="list-section__expand"
-              onClick={() => setListExpanded((v) => !v)}
-              aria-label={listExpanded ? t.closeBtn : t.open}
+              className="list-section__archive"
+              onClick={() => onOpenArchive(activeType)}
+              aria-label={t.archive}
             >
-              {listExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+              <Archive size={20} />
             </button>
           </div>
-          {/* Archiv-Zugang – immer gegenüber vom Abschnittstitel */}
-          <button
-            className="list-section__archive"
-            onClick={() => onOpenArchive(activeType)}
-            aria-label={t.archive}
-          >
-            <Archive size={20} />
-          </button>
-        </div>
+        )}
 
         {activeGroupHeader && VOICE_TAB_TYPES.includes(tab) && (
           <div className="task-group-header task-group-header--fixed">
@@ -550,12 +554,22 @@ export function HomeScreen({
         </div>
 
         {listExpanded && (
-          <button
-            className="home__collapse-btn"
-            onClick={() => setListExpanded(false)}
-          >
-            <ChevronDown size={20} />
-          </button>
+          <div className="home__floating-actions">
+            <button
+              className="home__floating-btn"
+              onClick={() => setListExpanded(false)}
+              aria-label={t.closeBtn}
+            >
+              <Minimize2 size={20} />
+            </button>
+            <button
+              className="home__floating-btn"
+              onClick={() => onOpenArchive(activeType)}
+              aria-label={t.archive}
+            >
+              <Archive size={20} />
+            </button>
+          </div>
         )}
       </div>
 

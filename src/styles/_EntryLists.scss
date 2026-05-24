@@ -967,14 +967,14 @@
 
   &--home {
     background: #1A1A2E !important;
-    border-color: rgba(16, 8, 141, 0.2) !important;
+    border-color: color-mix(in srgb, var(--cal-accent) 22%, transparent) !important;
 
     .cal-item__title {
-      color: #10088D; // Kalender-Indigo (Kontrast im Dark Mode prüfen!)
+      color: var(--cal-accent); // theme-aware (Dark Mode aufgehellt)
     }
 
     .cal-item__time {
-      color: #10088D;
+      color: var(--cal-accent);
       font-weight: 600;
     }
 

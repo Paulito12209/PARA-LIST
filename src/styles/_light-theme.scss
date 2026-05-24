@@ -9,6 +9,8 @@
   background: #f7f7f9;
   color: #1a1a24;
   --command-panel-header-bg: #ffffff;
+  // Light Mode: Kalender-Akzent = tiefes Indigo
+  --cal-accent: #10088D;
 
   // PARA Pill Backgrounds (Light Mode) – halbtransparent für Frosted-Glass
   --pill-project-bg: rgba(255, 255, 255, 0.55);
@@ -1209,13 +1211,18 @@
 
 
 .app.light-theme .command-panel--closed {
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  border-radius: 0;
-  box-shadow:
-    0 6px 24px rgba(0, 0, 0, 0.08),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  background: transparent;
+  box-shadow: none;
+}
+
+// Heller Frost-Verlauf; Blur + Auslauf-Maske werden von der Basis-::before geerbt
+.app.light-theme .command-panel--closed::before {
+  background: linear-gradient(
+    to bottom,
+    rgba(247, 247, 250, 0.6) 0%,
+    rgba(247, 247, 250, 0.32) 55%,
+    rgba(247, 247, 250, 0) 100%
+  );
 }
 
 .app.light-theme .collab-modal {
@@ -1431,10 +1438,11 @@
       }
     }
 
-    // Light Mode: schwarz gefüllt, weißes Icon
+    // Light Mode: gleiche Optik wie das List-Icon (disabled gefärbt)
     &__menu-circle {
-      background: #1a1a24;
-      color: #ffffff;
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+      color: #5858a0;
     }
   }
 

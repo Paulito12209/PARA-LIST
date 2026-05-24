@@ -57,7 +57,7 @@
     }
   }
 
-  // 7. Icon: Menü als invertierter, gefüllter Kreis
+  // 7. Icon: Menü-Kreis – gleiche Optik wie das List-Icon, aber disabled gefärbt
   &__menu {
     flex: 1;
     height: 44px;
@@ -66,24 +66,21 @@
     justify-content: center;
     background: transparent;
     border: none;
-    cursor: pointer;
+    cursor: default;
   }
 
   &__menu-circle {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    // Dark Mode: weiß gefüllt, schwarzes Icon
-    background: $color-text;
-    color: $color-bg;
-    transition: transform $transition-fast;
-
-    .command-dock__menu:hover & {
-      transform: scale(1.06);
-    }
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba($color-text, 0.8);
+    // Noch keine Funktion → ausgegraut
+    opacity: 0.4;
   }
 
   // ── Eingabezeile (List-Icon · Input · Voice) ──
@@ -130,5 +127,18 @@
   // Voice-Button greift die Akzentfarbe des aktiven Typs auf
   &__voice-btn {
     color: var(--dock-accent);
+  }
+
+  // Senden-Button: erscheint sobald Text im Feld steht (gefüllter Akzent-Kreis)
+  &__send-btn {
+    background: var(--dock-accent);
+    border-color: transparent;
+    color: #fff;
+
+    &:hover {
+      background: var(--dock-accent);
+      filter: brightness(1.12);
+      color: #fff;
+    }
   }
 }

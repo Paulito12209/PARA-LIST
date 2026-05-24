@@ -107,6 +107,8 @@ $color-bm-link:   #7C3AED;
   --color-task:     #{$color-task};
   --color-note:     #{$color-note};
   --color-calendar: #{$color-calendar};
+  // Kalender-Akzent: heller im Dark Mode (Kontrast), #10088D im Light Mode
+  --cal-accent: #6366F1;
   --color-calendar-pastel: #{$color-calendar-pastel};
 
   // Notifications

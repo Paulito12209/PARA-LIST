@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, List, Mic, MoreHorizontal } from "lucide-react";
+import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, List, Mic, MoreHorizontal, ArrowUp } from "lucide-react";
 
 // PARA + Eintragstypen für die untere Eingabeleiste.
 // Aufgaben ist standardmäßig aktiv und als einziges farbig hervorgehoben.
@@ -9,7 +9,8 @@ const DOCK_TYPES = [
   { id: "resource", Icon: Square, color: "#30A060" },
   { id: "tasks", Icon: CheckCircle2, color: "#0078D4" },
   { id: "notes", Icon: Pencil, color: "#F59E0B" },
-  { id: "calendar", Icon: Calendar, color: "#10088D" },
+  // Kalender nutzt theme-aware Akzent (Dark Mode aufgehellt)
+  { id: "calendar", Icon: Calendar, color: "var(--cal-accent)" },
 ];
 
 const SINGULAR_KEY = {
@@ -25,6 +26,8 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
   const [value, setValue] = useState("");
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
   const placeholder = t.addPlaceholder(t[SINGULAR_KEY[activeType]] || "");
+
+  const hasText = value.trim().length > 0;
 
   const submit = () => {
     const title = value.trim();
@@ -52,8 +55,8 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
           );
         })}
 
-        {/* 7. Icon: Menü (invertierter, gefüllter Kreis) – Funktion folgt */}
-        <button className="command-dock__menu" onClick={onMenu} aria-label="Menü">
+        {/* 7. Icon: Menü – noch ohne Funktion, daher disabled gefärbt */}
+        <button className="command-dock__menu" onClick={onMenu} aria-label="Menü" disabled>
           <span className="command-dock__menu-circle">
             <MoreHorizontal size={18} />
           </span>
@@ -79,11 +82,11 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
           enterKeyHint="done"
         />
         <button
-          className="command-dock__icon-btn command-dock__voice-btn"
-          onClick={() => onOpenVoice(activeType)}
-          aria-label="Spracheingabe"
+          className={`command-dock__icon-btn ${hasText ? "command-dock__send-btn" : "command-dock__voice-btn"}`}
+          onClick={() => (hasText ? submit() : onOpenVoice(activeType))}
+          aria-label={hasText ? "Senden" : "Spracheingabe"}
         >
-          <Mic size={20} />
+          {hasText ? <ArrowUp size={20} /> : <Mic size={20} />}
         </button>
       </div>
     </div>

@@ -875,8 +875,10 @@
 }
 
 // ── List-Section Header: Label · Aufklappen-Toggle · Archiv ──
-.list-section__header-left {
+// Höhere Spezifität, um das flex-direction:column aus _EntryLists zu überschreiben
+.home__list-container .list-section__header-left {
   display: flex;
+  flex-direction: row;
   align-items: center;
   // 12px Abstand zwischen Titel-Ende und Aufklapp-Icon
   gap: 12px;

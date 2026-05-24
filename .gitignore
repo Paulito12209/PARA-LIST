@@ -28,3 +28,4 @@ dist-ssr
 
 # Internal docs (not for git)
 CLAUDE.md
+src/documentations/

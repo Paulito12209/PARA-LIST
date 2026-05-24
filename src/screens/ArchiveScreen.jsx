@@ -83,6 +83,7 @@ const SECTION_TITLES = {
 };
 
 const FOLDER_TAB_IDS = ["project", "area", "resource"];
+const VALID_ARCHIVE_TABS = [...FOLDER_TAB_IDS, "tasks", "notes", "calendar"];
 
 export function ArchiveScreen({
   t,
@@ -90,6 +91,7 @@ export function ArchiveScreen({
   lang,
   entries,
   cats,
+  tab,
   onDelete,
   onBack,
   toggleTask,
@@ -97,7 +99,9 @@ export function ArchiveScreen({
   onRestoreNote,
   onOpenCat,
 }) {
-  const [activeArchiveTab, setActiveArchiveTab] = useState(null);
+  const [activeArchiveTab, setActiveArchiveTab] = useState(() =>
+    VALID_ARCHIVE_TABS.includes(tab) ? tab : null
+  );
   const fabVisible = useInactivity(FAB_INACTIVITY_MS);
 
   const archivedProjects = cats.filter((c) => c.type === "project" && c.archived);

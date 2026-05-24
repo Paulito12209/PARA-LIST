@@ -19,9 +19,9 @@ const TYPE_COLORS = {
   project: "#E03E3E",
   area: "#D09020",
   resource: "#30A060",
-  tasks: "#0078D4",
+  tasks: "#0B8CE9",
   notes: "#F59E0B",
-  calendar: "#10088D",
+  calendar: "#0078D4",
 };
 
 const ARCHIVED_FOLDER_CARDS = [

@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, Fragment } from "react";
 import { Circle, Triangle, Square, Archive, Calendar, User, UserPlus, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
-import { getNextBirthday, isOld, fmtDate } from "../utils";
+import { getNextBirthday, isOld, isToday, fmtDate, getTaskGroup } from "../utils";
 
 const COVER_ACCENT_RGB = {
   project: "224, 62, 62",
@@ -276,6 +276,7 @@ export function HomeScreen({
       "#F59E0B": "245, 158, 11",
       "#1D4ED8": "29, 78, 216",
       "#7C83F7": "124, 131, 247",
+      "#0B8CE9": "11, 140, 233",
       "#0078D4": "0, 120, 212",
       "#10088D": "16, 8, 141",
       "#E03E3E": "224, 62, 62",
@@ -444,13 +445,45 @@ export function HomeScreen({
     if (paraCats.length === 0) {
       return <div className="entry-list__empty">{t.noCats(activeLabel)}</div>;
     }
+
+    const renderCatItem = (c) => (
+      <button key={c.id} className="home-cat-list__item" onClick={() => onOpenCat(c)}>
+        <span className="home-cat-list__name">{c.name}</span>
+        <ChevronRight size={16} className="home-cat-list__chevron" />
+      </button>
+    );
+
+    // Datums-Gruppierung analog zu den Aufgaben-/Notiz-/Termin-Listen:
+    // Einträge ohne Datum (bzw. heute/überfällig) oben ohne Header, künftige
+    // Einträge unter Datums-Gruppen-Headern ("Morgen", "Nächste Woche" …).
+    const undatedCats = [];
+    const groupedCats = new Map();
+    paraCats.forEach((c) => {
+      if (!c.date || isToday(c.date) || isOld(c.date)) {
+        undatedCats.push(c);
+        return;
+      }
+      const g = getTaskGroup(c.date, t.locale, true);
+      const key = `${g.left}|${g.right}`;
+      if (!groupedCats.has(key)) groupedCats.set(key, { ...g, items: [] });
+      groupedCats.get(key).items.push(c);
+    });
+    const futureGroups = Array.from(groupedCats.values());
+    futureGroups.sort((a, b) => a.sortKey - b.sortKey);
+    futureGroups.forEach((g) => g.items.sort((a, b) => new Date(a.date) - new Date(b.date)));
+
     return (
       <div className="home-cat-list">
-        {paraCats.map((c) => (
-          <button key={c.id} className="home-cat-list__item" onClick={() => onOpenCat(c)}>
-            <span className="home-cat-list__name">{c.name}</span>
-            <ChevronRight size={16} className="home-cat-list__chevron" />
-          </button>
+        {undatedCats.map(renderCatItem)}
+        {futureGroups.map((g, i) => (
+          <Fragment key={`grp-${i}`}>
+            <div className="task-group-header task-group-header--home">
+              <span className="task-group-header__left">{g.left}</span>
+              <span className="task-group-header__badge">{g.items.length}</span>
+              <span className="task-group-header__right">{g.right}</span>
+            </div>
+            {g.items.map(renderCatItem)}
+          </Fragment>
         ))}
       </div>
     );

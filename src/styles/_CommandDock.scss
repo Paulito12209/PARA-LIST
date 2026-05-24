@@ -12,14 +12,15 @@
   z-index: 20;
   display: flex;
   flex-direction: column;
-  gap: $spacing-sm;
+  // +4px Abstand zwischen Icon-Reihe und Eingabezeile (8px → 12px)
+  gap: calc(#{$spacing-sm} + #{$spacing-xs});
   padding: $spacing-sm $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
 
-  // Solider Liquid-Glass-Boden in heller Pillen-Farbe (wie "Projekt öffnen"-Button)
-  background: #ECEBF4;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  // Dark Mode: dunkler Boden (Light Mode überschreibt auf Weiß)
+  background: #16161f;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: $radius-xl $radius-xl 0 0;
-  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.45);
 
   // ── Icon-Reihe (Typ-Auswahl) ──
   &__types {
@@ -38,20 +39,26 @@
     justify-content: center;
     background: transparent;
     border: 1px solid transparent;
-    color: #8e8eb2;
+    color: #8a8a96;
     cursor: pointer;
     transition: all $transition-fast;
 
     &:hover:not(.command-dock__type--active) {
-      color: #1c1c30;
-      background: rgba(0, 0, 0, 0.04);
+      color: #ededf2;
+      background: rgba(255, 255, 255, 0.06);
     }
 
-    // Aktiver Typ: in seiner Akzentfarbe getönt + leichter Glow
+    // Aktiver Typ: keine Border, runder Glow der von innen nach außen
+    // ausfadet – innen erkennbar getönt, am Rand transparent, sodass er
+    // (v.a. im Light Mode) mit dem Hintergrund verschmilzt.
     &--active {
-      background: color-mix(in srgb, var(--type-color) 16%, transparent);
-      border-color: color-mix(in srgb, var(--type-color) 42%, transparent);
-      box-shadow: 0 0 14px color-mix(in srgb, var(--type-color) 26%, transparent);
+      border-color: transparent;
+      border-radius: 50%;
+      background: radial-gradient(circle at center,
+          color-mix(in srgb, var(--type-color) 34%, transparent) 0%,
+          color-mix(in srgb, var(--type-color) 16%, transparent) 40%,
+          transparent 72%);
+      box-shadow: none;
     }
   }
 
@@ -74,9 +81,10 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #f7f7f9;
-    border: 1px solid #e5e5f0;
-    color: #5858a0;
+    // 5% dunkler als die übrigen Dock-Icons (Light Mode überschreibt analog)
+    background: #21212d;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: #9a9aa8;
     // Noch keine Funktion → ausgegraut
     opacity: 0.4;
   }
@@ -87,8 +95,7 @@
     align-items: center;
     gap: $spacing-sm;
     padding: $spacing-2xs;
-    background: #ffffff;
-    border: 1px solid #e5e5f0;
+    background: #16161f;
     border-radius: $radius-lg;
   }
 
@@ -98,13 +105,13 @@
     background: transparent;
     border: none;
     outline: none;
-    color: #1a1a24;
+    color: #ededf2;
     font-family: $font-body;
     font-size: 15px;
-    padding: $spacing-sm $spacing-2xs;
+    padding: $spacing-sm;
 
     &::placeholder {
-      color: #8e8eb2;
+      color: #8a8a96;
     }
   }
 
@@ -113,15 +120,29 @@
     // 8px breiter als hoch → liegende Pille (Home- bzw. Voice-/Senden-Button)
     width: 48px;
     border-radius: 20px;
-    background: #f7f7f9;
-    border: 1px solid #e5e5f0;
-    color: #5858a0;
+    background: #23232f;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    color: #c4c4d0;
     cursor: pointer;
     transition: all $transition-fast;
 
     &:hover {
-      background: #f0f0f5;
-      color: #1c1c30;
+      background: #2c2c3a;
+      color: #ffffff;
+    }
+  }
+
+  // Home-Button (links): nur auf der Startseite "aktiv" gestylt.
+  // Dark Mode: heller Hintergrund + dunkles Icon (im Light Mode umgekehrt).
+  // Im Dark Mode 10% dunkler als reines Weiß (Light Mode geht 10% heller).
+  &__list-btn--active {
+    background: #e6e6e6;
+    border-color: #e6e6e6;
+    color: #1a1a24;
+
+    &:hover {
+      background: #dcdcdc;
+      color: #1a1a24;
     }
   }
 

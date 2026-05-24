@@ -10,7 +10,7 @@
   color: #1a1a24;
   --command-panel-header-bg: #ffffff;
   // Light Mode: Kalender-Akzent = tiefes Indigo
-  --cal-accent: #10088D;
+  --cal-accent: #0078D4;
 
   // PARA Pill Backgrounds (Light Mode) – halbtransparent für Frosted-Glass
   --pill-project-bg: rgba(255, 255, 255, 0.55);
@@ -162,6 +162,11 @@
       background: #f7f7f9;
       border-color: #e5e5f0;
       color: #1a1a24;
+    }
+
+    // Logo-Icon links: gleiche Border wie das Settings-Icon im Light Mode
+    &__logo {
+      border-color: #e5e5f0;
     }
 
     &__handle-bar {
@@ -1410,12 +1415,13 @@
 // ── Command Dock + Startseiten-Liste (Light Mode) ──────────────
 .app.light-theme {
   .command-dock {
-    background: #ECEBF4;
-    border-top-color: rgba(0, 0, 0, 0.06);
-    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.12);
+    // Boden genauso hell wie die Eingabezeile, kein Lavendel mehr
+    background: #ffffff;
+    border-top-color: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.10);
 
     &__type {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &:hover:not(.command-dock__type--active) {
         color: #1c1c30;
@@ -1425,33 +1431,54 @@
 
     &__input-row {
       background: #ffffff;
-      border-color: #e5e5f0;
     }
 
     &__input {
       color: #1a1a24;
 
       &::placeholder {
-        color: #8e8eb2;
+        color: #8a8a96;
       }
     }
 
+    // Icons: weißer Hintergrund + neutrales Grau (statt Lavendel)
     &__icon-btn {
-      background: #f7f7f9;
-      border-color: #e5e5f0;
-      color: #5858a0;
+      background: #ffffff;
+      border-color: #e6e6ec;
+      color: #5b5b6b;
 
       &:hover {
-        background: #f0f0f5;
+        background: #f3f3f6;
         color: #1c1c30;
       }
     }
 
-    // Light Mode: gleiche Optik wie das List-Icon (disabled gefärbt)
+    // Audio-/Voice-Button immer in der aktiven Typ-Farbe (überschreibt das neutrale Grau)
+    &__voice-btn {
+      color: var(--dock-accent);
+    }
+
+    // Home-Button nur auf der Startseite "aktiv": Light Mode = dunkelgrauer
+    // Hintergrund + weißes Icon (überschreibt das weiße Standard-Icon-Btn).
+    // 10% heller als zuvor (Dark Mode geht entsprechend 10% dunkler).
+    &__list-btn--active {
+      background: #3f3f47;
+      border-color: #3f3f47;
+      color: #ffffff;
+      box-shadow: none;
+
+      &:hover {
+        background: #35353c;
+        color: #ffffff;
+      }
+    }
+
+    // 7. Icon (Menü): neutrales Grau, ausgegraut – 5% dunkler als zuvor,
+    // damit der disabled-Kreis sich vom weißen Dock abhebt.
     &__menu-circle {
-      background: #f7f7f9;
-      border-color: #e5e5f0;
-      color: #5858a0;
+      background: #f2f2f2;
+      border-color: #dcdce2;
+      color: #8a8a98;
     }
   }
 

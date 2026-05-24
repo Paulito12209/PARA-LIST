@@ -81,11 +81,13 @@ export function CommandPanel({
       >
         <div className="command-panel__header-row">
           <div className="command-panel__brand">
-            <img
-              className="command-panel__logo"
-              src={`${import.meta.env.BASE_URL}paralist_logo.png`}
-              alt="PARA·LIST"
-            />
+            <span className="command-panel__logo">
+              <img
+                className="command-panel__logo-img"
+                src={`${import.meta.env.BASE_URL}paralist_logo.png`}
+                alt="PARA·LIST"
+              />
+            </span>
             <div className="command-panel__titles">
               <div className="command-panel__greeting">
                 {isVoiceMode ? t.voiceQuestion : (title || t.home)}
@@ -172,10 +174,10 @@ export function CommandPanel({
                       style={{
                         background:
                           e.type === "calendar"
-                            ? "#10088D"
+                            ? "#0078D4"
                             : isOld(d)
                             ? NOTIF_RED
-                            : "#0078D4",
+                            : "#0B8CE9",
                       }}
                     />
                     <div className="command-panel__drawer-info">

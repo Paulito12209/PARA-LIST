@@ -1,5 +1,28 @@
 import { useState } from "react";
-import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, List, Home, Mic, MoreHorizontal, ArrowUp } from "lucide-react";
+import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp } from "lucide-react";
+
+// Audio-/Spracheingabe-Icon: 5 vertikale Wellen-Striche in unterschiedlicher Höhe
+// (ersetzt das Mikrofon-Icon – wirkt wie ein Equalizer / Herzschlag-Wellen)
+function AudioWaveIcon({ size = 20 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <line x1="3"    y1="8"  x2="3"    y2="16" />
+      <line x1="7.5"  y1="4"  x2="7.5"  y2="20" />
+      <line x1="12"   y1="9"  x2="12"   y2="15" />
+      <line x1="16.5" y1="6"  x2="16.5" y2="18" />
+      <line x1="21"   y1="7"  x2="21"   y2="17" />
+    </svg>
+  );
+}
 
 // PARA + Eintragstypen für die untere Eingabeleiste.
 // Aufgaben ist standardmäßig aktiv und als einziges farbig hervorgehoben.
@@ -7,7 +30,7 @@ const DOCK_TYPES = [
   { id: "project", Icon: Circle, color: "#E03E3E" },
   { id: "area", Icon: Triangle, color: "#D09020" },
   { id: "resource", Icon: Square, color: "#30A060" },
-  { id: "tasks", Icon: CheckCircle2, color: "#0078D4" },
+  { id: "tasks", Icon: CheckCircle2, color: "#0B8CE9" },
   { id: "notes", Icon: Pencil, color: "#F59E0B" },
   // Kalender nutzt theme-aware Akzent (Dark Mode aufgehellt)
   { id: "calendar", Icon: Calendar, color: "var(--cal-accent)" },
@@ -27,7 +50,9 @@ const SINGULAR_KEY = {
 //   "home" (Detailseiten)        → springt zurück zur Startseite via onHome
 export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList, onOpenVoice, onMenu, onHome, leadingAction = "list" }) {
   const [value, setValue] = useState("");
-  const isHomeAction = leadingAction === "home";
+  // Linker Button ist immer ein Home-Button. Auf der Startseite ("list") ist er
+  // "aktiv" gestylt und toggelt die Liste; auf Detailseiten springt er zurück.
+  const isHomeScreen = leadingAction === "list";
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
   const placeholder = t.addPlaceholder(t[SINGULAR_KEY[activeType]] || "");
 
@@ -69,11 +94,11 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
 
       <div className="command-dock__input-row">
         <button
-          className="command-dock__icon-btn command-dock__list-btn"
-          onClick={() => (isHomeAction ? onHome?.() : onOpenList(activeType))}
-          aria-label={isHomeAction ? (t.home || "Startseite") : "Liste"}
+          className={`command-dock__icon-btn command-dock__list-btn ${isHomeScreen ? "command-dock__list-btn--active" : ""}`}
+          onClick={() => (isHomeScreen ? onOpenList(activeType) : onHome?.())}
+          aria-label={t.home || "Startseite"}
         >
-          {isHomeAction ? <Home size={20} /> : <List size={20} />}
+          <Home size={20} />
         </button>
         <input
           className="command-dock__input"
@@ -90,7 +115,7 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
           onClick={() => (hasText ? submit() : onOpenVoice(activeType))}
           aria-label={hasText ? "Senden" : "Spracheingabe"}
         >
-          {hasText ? <ArrowUp size={20} /> : <Mic size={20} />}
+          {hasText ? <ArrowUp size={20} /> : <AudioWaveIcon size={20} />}
         </button>
       </div>
     </div>

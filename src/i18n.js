@@ -442,7 +442,7 @@ export const getCC = (t) => ({
 });
 
 export const getTABS = (t) => [
-  { id: "tasks",    label: t.tasks,    color: "#0078D4", Icon: CheckCircle2 },
+  { id: "tasks",    label: t.tasks,    color: "#0B8CE9", Icon: CheckCircle2 },
   { id: "notes",    label: t.notes,    color: "#F59E0B", Icon: Pencil },
-  { id: "calendar", label: t.calendar, color: "#10088D", Icon: Calendar },
+  { id: "calendar", label: t.calendar, color: "#0078D4", Icon: Calendar },
 ];

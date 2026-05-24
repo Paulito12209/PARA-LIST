@@ -146,8 +146,8 @@ export const getYouTubeVideoId = (rawUrl) => {
 /* ── Brand / palette constants ───────────────────────────────── */
 export const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
-  { id: "tasks", color: "#0078D4", Icon: CheckCircle2 },
-  { id: "cal", color: "#10088D", Icon: Calendar },
+  { id: "tasks", color: "#0B8CE9", Icon: CheckCircle2 },
+  { id: "cal", color: "#0078D4", Icon: Calendar },
   { id: "media", color: "#10B981", Icon: Paperclip },
   { id: "link", color: "#7C3AED", Icon: BookmarkIcon },
   { id: "tags", color: "#EC4899", Icon: TagIcon },

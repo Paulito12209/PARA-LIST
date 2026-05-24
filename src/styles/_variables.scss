@@ -65,9 +65,9 @@ $color-resource:    #30A060;
 $color-resource-dim:#081408;
 
 // ── Colors – Tabs (Tasks / Notes / Calendar) ────────────────
-$color-task:     #0078D4; // neues Aufgaben-Blau
+$color-task:     #0B8CE9; // Aufgaben-Blau (Design-System)
 $color-note:     #FBBF24; // lebhaftes Gelb für Notiz-Icon
-$color-calendar: #10088D; // tiefes Indigo für Kalender/Termine
+$color-calendar: #0078D4; // Kalender-Blau (übernimmt das frühere Aufgaben-Blau)
 
 $color-calendar-pastel: #F0F9FF; // Sehr helles Pastell-Blau für Hintergründe (Kalender-Header & Pillen)
 
@@ -107,8 +107,8 @@ $color-bm-link:   #7C3AED;
   --color-task:     #{$color-task};
   --color-note:     #{$color-note};
   --color-calendar: #{$color-calendar};
-  // Kalender-Akzent: heller im Dark Mode (Kontrast), #10088D im Light Mode
-  --cal-accent: #6366F1;
+  // Kalender-Akzent: Kalender-Blau (übernimmt das frühere Aufgaben-Blau)
+  --cal-accent: #0078D4;
   --color-calendar-pastel: #{$color-calendar-pastel};
 
   // Notifications

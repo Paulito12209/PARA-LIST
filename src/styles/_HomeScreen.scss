@@ -315,8 +315,11 @@
 .home-cover {
   position: relative;
   width: 100%;
-  height: calc(100vw + 40px);
-  max-height: calc(420px + 40px);
+  // Cover exakt so hoch wie die Fensterbreite (quadratisch) – schafft auf
+  // niedrigen Viewports (z.B. iPhone SE im Browser-Tab) unten Platz, damit
+  // die "Aufgaben"-Überschrift + Liste sichtbar bleiben.
+  height: 100vw;
+  max-height: 420px;
   flex-shrink: 0;
   padding: 96px 20px 0;
   overflow: hidden;
@@ -326,16 +329,19 @@
   background: #1A1A2E;
   border-bottom: none;
 
-  // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund
+  // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund.
+  // Liegt HINTER dem Cover-Inhalt (z-index 1 < content z-index 2), damit der
+  // "Projekt öffnen"-Button klar sichtbar bleibt und nicht abgedunkelt wird.
+  // Höher gezogen, damit das Faden sanfter weiter oben beginnt.
   &::after {
     content: '';
     position: absolute;
     left: 0;
     right: 0;
     bottom: -1px;
-    height: 72px;
+    height: 160px;
     background: linear-gradient(to bottom, transparent 0%, #1A1A2E 100%);
-    z-index: 3;
+    z-index: 1;
     pointer-events: none;
   }
 
@@ -573,7 +579,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 8px;
+    gap: $spacing-sm + 4px;
   }
 
   &__primary-action {
@@ -582,6 +588,10 @@
     align-items: stretch;
     gap: 8px;
     width: 100%;
+    // Fixe Höhe: reserviert den Platz für Titel + bis zu 3 Zeilen Beschreibung
+    // + Pillen-Zeile. Dadurch springt der "Öffnen"-Button nie, während die
+    // Beschreibung frei wachsen darf (Pillen dürfen dabei vertikal wandern).
+    height: 145px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -617,9 +627,8 @@
     -webkit-box-orient: vertical; // stylelint-disable-line
     overflow: hidden;
     overflow-wrap: break-word;
-    // Reserviert immer Platz für 3 Zeilen, damit Pillen + "Öffnen"-Button
-    // nicht springen, egal wie lang die Beschreibung ist.
-    min-height: calc(1.45em * 3);
+    // Keine Mindesthöhe mehr: Die Beschreibung darf frei von 1 bis 3 Zeilen
+    // wachsen. Den reservierten Platz hält jetzt .home-cover__primary-action.
   }
 
   &__meta {
@@ -632,7 +641,8 @@
 
   // Liquid-Glass-CTA (Apple-"Spiele"-Stil): "Projekt öffnen" o. Ä.
   &__open-btn {
-    width: 100%;
+    width: 60%;
+    align-self: center; // mittig unter dem Inhalt
     margin-top: 8px;
     padding: 14px;
     border-radius: $radius-pill; // runde Enden (Pille) statt abgerundeter Ecken

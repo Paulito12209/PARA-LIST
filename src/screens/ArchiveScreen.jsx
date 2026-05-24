@@ -12,9 +12,17 @@ import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { ArchiveIcon } from "../components/AppIcons";
 import { isOld, CAT_ICONS } from "../utils";
 import { AutoScrollText } from "../components/AutoScrollText";
-import { useInactivity } from "../hooks/useInactivity";
+import { CommandDock } from "../components/CommandDock";
+import { VoiceOverlay } from "../modals/VoiceOverlay";
 
-const FAB_INACTIVITY_MS = 5000;
+const TYPE_COLORS = {
+  project: "#E03E3E",
+  area: "#D09020",
+  resource: "#30A060",
+  tasks: "#0078D4",
+  notes: "#F59E0B",
+  calendar: "#10088D",
+};
 
 const ARCHIVED_FOLDER_CARDS = [
   {
@@ -98,11 +106,15 @@ export function ArchiveScreen({
   onOpenEntry,
   onRestoreNote,
   onOpenCat,
+  onQuickCreate,
+  onAddVoiceEntry,
+  onHome,
 }) {
   const [activeArchiveTab, setActiveArchiveTab] = useState(() =>
     VALID_ARCHIVE_TABS.includes(tab) ? tab : null
   );
-  const fabVisible = useInactivity(FAB_INACTIVITY_MS);
+  const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
+  const dockType = activeArchiveTab || "tasks";
 
   const archivedProjects = cats.filter((c) => c.type === "project" && c.archived);
   const archivedAreas = cats.filter((c) => c.type === "area" && c.archived);
@@ -175,7 +187,7 @@ export function ArchiveScreen({
         </div>
       </div>
 
-      <div className="cat-detail__body" style={{ padding: "16px", paddingBottom: "100px" }}>
+      <div className="cat-detail__body" style={{ padding: "16px", paddingBottom: "160px" }}>
         {!activeArchiveTab ? (
           <div className="archive-dashboard">
             <div className="archive-dashboard__section-title">
@@ -238,14 +250,7 @@ export function ArchiveScreen({
           </div>
         ) : (
           <div className="archive-detail-list animated fadeIn">
-            <button
-              className="archive-detail-list__back-btn"
-              onClick={() => setActiveArchiveTab(null)}
-            >
-              ← {lang === "de" ? "Zurück zum Dashboard" : "Back to Dashboard"}
-            </button>
-
-            <div className="archive-detail-list__content" style={{ marginTop: "16px" }}>
+            <div className="archive-detail-list__content">
               {archiveItems.length === 0 ? (
                 <div className="cat-detail__section-empty">
                   {t.noneArchived || "Keine archivierten Einträge"}
@@ -324,14 +329,40 @@ export function ArchiveScreen({
         )}
       </div>
 
-      <div className={`nav-bottom ${!fabVisible ? "nav-bottom--inactive" : ""}`}>
+      <div className="home__floating-actions">
         <button
-          className="nav-bottom__back"
+          className="home__floating-btn"
           onClick={activeArchiveTab ? () => setActiveArchiveTab(null) : onBack}
+          aria-label={t.back || (lang === "de" ? "Zurück" : "Back")}
         >
-          <ChevronLeft size={20} color="#EDEEFF" />
+          <ChevronLeft size={20} />
         </button>
       </div>
+
+      <CommandDock
+        t={t}
+        activeType={dockType}
+        onSelectType={(type) => setActiveArchiveTab(type)}
+        onSubmit={onQuickCreate}
+        onOpenVoice={() => setVoiceOverlayOpen(true)}
+        onMenu={() => {}}
+        onHome={onHome}
+        leadingAction="home"
+      />
+
+      {voiceOverlayOpen && (
+        <VoiceOverlay
+          t={t}
+          tab={dockType}
+          tabColor={TYPE_COLORS[dockType] || "#7C83F7"}
+          lang={lang}
+          onTranscribed={(title, date) => {
+            onAddVoiceEntry(dockType, title, date);
+            setVoiceOverlayOpen(false);
+          }}
+          onClose={() => setVoiceOverlayOpen(false)}
+        />
+      )}
     </div>
   );
 }

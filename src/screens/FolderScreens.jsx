@@ -4,11 +4,9 @@ import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
-import { useInactivity } from "../hooks/useInactivity";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
-  const fabVisible = useInactivity(5000);
   const cfg = CC[type];
   const CatIcon = CAT_ICONS[type];
 
@@ -61,7 +59,7 @@ export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive
         )}
       </div>
 
-      <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`}>
+      <div className="nav-bottom">
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
@@ -160,7 +158,6 @@ export function CatDetailScreen({
   const cfg = CC[safeType];
   const CatIcon = CAT_ICONS[safeType] || Square;
   const [bm, setBm] = useState("canvas");
-  const fabVisible = useInactivity(5000);
   const [tagSort, setTagSort] = useState({ by: 'date', desc: true });
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
@@ -891,7 +888,7 @@ export function CatDetailScreen({
       <BookmarkRail active={bm} onSelect={handleBmSelect} baseColor={cfg.color} />
 
       {/* Bottom nav */}
-      <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`} style={{ position: "relative" }}>
+      <div className="nav-bottom" style={{ position: "relative" }}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>

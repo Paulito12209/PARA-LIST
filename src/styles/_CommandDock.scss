@@ -110,6 +110,9 @@
 
   &__icon-btn {
     @include floating-btn(40px, 50%);
+    // 8px breiter als hoch → liegende Pille (Home- bzw. Voice-/Senden-Button)
+    width: 48px;
+    border-radius: 20px;
     background: #f7f7f9;
     border: 1px solid #e5e5f0;
     color: #5858a0;

@@ -617,6 +617,9 @@
     -webkit-box-orient: vertical; // stylelint-disable-line
     overflow: hidden;
     overflow-wrap: break-word;
+    // Reserviert immer Platz für 3 Zeilen, damit Pillen + "Öffnen"-Button
+    // nicht springen, egal wie lang die Beschreibung ist.
+    min-height: calc(1.45em * 3);
   }
 
   &__meta {

@@ -109,11 +109,6 @@
   gap: $spacing-sm;
   pointer-events: none;
   z-index: 5;
-  transition: opacity 0.5s ease;
-
-  &--inactive {
-    opacity: 0.05;
-  }
 
   &__back {
     pointer-events: all;

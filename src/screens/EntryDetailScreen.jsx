@@ -3,7 +3,6 @@ import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown,
 import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
-import { useInactivity } from "../hooks/useInactivity";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { BookmarkRail } from "./FolderScreens";
 
@@ -27,7 +26,6 @@ export function EntryDetailScreen({
   onAddLinkedEntry, onAddSubtask, onUnlinkEntry,
   tags, onCreateTag, onUpdateTag, onDeleteTag,
 }) {
-  const fabVisible = useInactivity(5000);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showDate, setShowDate] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
@@ -752,7 +750,7 @@ export function EntryDetailScreen({
       <BookmarkRail active={bm} onSelect={handleBmSelect} baseColor={cfgColor} iconOverrides={iconOverrides} />
 
       {/* Bottom nav */}
-      <div className={`nav-bottom ${!fabVisible ? 'nav-bottom--inactive' : ''}`} style={{ position: "relative" }}>
+      <div className="nav-bottom" style={{ position: "relative" }}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>

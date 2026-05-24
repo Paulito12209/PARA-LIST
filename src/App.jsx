@@ -667,6 +667,15 @@ export default function App() {
             onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
             onRestoreNote={(id) => updateEntry(id, { archived: false })}
             onOpenCat={(c) => push({ view: VIEW.CAT_DETAIL, catId: c.id })}
+            onQuickCreate={(type, title) => {
+              if (type === "project" || type === "area" || type === "resource") {
+                addCat(type, title);
+              } else {
+                addEntry(buildVoiceEntry(type, title));
+              }
+            }}
+            onAddVoiceEntry={(type, title, date) => addEntry(buildVoiceEntry(type, title, date))}
+            onHome={() => setStack([{ view: VIEW.HOME }])}
           />
         )}
 

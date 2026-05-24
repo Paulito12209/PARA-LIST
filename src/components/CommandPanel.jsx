@@ -7,7 +7,6 @@ const SWIPE_THRESHOLD_PX = 60;
 const HAPTIC_TAP_MS = 10;
 
 export function CommandPanel({
-  user,
   entries,
   open,
   onToggle,
@@ -80,18 +79,23 @@ export function CommandPanel({
         style={!open && !isVoiceMode ? { cursor: "pointer" } : undefined}
       >
         <div className="command-panel__header-row">
-          <div>
-            <div className="command-panel__greeting">
-              {isVoiceMode
-                ? t.voiceQuestion
-                : t.greeting(new Date().getHours(), user.name)}
-            </div>
-            <div className="command-panel__date">
-              {new Date().toLocaleDateString(t.locale, {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
+          <div className="command-panel__brand">
+            <img
+              className="command-panel__logo"
+              src={`${import.meta.env.BASE_URL}paralist_logo.png`}
+              alt="PARA·LIST"
+            />
+            <div className="command-panel__titles">
+              <div className="command-panel__greeting">
+                {isVoiceMode ? t.voiceQuestion : t.home}
+              </div>
+              <div className="command-panel__date">
+                {new Date().toLocaleDateString(t.locale, {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                })}
+              </div>
             </div>
           </div>
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
@@ -108,11 +112,6 @@ export function CommandPanel({
             )}
           </div>
         </div>
-        {!open && (
-          <div className="command-panel__handle command-panel__handle--closed">
-            <div className="command-panel__handle-bar" />
-          </div>
-        )}
       </div>
 
       {open && (

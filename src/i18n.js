@@ -3,6 +3,7 @@ import { CheckCircle2, Pencil, Calendar } from "lucide-react";
 export const I18N = {
   de: {
     greeting: (h, n) => (h < 12 ? "Guten Morgen" : h < 18 ? "Guten Tag" : "Guten Abend") + `, ${n}`,
+    home: "Startseite",
     emptyDrawer: "Keine offenen Einträge für heute 🎉",
     overdue: "überfällig",
     today: "heute",
@@ -144,6 +145,7 @@ export const I18N = {
   },
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
+    home: "Home",
     emptyDrawer: "No open entries for today 🎉",
     overdue: "overdue",
     today: "today",
@@ -285,6 +287,7 @@ export const I18N = {
   },
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
+    home: "Inicio",
     emptyDrawer: "No hay entradas para hoy 🎉",
     overdue: "atrasado",
     today: "hoy",

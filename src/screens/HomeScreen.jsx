@@ -16,6 +16,8 @@ const COVER_ACCENT_RGB = {
 
 const DOUBLE_TAP_WINDOW_MS = 300;
 const SWIPE_THRESHOLD_PX = 60;
+const OVERSCROLL_COLLAPSE_PX = 56;
+const SCROLL_TOP_EPS_PX = 4;
 const GROUP_HEADER_OFFSET_PX = 24;
 const VOICE_TAB_TYPES = ["tasks", "notes", "calendar"];
 
@@ -213,13 +215,31 @@ export function HomeScreen({
 
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const atTopAtStart = useRef(false);
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    const container = entryListRef.current;
+    atTopAtStart.current = container ? container.scrollTop <= SCROLL_TOP_EPS_PX : false;
   };
 
   const handleTouchEnd = (e) => {
     const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+
+    // Überscrollen am Listenanfang (nach unten ziehen) → aufgeklappte Liste zuklappen
+    if (
+      listExpanded &&
+      atTopAtStart.current &&
+      dy >= OVERSCROLL_COLLAPSE_PX &&
+      Math.abs(dy) > Math.abs(dx)
+    ) {
+      setListExpanded(false);
+      return;
+    }
+
     if (Math.abs(dx) <= SWIPE_THRESHOLD_PX || panelOpen) return;
 
     const tabOrder = TABS.map((tCfg) => tCfg.id);

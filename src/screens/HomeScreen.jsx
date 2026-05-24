@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, User, UserPlus, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, User, UserPlus, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
@@ -35,16 +35,27 @@ const COVER_BADGE_ICONS = {
   archive: Archive,
 };
 
-const EMPTY_TYPE_TITLES = {
-  project: { de: "Keine Projekte", en: "No Projects" },
-  area: { de: "Keine Bereiche", en: "No Areas" },
-  resource: { de: "Keine Ressourcen", en: "No Resources" },
-};
-
 const TYPE_SINGULAR = {
   project: { de: "Projekt", en: "Project" },
   area: { de: "Bereich", en: "Area" },
   resource: { de: "Ressource", en: "Resource" },
+};
+
+// Eintragstypen, die im Favoriten-Karussell des Covers erscheinen dürfen
+const FAV_ENTRY_TYPES = ["task", "note", "calendar"];
+
+// Badge (Icon + Singular-Label) für favorisierte Einträge im Cover
+const ENTRY_BADGE = {
+  task: { Icon: CheckCircle2, de: "Aufgabe", en: "Task" },
+  note: { Icon: Pencil, de: "Notiz", en: "Note" },
+  calendar: { Icon: Calendar, de: "Termin", en: "Event" },
+};
+
+// Akzentfarbe (RGB) für favorisierte Einträge – analog zu COVER_ACCENT_RGB
+const ENTRY_ACCENT_RGB = {
+  task: "11, 140, 233",
+  note: "245, 158, 11",
+  calendar: "0, 120, 212",
 };
 
 export function HomeScreen({
@@ -75,10 +86,10 @@ export function HomeScreen({
   onHeaderTitleChange,
 }) {
   const { entries, cats } = state;
-  // Cover zeigt vorerst immer das erste Projekt (Fallback für das spätere Pin-/Favoriten-Feature)
-  const activeCatType = "project";
   // Aktiver Typ der unteren Eingabeleiste (Standard: Aufgaben)
   const [activeType, setActiveType] = useState("tasks");
+  // Aktueller Index im Favoriten-Karussell des Covers
+  const [coverIndex, setCoverIndex] = useState(0);
   const ENTRY_TYPES = ["tasks", "notes", "calendar"];
   const isEntryType = ENTRY_TYPES.includes(activeType);
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
@@ -109,9 +120,31 @@ export function HomeScreen({
     return () => onHeaderTitleChange?.(null);
   }, [listExpanded, activeLabel, onHeaderTitleChange]);
 
-  const activeCats = cats.filter((c) => c.type === activeCatType && !c.archived);
-  const firstCat = activeCats[0];
-  const firstCatCollabs = firstCat?.collaborators || [];
+  // Favoriten-Karussell: alle als Favorit (starred) markierten Inhalte –
+  // Kategorien (Projekte/Bereiche/Ressourcen) sowie Einträge (Aufgaben/Notizen/Termine).
+  const favItems = [
+    ...cats
+      .filter((c) => c.starred && !c.archived)
+      .map((c) => ({ kind: "cat", id: `cat-${c.id}`, data: c })),
+    ...entries
+      .filter((e) => e.starred && !e.archived && FAV_ENTRY_TYPES.includes(e.type))
+      .map((e) => ({ kind: "entry", id: `entry-${e.id}`, data: e })),
+  ];
+  // Fallback ohne Favoriten: erstes Projekt zeigen, damit das Cover nicht leer ist.
+  const fallbackProject = cats.find((c) => c.type === "project" && !c.archived);
+  const coverItems =
+    favItems.length > 0
+      ? favItems
+      : fallbackProject
+        ? [{ kind: "cat", id: `cat-${fallbackProject.id}`, data: fallbackProject }]
+        : [];
+
+  const safeCoverIndex = coverItems.length ? Math.min(coverIndex, coverItems.length - 1) : 0;
+  const currentCover = coverItems[safeCoverIndex] || null;
+  const currentCat = currentCover?.kind === "cat" ? currentCover.data : null;
+  const currentEntry = currentCover?.kind === "entry" ? currentCover.data : null;
+  const currentCollabs = currentCat?.collaborators || [];
+  const currentCoverImage = currentCat?.coverImage || null;
 
   const tabEntries = entries
     .map((e) => {
@@ -251,6 +284,24 @@ export function HomeScreen({
     }
   };
 
+  // ── Cover-Karussell: horizontales Wischen zwischen Favoriten ──
+  const coverTouchX = useRef(0);
+  const coverTouchY = useRef(0);
+  const onCoverTouchStart = (e) => {
+    coverTouchX.current = e.touches[0].clientX;
+    coverTouchY.current = e.touches[0].clientY;
+  };
+  const onCoverTouchEnd = (e) => {
+    if (coverItems.length <= 1) return;
+    const dx = e.changedTouches[0].clientX - coverTouchX.current;
+    const dy = e.changedTouches[0].clientY - coverTouchY.current;
+    if (Math.abs(dx) <= SWIPE_THRESHOLD_PX || Math.abs(dy) > Math.abs(dx)) return;
+    setCoverIndex((idx) => {
+      const cur = Math.min(idx, coverItems.length - 1);
+      return dx < 0 ? Math.min(cur + 1, coverItems.length - 1) : Math.max(cur - 1, 0);
+    });
+  };
+
   const handleDoubleTap = useCallback(
     (e) => {
       const isEmptyPlaceholder =
@@ -267,22 +318,29 @@ export function HomeScreen({
     [onAddEntry]
   );
 
-  const defaultRgb = COVER_ACCENT_RGB[activeCatType] || COVER_ACCENT_RGB.archive;
   const rgbVal = (() => {
-    if (!firstCat?.coverColor) return defaultRgb;
-    const HEX_TO_RGB = {
-      "#30A060": "48, 160, 96",
-      "#D09020": "208, 144, 32",
-      "#F59E0B": "245, 158, 11",
-      "#1D4ED8": "29, 78, 216",
-      "#7C83F7": "124, 131, 247",
-      "#0B8CE9": "11, 140, 233",
-      "#0078D4": "0, 120, 212",
-      "#10088D": "16, 8, 141",
-      "#E03E3E": "224, 62, 62",
-      "#5858A0": "88, 88, 160",
-    };
-    return HEX_TO_RGB[firstCat.coverColor] || defaultRgb;
+    if (currentCat) {
+      const HEX_TO_RGB = {
+        "#30A060": "48, 160, 96",
+        "#D09020": "208, 144, 32",
+        "#F59E0B": "245, 158, 11",
+        "#1D4ED8": "29, 78, 216",
+        "#7C83F7": "124, 131, 247",
+        "#0B8CE9": "11, 140, 233",
+        "#0078D4": "0, 120, 212",
+        "#10088D": "16, 8, 141",
+        "#E03E3E": "224, 62, 62",
+        "#5858A0": "88, 88, 160",
+      };
+      if (currentCat.coverColor && HEX_TO_RGB[currentCat.coverColor]) {
+        return HEX_TO_RGB[currentCat.coverColor];
+      }
+      return COVER_ACCENT_RGB[currentCat.type] || COVER_ACCENT_RGB.archive;
+    }
+    if (currentEntry) {
+      return ENTRY_ACCENT_RGB[currentEntry.type] || COVER_ACCENT_RGB.archive;
+    }
+    return COVER_ACCENT_RGB.project;
   })();
 
   useEffect(() => {
@@ -290,85 +348,150 @@ export function HomeScreen({
   }, [rgbVal, onCoverAccentChange]);
 
   const renderCoverBadge = () => {
-    const config = COVER_BADGE_LABELS[activeCatType];
-    const Icon = COVER_BADGE_ICONS[activeCatType];
-    if (!config || !Icon) return null;
-    const fullLabel = t[config.key] || config.fallback;
-    const label =
-      activeCatType === "archive" ? fullLabel.toUpperCase() : fullLabel.toUpperCase().slice(0, -1);
-    return (
-      <>
-        <Icon size={10} strokeWidth={3} className="home-cover__badge-icon" />
-        {label}
-      </>
-    );
+    if (currentCat) {
+      const config = COVER_BADGE_LABELS[currentCat.type];
+      const Icon = COVER_BADGE_ICONS[currentCat.type];
+      if (!config || !Icon) return null;
+      const fullLabel = t[config.key] || config.fallback;
+      // Singular (z.B. "Projekte" → "Projekt")
+      const label = fullLabel.toUpperCase().slice(0, -1);
+      return (
+        <>
+          <Icon size={10} strokeWidth={3} className="home-cover__badge-icon" />
+          {label}
+        </>
+      );
+    }
+    if (currentEntry) {
+      const cfg = ENTRY_BADGE[currentEntry.type];
+      if (!cfg) return null;
+      const Icon = cfg.Icon;
+      return (
+        <>
+          <Icon size={10} strokeWidth={3} className="home-cover__badge-icon" />
+          {(lang === "de" ? cfg.de : cfg.en).toUpperCase()}
+        </>
+      );
+    }
+    return null;
   };
 
   const renderEmptyCover = () => (
     <div className="home-cover__main">
       <h1 className="home-cover__title">
-        {EMPTY_TYPE_TITLES[activeCatType]?.[lang] || EMPTY_TYPE_TITLES[activeCatType]?.en}
+        {lang === "de" ? "Keine Favoriten" : "No Favorites"}
       </h1>
       <p className="home-cover__desc">
         {lang === "de"
-          ? "Erstelle dein erstes Element mit dem Plus-Symbol unten!"
-          : "Create your first item with the plus symbol below!"}
+          ? "Markiere Inhalte als Favorit (Stern), um sie hier durchzuwischen."
+          : "Mark content as a favorite (star) to swipe through it here."}
       </p>
     </div>
   );
 
-  const renderFirstCat = () => {
-    const relatedName = firstCat.relatedId
-      ? cats.find((c) => c.id === firstCat.relatedId)?.name
-      : null;
-    const fallbackTypeLabel = TYPE_SINGULAR[firstCat.type]?.[lang] || firstCat.type;
+  // Page-Dots des Karussells (gemeinsam für Kategorien & Einträge)
+  const renderCoverDots = () =>
+    coverItems.length > 1 ? (
+      <div className="home-page-dots">
+        {coverItems.map((item, i) => (
+          <button
+            key={item.id}
+            type="button"
+            className={`home-page-dots__dot ${i === safeCoverIndex ? "home-page-dots__dot--active" : ""}`}
+            onClick={() => setCoverIndex(i)}
+            aria-label={`${i + 1} / ${coverItems.length}`}
+          />
+        ))}
+      </div>
+    ) : null;
+
+  // Favorisierte Kategorie (Projekt/Bereich/Ressource) im Cover
+  const renderCoverCat = (cat) => {
+    const relatedName = cat.relatedId ? cats.find((c) => c.id === cat.relatedId)?.name : null;
+    const fallbackTypeLabel = TYPE_SINGULAR[cat.type]?.[lang] || cat.type;
     const areaTagLabel = relatedName || (lang === "de" ? "Allgemein" : "General");
     const placeholderDesc =
       lang === "de"
         ? "Erfasse und verwalte deine Themen mit PARA-LIST."
         : "Organize and manage your topics with PARA-LIST.";
     const SING_KEY = { project: "projectSing", area: "areaSing", resource: "resourceSing" };
-    const openText = t.openLabel(t[SING_KEY[firstCat.type]] || fallbackTypeLabel);
+    const openText = t.openLabel(t[SING_KEY[cat.type]] || fallbackTypeLabel);
 
     return (
-      <div className="home-cover__main">
+      <div className="home-cover__main" key={`cat-${cat.id}`}>
         <div className="home-cover__primary-action">
           <div className="home-cover__copy">
-            <AutoScrollText className="home-cover__title">
-              {firstCat.name}
-            </AutoScrollText>
+            <AutoScrollText className="home-cover__title">{cat.name}</AutoScrollText>
+            <p className="home-cover__desc">{cat.desc || cat.body || placeholderDesc}</p>
+          </div>
+          <div className="home-cover__meta">
+            <div className="home-cover__tags">
+              <span className="home-cover__tag home-cover__tag--date">
+                <Calendar size={12} className="home-cover__tag-icon" />
+                {cat.date ? fmtDate(cat.date, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
+              </span>
+              <span className="home-cover__tag home-cover__tag--area">
+                <Triangle size={12} className="home-cover__tag-icon" />
+                {cat.relatedId ? areaTagLabel : fallbackTypeLabel}
+              </span>
+              {cat.tags && cat.tags.length > 0 && (
+                <span className="home-cover__tag">{cat.tags[0]}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <button type="button" className="home-cover__open-btn" onClick={() => onOpenCat(cat)}>
+          {openText}
+        </button>
+
+        {renderCoverDots()}
+      </div>
+    );
+  };
+
+  // Favorisierter Eintrag (Aufgabe/Notiz/Termin) im Cover
+  const renderCoverEntry = (entry) => {
+    const cfg = ENTRY_BADGE[entry.type];
+    const typeLabel = cfg ? (lang === "de" ? cfg.de : cfg.en) : entry.type;
+    const openText = t.openLabel(typeLabel);
+    const dateVal = entry.due || entry.date || null;
+    const linkedCat = entry.catId ? cats.find((c) => c.id === entry.catId) : null;
+    const placeholderDesc = lang === "de" ? "Kein weiterer Inhalt." : "No further content.";
+
+    return (
+      <div className="home-cover__main" key={`entry-${entry.id}`}>
+        <div className="home-cover__primary-action">
+          <div className="home-cover__copy">
+            <AutoScrollText className="home-cover__title">{entry.title}</AutoScrollText>
             <p className="home-cover__desc">
-              {firstCat.desc || firstCat.body || placeholderDesc}
+              {entry.note || entry.body || entry.desc || placeholderDesc}
             </p>
           </div>
           <div className="home-cover__meta">
             <div className="home-cover__tags">
               <span className="home-cover__tag home-cover__tag--date">
                 <Calendar size={12} className="home-cover__tag-icon" />
-                {firstCat.date
-                  ? fmtDate(firstCat.date, t.locale)
-                  : lang === "de"
-                    ? "Flexibel"
-                    : "Flexible"}
+                {dateVal ? fmtDate(dateVal, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
               </span>
-              <span className="home-cover__tag home-cover__tag--area">
-                <Triangle size={12} className="home-cover__tag-icon" />
-                {firstCat.relatedId ? areaTagLabel : fallbackTypeLabel}
-              </span>
-              <span className="home-cover__tag">
-                {firstCat.tags && firstCat.tags.length > 0 ? firstCat.tags[0] : "App"}
-              </span>
+              {linkedCat && (
+                <span className="home-cover__tag home-cover__tag--area">
+                  <Triangle size={12} className="home-cover__tag-icon" />
+                  {linkedCat.name}
+                </span>
+              )}
+              {entry.tags && entry.tags.length > 0 && (
+                <span className="home-cover__tag">{entry.tags[0]}</span>
+              )}
             </div>
           </div>
         </div>
 
-        <button
-          type="button"
-          className="home-cover__open-btn"
-          onClick={() => onOpenCat(firstCat)}
-        >
+        <button type="button" className="home-cover__open-btn" onClick={() => onOpenEntry?.(entry)}>
           {openText}
         </button>
+
+        {renderCoverDots()}
       </div>
     );
   };
@@ -491,12 +614,17 @@ export function HomeScreen({
 
   return (
     <div className={`home home--${tab}`}>
-      <div className={`home-cover ${firstCat?.coverImage ? "home-cover--has-cover-img" : ""}`} style={{ "--cover-accent-rgb": rgbVal }}>
+      <div
+        className={`home-cover ${currentCoverImage ? "home-cover--has-cover-img" : ""}`}
+        style={{ "--cover-accent-rgb": rgbVal }}
+        onTouchStart={onCoverTouchStart}
+        onTouchEnd={onCoverTouchEnd}
+      >
         {state.user.bgImage && (
           <img className="home-cover__bg-img" src={state.user.bgImage} alt="" aria-hidden="true" />
         )}
-        {firstCat?.coverImage && (
-          <img className="home-cover__bg-img" src={firstCat.coverImage} alt="" aria-hidden="true" />
+        {currentCoverImage && (
+          <img className="home-cover__bg-img" src={currentCoverImage} alt="" aria-hidden="true" />
         )}
         <div className="home-cover__light-wave" />
         <div className="home-cover__content">
@@ -518,7 +646,8 @@ export function HomeScreen({
                   <User size={20} />
                 </button>
               )}
-              {firstCatCollabs.length > 0 && (
+              {/* Kollaboratoren gibt es nur bei Kategorien, nicht bei Einträgen */}
+              {currentCat && currentCollabs.length > 0 && (
                 <button
                   className="home-cover__collab-avatar"
                   onClick={() => {
@@ -526,28 +655,28 @@ export function HomeScreen({
                     setCollabModalOpen(true);
                   }}
                 >
-                  {firstCatCollabs[0].avatar ? (
-                    <img src={firstCatCollabs[0].avatar} alt={firstCatCollabs[0].name} />
+                  {currentCollabs[0].avatar ? (
+                    <img src={currentCollabs[0].avatar} alt={currentCollabs[0].name} />
                   ) : (
-                    <span>{firstCatCollabs[0].name.charAt(0).toUpperCase()}</span>
+                    <span>{currentCollabs[0].name.charAt(0).toUpperCase()}</span>
                   )}
                 </button>
               )}
-              <button
-                className="home-cover__collab-btn"
-                onClick={() => {
-                  if (firstCat) {
-                    setCollabModalInitialView(firstCatCollabs.length === 0 ? "add" : "list");
+              {currentCat && (
+                <button
+                  className="home-cover__collab-btn"
+                  onClick={() => {
+                    setCollabModalInitialView(currentCollabs.length === 0 ? "add" : "list");
                     setCollabModalOpen(true);
-                  }
-                }}
-              >
-                {firstCatCollabs.length >= 2 ? (
-                  <span className="home-cover__collab-count">+{firstCatCollabs.length - 1}</span>
-                ) : (
-                  <UserPlus size={14} />
-                )}
-              </button>
+                  }}
+                >
+                  {currentCollabs.length >= 2 ? (
+                    <span className="home-cover__collab-count">+{currentCollabs.length - 1}</span>
+                  ) : (
+                    <UserPlus size={14} />
+                  )}
+                </button>
+              )}
               <input
                 type="file"
                 ref={avatarInputRef}
@@ -557,7 +686,11 @@ export function HomeScreen({
               />
             </div>
           </div>
-          {firstCat ? renderFirstCat() : renderEmptyCover()}
+          {currentCover
+            ? currentCat
+              ? renderCoverCat(currentCat)
+              : renderCoverEntry(currentEntry)
+            : renderEmptyCover()}
         </div>
       </div>
 
@@ -626,10 +759,10 @@ export function HomeScreen({
         )}
       </div>
 
-      {collabModalOpen && firstCat && (
+      {collabModalOpen && currentCat && (
         <CollaboratorsModal
           t={t}
-          cat={firstCat}
+          cat={currentCat}
           onUpdateCat={onUpdateCat}
           onClose={() => setCollabModalOpen(false)}
           initialView={collabModalInitialView}

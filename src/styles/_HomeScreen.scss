@@ -579,7 +579,22 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: $spacing-sm + 4px;
+    gap: $spacing-sm;
+    // Sanfter Einblend-/Slide-Effekt beim Wischen zwischen Favoriten
+    // (das Element wird per React-key neu gemountet → Animation läuft erneut).
+    animation: coverSlideIn 0.28s ease;
+  }
+
+  @keyframes coverSlideIn {
+    from {
+      opacity: 0;
+      transform: translateX(16px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
 
   &__primary-action {
@@ -1030,21 +1045,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding-bottom: 8px;
+  gap: 6px;
+  margin-top: 10px;
 
   &__dot {
-    width: 6px;
-    height: 6px;
+    // 4px hoch, damit die Dots auch auf niedrigen Viewports (iPhone SE) in
+    // die .home-cover-Gap passen. Greift die Cover-Akzentfarbe auf, damit sie
+    // in Light & Dark Mode sichtbar bleiben. Klickbar (Button) → Sprung zum Slide.
+    appearance: none;
+    border: 0;
+    padding: 0;
+    width: 4px;
+    height: 4px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(var(--cover-accent-rgb), 0.3);
     transition: all 0.25s ease;
     cursor: pointer;
 
     &--active {
       width: 14px;
-      border-radius: 3px;
+      border-radius: 2px;
+      background: rgb(var(--cover-accent-rgb));
     }
   }
 }

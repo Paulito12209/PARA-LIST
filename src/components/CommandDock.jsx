@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, List, Mic, MoreHorizontal, ArrowUp } from "lucide-react";
+import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, List, Home, Mic, MoreHorizontal, ArrowUp } from "lucide-react";
 
 // PARA + Eintragstypen für die untere Eingabeleiste.
 // Aufgaben ist standardmäßig aktiv und als einziges farbig hervorgehoben.
@@ -22,8 +22,12 @@ const SINGULAR_KEY = {
   calendar: "calSing",
 };
 
-export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList, onOpenVoice, onMenu }) {
+// `leadingAction` steuert das linke Icon der Eingabezeile:
+//   "list" (Default, Startseite) → toggelt die Liste auf/zu
+//   "home" (Detailseiten)        → springt zurück zur Startseite via onHome
+export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList, onOpenVoice, onMenu, onHome, leadingAction = "list" }) {
   const [value, setValue] = useState("");
+  const isHomeAction = leadingAction === "home";
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
   const placeholder = t.addPlaceholder(t[SINGULAR_KEY[activeType]] || "");
 
@@ -66,10 +70,10 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
       <div className="command-dock__input-row">
         <button
           className="command-dock__icon-btn command-dock__list-btn"
-          onClick={() => onOpenList(activeType)}
-          aria-label="Liste"
+          onClick={() => (isHomeAction ? onHome?.() : onOpenList(activeType))}
+          aria-label={isHomeAction ? (t.home || "Startseite") : "Liste"}
         >
-          <List size={20} />
+          {isHomeAction ? <Home size={20} /> : <List size={20} />}
         </button>
         <input
           className="command-dock__input"

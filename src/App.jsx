@@ -435,6 +435,11 @@ export default function App() {
     }
 
     if (dy > SWIPE_PANEL_OPEN_PX && Math.abs(dx) < SWIPE_AXIS_TOLERANCE_PX && !panelOpen) {
+      // Bei aufgeklappter Home-Liste die Swipe-down-Geste NICHT zum Öffnen des
+      // Panels nutzen – das Panel öffnet erst wieder bei zugeklappter Liste.
+      if (cur.view === VIEW.HOME && document.querySelector(".home__list-container--expanded")) {
+        return;
+      }
       const scrollEl = findScrollContainer(cur.view, e.target);
       if (scrollEl === false) return; // textarea not at top
       if (!scrollEl || scrollEl.scrollTop <= 0) {

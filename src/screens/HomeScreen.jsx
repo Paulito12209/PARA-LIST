@@ -306,14 +306,12 @@ export function HomeScreen({
       lang === "de"
         ? "Erfasse und verwalte deine Themen mit PARA-LIST."
         : "Organize and manage your topics with PARA-LIST.";
+    const SING_KEY = { project: "projectSing", area: "areaSing", resource: "resourceSing" };
+    const openText = t.openLabel(t[SING_KEY[firstCat.type]] || fallbackTypeLabel);
 
     return (
       <div className="home-cover__main">
-        <button
-          type="button"
-          className="home-cover__primary-action"
-          onClick={() => onOpenCat(firstCat)}
-        >
+        <div className="home-cover__primary-action">
           <div className="home-cover__copy">
             <AutoScrollText className="home-cover__title">
               {firstCat.name}
@@ -341,8 +339,15 @@ export function HomeScreen({
               </span>
             </div>
           </div>
-        </button>
+        </div>
 
+        <button
+          type="button"
+          className="home-cover__open-btn"
+          onClick={() => onOpenCat(firstCat)}
+        >
+          {openText}
+        </button>
       </div>
     );
   };

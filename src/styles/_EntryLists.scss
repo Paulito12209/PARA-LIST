@@ -967,14 +967,14 @@
 
   &--home {
     background: #1A1A2E !important;
-    border-color: rgba(29, 78, 216, 0.2) !important;
+    border-color: rgba(16, 8, 141, 0.2) !important;
 
     .cal-item__title {
-      color: #1e3a8a; // Dunkles Blau für Kontrast
+      color: #10088D; // Kalender-Indigo (Kontrast im Dark Mode prüfen!)
     }
 
     .cal-item__time {
-      color: #1d4ed8;
+      color: #10088D;
       font-weight: 600;
     }
 

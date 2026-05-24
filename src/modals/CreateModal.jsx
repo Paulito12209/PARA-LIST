@@ -11,9 +11,9 @@ import {
 import { TODAY, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 
 const TYPE_COLORS = {
-  task: "#7C83F7",
+  task: "#0078D4",
   note: "#F59E0B",
-  calendar: "#38BDF8",
+  calendar: "#10088D",
   media: "#10B981",
   link: "#7C3AED",
 };

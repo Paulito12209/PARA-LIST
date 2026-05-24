@@ -1,0 +1,134 @@
+// ============================================================
+// PARA·LIST – Command Dock (untere Eingabeleiste)
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+.command-dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
+
+  // Liquid-Glass-Container (wie Sonos: abgerundetes Rechteck, durchsichtig)
+  background: rgba(18, 18, 34, 0.55);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: $radius-xl $radius-xl 0 0;
+  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.38);
+
+  // ── Icon-Reihe (Typ-Auswahl) ──
+  &__types {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-2xs;
+  }
+
+  &__type {
+    flex: 1;
+    height: 44px;
+    border-radius: $radius-md;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    color: rgba($color-text, 0.4);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(.command-dock__type--active) {
+      color: rgba($color-text, 0.78);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    // Aktiver Typ: in seiner Akzentfarbe getönt + leichter Glow
+    &--active {
+      background: color-mix(in srgb, var(--type-color) 16%, transparent);
+      border-color: color-mix(in srgb, var(--type-color) 42%, transparent);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--type-color) 26%, transparent);
+    }
+  }
+
+  // 7. Icon: Menü als invertierter, gefüllter Kreis
+  &__menu {
+    flex: 1;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+
+  &__menu-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    // Dark Mode: weiß gefüllt, schwarzes Icon
+    background: $color-text;
+    color: $color-bg;
+    transition: transform $transition-fast;
+
+    .command-dock__menu:hover & {
+      transform: scale(1.06);
+    }
+  }
+
+  // ── Eingabezeile (List-Icon · Input · Voice) ──
+  &__input-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-2xs;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: $radius-lg;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 15px;
+    padding: $spacing-sm $spacing-2xs;
+
+    &::placeholder {
+      color: rgba($color-text, 0.45);
+    }
+  }
+
+  &__icon-btn {
+    @include floating-btn(40px, 50%);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba($color-text, 0.8);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: $color-text;
+    }
+  }
+
+  // Voice-Button greift die Akzentfarbe des aktiven Typs auf
+  &__voice-btn {
+    color: var(--dock-accent);
+  }
+}

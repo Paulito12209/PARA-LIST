@@ -863,14 +863,86 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 0 !important;
+  // Platz unten für die fixierte Command-Dock-Leiste
+  padding: 0 0 152px !important;
   // margin-top: 12px;
   overflow-y: auto;
   flex: 1;
 }
 
 .home__list-container--expanded .entry-list {
-  padding-bottom: 96px !important;
+  padding-bottom: 152px !important;
+}
+
+// ── List-Section Header: Label · Aufklappen-Toggle · Archiv ──
+.list-section__header-left {
+  display: flex;
+  align-items: center;
+  // 12px Abstand zwischen Titel-Ende und Aufklapp-Icon
+  gap: 12px;
+}
+
+.list-section__expand,
+.list-section__archive {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-sm;
+  background: transparent;
+  border: none;
+  color: rgba($color-text, 0.5);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    color: $color-text;
+    background: rgba(255, 255, 255, 0.06);
+  }
+}
+
+.list-section__archive {
+  margin-left: auto;
+}
+
+// ── Einfache Kategorien-Liste (PARA-Typen auf der Startseite) ──
+.home-cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  padding: 0 $spacing-md;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-sm;
+    padding: $spacing-sm + 2px $spacing-md;
+    border-radius: $radius-md;
+    background: $color-card;
+    border: 1px solid $color-border;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      background: $color-hover;
+    }
+  }
+
+  &__name {
+    @include text-truncate;
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    color: rgba($color-text, 0.4);
+  }
 }
 
 // Collapse-FAB unten links (nur im expandierten Zustand)

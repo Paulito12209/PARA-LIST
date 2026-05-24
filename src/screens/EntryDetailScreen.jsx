@@ -11,8 +11,8 @@ const COVER_COLORS = [
   { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
   { hex: "#D09020", rgb: "208, 144, 32",  label: "area" },
   { hex: "#F59E0B", rgb: "245, 158, 11",  label: "note" },
-  { hex: "#1D4ED8", rgb: "29, 78, 216",   label: "calendar" },
-  { hex: "#7C83F7", rgb: "124, 131, 247", label: "task" },
+  { hex: "#10088D", rgb: "16, 8, 141",    label: "calendar" },
+  { hex: "#0078D4", rgb: "0, 120, 212",   label: "task" },
   { hex: "#E03E3E", rgb: "224, 62, 62",   label: "project" },
   { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
 ];
@@ -64,13 +64,13 @@ export function EntryDetailScreen({
   }[entry.type] || FileText;
 
   const TypeIcon = typeIcon;
-  const cfgColor = entry.type === "task" ? "#7C83F7" :
+  const cfgColor = entry.type === "task" ? "#0078D4" :
     entry.type === "note" ? "#F59E0B" :
-    entry.type === "calendar" ? "#1D4ED8" : "#9CA3AF";
+    entry.type === "calendar" ? "#10088D" : "#9CA3AF";
 
-  const defaultAccentRgb = entry.type === "task" ? "124, 131, 247" :
+  const defaultAccentRgb = entry.type === "task" ? "0, 120, 212" :
     entry.type === "note" ? "245, 158, 11" :
-    entry.type === "calendar" ? "29, 78, 216" : "156, 163, 175";
+    entry.type === "calendar" ? "16, 8, 141" : "156, 163, 175";
   const entryAccentRgb = entry.coverColor
     ? (COVER_COLORS.find(c => c.hex === entry.coverColor)?.rgb || defaultAccentRgb)
     : defaultAccentRgb;
@@ -123,8 +123,8 @@ export function EntryDetailScreen({
   const getFabColor = useCallback(() => {
     const colorMap = {
       canvas: cfgColor,
-      tasks: "#7C83F7",
-      cal: "#1E40AF",
+      tasks: "#0078D4",
+      cal: "#10088D",
       media: "#10B981",
       link: "#7C3AED",
       tags: "#EC4899",

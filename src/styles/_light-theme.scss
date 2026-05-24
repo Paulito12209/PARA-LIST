@@ -124,10 +124,10 @@
       color: #8e8eb2;
 
       &--active-today {
-        background: rgba(#7C83F7, 0.12);
-        color: #5a5cc0;
-        border-color: rgba(#7C83F7, 0.30);
-        box-shadow: 0 0 10px rgba(#7C83F7, 0.08);
+        background: rgba(#0078D4, 0.12);
+        color: #0063b1;
+        border-color: rgba(#0078D4, 0.30);
+        box-shadow: 0 0 10px rgba(#0078D4, 0.08);
       }
 
       &--active-overdue {
@@ -202,10 +202,10 @@
       }
 
       &--active {
-        background: rgba(#7C83F7, 0.12);
-        color: #5a5cc0;
-        border-color: rgba(#7C83F7, 0.30);
-        box-shadow: 0 0 10px rgba(#7C83F7, 0.08);
+        background: rgba(#0078D4, 0.12);
+        color: #0063b1;
+        border-color: rgba(#0078D4, 0.30);
+        box-shadow: 0 0 10px rgba(#0078D4, 0.08);
       }
     }
 
@@ -1388,5 +1388,73 @@
 
   .settings-sheet__color-swatch--active {
     border-color: #1c1c30;
+  }
+}
+
+// ── Command Dock + Startseiten-Liste (Light Mode) ──────────────
+.app.light-theme {
+  .command-dock {
+    background: rgba(255, 255, 255, 0.72);
+    border-top-color: rgba(0, 0, 0, 0.06);
+    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.08);
+
+    &__type {
+      color: #8e8eb2;
+
+      &:hover:not(.command-dock__type--active) {
+        color: #1c1c30;
+        background: rgba(0, 0, 0, 0.04);
+      }
+    }
+
+    &__input-row {
+      background: #ffffff;
+      border-color: #e5e5f0;
+    }
+
+    &__input {
+      color: #1a1a24;
+
+      &::placeholder {
+        color: #8e8eb2;
+      }
+    }
+
+    &__icon-btn {
+      background: #f7f7f9;
+      border-color: #e5e5f0;
+      color: #5858a0;
+
+      &:hover {
+        background: #f0f0f5;
+        color: #1c1c30;
+      }
+    }
+
+    // Light Mode: schwarz gefüllt, weißes Icon
+    &__menu-circle {
+      background: #1a1a24;
+      color: #ffffff;
+    }
+  }
+
+  .home-cat-list__item {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #1a1a24;
+
+    &:hover {
+      background: #f0f0f5;
+    }
+  }
+
+  .list-section__expand,
+  .list-section__archive {
+    color: #8e8eb2;
+
+    &:hover {
+      color: #1c1c30;
+      background: rgba(0, 0, 0, 0.04);
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Circle, Triangle, Square, Plus, Archive, Calendar, User, UserPlus, ChevronRight, ChevronDown } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, User, UserPlus, ChevronRight, ChevronDown, Maximize2, Minimize2 } from "lucide-react";
 import { TaskList, NoteList, CalList } from "../components/EntryLists";
-import { VoiceFab } from "../components/VoiceFab";
+import { CommandDock } from "../components/CommandDock";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
@@ -13,13 +13,6 @@ const COVER_ACCENT_RGB = {
   resource: "48, 160, 96",
   archive: "124, 131, 247",
 };
-
-const CAT_TYPE_CONFIG = [
-  { id: "project", Icon: Circle, color: "#E03E3E", labelKey: "projects", fallback: "Projekte" },
-  { id: "area", Icon: Triangle, color: "#D09020", labelKey: "areas", fallback: "Bereiche" },
-  { id: "resource", Icon: Square, color: "#30A060", labelKey: "resources", fallback: "Ressourcen" },
-  { id: "archive", Icon: Archive, color: "#7C83F7", labelKey: "archive", fallback: "Archiv" },
-];
 
 const DOUBLE_TAP_WINDOW_MS = 300;
 const SWIPE_THRESHOLD_PX = 60;
@@ -60,9 +53,8 @@ export function HomeScreen({
   state,
   tab,
   setTab,
-  onOpenCatType,
   onOpenCat,
-  onAddCat,
+  onQuickCreate,
   onAddEntry,
   onAddVoiceEntry,
   toggleTask,
@@ -80,8 +72,28 @@ export function HomeScreen({
   setVoiceOverlayOpen,
 }) {
   const { entries, cats } = state;
-  const [activeCatType, setActiveCatType] = useState("project");
+  // Cover zeigt vorerst immer das erste Projekt (Fallback für das spätere Pin-/Favoriten-Feature)
+  const activeCatType = "project";
+  // Aktiver Typ der unteren Eingabeleiste (Standard: Aufgaben)
+  const [activeType, setActiveType] = useState("tasks");
+  const ENTRY_TYPES = ["tasks", "notes", "calendar"];
+  const isEntryType = ENTRY_TYPES.includes(activeType);
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
+
+  const TYPE_LABELS = {
+    project: t.projects,
+    area: t.areas,
+    resource: t.resources,
+    tasks: t.tasks,
+    notes: t.notes,
+    calendar: t.calendar,
+  };
+  const activeLabel = TYPE_LABELS[activeType];
+
+  const handleSelectType = (type) => {
+    setActiveType(type);
+    if (ENTRY_TYPES.includes(type)) setTab(type);
+  };
   const [collabModalOpen, setCollabModalOpen] = useState(false);
   const [collabModalInitialView, setCollabModalInitialView] = useState("list");
   const [listExpanded, setListExpanded] = useState(false);
@@ -120,7 +132,7 @@ export function HomeScreen({
     });
 
   const tabCfg = TABS.find((tCfg) => tCfg.id === tab);
-  const tabColor = tabCfg?.color || "#7C83F7";
+  const tabColor = tabCfg?.color || "#0078D4";
 
   const avatarInputRef = useRef(null);
 
@@ -236,6 +248,8 @@ export function HomeScreen({
       "#F59E0B": "245, 158, 11",
       "#1D4ED8": "29, 78, 216",
       "#7C83F7": "124, 131, 247",
+      "#0078D4": "0, 120, 212",
+      "#10088D": "16, 8, 141",
       "#E03E3E": "224, 62, 62",
       "#5858A0": "88, 88, 160",
     };
@@ -389,6 +403,26 @@ export function HomeScreen({
     return null;
   };
 
+  // Inhalt der Liste je nach aktivem Typ:
+  // Eintragstypen → bestehende Listen; PARA-Typen → einfache Kategorien-Liste.
+  const renderActiveList = () => {
+    if (isEntryType) return renderTabList();
+    const paraCats = cats.filter((c) => c.type === activeType && !c.archived);
+    if (paraCats.length === 0) {
+      return <div className="entry-list__empty">{t.noCats(activeLabel)}</div>;
+    }
+    return (
+      <div className="home-cat-list">
+        {paraCats.map((c) => (
+          <button key={c.id} className="home-cat-list__item" onClick={() => onOpenCat(c)}>
+            <span className="home-cat-list__name">{c.name}</span>
+            <ChevronRight size={16} className="home-cat-list__chevron" />
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className={`home home--${tab}`}>
       <div className={`home-cover ${firstCat?.coverImage ? "home-cover--has-cover-img" : ""}`} style={{ "--cover-accent-rgb": rgbVal }}>
@@ -459,107 +493,28 @@ export function HomeScreen({
           </div>
           {firstCat ? renderFirstCat() : renderEmptyCover()}
         </div>
-
-        <div className="split-nav">
-          {firstCat && activeCatType !== "archive" && (
-            <div className="home-cover__textlink" onClick={() => onOpenCatType(activeCatType)}>
-              {activeCatType === "project" && (lang === "de" ? "Alle Projekte anzeigen" : "Show all projects")}
-              {activeCatType === "area" && (lang === "de" ? "Alle Bereiche anzeigen" : "Show all areas")}
-              {activeCatType === "resource" && (lang === "de" ? "Alle Ressourcen anzeigen" : "Show all resources")}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                style={{
-                  width: "11px",
-                  height: "11px",
-                  flexShrink: 0,
-                  marginLeft: "4px",
-                  verticalAlign: "middle",
-                }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-              </svg>
-            </div>
-          )}
-          <div className="split-nav__row">
-            <div className={`split-nav__pills split-nav__pills--${activeCatType}`}>
-              <div className="split-nav__items">
-                {CAT_TYPE_CONFIG.map((item) => {
-                  const IconComp = item.Icon;
-                  const isActive = activeCatType === item.id;
-                  return (
-                    <button
-                      key={item.id}
-                      className={`split-nav__btn ${isActive ? "split-nav__btn--active" : ""}`}
-                      onClick={() => {
-                        if (item.id === "archive") {
-                          onOpenArchive(tab);
-                        } else {
-                          setActiveCatType(item.id);
-                        }
-                      }}
-                      style={isActive ? { color: item.color } : {}}
-                      title={t[item.labelKey] || item.fallback}
-                    >
-                      <IconComp size={32} strokeWidth={isActive ? 2.5 : 2} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button
-              className="split-nav__add"
-              onClick={() => onAddCat(activeCatType)}
-              title={lang === "de" ? "Neu erstellen" : "Create new"}
-            >
-              <Plus size={32} color={`rgb(${rgbVal})`} strokeWidth={2.4} />
-            </button>
-          </div>
-        </div>
       </div>
 
       <div className={`home__list-container${listExpanded ? ' home__list-container--expanded' : ''}`}>
         <div className="list-section__header">
           <div className="list-section__header-left">
-            <div
-              className="list-section__label-wrapper"
-              onClick={listExpanded ? () => setListExpanded(false) : undefined}
+            <span className="list-section__label">{activeLabel}</span>
+            <button
+              className="list-section__expand"
+              onClick={() => setListExpanded((v) => !v)}
+              aria-label={listExpanded ? t.closeBtn : t.open}
             >
-              <span className="list-section__label">{tabCfg?.label}</span>
-              {listExpanded
-                ? <ChevronDown size={20} className="list-section__label-chevron" />
-                : <ChevronRight size={20} className="list-section__label-chevron" />
-              }
-            </div>
+              {listExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </button>
           </div>
-          <div className="list-switcher">
-            {TABS.map((tItem) => {
-              const TabIcon = tItem.Icon;
-              const isActive = tab === tItem.id;
-              return (
-                <button
-                  key={tItem.id}
-                  className={`list-switcher__btn ${isActive ? "list-switcher__btn--active" : ""}`}
-                  onClick={() => setTab(tItem.id)}
-                  style={
-                    isActive
-                      ? {
-                        background: tItem.color + "22",
-                        boxShadow: `0 0 12px ${tItem.color}30`,
-                        color: tItem.color,
-                      }
-                      : {}
-                  }
-                >
-                  <TabIcon size={22} />
-                </button>
-              );
-            })}
-          </div>
+          {/* Archiv-Zugang – immer gegenüber vom Abschnittstitel */}
+          <button
+            className="list-section__archive"
+            onClick={() => onOpenArchive(activeType)}
+            aria-label={t.archive}
+          >
+            <Archive size={20} />
+          </button>
         </div>
 
         {activeGroupHeader && VOICE_TAB_TYPES.includes(tab) && (
@@ -578,7 +533,7 @@ export function HomeScreen({
           ref={entryListRef}
           onScroll={handleListScroll}
         >
-          {renderTabList()}
+          {renderActiveList()}
         </div>
 
         {listExpanded && (
@@ -601,9 +556,15 @@ export function HomeScreen({
         />
       )}
 
-      {VOICE_TAB_TYPES.includes(tab) && !collabModalOpen && !voiceOverlayOpen && (
-        <VoiceFab tabColor={tabColor} onOpen={() => setVoiceOverlayOpen(true)} />
-      )}
+      <CommandDock
+        t={t}
+        activeType={activeType}
+        onSelectType={handleSelectType}
+        onSubmit={onQuickCreate}
+        onOpenList={() => setListExpanded((v) => !v)}
+        onOpenVoice={() => setVoiceOverlayOpen(true)}
+        onMenu={() => { /* TODO: Optionen-Menü (Listen-/Log-Darstellung) – Funktion noch offen */ }}
+      />
 
       {voiceOverlayOpen && (
         <VoiceOverlay

@@ -611,9 +611,13 @@ export default function App() {
             onCoverAccentChange={setCoverAccentRgb}
             onOpenCatType={(type) => push({ view: VIEW.CAT_LIST, type })}
             onOpenCat={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
-            onAddCat={(type) => {
+            onQuickCreate={(type, title) => {
               setPanelOpen(false);
-              setNewCatType(type);
+              if (type === "project" || type === "area" || type === "resource") {
+                addCat(type, title);
+              } else {
+                addEntry(buildVoiceEntry(type, title));
+              }
             }}
             onAddEntry={(type) => {
               setPanelOpen(false);

@@ -4,6 +4,7 @@ export const I18N = {
   de: {
     greeting: (h, n) => (h < 12 ? "Guten Morgen" : h < 18 ? "Guten Tag" : "Guten Abend") + `, ${n}`,
     home: "Startseite",
+    addPlaceholder: (sing) => `${sing} hinzufügen`,
     emptyDrawer: "Keine offenen Einträge für heute 🎉",
     overdue: "überfällig",
     today: "heute",
@@ -146,6 +147,7 @@ export const I18N = {
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
     home: "Home",
+    addPlaceholder: (sing) => `Add ${sing}`,
     emptyDrawer: "No open entries for today 🎉",
     overdue: "overdue",
     today: "today",
@@ -288,6 +290,7 @@ export const I18N = {
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
     home: "Inicio",
+    addPlaceholder: (sing) => `Añadir ${sing}`,
     emptyDrawer: "No hay entradas para hoy 🎉",
     overdue: "atrasado",
     today: "hoy",
@@ -436,7 +439,7 @@ export const getCC = (t) => ({
 });
 
 export const getTABS = (t) => [
-  { id: "tasks",    label: t.tasks,    color: "#7C83F7", Icon: CheckCircle2 },
+  { id: "tasks",    label: t.tasks,    color: "#0078D4", Icon: CheckCircle2 },
   { id: "notes",    label: t.notes,    color: "#F59E0B", Icon: Pencil },
-  { id: "calendar", label: t.calendar, color: "#1D4ED8", Icon: Calendar },
+  { id: "calendar", label: t.calendar, color: "#10088D", Icon: Calendar },
 ];

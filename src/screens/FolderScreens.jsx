@@ -123,8 +123,8 @@ const COVER_COLORS = [
   { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
   { hex: "#D09020", rgb: "208, 144, 32",  label: "area" },
   { hex: "#F59E0B", rgb: "245, 158, 11",  label: "note" },
-  { hex: "#1D4ED8", rgb: "29, 78, 216",   label: "calendar" },
-  { hex: "#7C83F7", rgb: "124, 131, 247", label: "task" },
+  { hex: "#10088D", rgb: "16, 8, 141",    label: "calendar" },
+  { hex: "#0078D4", rgb: "0, 120, 212",   label: "task" },
   { hex: "#E03E3E", rgb: "224, 62, 62",   label: "project" },
   { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
 ];
@@ -283,8 +283,8 @@ export function CatDetailScreen({
     const entryType = getEntryTypeFromBookmark();
     const colorMap = {
       note: "#F59E0B",
-      task: "#7C83F7",
-      calendar: "#1E40AF",
+      task: "#0078D4",
+      calendar: "#10088D",
       media: "#10B981",
       link: "#7C3AED",
       tags: "#EC4899",

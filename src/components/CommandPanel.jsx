@@ -171,10 +171,10 @@ export function CommandPanel({
                       style={{
                         background:
                           e.type === "calendar"
-                            ? "#1D4ED8"
+                            ? "#10088D"
                             : isOld(d)
                             ? NOTIF_RED
-                            : "#7C83F7",
+                            : "#0078D4",
                       }}
                     />
                     <div className="command-panel__drawer-info">

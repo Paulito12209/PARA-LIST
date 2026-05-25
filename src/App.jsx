@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, FileText, Square } from "lucide-react";
+import { ChevronLeft, FileText, Square, CheckCircle2, Calendar, Paperclip, Link2 } from "lucide-react";
 import { I18N, getCC, getTABS } from "./i18n";
 import { usePersistedState } from "./hooks/useStorage";
 import {
@@ -10,6 +10,7 @@ import {
   ID_BIRTHDAYS,
   SEED,
   computeNotif,
+  CAT_ICONS,
 } from "./utils";
 import { CatListScreen, CatDetailScreen } from "./screens/FolderScreens";
 import { EntryDetailScreen } from "./screens/EntryDetailScreen";
@@ -44,6 +45,27 @@ const VIEW = {
 
 const DEFAULT_COVER_ACCENT_RGB = "224, 62, 62";
 const VOICE_ENTRY_BASE = { starred: false, catId: null, catIds: [], tags: [] };
+
+// Icon + Akzentfarbe (RGB) für den Seiten-Header (Command-Panel) auf Unterseiten.
+const ENTRY_HEADER_ICON = {
+  task: CheckCircle2,
+  note: FileText,
+  calendar: Calendar,
+  media: Paperclip,
+  link: Link2,
+};
+const ENTRY_HEADER_RGB = {
+  task: "11, 140, 233",
+  note: "245, 158, 11",
+  calendar: "0, 120, 212",
+  media: "16, 185, 129",
+  link: "124, 58, 237",
+};
+const CAT_HEADER_RGB = {
+  project: "224, 62, 62",
+  area: "208, 144, 32",
+  resource: "48, 160, 96",
+};
 
 /**
  * One-time migrations to keep older persisted state compatible
@@ -235,6 +257,31 @@ export default function App() {
 
   const cur = stack[stack.length - 1];
 
+  // Auf Detailseiten zeigt der Command-Panel-Header statt Logo + "Startseite"
+  // das Seiten-Icon + den Seitentitel (Datum wandert über den Titel).
+  const headerPage = (() => {
+    if (cur.view === VIEW.CAT_DETAIL) {
+      const cat = state.cats.find((c) => c.id === cur.catId);
+      if (!cat) return null;
+      const type = CC[cat.type] ? cat.type : "resource";
+      return {
+        Icon: CAT_ICONS[type] || Square,
+        title: cat.name,
+        accentRgb: CAT_HEADER_RGB[type] || "88, 88, 160",
+      };
+    }
+    if (cur.view === VIEW.ENTRY_DETAIL) {
+      const entry = state.entries.find((e) => e.id === cur.entryId);
+      if (!entry) return null;
+      return {
+        Icon: ENTRY_HEADER_ICON[entry.type] || FileText,
+        title: entry.title,
+        accentRgb: ENTRY_HEADER_RGB[entry.type] || "88, 88, 160",
+      };
+    }
+    return null;
+  })();
+
   /* ── tag mutations ─────────────────────────────────────────── */
   const updateGlobalTag = (id, newName) => {
     setState((s) => {
@@ -305,8 +352,9 @@ export default function App() {
     }));
 
   // Löschen = in den Papierkorb verschieben (nicht endgültig). Auto-Purge nach
-  // 30 Tagen läuft beim App-Start (migrateState).
-  const deleteCat = (id) => {
+  // 30 Tagen läuft beim App-Start (migrateState). `trashCat` ohne Navigation
+  // (für Listen), `deleteCat` zusätzlich mit pop() (für die Detailseite).
+  const trashCat = (id) =>
     setState((s) => {
       const cat = s.cats.find((c) => c.id === id);
       if (!cat) return s;
@@ -316,8 +364,8 @@ export default function App() {
         trash: [...(s.trash || []), { kind: "cat", deletedAt: Date.now(), data: cat }],
       };
     });
-    pop();
-  };
+
+  const deleteCat = (id) => { trashCat(id); pop(); };
 
   const addEntry = (entry) =>
     setState((s) => {
@@ -663,6 +711,7 @@ export default function App() {
       <CommandPanel
         t={t}
         title={cur.view === VIEW.HOME ? homeHeaderTitle : null}
+        page={headerPage}
         lang={lang}
         setLang={(l) => setState((s) => ({ ...s, lang: l }))}
         theme={theme}
@@ -714,7 +763,12 @@ export default function App() {
             onAddVoiceEntry={(title, date) => addEntry(buildVoiceEntry(tab, title, date))}
             toggleTask={toggleTask}
             toggleStar={toggleStar}
-            togglePin={(id) => togglePin(id, "entry")}
+            togglePin={togglePin}
+            toggleVerified={toggleVerified}
+            trashCat={trashCat}
+            onRestoreFromTrash={restoreFromTrash}
+            onPurgeTrashItem={purgeTrashItem}
+            onEmptyTrash={emptyTrash}
             updateEntry={updateEntry}
             deleteEntry={deleteEntry}
             onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}

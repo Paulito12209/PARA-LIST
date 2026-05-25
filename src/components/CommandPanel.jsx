@@ -8,6 +8,7 @@ const HAPTIC_TAP_MS = 10;
 
 export function CommandPanel({
   title,
+  page,
   entries,
   open,
   onToggle,
@@ -68,6 +69,16 @@ export function CommandPanel({
 
   const isVoiceMode = voiceOverlayOpen && !open;
 
+  const dateStr = new Date().toLocaleDateString(t.locale, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+
+  // Seiten-Modus: auf Detailseiten zeigt der Header Seiten-Icon + Titel,
+  // mit dem Datum oberhalb des Titels und ohne Einstellungen-Icon.
+  const PageIcon = page?.Icon;
+
   return (
     <div
       className={`command-panel command-panel--${open ? "open" : "closed"}`}
@@ -81,28 +92,42 @@ export function CommandPanel({
       >
         <div className="command-panel__header-row">
           <div className="command-panel__brand">
-            <span className="command-panel__logo">
-              <img
-                className="command-panel__logo-img"
-                src={`${import.meta.env.BASE_URL}paralist_logo.png`}
-                alt="PARA·LIST"
-              />
-            </span>
+            {page ? (
+              <span
+                className="command-panel__page-icon"
+                style={{ "--page-accent-rgb": page.accentRgb }}
+              >
+                <PageIcon size={22} color={`rgb(${page.accentRgb})`} strokeWidth={2.4} />
+              </span>
+            ) : (
+              <span className="command-panel__logo">
+                <img
+                  className="command-panel__logo-img"
+                  src={`${import.meta.env.BASE_URL}paralist_logo.png`}
+                  alt="PARA·LIST"
+                />
+              </span>
+            )}
             <div className="command-panel__titles">
-              <div className="command-panel__greeting">
-                {isVoiceMode ? t.voiceQuestion : (title || t.home)}
-              </div>
-              <div className="command-panel__date">
-                {new Date().toLocaleDateString(t.locale, {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                })}
-              </div>
+              {page ? (
+                <>
+                  <div className="command-panel__date">{dateStr}</div>
+                  <div className="command-panel__greeting command-panel__greeting--page">
+                    {page.title}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="command-panel__greeting">
+                    {isVoiceMode ? t.voiceQuestion : (title || t.home)}
+                  </div>
+                  <div className="command-panel__date">{dateStr}</div>
+                </>
+              )}
             </div>
           </div>
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
-            {!open && (
+            {!open && !page && (
               <button
                 className="command-panel__bell command-panel__filter-btn"
                 onClick={(e) => {

@@ -195,6 +195,13 @@
     margin-bottom: $spacing-sm;
     position: relative;
     z-index: 1;
+
+    // Auf Detailseiten ausgeblendet (Titel steht im Command-Panel-Header),
+    // belegt aber weiter Platz – so bleibt die Höhe des farbigen Headers gleich.
+    &--hidden {
+      visibility: hidden;
+      pointer-events: none;
+    }
   }
 
   &__title-input {

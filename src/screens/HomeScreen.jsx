@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
 import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, User, UserPlus, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
-import { TaskList, NoteList, CalList } from "../components/EntryLists";
+import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
+import { DockMenuSheet } from "../components/DockMenuSheet";
+import { TrashSheet } from "../components/TrashSheet";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
@@ -73,6 +75,11 @@ export function HomeScreen({
   toggleTask,
   toggleStar,
   togglePin,
+  toggleVerified,
+  trashCat,
+  onRestoreFromTrash,
+  onPurgeTrashItem,
+  onEmptyTrash,
   updateEntry,
   deleteEntry,
   onOpenEntry,
@@ -91,6 +98,9 @@ export function HomeScreen({
   const [activeType, setActiveType] = useState("tasks");
   // Aktueller Index im Favoriten-Karussell des Covers
   const [coverIndex, setCoverIndex] = useState(0);
+  // Dock-3-Punkte-Menü (Bottom-Sheet) und Papierkorb-Ansicht
+  const [dockMenuOpen, setDockMenuOpen] = useState(false);
+  const [trashOpen, setTrashOpen] = useState(false);
   const ENTRY_TYPES = ["tasks", "notes", "calendar"];
   const isEntryType = ENTRY_TYPES.includes(activeType);
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
@@ -121,21 +131,24 @@ export function HomeScreen({
     return () => onHeaderTitleChange?.(null);
   }, [listExpanded, activeLabel, onHeaderTitleChange]);
 
-  // Favoriten-Karussell: alle als Favorit (starred) markierten Inhalte –
-  // Kategorien (Projekte/Bereiche/Ressourcen) sowie Einträge (Aufgaben/Notizen/Termine).
-  const favItems = [
+  // Cover-Karussell: zeigt die fixierten (pinned) Inhalte – genau 1 pro Liste möglich
+  // → mehrere Slides. Kategorien (Projekte/Bereiche/Ressourcen) sowie Einträge
+  // (Aufgaben/Notizen/Termine).
+  const pinnedItems = [
     ...cats
-      .filter((c) => c.starred && !c.archived)
+      .filter((c) => c.pinned && !c.archived)
       .map((c) => ({ kind: "cat", id: `cat-${c.id}`, data: c })),
     ...entries
-      .filter((e) => e.starred && !e.archived && FAV_ENTRY_TYPES.includes(e.type))
+      .filter((e) => e.pinned && !e.archived && FAV_ENTRY_TYPES.includes(e.type))
       .map((e) => ({ kind: "entry", id: `entry-${e.id}`, data: e })),
   ];
-  // Fallback ohne Favoriten: erstes Projekt zeigen, damit das Cover nicht leer ist.
-  const fallbackProject = cats.find((c) => c.type === "project" && !c.archived);
+  // Fallback ohne Fixierung: EIN favorisiertes Projekt (nur eins), sonst erstes Projekt.
+  const fallbackProject =
+    cats.find((c) => c.type === "project" && c.starred && !c.archived) ||
+    cats.find((c) => c.type === "project" && !c.archived);
   const coverItems =
-    favItems.length > 0
-      ? favItems
+    pinnedItems.length > 0
+      ? pinnedItems
       : fallbackProject
         ? [{ kind: "cat", id: `cat-${fallbackProject.id}`, data: fallbackProject }]
         : [];
@@ -507,13 +520,8 @@ export function HomeScreen({
     if (tabEntries.length === 0) {
       return (
         <div className="entry-list__empty">
-          <div
-            className="entry-list__empty-icon"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            {tabCfg && <tabCfg.Icon size={28} color={tabColor} strokeWidth={1.5} />}
-          </div>
-          {t.noEntries(tabCfg?.label)}
+          <div className="entry-list__empty-title">{t.noEntries(tabCfg?.label)}</div>
+          <div className="entry-list__empty-hint" style={{ color: tabColor }}>{t.doubleTapHint}</div>
         </div>
       );
     }
@@ -580,18 +588,29 @@ export function HomeScreen({
     }
 
     const renderCatItem = (c) => (
-      <button key={c.id} className="home-cat-list__item" onClick={() => onOpenCat(c)}>
-        <span className="home-cat-list__name">{c.name}</span>
-        <ChevronRight size={16} className="home-cat-list__chevron" />
-      </button>
+      <HomeCatItem
+        key={c.id}
+        c={c}
+        t={t}
+        CC={CC}
+        onOpenCat={onOpenCat}
+        onUpdateCat={onUpdateCat}
+        onTogglePin={(id) => togglePin(id, "cat")}
+        onToggleVerified={toggleVerified}
+        onTrash={trashCat}
+      />
     );
+
+    // Fixierte Kategorie wird ganz oben angepinnt (genau eine pro Liste).
+    const pinnedCat = paraCats.find((c) => c.pinned);
+    const restCats = pinnedCat ? paraCats.filter((c) => c.id !== pinnedCat.id) : paraCats;
 
     // Datums-Gruppierung analog zu den Aufgaben-/Notiz-/Termin-Listen:
     // Einträge ohne Datum (bzw. heute/überfällig) oben ohne Header, künftige
     // Einträge unter Datums-Gruppen-Headern ("Morgen", "Nächste Woche" …).
     const undatedCats = [];
     const groupedCats = new Map();
-    paraCats.forEach((c) => {
+    restCats.forEach((c) => {
       if (!c.date || isToday(c.date) || isOld(c.date)) {
         undatedCats.push(c);
         return;
@@ -606,7 +625,8 @@ export function HomeScreen({
     futureGroups.forEach((g) => g.items.sort((a, b) => new Date(a.date) - new Date(b.date)));
 
     return (
-      <div className="home-cat-list">
+      <>
+        {pinnedCat && renderCatItem(pinnedCat)}
         {undatedCats.map(renderCatItem)}
         {futureGroups.map((g, i) => (
           <Fragment key={`grp-${i}`}>
@@ -618,7 +638,7 @@ export function HomeScreen({
             {g.items.map(renderCatItem)}
           </Fragment>
         ))}
-      </div>
+      </>
     );
   };
 
@@ -788,8 +808,27 @@ export function HomeScreen({
         onToggleList={() => setListExpanded((v) => !v)}
         onHome={() => setListExpanded(false)}
         onOpenVoice={() => setVoiceOverlayOpen(true)}
-        onMenu={() => { /* TODO: Optionen-Menü (Listen-/Log-Darstellung) – Funktion noch offen */ }}
+        onMenu={() => setDockMenuOpen(true)}
       />
+
+      {dockMenuOpen && (
+        <DockMenuSheet
+          t={t}
+          onOpenTrash={() => setTrashOpen(true)}
+          onClose={() => setDockMenuOpen(false)}
+        />
+      )}
+
+      {trashOpen && (
+        <TrashSheet
+          t={t}
+          trash={state.trash || []}
+          onRestore={onRestoreFromTrash}
+          onPurge={onPurgeTrashItem}
+          onEmpty={onEmptyTrash}
+          onClose={() => setTrashOpen(false)}
+        />
+      )}
 
       {voiceOverlayOpen && (
         <VoiceOverlay

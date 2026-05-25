@@ -62,7 +62,7 @@
     }
   }
 
-  // 7. Icon: Menü-Kreis – gleiche Optik wie das List-Icon, aber disabled gefärbt
+  // 7. Icon: Menü-Kreis – gleiche Optik wie das List-Icon, öffnet das Menü-Sheet
   &__menu {
     flex: 1;
     height: 44px;
@@ -71,7 +71,12 @@
     justify-content: center;
     background: transparent;
     border: none;
-    cursor: default;
+    cursor: pointer;
+
+    &:hover .command-dock__menu-circle {
+      background: #2a2a38;
+      color: #ededf2;
+    }
   }
 
   &__menu-circle {
@@ -84,9 +89,8 @@
     // 5% dunkler als die übrigen Dock-Icons (Light Mode überschreibt analog)
     background: #21212d;
     border: 1px solid rgba(255, 255, 255, 0.07);
-    color: #9a9aa8;
-    // Noch keine Funktion → ausgegraut
-    opacity: 0.4;
+    color: #c4c4d0;
+    transition: all $transition-fast;
   }
 
   // ── Eingabezeile (List-Icon · Input · Voice) ──

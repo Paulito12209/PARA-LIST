@@ -354,13 +354,16 @@ export function CatDetailScreen({
         )}
 
         <div className="cat-detail__header-pattern" />
-        <div className="cat-detail__title-row">
+        {/* Titelzeile bleibt im Layout (Header-Höhe unverändert), wird aber
+            ausgeblendet – der Seitentitel steht jetzt oben im Command-Panel. */}
+        <div className="cat-detail__title-row cat-detail__title-row--hidden" aria-hidden="true">
           <CatIcon size={18} color={cfg.color} />
           <input
             className="cat-detail__title-input"
             value={cat.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
             placeholder="Titel..."
+            tabIndex={-1}
           />
         </div>
         <div className="cat-detail__pills">

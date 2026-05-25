@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Clock, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Clock, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical, Pin, ShieldCheck } from 'lucide-react';
 import { TODAY, isOld, isToday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, NOTIF_RED, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "./SwipeToDelete";
 import { AutoScrollText } from "./AutoScrollText";
@@ -243,12 +243,10 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
       onComplete={
         (e.type === 'task' || e.type === 'calendar') && onToggle
           ? () => onToggle(e.id)
-          : e.type === 'note' && onArchiveEntry
-            ? () => onArchiveEntry(e.id)
+          : e.type === 'note' && onUpdateEntry
+            ? () => onUpdateEntry(e.id, { done: true })
             : undefined
       }
-      completeColor={e.type === 'note' ? '#6B7280' : undefined}
-      CompleteIcon={e.type === 'note' ? Archive : undefined}
       isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}
     >
       <div
@@ -292,6 +290,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             <div className={`task-item__title ${e.done ? "task-item__title--done" : ""}`}>
               <AutoScrollText>{e.title}</AutoScrollText>
             </div>
+            {e.pinned && <Pin size={13} className="task-item__pin" />}
           </div>
 
           <div className="task-item__note-hint">
@@ -396,6 +395,108 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
           />
         );
       })()}
+    </SwipeToDelete>
+  );
+}
+
+/* ── Home Category Item (PARA-Zeile im Aufgaben-Layout) ──────── */
+const CAT_PILL_ICONS = { project: Circle, area: Triangle, resource: Square };
+
+export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onToggleVerified, onTrash }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const suppressNextClick = useRef(false);
+  const Icon = CAT_PILL_ICONS[c.type] || Circle;
+  const color = CC[c.type]?.color || "#E03E3E";
+  const isProject = c.type === "project";
+  const isResource = c.type === "resource";
+  const addTag = (name) => Array.from(new Set([...(c.tags || []), name]));
+  const update = (patch) => onUpdateCat?.(c.id, patch);
+
+  return (
+    <SwipeToDelete
+      key={c.id}
+      onDelete={() => onTrash?.(c.id)}
+      onComplete={
+        isProject
+          ? () => update({ archived: true })
+          : isResource && onToggleVerified
+            ? () => onToggleVerified(c.id)
+            : undefined
+      }
+      completeColor={isResource ? "#30A060" : undefined}
+      CompleteIcon={isResource ? ShieldCheck : undefined}
+      isActive={menuOpen}
+    >
+      <div
+        className="task-item task-item--home"
+        onClick={() => { if (suppressNextClick.current) return; onOpenCat?.(c); }}
+      >
+        <button
+          className={`task-item__type-icon ${c.starred ? "task-item__type-icon--starred" : ""}`}
+          onClick={(ev) => { ev.stopPropagation(); update({ starred: !c.starred }); }}
+          aria-label={c.starred ? t.unmarkFavorite : t.markFavorite}
+        >
+          {c.starred
+            ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+            : <Icon size={22} color={color} strokeWidth={2.25} />}
+        </button>
+        <div className="task-item__body">
+          <div className="task-item__top-row">
+            <div className="task-item__title">
+              <AutoScrollText>{c.name}</AutoScrollText>
+            </div>
+            {c.pinned && <Pin size={13} className="task-item__pin" />}
+          </div>
+
+          <div className="task-item__note-hint">
+            <AutoScrollText>{c.body || t.addNotePlaceholder}</AutoScrollText>
+          </div>
+
+          <div className="task-item__pills-row">
+            <div className="task-item__pills">
+              <span className="task-item__pill task-item__pill--date" style={{ cursor: 'default' }}>
+                <Calendar size={12} />
+                <span>{c.date ? fmtDate(c.date, t.locale) : (t.flexible || "Flexibel")}</span>
+              </span>
+              {isResource && c.verified && (
+                <span className="task-item__pill" style={{ color: "#30A060", cursor: 'default' }}>
+                  <Check size={12} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+
+            <button
+              className="task-item__menu-btn"
+              onClick={(ev) => { ev.stopPropagation(); setMenuOpen(true); }}
+            >
+              <MoreVertical size={18} color="#C0C0D0" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {menuOpen && (
+        <EntryActionSheet
+          title={c.name}
+          type={c.type}
+          t={t}
+          flags={{ done: false, starred: !!c.starred, pinned: !!c.pinned, verified: !!c.verified }}
+          dateValue={c.date}
+          onClose={() => setMenuOpen(false)}
+          on={{
+            // Projekt: erledigen/absagen = archivieren (Projekte haben kein done-Flag)
+            done: isProject ? () => update({ archived: true }) : undefined,
+            postpone: isProject ? (d) => update({ date: d, tags: addTag(t.tagPostponed) }) : undefined,
+            cancel: isProject ? () => update({ archived: true, tags: addTag(t.tagCancelled) }) : undefined,
+            verify: isResource ? () => onToggleVerified?.(c.id) : undefined,
+            pin: () => onTogglePin?.(c.id),
+            star: () => update({ starred: !c.starred }),
+            edit: () => onOpenCat?.(c),
+            archive: () => update({ archived: true }),
+            trash: () => onTrash?.(c.id),
+          }}
+        />
+      )}
     </SwipeToDelete>
   );
 }
@@ -524,10 +625,14 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onTogglePin, o
     return entries.map(renderItem);
   }
 
+  // Fixierter Eintrag (genau einer pro Liste) wird ganz oben angepinnt.
+  const pinned = isHome ? entries.find((e) => e.pinned) : null;
+  const source = pinned ? entries.filter((e) => e.id !== pinned.id) : entries;
+
   const todayTasks = [];
   const groupedTasks = new Map();
 
-  entries.forEach((e) => {
+  source.forEach((e) => {
     if (!e.due || isToday(e.due) || isOld(e.due)) {
       todayTasks.push(e);
     } else {
@@ -548,6 +653,7 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onTogglePin, o
 
   return (
     <>
+      {pinned && renderItem(pinned)}
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={t.todayGroup} data-group-right="" data-group-count={todayTasks.length}>
           {!isHome && (
@@ -595,7 +701,11 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onTogglePin, o
     }
 
     return (
-      <SwipeToDelete key={e.id} onDelete={() => onDelete(e.id)}>
+      <SwipeToDelete
+        key={e.id}
+        onDelete={() => onDelete(e.id)}
+        onComplete={!isArchive && onUpdateEntry ? () => onUpdateEntry(e.id, { done: true }) : undefined}
+      >
         <div
           className={`note-item ${isHome ? "note-item--home" : ""} ${isArchive ? "note-item--archive" : ""}`}
           onClick={() => onOpenEntry && onOpenEntry(e)}
@@ -639,10 +749,14 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onTogglePin, o
     return entries.map(renderItem);
   }
 
+  // Fixierte Notiz (genau eine pro Liste) wird ganz oben angepinnt.
+  const pinned = isHome ? entries.find((e) => e.pinned) : null;
+  const source = pinned ? entries.filter((e) => e.id !== pinned.id) : entries;
+
   const todayTasks = [];
   const groupedTasks = new Map();
 
-  entries.forEach((e) => {
+  source.forEach((e) => {
     const d = e.due || e.date;
     if (!d || isToday(d) || isOld(d)) {
       todayTasks.push(e);
@@ -671,6 +785,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onTogglePin, o
 
   return (
     <>
+      {pinned && renderItem(pinned)}
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={isHome ? getOldestLabel(todayTasks) : t.todayGroup} data-group-right="" data-group-count={todayTasks.length}>
           {!isHome && (
@@ -758,10 +873,14 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onTog
     return entries.map(renderItem);
   }
 
+  // Fixierter Termin (genau einer pro Liste) wird ganz oben angepinnt.
+  const pinned = isHome ? entries.find((e) => e.pinned) : null;
+  const source = pinned ? entries.filter((e) => e.id !== pinned.id) : entries;
+
   const todayTasks = [];
   const groupedTasks = new Map();
 
-  entries.forEach((e) => {
+  source.forEach((e) => {
     const d = e.date;
     if (!d || isToday(d) || isOld(d)) {
       todayTasks.push(e);
@@ -783,6 +902,7 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onTog
 
   return (
     <>
+      {pinned && renderItem(pinned)}
       {todayTasks.length > 0 && (
         <div className={`task-group task-group--today ${isHome ? "task-group--home" : ""}`} data-group-left={t.todayGroup} data-group-right="" data-group-count={todayTasks.length}>
           {!isHome && (

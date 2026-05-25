@@ -1011,8 +1011,8 @@
   position: absolute;
   left: 16px;
   right: 16px;
-  // Knapp über dem Input-Dock (Dock-Höhe ~120px + Safe-Area)
-  bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+  // 12px über dem Input-Dock (Dock-Höhe ~120px + Safe-Area)
+  bottom: calc(136px + env(safe-area-inset-bottom, 0px));
   display: flex;
   justify-content: space-between;
   // Liste darunter bleibt scroll-/klickbar; nur die Buttons fangen Klicks ab

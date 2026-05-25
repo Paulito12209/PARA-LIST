@@ -169,6 +169,19 @@
       border-color: #e5e5f0;
     }
 
+    // Seiten-Icon im Light Mode: heller Körper wie das Settings-Icon, dezenter
+    // Akzent-Glow, farbiges Icon bleibt erhalten.
+    &__page-icon {
+      border-color: #e5e5f0;
+      background:
+        radial-gradient(circle at center,
+          rgba(var(--page-accent-rgb), 0.20) 0%,
+          rgba(var(--page-accent-rgb), 0.08) 55%,
+          transparent 76%),
+        #f7f7f9;
+      box-shadow: 0 0 14px rgba(var(--page-accent-rgb), 0.28);
+    }
+
     &__handle-bar {
       background: #3a3a6a;
       opacity: 0.85;
@@ -1421,9 +1434,12 @@
 // ── Command Dock + Startseiten-Liste (Light Mode) ──────────────
 .app.light-theme {
   .command-dock {
-    // Boden genauso hell wie die Eingabezeile, kein Lavendel mehr
-    background: #ffffff;
-    border-top-color: rgba(0, 0, 0, 0.05);
+    // Frosted Glass wie der "Projekt öffnen"-Button: transluzent + starker Blur,
+    // sodass die Liste dahinter durchscheint, die Inhalte aber lesbar bleiben.
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-top-color: rgba(255, 255, 255, 0.6);
     box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.10);
 
     &__type {
@@ -1436,7 +1452,8 @@
     }
 
     &__input-row {
-      background: #ffffff;
+      // Teil der Frosted-Glass-Fläche → kein eigener Kasten
+      background: transparent;
     }
 
     &__input {
@@ -1447,14 +1464,14 @@
       }
     }
 
-    // Icons: weißer Hintergrund + neutrales Grau (statt Lavendel)
+    // Icons: transluzente Glas-Pillen mit zartem Rand (passend zur Frosted-Fläche)
     &__icon-btn {
-      background: #ffffff;
-      border-color: #e6e6ec;
+      background: rgba(255, 255, 255, 0.5);
+      border-color: rgba(0, 0, 0, 0.08);
       color: #5b5b6b;
 
       &:hover {
-        background: #f3f3f6;
+        background: rgba(255, 255, 255, 0.78);
         color: #1c1c30;
       }
     }
@@ -1479,12 +1496,16 @@
       }
     }
 
-    // 7. Icon (Menü): neutrales Grau, ausgegraut – 5% dunkler als zuvor,
-    // damit der disabled-Kreis sich vom weißen Dock abhebt.
+    // 7. Icon (Menü): neutrales Grau, hebt sich vom weißen Dock ab.
     &__menu-circle {
       background: #f2f2f2;
       border-color: #dcdce2;
-      color: #8a8a98;
+      color: #5a5a68;
+    }
+
+    &__menu:hover &__menu-circle {
+      background: #e8e8ee;
+      color: #1a1a24;
     }
   }
 

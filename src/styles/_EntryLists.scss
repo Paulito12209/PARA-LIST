@@ -118,10 +118,18 @@
     min-height: 200px;
   }
 
-  &__empty-icon {
-    font-size: 28px;
-    margin-bottom: $spacing-sm + $spacing-2xs;
-    opacity: 0.4;
+  // Sekundär: nur minimal dunkler als der Input-Placeholder (#8a8a96)
+  &__empty-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: #76767f;
+  }
+
+  // Hinweis im Stil von .voice-overlay__keyword, aber schlanker. Farbe = Kontextfarbe (inline)
+  &__empty-hint {
+    margin-top: $spacing-2xs;
+    font-size: 14px;
+    font-weight: 500;
   }
 }
 
@@ -271,6 +279,25 @@
         color: inherit;
       }
     }
+  }
+
+  &__top-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+
+    .task-item__title {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+  }
+
+  // Pin-Indikator für fixierte Einträge/Kategorien
+  &__pin {
+    flex-shrink: 0;
+    color: #7C83F7;
+    transform: rotate(45deg);
   }
 
   &__checkbox {
@@ -1377,6 +1404,12 @@
       svg { color: #F26565; }
       &:hover, &:active { background: rgba(#F26565, 0.12); }
     }
+
+    &:disabled {
+      opacity: 0.38;
+      cursor: default;
+      &:hover, &:active { background: transparent; }
+    }
   }
 
   &__divider {
@@ -1440,5 +1473,128 @@ body.light-theme .action-sheet {
     background: #f5f5f8;
     border-color: rgba(0, 0, 0, 0.1);
     color: #1c1c30;
+  }
+}
+
+/* ── Papierkorb-Sheet ──────────────────────────────────────── */
+.trash-sheet {
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 8px 8px;
+  }
+
+  &__title {
+    padding: 0;
+  }
+
+  &__empty-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border: 0;
+    border-radius: $radius-md - 4px;
+    background: transparent;
+    color: #F26565;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    svg { color: #F26565; }
+    &:hover, &:active { background: rgba(#F26565, 0.12); }
+  }
+
+  &__empty-state {
+    padding: 28px 12px 32px;
+    text-align: center;
+    color: $color-muted;
+    font-size: 14px;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+}
+
+.trash-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: $radius-md - 4px;
+
+  &__icon {
+    flex-shrink: 0;
+    display: flex;
+    svg { color: $color-muted; }
+  }
+
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    color: $color-text;
+    font-size: 15px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    margin-top: 2px;
+    color: $color-muted;
+    font-size: 12px;
+  }
+
+  &__action {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: $color-hover;
+    color: $color-text;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    svg { color: $color-muted; }
+    &:hover, &:active { background: $color-border; }
+
+    &--danger {
+      svg { color: #F26565; }
+      &:hover, &:active { background: rgba(#F26565, 0.16); }
+    }
+  }
+}
+
+body.light-theme {
+  .trash-sheet__empty-state { color: #8a8a96; }
+  .trash-item__icon svg { color: #6a6a78; }
+  .trash-item__name { color: #1c1c30; }
+  .trash-item__meta { color: #8a8a96; }
+  .trash-item__action {
+    background: rgba(0, 0, 0, 0.05);
+    svg { color: #6a6a78; }
+    &:hover, &:active { background: rgba(0, 0, 0, 0.1); }
+    &--danger {
+      svg { color: #E0484A; }
+      &:hover, &:active { background: rgba(#E0484A, 0.12); }
+    }
   }
 }

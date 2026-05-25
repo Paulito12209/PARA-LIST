@@ -13,6 +13,7 @@ import {
   Trash2,
   ShieldCheck,
 } from "lucide-react";
+import { useSheetSwipeClose } from "./useSheetSwipeClose";
 
 // Typen, die "erledigt" / "abgesagt" werden können
 const COMPLETABLE = ["task", "note", "calendar", "project"];
@@ -58,10 +59,13 @@ export function EntryActionSheet({ title, type, flags = {}, dateValue, on = {}, 
   const canCancel = COMPLETABLE.includes(type) && on.cancel;
   const canVerify = type === "resource" && on.verify;
 
+  const swipe = useSheetSwipeClose(handleClose);
+
   return createPortal(
     <div
       className={`action-sheet ${closing ? "action-sheet--closing" : ""}`}
       onClick={handleClose}
+      {...swipe}
     >
       <div
         className={`action-sheet__panel ${closing ? "action-sheet__panel--closing" : ""}`}

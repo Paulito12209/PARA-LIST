@@ -1,5 +1,40 @@
 import React from 'react';
 
+// App-Logo als SVG (PARA-Glyph). Schimmert in Dunkeltürkis → Neongrün → Grün
+// auf dunklem, grün glühendem runden Körper. Größe via `size`-Prop.
+export const BrandLogo = ({ size = 48, className = "" }) => (
+  <span className={`brand-logo ${className}`} style={{ width: size, height: size }}>
+    <svg
+      className="brand-logo__svg"
+      viewBox="0 0 296 296"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="brandLogoGrad" x1="48" y1="20" x2="240" y2="272" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#0B6E5C" />
+          <stop offset="0.5" stopColor="#2BE38A" />
+          <stop offset="1" stopColor="#0FA968" />
+        </linearGradient>
+      </defs>
+      <g
+        stroke="url(#brandLogoGrad)"
+        strokeWidth="28"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      >
+        <path d="M92 84V200" />
+        <path d="M104 164H156" />
+        <path d="M156 164 C178 164 190 148 198 126 C204 112 208 98 210 84" />
+        <circle cx="92" cy="52" r="30" />
+        <circle cx="92" cy="230" r="30" />
+        <circle cx="208" cy="53" r="30" />
+      </g>
+    </svg>
+  </span>
+);
+
 export const TagIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} className="lucide lucide-tag">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />

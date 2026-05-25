@@ -120,15 +120,27 @@
     flex-shrink: 0;
     border: 1px solid rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    // Opaker Körper als Fallback (Android ohne Backdrop-Blur), Akzent-Glow darüber.
     background:
       radial-gradient(circle at center,
         rgba(var(--page-accent-rgb), 0.38) 0%,
         rgba(var(--page-accent-rgb), 0.14) 55%,
         transparent 76%),
-      rgba($color-dim, 0.6);
+      $color-dim;
     box-shadow:
       0 0 16px rgba(var(--page-accent-rgb), 0.40),
       inset 0 0 8px rgba(var(--page-accent-rgb), 0.20);
+
+    // iOS: transluzente Glas-Variante (Blur rendert dort zuverlässig)
+    @supports (-webkit-touch-callout: none) {
+      background:
+        radial-gradient(circle at center,
+          rgba(var(--page-accent-rgb), 0.38) 0%,
+          rgba(var(--page-accent-rgb), 0.14) 55%,
+          transparent 76%),
+        rgba($color-dim, 0.6);
+    }
 
     svg {
       filter: drop-shadow(0 0 6px rgba(var(--page-accent-rgb), 0.55));
@@ -145,9 +157,14 @@
     @include floating-btn(56px, 50%);
     position: relative;
     @include glass-border;
-    background: rgba($color-dim, 0.6);
+    // Opaker Körper (Android-Fallback), iOS bekommt die Glas-Variante.
+    background: $color-dim;
     transition: all $transition-fast;
     color: $color-text;
+
+    @supports (-webkit-touch-callout: none) {
+      background: rgba($color-dim, 0.6);
+    }
   }
 
   &__greeting {
@@ -188,8 +205,13 @@
     @include floating-btn(48px, 50%);
     position: relative;
     @include glass-border;
-    background: rgba($color-dim, 0.6);
+    // Opaker Körper (Android-Fallback), iOS bekommt die Glas-Variante.
+    background: $color-dim;
     transition: all $transition-fast;
+
+    @supports (-webkit-touch-callout: none) {
+      background: rgba($color-dim, 0.6);
+    }
   }
 
   &__bell-dot {

@@ -17,7 +17,7 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
 } from "lucide-react";
-import { CustomSettingsIcon } from "../components/AppIcons";
+import { CustomSettingsIcon, BrandLogo } from "../components/AppIcons";
 
 const SECTIONS = [
   { id: "project",  type: "project",  Icon: Circle,   labelKey: "projects",  fallback: "Projekte",     color: "var(--cat-project)",  canAdd: true },
@@ -116,9 +116,7 @@ export function Sidebar({
       aria-hidden={!visible}
     >
       <div className="dsk-sidebar__brand">
-        <div className="dsk-sidebar__brand-logo">
-          <img src={`${import.meta.env.BASE_URL}paralist_logo.png`} alt="Paralist" />
-        </div>
+        <BrandLogo size={38} className="brand-logo--square" />
         <span className="dsk-sidebar__brand-label">PARA·LIST</span>
         <button
           type="button"

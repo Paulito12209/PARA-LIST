@@ -18,3 +18,33 @@
     opacity: 1;
   }
 }
+
+// ── App-Logo (SVG-Glyph mit grünem Glow) ─────────────────────
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  overflow: hidden;
+  // Dunkler türkis-grüner Körper mit zentralem, gleichmäßigem grünen Glühen.
+  // (Zentriert statt oben-links, damit kein einzelner Node verwaschen wirkt.)
+  background:
+    radial-gradient(circle at 50% 55%, rgba(43, 227, 138, 0.22) 0%, transparent 62%),
+    #06231d;
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.35),
+    0 0 14px rgba(43, 227, 138, 0.20);
+
+  // Abgerundetes Quadrat (z.B. Desktop-Sidebar)
+  &--square {
+    border-radius: 26%;
+  }
+
+  &__svg {
+    width: 58%;
+    height: 58%;
+    // Dezenter, scharfer Neon-Glow (kein Verschwimmen der Nodes)
+    filter: drop-shadow(0 0 2.5px rgba(43, 227, 138, 0.40));
+  }
+}

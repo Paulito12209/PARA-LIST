@@ -409,6 +409,13 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
   const color = CC[c.type]?.color || "#E03E3E";
   const isProject = c.type === "project";
   const isResource = c.type === "resource";
+  const isArea = c.type === "area";
+  // Bereiche & Ressourcen haben kein wählbares Datum → Pille zeigt das
+  // Entstehungsdatum. Projekte zeigen ihr (ggf. gesetztes) Datum bzw. "Flexibel".
+  const pillDate =
+    (isResource || isArea)
+      ? (c.createdAt ? fmtDate(c.createdAt.split("T")[0], t.locale) : (t.flexible || "Flexibel"))
+      : (c.date ? fmtDate(c.date, t.locale) : (t.flexible || "Flexibel"));
   const addTag = (name) => Array.from(new Set([...(c.tags || []), name]));
   const update = (patch) => onUpdateCat?.(c.id, patch);
 
@@ -456,7 +463,7 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
             <div className="task-item__pills">
               <span className="task-item__pill task-item__pill--date" style={{ cursor: 'default' }}>
                 <Calendar size={12} />
-                <span>{c.date ? fmtDate(c.date, t.locale) : (t.flexible || "Flexibel")}</span>
+                <span>{pillDate}</span>
               </span>
               {isResource && c.verified && (
                 <span className="task-item__pill" style={{ color: "#30A060", cursor: 'default' }}>

@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Check, Moon, Sun } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
-import { CustomSettingsIcon } from "./AppIcons";
+import { CustomSettingsIcon, BrandLogo } from "./AppIcons";
 
 const SWIPE_THRESHOLD_PX = 60;
 const HAPTIC_TAP_MS = 10;
@@ -100,13 +100,7 @@ export function CommandPanel({
                 <PageIcon size={22} color={`rgb(${page.accentRgb})`} strokeWidth={2.4} />
               </span>
             ) : (
-              <span className="command-panel__logo">
-                <img
-                  className="command-panel__logo-img"
-                  src={`${import.meta.env.BASE_URL}paralist_logo.png`}
-                  alt="PARA·LIST"
-                />
-              </span>
+              <BrandLogo size={48} />
             )}
             <div className="command-panel__titles">
               {(page || isVoiceMode) ? (

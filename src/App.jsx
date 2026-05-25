@@ -325,7 +325,7 @@ export default function App() {
   };
 
   /* ── entity mutations ──────────────────────────────────────── */
-  const addCat = (type, name) =>
+  const addCat = (type, name, date = null) =>
     setState((s) => ({
       ...s,
       cats: [
@@ -334,7 +334,7 @@ export default function App() {
           id: uid(),
           type,
           name,
-          date: null,
+          date: date || null,
           body: "",
           tags: [],
           relatedId: null,
@@ -747,12 +747,12 @@ export default function App() {
             onCoverAccentChange={setCoverAccentRgb}
             onOpenCatType={(type) => push({ view: VIEW.CAT_LIST, type })}
             onOpenCat={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
-            onQuickCreate={(type, title) => {
+            onQuickCreate={(type, title, date) => {
               setPanelOpen(false);
               if (type === "project" || type === "area" || type === "resource") {
-                addCat(type, title);
+                addCat(type, title, date);
               } else {
-                addEntry(buildVoiceEntry(type, title));
+                addEntry(buildVoiceEntry(type, title, date));
               }
             }}
             onAddEntry={(type) => {

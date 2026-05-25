@@ -870,7 +870,7 @@ export function HomeScreen({
           lang={lang}
           onTranscribed={(title, date) => {
             if (isEntryType) onAddVoiceEntry(title, date);
-            else onQuickCreate(activeType, title);
+            else onQuickCreate(activeType, title, date);
             setVoiceOverlayOpen(false);
           }}
           onClose={() => setVoiceOverlayOpen(false)}

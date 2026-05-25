@@ -45,13 +45,14 @@ const SINGULAR_KEY = {
   calendar: "calSing",
 };
 
-// `leadingAction` steuert das linke Icon der Eingabezeile:
-//   "list" (Default, Startseite) → toggelt die Liste auf/zu
-//   "home" (Detailseiten)        → springt zurück zur Startseite via onHome
-export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList, onOpenVoice, onMenu, onHome, leadingAction = "list" }) {
+// `leadingAction` steuert nur das Styling des linken Home-Buttons:
+//   "list" (Default, Startseite) → "aktiv" hervorgehoben
+//   "home" (Detailseiten)        → normales Glas
+// Geklickt navigiert er IMMER zur Startseite (onHome).
+// `canToggleList`: auf der Startseite klappt ein 2. Tap auf das bereits aktive
+// Typ-Icon die Liste auf/zu (onToggleList).
+export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, onOpenVoice, onMenu, onHome, leadingAction = "list" }) {
   const [value, setValue] = useState("");
-  // Linker Button ist immer ein Home-Button. Auf der Startseite ("list") ist er
-  // "aktiv" gestylt und toggelt die Liste; auf Detailseiten springt er zurück.
   const isHomeScreen = leadingAction === "list";
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
   const placeholder = t.addPlaceholder(t[SINGULAR_KEY[activeType]] || "");
@@ -76,7 +77,11 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
               key={d.id}
               className={`command-dock__type ${isActive ? "command-dock__type--active" : ""}`}
               style={isActive ? { color: d.color, "--type-color": d.color } : undefined}
-              onClick={() => onSelectType(d.id)}
+              onClick={() => {
+                // 2. Tap auf das bereits aktive Icon (nur Startseite) → Liste auf/zu
+                if (canToggleList && isActive) onToggleList?.();
+                else onSelectType(d.id);
+              }}
               title={t[SINGULAR_KEY[d.id]]}
             >
               <Icon size={22} strokeWidth={isActive ? 2.6 : 2} />
@@ -95,7 +100,7 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onOpenList,
       <div className="command-dock__input-row">
         <button
           className={`command-dock__icon-btn command-dock__list-btn ${isHomeScreen ? "command-dock__list-btn--active" : ""}`}
-          onClick={() => (isHomeScreen ? onOpenList(activeType) : onHome?.())}
+          onClick={() => onHome?.()}
           aria-label={t.home || "Startseite"}
         >
           <Home size={20} />

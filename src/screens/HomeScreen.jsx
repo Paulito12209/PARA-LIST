@@ -72,6 +72,7 @@ export function HomeScreen({
   onAddVoiceEntry,
   toggleTask,
   toggleStar,
+  togglePin,
   updateEntry,
   deleteEntry,
   onOpenEntry,
@@ -162,20 +163,26 @@ export function HomeScreen({
     })
     .filter((e) => {
       if (tab === "calendar") {
-        return e.type === "calendar" && (!e.date || !isOld(e.date)) && !e.done;
+        return e.type === "calendar" && (!e.date || !isOld(e.date)) && !e.done && !e.archived;
       }
       if (tab === "notes") {
-        return e.type === "note" && !e.archived;
+        return e.type === "note" && !e.archived && !e.done;
       }
       if (tab === "tasks") {
         const isOverdue = e.type === "task" && !e.done && isOld(e.due);
-        return e.type === "task" && !isOverdue && !e.done;
+        return e.type === "task" && !isOverdue && !e.done && !e.archived;
       }
       return false;
     });
 
   const tabCfg = TABS.find((tCfg) => tCfg.id === tab);
   const tabColor = tabCfg?.color || "#0078D4";
+
+  // Ist die aktuell sichtbare Liste leer? Dann darf der Platzhalter nicht
+  // wegscrollbar sein (Scrollen wird per CSS gesperrt).
+  const activeListEmpty = isEntryType
+    ? tabEntries.length === 0
+    : cats.filter((c) => c.type === activeType && !c.archived).length === 0;
 
   const avatarInputRef = useRef(null);
 
@@ -529,6 +536,7 @@ export function HomeScreen({
           lang={lang}
           onToggle={toggleTask}
           onToggleStar={toggleStar}
+          onTogglePin={togglePin}
           onUpdateEntry={updateEntry}
           onDelete={deleteEntry}
         />
@@ -540,6 +548,7 @@ export function HomeScreen({
           {...shared}
           onDelete={deleteEntry}
           onToggleStar={toggleStar}
+          onTogglePin={togglePin}
           onUpdateEntry={updateEntry}
           onArchiveEntry={onArchiveEntry}
         />
@@ -553,6 +562,7 @@ export function HomeScreen({
           onDelete={deleteEntry}
           onToggle={toggleTask}
           onToggleStar={toggleStar}
+          onTogglePin={togglePin}
           onUpdateEntry={updateEntry}
         />
       );
@@ -729,7 +739,7 @@ export function HomeScreen({
         )}
 
         <div
-          className="entry-list"
+          className={`entry-list${activeListEmpty ? " entry-list--locked" : ""}`}
           onClick={handleDoubleTap}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -774,7 +784,9 @@ export function HomeScreen({
         activeType={activeType}
         onSelectType={handleSelectType}
         onSubmit={onQuickCreate}
-        onOpenList={() => setListExpanded((v) => !v)}
+        canToggleList
+        onToggleList={() => setListExpanded((v) => !v)}
+        onHome={() => setListExpanded(false)}
         onOpenVoice={() => setVoiceOverlayOpen(true)}
         onMenu={() => { /* TODO: Optionen-Menü (Listen-/Log-Darstellung) – Funktion noch offen */ }}
       />

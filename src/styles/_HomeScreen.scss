@@ -919,6 +919,14 @@
   flex: 1;
 }
 
+// Leere Liste: Platzhalter mittig halten und Scrollen sperren, damit man die
+// "Keine …"-Info nicht nach oben wegschieben kann (Desktop / große Displays).
+.home .entry-list--locked {
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .home__list-container--expanded .entry-list {
   padding-bottom: 152px !important;
 }

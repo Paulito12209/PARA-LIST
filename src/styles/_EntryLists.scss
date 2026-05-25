@@ -1281,3 +1281,164 @@
     }
   }
 }
+
+// ── Aktions-Bottom-Sheet (Kebab-Menü für alle Listeneinträge) ──
+// Wird per Portal an <body> gehängt → bildschirmfüllend, von unten einslidend.
+@keyframes action-sheet-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes action-sheet-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.action-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+  animation: action-sheet-fade-in 0.18s ease-out;
+  -webkit-tap-highlight-color: transparent;
+
+  &--closing {
+    animation: action-sheet-fade-in 0.18s ease-out reverse;
+  }
+
+  &__panel {
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    background: $color-card;
+    border-top-left-radius: $radius-lg;
+    border-top-right-radius: $radius-lg;
+    border-top: 1px solid $color-border;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+    padding: 8px 12px calc(16px + env(safe-area-inset-bottom));
+    animation: action-sheet-slide-up 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+
+    &--closing {
+      animation: action-sheet-slide-up 0.18s ease-in reverse;
+    }
+  }
+
+  &__handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: $color-border;
+    margin: 4px auto 10px;
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-muted;
+    padding: 0 8px 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: 13px 12px;
+    border: 0;
+    background: transparent;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    border-radius: $radius-md - 4px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    svg { flex-shrink: 0; color: $color-muted; }
+
+    &:hover, &:active {
+      background: $color-hover;
+    }
+
+    &--danger {
+      color: #F26565;
+      svg { color: #F26565; }
+      &:hover, &:active { background: rgba(#F26565, 0.12); }
+    }
+  }
+
+  &__divider {
+    height: 1px;
+    background: $color-border;
+    margin: 6px 4px;
+  }
+
+  &__postpone {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 8px;
+  }
+
+  &__postpone-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-muted;
+  }
+
+  &__date-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: $radius-md - 4px;
+    border: 1px solid $color-border;
+    background: $color-surface;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 15px;
+  }
+}
+
+// Light-Theme (Klasse liegt auf <body>, da das Sheet per Portal dort hängt)
+body.light-theme .action-sheet {
+  background: rgba(0, 0, 0, 0.28);
+
+  &__panel {
+    background: #ffffff;
+    border-top-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.14);
+  }
+
+  .action-sheet__handle { background: rgba(0, 0, 0, 0.15); }
+  .action-sheet__title  { color: #8a8a96; }
+
+  .action-sheet__item {
+    color: #1c1c30;
+    svg { color: #6a6a78; }
+    &:hover, &:active { background: rgba(0, 0, 0, 0.05); }
+    &--danger {
+      color: #E0484A;
+      svg { color: #E0484A; }
+      &:hover, &:active { background: rgba(#E0484A, 0.1); }
+    }
+  }
+
+  .action-sheet__divider { background: rgba(0, 0, 0, 0.08); }
+  .action-sheet__postpone-label { color: #8a8a96; }
+  .action-sheet__date-input {
+    background: #f5f5f8;
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1c1c30;
+  }
+}

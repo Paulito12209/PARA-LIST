@@ -119,10 +119,10 @@ export function ArchiveScreen({
   const archivedProjects = cats.filter((c) => c.type === "project" && c.archived);
   const archivedAreas = cats.filter((c) => c.type === "area" && c.archived);
   const archivedResources = cats.filter((c) => c.type === "resource" && c.archived);
-  const completedTasks = entries.filter((e) => e.type === "task" && e.done);
-  const archivedNotes = entries.filter((e) => e.type === "note" && e.archived);
+  const completedTasks = entries.filter((e) => e.type === "task" && (e.done || e.archived));
+  const archivedNotes = entries.filter((e) => e.type === "note" && (e.archived || e.done));
   const archivedEvents = entries.filter(
-    (e) => e.type === "calendar" && (isOld(e.date) || e.done)
+    (e) => e.type === "calendar" && (isOld(e.date) || e.done || e.archived)
   );
 
   const counts = {

@@ -31,6 +31,8 @@ const SWIPE_PANEL_OPEN_PX = 80;
 const SWIPE_PANEL_CLOSE_PX = -60;
 const SWIPE_AXIS_TOLERANCE_PX = 50;
 const HAPTIC_TASK_DONE_PATTERN = [30, 50, 30];
+// Papierkorb: nach 30 Tagen werden gelöschte Items endgültig entfernt.
+const TRASH_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const VIEW = {
   HOME: "home",
@@ -119,6 +121,19 @@ function migrateState(state) {
     return patched;
   });
 
+  // Papierkorb: Array sicherstellen und Items > 30 Tage endgültig entfernen.
+  if (!Array.isArray(next.trash)) {
+    next.trash = [];
+    dirty = true;
+  } else {
+    const cutoff = Date.now() - TRASH_TTL_MS;
+    const kept = next.trash.filter((it) => (it.deletedAt ?? 0) > cutoff);
+    if (kept.length !== next.trash.length) {
+      next.trash = kept;
+      dirty = true;
+    }
+  }
+
   return dirty ? next : state;
 }
 
@@ -166,6 +181,12 @@ export default function App() {
   useEffect(() => {
     if (isLoaded) setState(migrateState);
   }, [isLoaded, setState]);
+
+  // Theme-Klasse auf <body> spiegeln, damit per Portal an body gehängte Overlays
+  // (Aktions-Bottom-Sheet, Papierkorb) das Light-Theme erben.
+  useEffect(() => {
+    document.body.classList.toggle("light-theme", state.theme === "light");
+  }, [state.theme]);
 
   const [stack, setStack] = useState([{ view: VIEW.HOME }]);
   const [tab, setTab] = useState("tasks");
@@ -283,8 +304,18 @@ export default function App() {
       cats: s.cats.map((c) => (c.id === id ? { ...c, ...patch } : c)),
     }));
 
+  // Löschen = in den Papierkorb verschieben (nicht endgültig). Auto-Purge nach
+  // 30 Tagen läuft beim App-Start (migrateState).
   const deleteCat = (id) => {
-    setState((s) => ({ ...s, cats: s.cats.filter((c) => c.id !== id) }));
+    setState((s) => {
+      const cat = s.cats.find((c) => c.id === id);
+      if (!cat) return s;
+      return {
+        ...s,
+        cats: s.cats.filter((c) => c.id !== id),
+        trash: [...(s.trash || []), { kind: "cat", deletedAt: Date.now(), data: cat }],
+      };
+    });
     pop();
   };
 
@@ -333,10 +364,13 @@ export default function App() {
       }),
     }));
 
+  // Löschen = in den Papierkorb verschieben. Referenzen (Links/Subtasks) der
+  // verbleibenden Einträge werden bereinigt; bei Wiederherstellung werden sie
+  // nicht automatisch neu verknüpft (bewusst vereinfacht).
   const deleteEntry = (id) =>
-    setState((s) => ({
-      ...s,
-      entries: s.entries
+    setState((s) => {
+      const entry = s.entries.find((e) => e.id === id);
+      const remaining = s.entries
         .filter((e) => e.id !== id)
         .map((e) => {
           let patched = e;
@@ -347,7 +381,52 @@ export default function App() {
             patched = { ...patched, parentId: null };
           }
           return patched;
+        });
+      return {
+        ...s,
+        entries: remaining,
+        trash: entry ? [...(s.trash || []), { kind: "entry", deletedAt: Date.now(), data: entry }] : s.trash,
+      };
+    });
+
+  /* ── Papierkorb: Wiederherstellen / endgültig löschen ──────── */
+  const restoreFromTrash = (dataId) =>
+    setState((s) => {
+      const item = (s.trash || []).find((it) => it.data?.id === dataId);
+      if (!item) return s;
+      const trash = s.trash.filter((it) => it.data?.id !== dataId);
+      if (item.kind === "cat") return { ...s, trash, cats: [...s.cats, item.data] };
+      return { ...s, trash, entries: [...s.entries, item.data] };
+    });
+
+  const purgeTrashItem = (dataId) =>
+    setState((s) => ({ ...s, trash: (s.trash || []).filter((it) => it.data?.id !== dataId) }));
+
+  const emptyTrash = () => setState((s) => ({ ...s, trash: [] }));
+
+  /* ── Fixieren (Pin): pro Liste/Typ nur ein Item ───────────── */
+  const togglePin = (id, kind = "entry") =>
+    setState((s) => {
+      const coll = kind === "cat" ? "cats" : "entries";
+      const target = s[coll].find((x) => x.id === id);
+      if (!target) return s;
+      const turningOn = !target.pinned;
+      return {
+        ...s,
+        [coll]: s[coll].map((x) => {
+          if (x.id === id) return { ...x, pinned: turningOn };
+          // Beim Anpinnen jedes andere Item derselben Liste (gleicher Typ) lösen
+          if (turningOn && x.type === target.type && x.pinned) return { ...x, pinned: false };
+          return x;
         }),
+      };
+    });
+
+  /* ── Verifizieren (nur Ressourcen) ────────────────────────── */
+  const toggleVerified = (id) =>
+    setState((s) => ({
+      ...s,
+      cats: s.cats.map((c) => (c.id === id ? { ...c, verified: !c.verified } : c)),
     }));
 
   const linkEntries = (idA, idB) =>
@@ -635,6 +714,7 @@ export default function App() {
             onAddVoiceEntry={(title, date) => addEntry(buildVoiceEntry(tab, title, date))}
             toggleTask={toggleTask}
             toggleStar={toggleStar}
+            togglePin={(id) => togglePin(id, "entry")}
             updateEntry={updateEntry}
             deleteEntry={deleteEntry}
             onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}

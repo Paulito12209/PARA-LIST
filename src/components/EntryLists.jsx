@@ -3,6 +3,7 @@ import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown,
 import { TODAY, isOld, isToday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, NOTIF_RED, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "./SwipeToDelete";
 import { AutoScrollText } from "./AutoScrollText";
+import { EntryActionSheet } from "./EntryActionSheet";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
 
 export function EntryMetaTags({ entry, cats, CC, isHome }) {
@@ -96,7 +97,7 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
 }/* ── Home Entry Item ─────────────────────────────────────────── */
 
 
-export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, onOpenEntry, onArchiveEntry, t, CC, isArchive }) {
+export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTogglePin, onUpdateEntry, onOpenEntry, onArchiveEntry, t, CC, isArchive }) {
   const [menuEntryId, setMenuEntryId] = useState(null);
   const [dateEntryId, setDateEntryId] = useState(null);
   const [pillPopup, setPillPopup] = useState(null);
@@ -365,63 +366,42 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onUpd
           )}
         </div>
 
-        {menuEntryId === e.id && (
-          <div className="task-item__context-menu" ref={menuRef} onClick={(ev) => ev.stopPropagation()}>
-            {e.type === 'task' && (
-              <button
-                className="task-item__context-menu-item"
-                onClick={() => { onToggle && onToggle(e.id); setMenuEntryId(null); }}
-              >
-                <Check size={14} />
-                <span>{e.done ? t.markOpen : t.markDone}</span>
-              </button>
-            )}
-            {e.type === 'calendar' && (
-              <button
-                className="task-item__context-menu-item"
-                onClick={() => { onToggle && onToggle(e.id); setMenuEntryId(null); }}
-              >
-                {e.done ? <ArchiveRestore size={14} /> : <Check size={14} />}
-                <span>{e.done ? t.markOpen : t.markAttended}</span>
-              </button>
-            )}
-            <button
-              className="task-item__context-menu-item"
-              onClick={() => { onOpenEntry && onOpenEntry(e); setMenuEntryId(null); }}
-            >
-              <Edit2 size={14} />
-              <span>{t.edit}</span>
-            </button>
-            {e.type === 'note' && (
-              <button
-                className="task-item__context-menu-item"
-                onClick={() => { 
-                  if (onArchiveEntry) onArchiveEntry(e.id);
-                  else if (onUpdateEntry) onUpdateEntry(e.id, { archived: !e.archived });
-                  setMenuEntryId(null); 
-                }}
-              >
-                {isArchive ? <ArchiveRestore size={14} /> : <Archive size={14} />}
-                <span>{isArchive ? t.restore : t.archive}</span>
-              </button>
-            )}
-            <div className="task-item__context-menu-divider" />
-            <button
-              className="task-item__context-menu-item task-item__context-menu-item--danger"
-              onClick={() => { onDelete(e.id); setMenuEntryId(null); }}
-            >
-              <Trash2 size={14} />
-              <span>{t.delete}</span>
-            </button>
-          </div>
-        )}
       </div>
+
+      {menuEntryId === e.id && (() => {
+        const dateField = e.type === 'calendar' ? 'date' : 'due';
+        const addTag = (name) => Array.from(new Set([...(e.tags || []), name]));
+        return (
+          <EntryActionSheet
+            title={e.title}
+            type={e.type}
+            t={t}
+            flags={{ done: !!e.done, starred: !!e.starred, pinned: !!e.pinned }}
+            dateValue={e[dateField]}
+            onClose={() => setMenuEntryId(null)}
+            on={{
+              // Erledigt: Aufgabe/Termin via onToggle (Celebration); Notiz via done-Flag
+              done: () => (e.type === 'note' ? onUpdateEntry?.(e.id, { done: true }) : onToggle?.(e.id)),
+              reopen: () => (e.type === 'note' ? onUpdateEntry?.(e.id, { done: false }) : onToggle?.(e.id)),
+              // Verschoben: neues Datum + Tag, bleibt sichtbar
+              postpone: (newDate) => onUpdateEntry?.(e.id, { [dateField]: newDate, tags: addTag(t.tagPostponed) }),
+              // Abgesagt: wie erledigt (raus aus aktiver Liste, ins Archiv) + Tag
+              cancel: () => onUpdateEntry?.(e.id, { done: true, tags: addTag(t.tagCancelled) }),
+              pin: () => onTogglePin?.(e.id),
+              star: () => onToggleStar?.(e.id),
+              edit: () => onOpenEntry?.(e),
+              archive: () => onUpdateEntry?.(e.id, { archived: true }),
+              trash: () => onDelete?.(e.id),
+            }}
+          />
+        );
+      })()}
     </SwipeToDelete>
   );
 }
 
 
-export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry, onDelete, t, CC, grouped, color: _color, onOpenEntry, isHome, isArchive }) {
+export function TaskList({ entries, cats, onToggle, onToggleStar, onTogglePin, onUpdateEntry, onDelete, t, CC, grouped, color: _color, onOpenEntry, isHome, isArchive }) {
   // State für Kontextmenü und Pill-Popup (nur Home)
   const [menuEntryId, setMenuEntryId] = useState(null);
   // pillPopup: { entryId, type, showAdd } – welches Pill-Popup offen ist
@@ -478,6 +458,7 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
           onDelete={onDelete}
           onToggle={onToggle}
           onToggleStar={onToggleStar}
+          onTogglePin={onTogglePin}
           onUpdateEntry={onUpdateEntry}
           onOpenEntry={onOpenEntry}
           t={t}
@@ -592,7 +573,7 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onUpdateEntry,
 }
 
 
-export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry, CC, grouped, color: _color, t, onOpenEntry, onArchiveEntry, isHome, isArchive }) {
+export function NoteList({ entries, cats, onDelete, onToggleStar, onTogglePin, onUpdateEntry, CC, grouped, color: _color, t, onOpenEntry, onArchiveEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     if (isHome) {
       return (
@@ -602,6 +583,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
           cats={cats}
           onDelete={onDelete}
           onToggleStar={onToggleStar}
+          onTogglePin={onTogglePin}
           onUpdateEntry={onUpdateEntry}
           onOpenEntry={onOpenEntry}
           onArchiveEntry={onArchiveEntry}
@@ -714,7 +696,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onUpdateEntry,
 }
 
 
-export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpdateEntry, t, CC, grouped, color: _color, onOpenEntry, isHome, isArchive }) {
+export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onTogglePin, onUpdateEntry, t, CC, grouped, color: _color, onOpenEntry, isHome, isArchive }) {
   const renderItem = (e) => {
     if (isHome) {
       return (
@@ -725,6 +707,7 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onUpd
           onDelete={onDelete}
           onToggle={onToggle}
           onToggleStar={onToggleStar}
+          onTogglePin={onTogglePin}
           onUpdateEntry={onUpdateEntry}
           onOpenEntry={onOpenEntry}
           t={t}

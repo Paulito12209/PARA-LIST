@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ArrowUp } from "lucide-react";
 
 const ACCENT_RGB = {
   tasks: "124, 131, 247",
@@ -227,7 +227,8 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
                 type="text"
                 placeholder=""
                 value={text}
-                readOnly
+                onChange={(e) => setText(e.target.value)}
+                onKeyDown={handleKeyDown}
               />
             </>
           )}
@@ -279,12 +280,6 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
 
         <div className="voice-overlay__gradient" />
 
-        {phase === "title" && (
-          <div className="voice-overlay__search-hint">
-            {renderHighlighted(hasText ? t.voiceContinueDate : t.voiceSearchHint, tabColor)}
-          </div>
-        )}
-
         {/* ── Bottom bar ── */}
         <div className={`voice-overlay__bottom-bar ${isListening ? "voice-overlay__bottom-bar--listening" : ""}`}>
           <button className="voice-overlay__close-btn" onClick={onClose}>
@@ -299,21 +294,7 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
 
           {hasText && phase === "title" ? (
             <button className="voice-overlay__mic-btn voice-overlay__mic-btn--send" onClick={handleSubmit} style={{ background: tabColor }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13" />
-                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-              </svg>
-            </button>
-          ) : !hasText && phase === "title" ? (
-            <button
-              className={`voice-overlay__mic-btn ${isListening ? "voice-overlay__mic-btn--listening" : ""}`}
-              onClick={() => startListeningRef.current?.()}
-              style={{ background: tabColor }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
+              <ArrowUp size={22} strokeWidth={2.5} />
             </button>
           ) : (
             <button

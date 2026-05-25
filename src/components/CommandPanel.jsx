@@ -109,18 +109,17 @@ export function CommandPanel({
               </span>
             )}
             <div className="command-panel__titles">
-              {page ? (
+              {(page || isVoiceMode) ? (
                 <>
+                  {/* Detailseiten + Voice-Modus: Datum über dem Titel/der Frage */}
                   <div className="command-panel__date">{dateStr}</div>
-                  <div className="command-panel__greeting command-panel__greeting--page">
-                    {page.title}
+                  <div className={`command-panel__greeting ${page ? "command-panel__greeting--page" : ""}`}>
+                    {page ? page.title : t.voiceQuestion}
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="command-panel__greeting">
-                    {isVoiceMode ? t.voiceQuestion : (title || t.home)}
-                  </div>
+                  <div className="command-panel__greeting">{title || t.home}</div>
                   <div className="command-panel__date">{dateStr}</div>
                 </>
               )}

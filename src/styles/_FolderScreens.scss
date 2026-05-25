@@ -626,6 +626,12 @@
 
 .settings-sheet {
   width: 100%;
+  // Begrenzte Höhe, damit lange Inhalte (z.B. aufgeklapptes Farbraster)
+  // nicht über den Viewport hinauslaufen – Sheet wird dann scrollbar.
+  max-height: calc(100% - #{$spacing-xl});
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   background: $color-surface;
   border-radius: $radius-xl $radius-xl 0 0;
   padding: $spacing-sm $spacing-md $spacing-xl;

@@ -28,9 +28,9 @@ export function useSheetSwipeClose(onClose) {
     const dy = e.changedTouches[0].clientY - startY.current;
     const dx = e.changedTouches[0].clientX - startX.current;
     if (dy <= CLOSE_DY_PX || Math.abs(dx) > AXIS_TOL_PX) return;
-    // Nicht schließen, wenn innerhalb einer scrollbaren Liste gewischt wurde,
-    // die nicht ganz oben steht (dann war es eine Scroll-Geste).
-    const scrollEl = e.target.closest?.(".trash-sheet__list");
+    // Nicht schließen, wenn innerhalb eines scrollbaren Bereichs gewischt wurde,
+    // der nicht ganz oben steht (dann war es eine Scroll-Geste).
+    const scrollEl = e.target.closest?.(".trash-sheet__list, .settings-sheet");
     if (scrollEl && scrollEl.scrollTop > 0) return;
     onClose?.();
   };

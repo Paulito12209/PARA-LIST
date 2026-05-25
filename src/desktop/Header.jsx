@@ -1,4 +1,3 @@
-import { useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 import { CustomSettingsIcon } from "../components/AppIcons";
 
@@ -35,26 +34,8 @@ export function Header({
   userName,
   lang,
   railOpen,
-  searchValue,
-  onSearchChange,
   onOpenSettings,
-  searchInputRef: searchInputRefProp,
 }) {
-  const internalRef = useRef(null);
-  const searchRef = searchInputRefProp || internalRef;
-
-  useEffect(() => {
-    const onKey = (e) => {
-      const mod = e.metaKey || e.ctrlKey;
-      if (mod && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [searchRef]);
-
   return (
     <header className="dsk-header">
       <div className="dsk-header__greeting">
@@ -65,28 +46,23 @@ export function Header({
         <div className="dsk-header__date">{formatToday(lang)}</div>
       </div>
 
+      {/* Suche ist noch nicht implementiert → deaktiviert dargestellt */}
       <div
-        className="dsk-header__search"
-        onClick={() => searchRef.current?.focus()}
+        className="dsk-header__search dsk-header__search--disabled"
         role="search"
+        aria-disabled="true"
       >
         <Search size={18} strokeWidth={2} className="dsk-header__search-icon" aria-hidden="true" />
         <input
-          ref={searchRef}
           type="text"
           className="dsk-header__search-input"
           placeholder={lang === "en"
-            ? "Search or say \"I'm looking for…\""
+            ? "Search here"
             : lang === "es"
-              ? "Buscar o di \"Estoy buscando…\""
-              : "Suchen oder „Ich suche…\" sagen"}
-          value={searchValue}
-          onChange={(e) => onSearchChange(e.target.value)}
+              ? "Busca aquí"
+              : "Suche hier"}
+          disabled
         />
-        <span className="dsk-header__search-kbd" aria-hidden="true">
-          <kbd>⌘</kbd>
-          <kbd>K</kbd>
-        </span>
       </div>
 
       {!railOpen && (

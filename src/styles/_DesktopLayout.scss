@@ -593,6 +593,13 @@
     .dsk-app--light & {
       background: rgba(255, 255, 255, 0.55);
     }
+
+    // Suche noch nicht verfügbar → ausgegraut, kein Cursor, keine Interaktion
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
   }
   &__search-icon { color: var(--text-3); flex-shrink: 0; }
   &__search-input {
@@ -606,6 +613,10 @@
     font-family: $font-body;
 
     &::placeholder { color: var(--text-3); }
+
+    &:disabled {
+      cursor: not-allowed;
+    }
   }
   &__search-kbd {
     display: flex;

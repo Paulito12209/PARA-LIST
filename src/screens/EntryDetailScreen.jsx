@@ -5,6 +5,7 @@ import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { BookmarkRail } from "./FolderScreens";
+import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 const COVER_COLORS = [
   { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
@@ -105,6 +106,9 @@ export function EntryDetailScreen({
     setShowSettingsSheet(false);
     setCoverMode(null);
   }, []);
+
+  // Wisch-nach-unten zum Schließen des Settings-Sheets
+  const settingsSwipe = useSheetSwipeClose(closeSettingsSheet);
 
   const handleCoverUpload = useCallback((e) => {
     const file = e.target.files[0];
@@ -655,7 +659,7 @@ export function EntryDetailScreen({
 
       {/* Settings Bottom Sheet */}
       {showSettingsSheet && (
-        <div className="settings-sheet-overlay" onClick={closeSettingsSheet}>
+        <div className="settings-sheet-overlay" onClick={closeSettingsSheet} {...settingsSwipe}>
           <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="settings-sheet__handle" />
 

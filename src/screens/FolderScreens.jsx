@@ -5,6 +5,7 @@ import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
+import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
   const cfg = CC[type];
@@ -248,6 +249,9 @@ export function CatDetailScreen({
     setShowSettingsSheet(false);
     setCoverMode(null);
   }, []);
+
+  // Wisch-nach-unten zum Schließen des Settings-Sheets
+  const settingsSwipe = useSheetSwipeClose(closeSettingsSheet);
 
   const handleCoverUpload = useCallback((e) => {
     const file = e.target.files[0];
@@ -804,7 +808,7 @@ export function CatDetailScreen({
 
       {/* Settings Bottom Sheet */}
       {showSettingsSheet && (
-        <div className="settings-sheet-overlay" onClick={closeSettingsSheet}>
+        <div className="settings-sheet-overlay" onClick={closeSettingsSheet} {...settingsSwipe}>
           <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
             <div className="settings-sheet__handle" />
 

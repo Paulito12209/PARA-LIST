@@ -23,7 +23,7 @@ const SECTIONS = [
   { id: "project",  type: "project",  Icon: Circle,   labelKey: "projects",  fallback: "Projekte",     color: "var(--cat-project)",  canAdd: true },
   { id: "area",     type: "area",     Icon: Triangle, labelKey: "areas",     fallback: "Arbeitsbereiche", color: "var(--cat-area)",   canAdd: true },
   { id: "resource", type: "resource", Icon: Square,   labelKey: "resources", fallback: "Ressourcen",   color: "var(--cat-resource)", canAdd: true },
-  { id: "archive",  type: null,       Icon: Archive,  labelKey: "archive",   fallback: "Archiv",       color: "var(--cat-archive)",  canAdd: false },
+  { id: "archive",  type: null,       Icon: Archive,  labelKey: "archiveNoun", fallback: "Archiv",     color: "var(--cat-archive)",  canAdd: false },
 ];
 
 const ENTRY_ICON = {

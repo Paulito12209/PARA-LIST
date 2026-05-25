@@ -24,7 +24,6 @@ export function DesktopApp({ ctx }) {
     theme: theme === "light" ? "light" : "dark",
   });
   const [activeCatType, setActiveCatType] = useState("project");
-  const [searchValue, setSearchValue] = useState("");
   const [peeking, setPeeking] = useState(false);
   const peekTimer = useRef(null);
 
@@ -156,8 +155,6 @@ export function DesktopApp({ ctx }) {
           userName={state.user?.name || tweaks.userName}
           lang={lang}
           railOpen={railOpen}
-          searchValue={searchValue}
-          onSearchChange={setSearchValue}
           onOpenSettings={ctx.openSettings}
         />
 

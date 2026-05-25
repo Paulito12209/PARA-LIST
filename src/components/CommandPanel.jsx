@@ -21,6 +21,7 @@ export function CommandPanel({
   lang,
   setLang,
   voiceOverlayOpen,
+  onOpenAppSwitcher,
 }) {
   const [subTab, setSubTab] = useState("today");
   const touchStartX = useRef(0);
@@ -100,7 +101,17 @@ export function CommandPanel({
                 <PageIcon size={22} color={`rgb(${page.accentRgb})`} strokeWidth={2.4} />
               </span>
             ) : (
-              <BrandLogo size={48} />
+              <button
+                type="button"
+                className="command-panel__logo-btn"
+                aria-label="Tools"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenAppSwitcher?.();
+                }}
+              >
+                <BrandLogo size={48} />
+              </button>
             )}
             <div className="command-panel__titles">
               {(page || isVoiceMode) ? (

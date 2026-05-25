@@ -202,6 +202,9 @@ export const SEED = {
   // Papierkorb: gelöschte Einträge & Kategorien. Items werden 30 Tage nach
   // dem Löschen (deletedAt) beim App-Start automatisch endgültig entfernt.
   trash: [],
+  // Flashcards-Tool: Decks mit Vokabelkarten. Presets werden beim ersten
+  // Start in migrateState geseedet (versioniert), User-Decks bleiben erhalten.
+  flashcardDecks: [],
 };
 
 /* ── Notification logic ──────────────────────────────────────── */

@@ -30,6 +30,9 @@
 // Gemeinsame Komponenten (Swipe-To-Delete, etc.)
 @use './styles/shared';
 
+// Flashcards-Tool + App-Switcher
+@use './styles/FlashCards';
+
 // Desktop Layout (>=920px)
 @use './styles/DesktopLayout';
 

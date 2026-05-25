@@ -12,9 +12,14 @@ import {
   computeNotif,
   CAT_ICONS,
 } from "./utils";
+import { buildPresetDecks, FLASHCARD_PRESETS_VERSION } from "./data/flashcardPresets";
+import { wordsResourceName } from "./lib/translate";
+import { TranslateOverlay } from "./components/TranslateOverlay";
 import { CatListScreen, CatDetailScreen } from "./screens/FolderScreens";
 import { EntryDetailScreen } from "./screens/EntryDetailScreen";
 import { CommandPanel } from "./components/CommandPanel";
+import { AppSwitcherSheet } from "./components/AppSwitcherSheet";
+import { FlashCardScreen } from "./screens/FlashCardScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { ArchiveScreen } from "./screens/ArchiveScreen";
 import { CreateModal } from "./modals/CreateModal";
@@ -41,6 +46,7 @@ const VIEW = {
   CAT_LIST: "catList",
   CAT_DETAIL: "catDetail",
   ENTRY_DETAIL: "entryDetail",
+  FLASHCARDS: "flashcards",
 };
 
 const DEFAULT_COVER_ACCENT_RGB = "224, 62, 62";
@@ -156,6 +162,20 @@ function migrateState(state) {
     }
   }
 
+  // Flashcards: Array sicherstellen + Presets versioniert seeden.
+  // Vom Nutzer erstellte Decks (isPreset !== true) bleiben immer erhalten;
+  // ändert sich FLASHCARD_PRESETS_VERSION, werden nur die Presets ersetzt.
+  if (!Array.isArray(next.flashcardDecks)) {
+    next.flashcardDecks = [];
+    dirty = true;
+  }
+  if (next.flashcardPresetsVersion !== FLASHCARD_PRESETS_VERSION) {
+    const userDecks = next.flashcardDecks.filter((d) => !d.isPreset);
+    next.flashcardDecks = [...buildPresetDecks(), ...userDecks];
+    next.flashcardPresetsVersion = FLASHCARD_PRESETS_VERSION;
+    dirty = true;
+  }
+
   return dirty ? next : state;
 }
 
@@ -221,6 +241,8 @@ export default function App() {
   const [celebrationBirthday, setCelebrationBirthday] = useState(null);
   const [coverAccentRgb, setCoverAccentRgb] = useState(DEFAULT_COVER_ACCENT_RGB);
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
+  const [appSwitcherOpen, setAppSwitcherOpen] = useState(false);
+  const [translateOpen, setTranslateOpen] = useState(false);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
 
@@ -444,6 +466,8 @@ export default function App() {
       if (!item) return s;
       const trash = s.trash.filter((it) => it.data?.id !== dataId);
       if (item.kind === "cat") return { ...s, trash, cats: [...s.cats, item.data] };
+      if (item.kind === "deck")
+        return { ...s, trash, flashcardDecks: [...(s.flashcardDecks || []), item.data] };
       return { ...s, trash, entries: [...s.entries, item.data] };
     });
 
@@ -451,6 +475,139 @@ export default function App() {
     setState((s) => ({ ...s, trash: (s.trash || []).filter((it) => it.data?.id !== dataId) }));
 
   const emptyTrash = () => setState((s) => ({ ...s, trash: [] }));
+
+  /* ── Flashcards: Decks & Karten ────────────────────────────── */
+  // Wortpaare leben einmal im Deck (`cards`); Ressourcen-Seiten rendern das
+  // verknüpfte Deck über `deck.catId`. Presets (isPreset) sind read-only.
+  const addDeck = ({
+    name,
+    emoji = "📚",
+    description = "",
+    languagePair = null,
+    catId = null,
+  } = {}) => {
+    const id = uid();
+    setState((s) => ({
+      ...s,
+      flashcardDecks: [
+        ...(s.flashcardDecks || []),
+        {
+          id,
+          name: name || "Neues Deck",
+          emoji,
+          description,
+          languagePair,
+          tags: [],
+          isPreset: false,
+          catId,
+          cards: [],
+          createdAt: Date.now(),
+        },
+      ],
+    }));
+    return id;
+  };
+
+  const updateDeck = (id, patch) =>
+    setState((s) => ({
+      ...s,
+      flashcardDecks: (s.flashcardDecks || []).map((d) =>
+        d.id === id && !d.isPreset ? { ...d, ...patch } : d
+      ),
+    }));
+
+  // Löschen = in den Papierkorb (Auto-Purge nach 30 Tagen). Presets nicht löschbar.
+  const deleteDeck = (id) =>
+    setState((s) => {
+      const deck = (s.flashcardDecks || []).find((d) => d.id === id);
+      if (!deck || deck.isPreset) return s;
+      return {
+        ...s,
+        flashcardDecks: s.flashcardDecks.filter((d) => d.id !== id),
+        trash: [...(s.trash || []), { kind: "deck", deletedAt: Date.now(), data: deck }],
+      };
+    });
+
+  const addCard = (deckId, { front = "", back = "" } = {}) => {
+    const cardId = uid();
+    setState((s) => ({
+      ...s,
+      flashcardDecks: (s.flashcardDecks || []).map((d) =>
+        d.id === deckId && !d.isPreset
+          ? { ...d, cards: [...d.cards, { id: cardId, front, back, createdAt: Date.now() }] }
+          : d
+      ),
+    }));
+    return cardId;
+  };
+
+  const updateCard = (deckId, cardId, patch) =>
+    setState((s) => ({
+      ...s,
+      flashcardDecks: (s.flashcardDecks || []).map((d) =>
+        d.id === deckId && !d.isPreset
+          ? { ...d, cards: d.cards.map((c) => (c.id === cardId ? { ...c, ...patch } : c)) }
+          : d
+      ),
+    }));
+
+  const deleteCard = (deckId, cardId) =>
+    setState((s) => ({
+      ...s,
+      flashcardDecks: (s.flashcardDecks || []).map((d) =>
+        d.id === deckId && !d.isPreset
+          ? { ...d, cards: d.cards.filter((c) => c.id !== cardId) }
+          : d
+      ),
+    }));
+
+  // Übersetzung speichern: legt (falls nötig) den Arbeitsbereich "Sprachen"
+  // und die Ressource "{Sprache} Wörter" an und hängt das Wortpaar als
+  // verknüpften Notiz-Eintrag darunter. Alles atomar in einem setState.
+  const saveTranslation = ({ source, translation, toLang }) =>
+    setState((s) => {
+      const src = (source || "").trim();
+      const trans = (translation || "").trim();
+      if (!src || !trans) return s;
+
+      let cats = s.cats;
+      let area = cats.find((c) => c.type === "area" && c.name === "Sprachen");
+      let areaId = area?.id;
+      if (!area) {
+        areaId = uid();
+        cats = [
+          ...cats,
+          {
+            id: areaId, type: "area", name: "Sprachen", date: null, body: "",
+            tags: [], relatedId: null, archived: false, collaborators: [],
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }
+
+      const resName = wordsResourceName(toLang);
+      let res = cats.find((c) => c.type === "resource" && c.name === resName);
+      let resId = res?.id;
+      if (!res) {
+        resId = uid();
+        cats = [
+          ...cats,
+          {
+            id: resId, type: "resource", name: resName, date: null, body: "",
+            tags: ["Vokabel"], relatedId: areaId, archived: false, collaborators: [],
+            createdAt: new Date().toISOString(),
+          },
+        ];
+      }
+
+      const entry = {
+        id: uid(), type: "note", title: `${src} ↔ ${trans}`, body: "",
+        catId: resId, catIds: [resId], linkedEntryIds: [], parentId: null,
+        createdAt: Date.now(),
+      };
+
+      return { ...s, cats, entries: [...s.entries, entry] };
+    });
 
   /* ── Fixieren (Pin): pro Liste/Typ nur ein Item ───────────── */
   const togglePin = (id, kind = "entry") =>
@@ -725,10 +882,46 @@ export default function App() {
         onToggleTask={toggleTask}
         onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
         voiceOverlayOpen={voiceOverlayOpen}
+        onOpenAppSwitcher={() => setAppSwitcherOpen(true)}
       />
 
       {panelOpen && (
         <div className="command-panel__backdrop" onClick={() => setPanelOpen(false)} />
+      )}
+
+      {appSwitcherOpen && (
+        <AppSwitcherSheet
+          t={t}
+          currentLabel={
+            cur.view === VIEW.FLASHCARDS
+              ? t.fc?.tool
+              : headerPage?.title ||
+                (cur.view === VIEW.HOME ? homeHeaderTitle || t.home : t.home)
+          }
+          onOpenFlashcards={() => {
+            setAppSwitcherOpen(false);
+            setPanelOpen(false);
+            push({ view: VIEW.FLASHCARDS });
+          }}
+          onOpenTranslator={() => {
+            setAppSwitcherOpen(false);
+            setPanelOpen(false);
+            setTranslateOpen(true);
+          }}
+          onClose={() => setAppSwitcherOpen(false)}
+        />
+      )}
+
+      {translateOpen && (
+        <TranslateOverlay
+          t={t}
+          onSave={saveTranslation}
+          onClose={() => setTranslateOpen(false)}
+          onOpenFlashcards={() => {
+            setTranslateOpen(false);
+            push({ view: VIEW.FLASHCARDS });
+          }}
+        />
       )}
 
       <div className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}`}>
@@ -922,6 +1115,21 @@ export default function App() {
             />
           );
         })()}
+
+        {cur.view === VIEW.FLASHCARDS && (
+          <FlashCardScreen
+            t={t}
+            lang={lang}
+            decks={state.flashcardDecks || []}
+            onBack={pop}
+            onAddDeck={addDeck}
+            onUpdateDeck={updateDeck}
+            onDeleteDeck={deleteDeck}
+            onAddCard={addCard}
+            onUpdateCard={updateCard}
+            onDeleteCard={deleteCard}
+          />
+        )}
       </div>
 
       {renderRootModals()}

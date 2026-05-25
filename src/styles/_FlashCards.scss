@@ -1,0 +1,684 @@
+// ============================================================
+// PARA·LIST – Flashcards-Tool + App-Switcher
+// Nutzt globale Design-Tokens (CSS Custom Properties) für
+// konsistente Button-Größen, Radien und Glass-Look.
+// ============================================================
+
+/* ── App-Switcher (Bottom-Sheet über das Logo) ─────────────── */
+.app-switcher {
+  &__current {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+  }
+
+  &__current-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--color-hover);
+    color: var(--color-text);
+    flex-shrink: 0;
+  }
+
+  &__current-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__current-label {
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+
+  &__current-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    font-family: var(--font-heading);
+  }
+
+  &__section-title {
+    padding: 0 var(--spacing-md) var(--spacing-sm);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  &__tools {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: 0 var(--spacing-sm) var(--spacing-sm);
+  }
+
+  &__tool {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-text);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:active { background: var(--color-hover); }
+  }
+
+  &__tool-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+
+    &--fc {
+      background: linear-gradient(135deg, #0B6E5C, #2BE38A);
+    }
+    &--tl {
+      background: linear-gradient(135deg, #1D4ED8, #0B8CE9);
+    }
+  }
+}
+
+/* ── Flashcards-Screen ─────────────────────────────────────── */
+.fc-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.fc-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+
+  &__title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+    min-width: 0;
+
+    span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  }
+}
+
+.fc-icon-btn {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  color: var(--color-text);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  &:active { background: var(--color-hover); }
+  &--ghost { background: transparent; pointer-events: none; }
+}
+
+.fc-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--spacing-md) var(--spacing-2xl);
+}
+
+.fc-section-title {
+  margin: var(--spacing-lg) var(--spacing-xs) var(--spacing-sm);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.fc-deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.fc-deck {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease;
+
+  &:active { transform: scale(0.985); background: var(--color-hover); }
+  &:disabled { opacity: 0.45; cursor: default; }
+
+  &__emoji {
+    font-size: 28px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__name {
+    font-size: 16px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__meta {
+    font-size: 13px;
+    color: var(--color-muted);
+  }
+
+  &__cta {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--color-resource);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+/* ── Lernmodus ─────────────────────────────────────────────── */
+.fc-screen--study { background: var(--color-bg); }
+
+.fc-progress {
+  flex: 1;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  overflow: hidden;
+
+  &__bar {
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--color-resource);
+    transition: width 0.3s ease;
+  }
+}
+
+.fc-study__counter {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-muted);
+  min-width: 48px;
+  text-align: right;
+}
+
+.fc-stage {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--spacing-lg) var(--spacing-md);
+}
+
+.fc-card {
+  position: relative;
+  width: min(86vw, 440px);
+  height: min(52vh, 420px);
+  perspective: 1400px;
+  cursor: pointer;
+  touch-action: pan-y;
+
+  &__inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  &--flipped &__inner { transform: rotateY(180deg); }
+
+  &__face {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: var(--spacing-xl);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-card);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    text-align: center;
+    font-family: var(--font-heading);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.3;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+
+    &--back {
+      transform: rotateY(180deg);
+      background: var(--color-surface);
+      color: var(--color-resource);
+    }
+  }
+
+  &__hint {
+    position: absolute;
+    bottom: var(--spacing-md);
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--color-muted);
+    pointer-events: none;
+  }
+
+  // Wisch-Feedback
+  &--hint-ok &__face { border-color: var(--color-resource); }
+  &--hint-bad &__face { border-color: var(--color-notif-red); }
+}
+
+.fc-study__actions {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-md) var(--spacing-2xl);
+}
+
+.fc-answer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-height: 56px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.15s ease;
+
+  &:active { transform: scale(0.97); }
+
+  &--again {
+    background: rgba(242, 101, 101, 0.12);
+    color: var(--color-notif-red);
+    border-color: rgba(242, 101, 101, 0.35);
+  }
+
+  &--known {
+    background: var(--color-resource);
+    color: #fff;
+    border-color: var(--color-resource);
+  }
+}
+
+/* ── Ergebnis ──────────────────────────────────────────────── */
+.fc-result {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl) var(--spacing-md) var(--spacing-2xl);
+  text-align: center;
+
+  &__score {
+    font-family: var(--font-heading);
+    font-size: 64px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #2BE38A, #0FA968);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  &__stats {
+    display: flex;
+    gap: var(--spacing-lg);
+    margin: var(--spacing-md) 0 var(--spacing-xl);
+  }
+
+  &__stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+
+    &--ok { color: var(--color-resource); }
+    &--bad { color: var(--color-notif-red); }
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    width: min(86vw, 360px);
+  }
+}
+
+.fc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-height: 52px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.15s ease;
+
+  &:active { transform: scale(0.98); }
+
+  &--primary {
+    background: var(--color-resource);
+    color: #fff;
+    border-color: var(--color-resource);
+  }
+
+  &--ghost {
+    background: transparent;
+    color: var(--color-muted);
+    border-color: transparent;
+  }
+}
+
+/* ── Übersetzer-Overlay (Google-Translate-Stil) ────────────── */
+.tl-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: var(--color-bg);
+  animation: action-sheet-fade-in 0.18s ease-out;
+
+  &--closing { animation: action-sheet-fade-in 0.18s ease-out reverse; }
+}
+
+.tl-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--color-text);
+}
+
+.tl-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+
+  &__title {
+    flex: 1;
+    text-align: center;
+    font-family: var(--font-heading);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  &__saved {
+    min-width: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-resource);
+    text-align: right;
+  }
+}
+
+.tl-input-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md) var(--spacing-lg);
+  overflow-y: auto;
+}
+
+.tl-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  resize: none;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.25;
+  outline: none;
+
+  &::placeholder { color: var(--color-muted); }
+}
+
+.tl-result {
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.3;
+
+  &__loading {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+
+  &__error { font-size: 16px; font-weight: 500; color: var(--color-notif-red); }
+  &__text { color: var(--color-calendar); }
+}
+
+.tl-spin { animation: tl-spin 0.9s linear infinite; }
+@keyframes tl-spin { to { transform: rotate(360deg); } }
+
+.tl-bottom {
+  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-lg) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.tl-langbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.tl-lang {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0 var(--spacing-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  text-align-last: center;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.tl-swap {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:active { background: var(--color-hover); }
+}
+
+.tl-note {
+  margin: var(--spacing-sm) 0 var(--spacing-md);
+  font-size: 12px;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.tl-actions {
+  display: flex;
+  align-items: stretch;
+  gap: var(--spacing-sm);
+}
+
+.tl-fc-link {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #0B6E5C, #2BE38A);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.15s ease;
+
+  &:active { transform: scale(0.96); filter: brightness(1.05); }
+}
+
+.tl-save {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  min-height: 56px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-resource);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.15s ease;
+
+  &:active { transform: scale(0.98); }
+  &:disabled { opacity: 0.4; cursor: default; transform: none; }
+}
+
+/* ── Light-Theme-Overrides ─────────────────────────────────── */
+// Die Kern-Tokens (--color-text etc.) werden im Light-Mode NICHT umgesetzt;
+// deshalb hier explizite helle Farben. `.light-theme` matcht sowohl den
+// eingebetteten Screen (.app.light-theme) als auch Portale (body.light-theme).
+.light-theme {
+  .app-switcher {
+    &__current-icon { background: #f0f0f4; color: #1a1a24; }
+    &__current-label { color: #8a8a96; }
+    &__current-name { color: #1a1a24; }
+    &__section-title { color: #8a8a96; }
+    &__tool { color: #1a1a24; }
+    &__tool:active { background: rgba(0, 0, 0, 0.05); }
+  }
+
+  .fc-screen { background: #f7f7f9; color: #1a1a24; }
+
+  .fc-icon-btn {
+    background: #fff;
+    color: #1a1a24;
+    &:active { background: rgba(0, 0, 0, 0.05); }
+    &--ghost { background: transparent; }
+  }
+
+  .fc-header__title { color: #1a1a24; }
+  .fc-section-title { color: #8a8a96; }
+
+  .fc-deck {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #1a1a24;
+    &:active { background: rgba(0, 0, 0, 0.04); }
+    &__meta { color: #8a8a96; }
+  }
+
+  .fc-progress { background: #e6e6ec; }
+
+  .fc-card__face {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #1a1a24;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    &--back { background: #f3f6f4; color: var(--color-resource); }
+  }
+  .fc-card__hint { color: #8a8a96; }
+
+  .fc-btn {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #1a1a24;
+    &--primary { background: var(--color-resource); color: #fff; border-color: var(--color-resource); }
+    &--ghost { background: transparent; color: #8a8a96; border-color: transparent; }
+  }
+
+  .fc-result__title { color: #1a1a24; }
+
+  /* Übersetzer-Overlay */
+  .tl-overlay { background: #f7f7f9; }
+  .tl-panel { color: #1a1a24; }
+  .tl-header__title { color: #1a1a24; }
+  .tl-input { color: #1a1a24; &::placeholder { color: #9a9aa6; } }
+  .tl-result {
+    border-top-color: rgba(0, 0, 0, 0.08);
+    &__loading { color: #8a8a96; }
+    &__text { color: var(--color-calendar); }
+  }
+  .tl-bottom { background: #fff; border-top-color: rgba(0, 0, 0, 0.08); }
+  .tl-lang {
+    background: #f3f3f7;
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1a1a24;
+  }
+  .tl-swap { background: #f3f3f7; color: #1a1a24; &:active { background: #e8e8ee; } }
+  .tl-note { color: #8a8a96; }
+}

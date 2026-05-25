@@ -35,6 +35,44 @@ export const BrandLogo = ({ size = 48, className = "" }) => (
   </span>
 );
 
+// Flashcards-Tool-Icon: zwei gestapelte Karteikarten (vordere mit "A↔").
+export const FlashcardsIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.8 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <rect x="2.5" y="7.5" width="14" height="11" rx="2.5" transform="rotate(-7 9.5 13)" />
+    <rect x="6.5" y="6" width="15" height="12" rx="2.5" fill="none" />
+    <path d="M11 12.5h6" />
+    <path d="M13.5 10.5 11 12.5l2.5 2" />
+    <path d="M14.5 16.5 17 14.5l-2.5-2" opacity="0.55" />
+  </svg>
+);
+
+// Speichern/Merken-Icon im Instagram-Stil (Lesezeichen-Outline).
+export const SaveBookmarkIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.8 }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z" />
+  </svg>
+);
+
 export const TagIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} className="lucide lucide-tag">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />

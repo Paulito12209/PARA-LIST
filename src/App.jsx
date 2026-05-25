@@ -1099,6 +1099,7 @@ export default function App() {
 
           return (
             <CatDetailScreen
+              key={cat.id}
               t={t}
               CC={CC}
               theme={theme}
@@ -1141,6 +1142,7 @@ export default function App() {
           const cat = state.cats.find((c) => c.id === entry.catId);
           return (
             <EntryDetailScreen
+              key={entry.id}
               t={t}
               CC={CC}
               theme={theme}

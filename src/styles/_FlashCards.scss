@@ -698,7 +698,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: var(--spacing-sm) var(--spacing-md) calc(var(--spacing-md) + env(safe-area-inset-bottom, 0px));
+  padding: var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) + env(safe-area-inset-bottom, 0px));
   background: #16161f;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;

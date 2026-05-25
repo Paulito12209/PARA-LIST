@@ -157,6 +157,8 @@ export const I18N = {
       translateError: "Übersetzung fehlgeschlagen",
       privacyNote: "Übersetzungen werden an einen externen Dienst gesendet.",
       swapLang: "Sprachen tauschen",
+      translateAction: "Übersetzen",
+      collapseKeyboard: "Tastatur schließen",
       pageNotEditable: "Diese Seite ist nicht editierbar",
       infoTitle: "Über diese Seite",
       infoText: (lang) =>
@@ -361,6 +363,8 @@ export const I18N = {
       translateError: "Translation failed",
       privacyNote: "Translations are sent to an external service.",
       swapLang: "Swap languages",
+      translateAction: "Translate",
+      collapseKeyboard: "Close keyboard",
       pageNotEditable: "This page is not editable",
       infoTitle: "About this page",
       infoText: (lang) =>
@@ -565,6 +569,8 @@ export const I18N = {
       translateError: "Error de traducción",
       privacyNote: "Las traducciones se envían a un servicio externo.",
       swapLang: "Intercambiar idiomas",
+      translateAction: "Traducir",
+      collapseKeyboard: "Cerrar teclado",
       pageNotEditable: "Esta página no es editable",
       infoTitle: "Sobre esta página",
       infoText: (lang) =>

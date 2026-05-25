@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, ArrowLeftRight, Loader2 } from "lucide-react";
+import { X, ArrowLeftRight, Loader2, ChevronDown } from "lucide-react";
 import { translateWord, LANG_CODES } from "../lib/translate";
 import { SaveBookmarkIcon, FlashcardsIcon } from "./AppIcons";
 
@@ -27,11 +27,32 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
   const [status, setStatus] = useState("idle"); // idle | loading | done | error
   const [savedCount, setSavedCount] = useState(0);
   const [closing, setClosing] = useState(false);
+  const [kbHeight, setKbHeight] = useState(0);
   const inputRef = useRef(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Tastaturhöhe via visualViewport ermitteln, damit der Floating-Balken
+  // immer direkt über der geöffneten Tastatur sitzt.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKbHeight(kb > 80 ? kb : 0);
+    };
+    vv.addEventListener("resize", onResize);
+    vv.addEventListener("scroll", onResize);
+    onResize();
+    return () => {
+      vv.removeEventListener("resize", onResize);
+      vv.removeEventListener("scroll", onResize);
+    };
+  }, []);
+
+  const collapseKeyboard = () => inputRef.current?.blur();
 
   // Debounced Live-Übersetzung
   useEffect(() => {
@@ -97,9 +118,7 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
     <div className={`tl-overlay ${closing ? "tl-overlay--closing" : ""}`}>
       <div className={`tl-panel ${closing ? "tl-panel--closing" : ""}`} role="dialog" aria-modal="true">
         <header className="tl-header">
-          <button className="fc-icon-btn" onClick={handleClose} aria-label="Close">
-            <X size={22} />
-          </button>
+          <span className="tl-header__spacer" />
           <span className="tl-header__title">{fc.translator}</span>
           <span className="tl-header__saved">
             {savedCount > 0 ? fc.saved?.(savedCount) : ""}
@@ -107,15 +126,6 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
         </header>
 
         <div className="tl-input-wrap">
-          <textarea
-            ref={inputRef}
-            className="tl-input"
-            placeholder={fc.translatePlaceholder}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={2}
-          />
-
           {text.trim() && (
             <div className="tl-result">
               {status === "loading" && (
@@ -129,6 +139,15 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
               {status === "done" && <span className="tl-result__text">{result}</span>}
             </div>
           )}
+
+          <textarea
+            ref={inputRef}
+            className="tl-input"
+            placeholder={fc.translatePlaceholder}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={2}
+          />
         </div>
 
         <div className="tl-bottom">
@@ -164,11 +183,11 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
 
           <div className="tl-actions">
             <button
-              className="tl-fc-link"
-              onClick={() => { handleClose(); onOpenFlashcards?.(); }}
-              aria-label={fc.tool}
+              className="tl-close"
+              onClick={handleClose}
+              aria-label="Close"
             >
-              <FlashcardsIcon size={24} color="#fff" />
+              <X size={22} />
             </button>
 
             <button
@@ -178,8 +197,36 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
             >
               <SaveBookmarkIcon size={20} color="#fff" /> {fc.save}
             </button>
+
+            <button
+              className="tl-fc-link"
+              onClick={() => { handleClose(); onOpenFlashcards?.(); }}
+              aria-label={fc.tool}
+            >
+              <FlashcardsIcon size={24} color="#fff" />
+            </button>
           </div>
         </div>
+
+        {kbHeight > 0 && (
+          <div className="tl-kbbar" style={{ bottom: kbHeight }}>
+            <button
+              className="tl-kbbar__translate"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={collapseKeyboard}
+            >
+              {fc.translateAction}
+            </button>
+            <button
+              className="tl-kbbar__collapse"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={collapseKeyboard}
+              aria-label={fc.collapseKeyboard}
+            >
+              <ChevronDown size={22} />
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body

@@ -917,6 +917,10 @@
   // margin-top: 12px;
   overflow-y: auto;
   flex: 1;
+  // Verhindert Browser-Pull-to-Refresh / Overscroll-Navigation am Listenanfang.
+  // Sonst wird die "nach unten wischen zum Einklappen"-Geste auf Android vom
+  // Browser abgefangen (touchcancel statt touchend) und der Handler feuert nie.
+  overscroll-behavior-y: contain;
 }
 
 // Leere Liste: Platzhalter mittig halten und Scrollen sperren, damit man die

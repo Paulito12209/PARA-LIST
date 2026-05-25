@@ -1434,11 +1434,14 @@
 // ── Command Dock + Startseiten-Liste (Light Mode) ──────────────
 .app.light-theme {
   .command-dock {
-    // Frosted Glass wie der "Projekt öffnen"-Button: transluzent + starker Blur,
-    // sodass die Liste dahinter durchscheint, die Inhalte aber lesbar bleiben.
-    background: rgba(255, 255, 255, 0.55);
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    // Milchige Glasfläche. WICHTIG: Die Deckkraft ist bewusst hoch (0.88), damit
+    // es auch dann milchig wirkt, wenn `backdrop-filter` NICHT greift – manche
+    // Android-Geräte melden zwar Support, rendern den Backdrop-Blur aber nicht
+    // (GPU/Compositing). Bei zu niedriger Deckkraft scheinen sonst die
+    // Listeninhalte durch. Der Blur ist nur Veredelung obendrauf (iOS/Safari).
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
     border-top-color: rgba(255, 255, 255, 0.6);
     box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.10);
 

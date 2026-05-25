@@ -269,20 +269,27 @@ export function HomeScreen({
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+  const lastTouchY = useRef(0);
   const atTopAtStart = useRef(false);
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
+    lastTouchY.current = e.touches[0].clientY;
     const container = entryListRef.current;
     atTopAtStart.current = container ? container.scrollTop <= SCROLL_TOP_EPS_PX : false;
   };
 
-  const handleTouchEnd = (e) => {
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    const dy = e.changedTouches[0].clientY - touchStartY.current;
+  const handleTouchMove = (e) => {
+    lastTouchY.current = e.touches[0].clientY;
+  };
 
-    // Überscrollen am Listenanfang (nach unten ziehen) → aufgeklappte Liste zuklappen
+  // Nach unten wischen am Listenanfang → aufgeklappte Liste zuklappen (wie der
+  // Verkleinern-Button / Doppeltipp aufs Dock-Icon). Liefert true, wenn die
+  // Geste erkannt und behandelt wurde.
+  const collapseIfSwipedDown = (endX, endY) => {
+    const dx = endX - touchStartX.current;
+    const dy = endY - touchStartY.current;
     if (
       listExpanded &&
       atTopAtStart.current &&
@@ -290,9 +297,18 @@ export function HomeScreen({
       Math.abs(dy) > Math.abs(dx)
     ) {
       setListExpanded(false);
-      return;
+      return true;
     }
+    return false;
+  };
 
+  const handleTouchEnd = (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+
+    if (collapseIfSwipedDown(endX, endY)) return;
+
+    const dx = endX - touchStartX.current;
     if (Math.abs(dx) <= SWIPE_THRESHOLD_PX || panelOpen) return;
 
     const tabOrder = TABS.map((tCfg) => tCfg.id);
@@ -302,6 +318,13 @@ export function HomeScreen({
     } else if (dx < 0 && currentIndex < tabOrder.length - 1) {
       setTab(tabOrder[currentIndex + 1]);
     }
+  };
+
+  // Fallback: Bricht der Browser die Touch-Sequenz ab (z.B. durch Overscroll),
+  // werten wir die zuletzt bekannte Position aus, damit das Einklappen dennoch
+  // zuverlässig auslöst.
+  const handleTouchCancel = () => {
+    collapseIfSwipedDown(touchStartX.current, lastTouchY.current);
   };
 
   // ── Cover-Karussell: horizontales Wischen zwischen Favoriten ──
@@ -762,7 +785,9 @@ export function HomeScreen({
           className={`entry-list${activeListEmpty ? " entry-list--locked" : ""}`}
           onClick={handleDoubleTap}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
+          onTouchCancel={handleTouchCancel}
           ref={entryListRef}
           onScroll={handleListScroll}
         >

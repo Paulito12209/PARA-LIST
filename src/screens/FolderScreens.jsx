@@ -173,6 +173,7 @@ export function CatDetailScreen({
   onLinkResource,
   flashcardDeckId,
   flashcardLang,
+  flashcardCards,
   onOpenFlashcards,
   onAddWord,
 }) {
@@ -584,26 +585,32 @@ export function CatDetailScreen({
                 <span className="fc-table__hint">{t.fc?.pageNotEditable}</span>
               </div>
               {(() => {
-                const words = entries
+                // Gespeicherte Übersetzungen (Notizen, neueste zuerst), Format
+                // "Deutsch ↔ Übersetzung".
+                const noteRows = entries
                   .filter((e) => e.type === "note")
-                  .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-                if (words.length === 0) {
+                  .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+                  .map((e) => {
+                    const parts = (e.title || "").split(" ↔ ");
+                    return { key: e.id, left: parts[0] || e.title, right: parts.slice(1).join(" ↔ ") };
+                  });
+                // Deck-Vokabeln (front = Fremdsprache, back = Deutsch).
+                const deckRows = (flashcardCards || []).map((c) => ({
+                  key: c.id, left: c.back, right: c.front,
+                }));
+                const rows = [...noteRows, ...deckRows];
+                if (rows.length === 0) {
                   return <div className="fc-table__empty">{t.fc?.emptyWords}</div>;
                 }
                 return (
                   <div className="fc-table__list">
-                    {words.map((w) => {
-                      const parts = (w.title || "").split(" ↔ ");
-                      const left = parts[0] || w.title;
-                      const right = parts.slice(1).join(" ↔ ");
-                      return (
-                        <div key={w.id} className="fc-table__row">
-                          <span className="fc-table__cell fc-table__cell--front">{left}</span>
-                          <span className="fc-table__sep">↔</span>
-                          <span className="fc-table__cell fc-table__cell--back">{right}</span>
-                        </div>
-                      );
-                    })}
+                    {rows.map((r) => (
+                      <div key={r.key} className="fc-table__row">
+                        <span className="fc-table__cell fc-table__cell--front">{r.left}</span>
+                        <span className="fc-table__sep">↔</span>
+                        <span className="fc-table__cell fc-table__cell--back">{r.right}</span>
+                      </div>
+                    ))}
                   </div>
                 );
               })()}
@@ -975,7 +982,10 @@ export function CatDetailScreen({
       )}
 
       {/* Bottom nav */}
-      <div className="nav-bottom" style={{ position: "relative" }}>
+      <div
+        className={`nav-bottom ${isFlashcardRes && bm === "canvas" ? "nav-bottom--word-dock" : ""}`}
+        style={isFlashcardRes && bm === "canvas" ? undefined : { position: "relative" }}
+      >
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>

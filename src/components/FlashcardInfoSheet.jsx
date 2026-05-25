@@ -30,7 +30,7 @@ export function FlashcardInfoSheet({ t, langName, onOpenFlashcards, onClose }) {
 
   return createPortal(
     <div
-      className={`action-sheet ${closing ? "action-sheet--closing" : ""}`}
+      className={`action-sheet action-sheet--centered-desktop ${closing ? "action-sheet--closing" : ""}`}
       onClick={handleClose}
       {...swipe}
     >

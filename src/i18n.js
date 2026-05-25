@@ -160,7 +160,7 @@ export const I18N = {
       pageNotEditable: "Diese Seite ist nicht editierbar",
       infoTitle: "Über diese Seite",
       infoText: (lang) =>
-        `Hier sammeln sich automatisch deine ${lang}-Vokabeln. Neue Wörter fügst du über das Übersetzer-Tool hinzu (PARA·LIST-Logo auf der Startseite → Übersetzer). Zum Abfragen öffnest du das Flashcards-Tool.`,
+        `Diese Seite sammelt deine ${lang}-Vokabeln. Neue Karteikarten legst du direkt über das Eingabefeld unten an – die Übersetzung ist hier auf ${lang} voreingestellt.\n\nGibst du ein Wort in einer anderen Sprache ein, erhältst du trotzdem die Übersetzung; beim Speichern wird sie automatisch der passenden Ressourcenseite zugeordnet.\n\nDen Übersetzer kannst du alternativ jederzeit über das PARA·LIST-Logo auf der Startseite öffnen. Zum Üben deiner angelegten Wörter tippe auf „Flashcards öffnen".`,
       openTool: "Flashcards öffnen",
       addWord: "Neues Wort hinzufügen",
       emptyWords: "Noch keine Wörter. Unten eingeben und übersetzen.",
@@ -364,7 +364,7 @@ export const I18N = {
       pageNotEditable: "This page is not editable",
       infoTitle: "About this page",
       infoText: (lang) =>
-        `Your ${lang} vocabulary collects here automatically. Add new words via the Translator tool (PARA·LIST logo on the home screen → Translator). Open the Flashcards tool to practice.`,
+        `This page collects your ${lang} vocabulary. Add new flashcards right from the input field below – translations here are preset to ${lang}.\n\nIf you enter a word in another language, you'll still get the translation; on saving it's automatically assigned to the matching resource page.\n\nYou can also open the Translator anytime via the PARA·LIST logo on the home screen. To practice the words you've added, tap "Open Flashcards".`,
       openTool: "Open Flashcards",
       addWord: "Add new word",
       emptyWords: "No words yet. Type below and translate.",
@@ -568,7 +568,7 @@ export const I18N = {
       pageNotEditable: "Esta página no es editable",
       infoTitle: "Sobre esta página",
       infoText: (lang) =>
-        `Aquí se recopila automáticamente tu vocabulario de ${lang}. Añade nuevas palabras con el traductor (logo de PARA·LIST en el inicio → Traductor). Abre Flashcards para practicar.`,
+        `Esta página reúne tu vocabulario de ${lang}. Crea nuevas tarjetas directamente desde el campo de abajo: aquí la traducción está predeterminada a ${lang}.\n\nSi escribes una palabra en otro idioma, igual obtienes la traducción; al guardarla se asigna automáticamente a la página de recurso correspondiente.\n\nTambién puedes abrir el Traductor en cualquier momento con el logo de PARA·LIST en el inicio. Para practicar las palabras que has añadido, toca "Abrir Flashcards".`,
       openTool: "Abrir Flashcards",
       addWord: "Añadir palabra",
       emptyWords: "Aún no hay palabras. Escribe abajo y traduce.",

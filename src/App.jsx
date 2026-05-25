@@ -1124,6 +1124,7 @@ export default function App() {
               onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
               flashcardDeckId={fcDeck?.id}
               flashcardLang={fcDeck?.languagePair?.[0]}
+              flashcardCards={fcDeck?.cards || []}
               onOpenFlashcards={(deckId) => push({ view: VIEW.FLASHCARDS, deckId })}
               onAddWord={(text) =>
                 setTranslateConfig({ initialText: text || "", toLang: fcDeck?.languagePair?.[0] || "Spanisch" })

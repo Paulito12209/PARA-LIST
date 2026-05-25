@@ -46,7 +46,7 @@ function todayStr() {
   return toDateStr(n.getFullYear(), n.getMonth(), n.getDate());
 }
 
-export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose }) {
+export function VoiceOverlay({ t, tab, tabColor, accentRgb: accentRgbProp, lang, onTranscribed, onClose }) {
   const [phase, setPhase] = useState("title"); // "title" | "date"
   const [text, setText] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -168,7 +168,7 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
     if (e.key === "Enter") { e.preventDefault(); handleSubmit(); }
   };
 
-  const accentRgb = ACCENT_RGB[tab] || ACCENT_RGB.tasks;
+  const accentRgb = accentRgbProp || ACCENT_RGB[tab] || ACCENT_RGB.tasks;
   const hasText = text.trim().length > 0;
   const today = todayStr();
 
@@ -279,6 +279,14 @@ export function VoiceOverlay({ t, tab, tabColor, lang, onTranscribed, onClose })
         </div>
 
         <div className="voice-overlay__gradient" />
+
+        {/* Hinweis nur, sobald ein Titel gesprochen/getippt wurde: dann weiß der
+            Nutzer, dass er per „Weiter" zur Datumsauswahl gelangt. */}
+        {phase === "title" && hasText && (
+          <div className="voice-overlay__search-hint">
+            {renderHighlighted(t.voiceContinueDate, tabColor)}
+          </div>
+        )}
 
         {/* ── Bottom bar ── */}
         <div className={`voice-overlay__bottom-bar ${isListening ? "voice-overlay__bottom-bar--listening" : ""}`}>

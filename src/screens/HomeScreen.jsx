@@ -191,6 +191,12 @@ export function HomeScreen({
   const tabCfg = TABS.find((tCfg) => tCfg.id === tab);
   const tabColor = tabCfg?.color || "#0078D4";
 
+  // Voice-Overlay erstellt je nach aktivem Typ einen Eintrag (Aufgabe/Notiz/
+  // Termin) ODER eine Kategorie (Projekt/Bereich/Ressource). Farbe & Akzent
+  // richten sich nach dem aktiven Erstell-Typ.
+  const voiceColor = isEntryType ? tabColor : (CC[activeType]?.color || tabColor);
+  const voiceAccentRgb = isEntryType ? null : COVER_ACCENT_RGB[activeType];
+
   // Ist die aktuell sichtbare Liste leer? Dann darf der Platzhalter nicht
   // wegscrollbar sein (Scrollen wird per CSS gesperrt).
   const activeListEmpty = isEntryType
@@ -859,9 +865,14 @@ export function HomeScreen({
         <VoiceOverlay
           t={t}
           tab={tab}
-          tabColor={tabColor}
+          tabColor={voiceColor}
+          accentRgb={voiceAccentRgb}
           lang={lang}
-          onTranscribed={(title, date) => { onAddVoiceEntry(title, date); setVoiceOverlayOpen(false); }}
+          onTranscribed={(title, date) => {
+            if (isEntryType) onAddVoiceEntry(title, date);
+            else onQuickCreate(activeType, title);
+            setVoiceOverlayOpen(false);
+          }}
           onClose={() => setVoiceOverlayOpen(false)}
         />
       )}

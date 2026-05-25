@@ -169,6 +169,10 @@ function migrateState(state) {
     next.flashcardDecks = [];
     dirty = true;
   }
+  if (!Array.isArray(next.flashcardMistakes)) {
+    next.flashcardMistakes = [];
+    dirty = true;
+  }
   if (next.flashcardPresetsVersion !== FLASHCARD_PRESETS_VERSION) {
     const userDecks = next.flashcardDecks.filter((d) => !d.isPreset);
     next.flashcardDecks = [...buildPresetDecks(), ...userDecks];
@@ -345,6 +349,46 @@ export default function App() {
       };
     }
     return null;
+  })();
+
+  // Aktive App/Tool für Header + App-Switcher (Flashcards bekommt eigenes
+  // Logo & Titel statt Logo + "Startseite").
+  const activeApp =
+    cur.view === VIEW.FLASHCARDS ? { kind: "flashcards", title: t.fc?.tool } : null;
+
+  // Über Übersetzer/Ressourcenseiten gespeicherte Wortpaare liegen als
+  // Notiz-Einträge ("src ↔ trans") unter den "{Sprache} Wörter"-Ressourcen.
+  // Für das Flashcards-„Zuletzt erstellt"-Slide aufbereiten.
+  const vocabEntries = (() => {
+    const vocabResIds = new Set(
+      state.cats
+        .filter((c) => c.type === "resource" && c.tags?.includes("Vokabel"))
+        .map((c) => c.id)
+    );
+    if (!vocabResIds.size) return [];
+    const deckByCat = {};
+    (state.flashcardDecks || []).forEach((d) => {
+      if (d.catId) deckByCat[d.catId] = d.id;
+    });
+    return state.entries
+      .filter(
+        (e) =>
+          e.type === "note" &&
+          !e.archived &&
+          (e.title || "").includes(" ↔ ") &&
+          (vocabResIds.has(e.catId) || (e.catIds || []).some((id) => vocabResIds.has(id)))
+      )
+      .map((e) => {
+        const parts = (e.title || "").split(" ↔ ");
+        const catId = e.catId || (e.catIds || []).find((id) => vocabResIds.has(id));
+        return {
+          id: e.id,
+          front: parts[0] || "",
+          back: parts.slice(1).join(" ↔ "),
+          createdAt: e.createdAt || 0,
+          deckId: deckByCat[catId] || null,
+        };
+      });
   })();
 
   /* ── tag mutations ─────────────────────────────────────────── */
@@ -603,6 +647,38 @@ export default function App() {
           : d
       ),
     }));
+
+  // Lern-Session auswerten: falsch beantwortete Karten landen (mit Snapshot von
+  // front/back) in `flashcardMistakes`; richtig beantwortete werden dort wieder
+  // entfernt. Neueste zuerst, auf 30 Einträge begrenzt. Speist das „Fehler"-Slide.
+  const recordStudyResults = (deckId, results = []) =>
+    setState((s) => {
+      const deck = (s.flashcardDecks || []).find((d) => d.id === deckId);
+      if (!deck || !results.length) return s;
+      const now = Date.now();
+      let mistakes = [...(s.flashcardMistakes || [])];
+      results.forEach((r) => {
+        const idx = mistakes.findIndex((m) => m.cardId === r.cardId);
+        if (r.correct) {
+          if (idx >= 0) mistakes.splice(idx, 1);
+        } else {
+          const card = deck.cards.find((c) => c.id === r.cardId);
+          const entry = {
+            deckId,
+            cardId: r.cardId,
+            front: card?.front ?? "",
+            back: card?.back ?? "",
+            emoji: deck.emoji,
+            deckName: deck.name,
+            wrongAt: now,
+          };
+          if (idx >= 0) mistakes[idx] = entry;
+          else mistakes.push(entry);
+        }
+      });
+      mistakes.sort((a, b) => b.wrongAt - a.wrongAt);
+      return { ...s, flashcardMistakes: mistakes.slice(0, 30) };
+    });
 
   // Übersetzung speichern: legt (falls nötig) den Arbeitsbereich "Sprachen"
   // und die Ressource "{Sprache} Wörter" an und hängt das Wortpaar als
@@ -912,6 +988,7 @@ export default function App() {
         t={t}
         title={cur.view === VIEW.HOME ? homeHeaderTitle : null}
         page={headerPage}
+        app={activeApp}
         lang={lang}
         setLang={(l) => setState((s) => ({ ...s, lang: l }))}
         theme={theme}
@@ -935,12 +1012,12 @@ export default function App() {
       {appSwitcherOpen && (
         <AppSwitcherSheet
           t={t}
-          currentLabel={
-            cur.view === VIEW.FLASHCARDS
-              ? t.fc?.tool
-              : headerPage?.title ||
-                (cur.view === VIEW.HOME ? homeHeaderTitle || t.home : t.home)
-          }
+          app={activeApp}
+          onOpenHome={() => {
+            setAppSwitcherOpen(false);
+            setPanelOpen(false);
+            setStack([{ view: VIEW.HOME }]);
+          }}
           onOpenFlashcards={() => {
             setAppSwitcherOpen(false);
             setPanelOpen(false);
@@ -1176,6 +1253,9 @@ export default function App() {
             t={t}
             lang={lang}
             decks={state.flashcardDecks || []}
+            mistakes={state.flashcardMistakes || []}
+            vocabEntries={vocabEntries}
+            onSessionComplete={recordStudyResults}
             initialDeckId={cur.deckId}
             onBack={pop}
             onAddDeck={addDeck}

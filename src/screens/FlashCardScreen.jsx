@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, Check, X, RotateCcw } from "lucide-react";
-import { FlashcardsIcon } from "../components/AppIcons";
+import { ChevronLeft, Check, X, RotateCcw, Clock, AlertTriangle } from "lucide-react";
 
 // Fisher-Yates – einmaliges Mischen zu Session-Beginn (kein Spaced-Repetition,
 // wie in der Referenz-App).
@@ -19,6 +18,9 @@ const TAP_TOLERANCE_PX = 12; // darunter gilt es als Tap (= umdrehen)
 export function FlashCardScreen({
   t,
   decks,
+  mistakes = [],
+  vocabEntries = [],
+  onSessionComplete,
   initialDeckId,
   onBack,
 }) {
@@ -27,14 +29,58 @@ export function FlashCardScreen({
   const [deckId, setDeckId] = useState(null);
   const [session, setSession] = useState(null); // { queue, index, results, flipped }
   const [drag, setDrag] = useState(0); // aktueller Karten-Versatz beim Wischen
+  const [slide, setSlide] = useState(0); // aktiver Karussell-Slide (Übersicht)
 
   const startX = useRef(0);
   const startY = useRef(0);
   const moved = useRef(false);
+  const suppressClick = useRef(false); // verhindert Doppel-Flip (touchend + click)
+  const trackRef = useRef(null);
 
   const userDecks = decks.filter((d) => !d.isPreset);
   const presetDecks = decks.filter((d) => d.isPreset);
   const activeDeck = decks.find((d) => d.id === deckId) || null;
+
+  // Karussell-Daten: zuletzt erstellte Karten + zuletzt falsch beantwortete.
+  // „Zuletzt erstellt" = vom Nutzer angelegte Karten + über Übersetzer/Ressourcen
+  // gespeicherte Wortpaare (keine Presets).
+  const recentCards = [
+    ...decks
+      .filter((d) => !d.isPreset)
+      .flatMap((d) =>
+        d.cards.map((c) => ({ id: c.id, front: c.front, back: c.back, createdAt: c.createdAt, deck: d }))
+      ),
+    ...vocabEntries.map((v) => ({
+      id: v.id,
+      front: v.front,
+      back: v.back,
+      createdAt: v.createdAt,
+      deck: decks.find((d) => d.id === v.deckId) || null,
+    })),
+  ]
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+    .slice(0, 5);
+  const mistakeCards = mistakes
+    .map((m) => ({ ...m, deck: decks.find((d) => d.id === m.deckId) || null }))
+    .slice(0, 5);
+
+  // Aktiven Slide anhand der tatsächlichen Position bestimmen (gap-unabhängig).
+  const onTrackScroll = () => {
+    const el = trackRef.current;
+    if (!el) return;
+    let nearest = 0;
+    let min = Infinity;
+    Array.from(el.children).forEach((c, i) => {
+      const d = Math.abs(c.offsetLeft - el.scrollLeft);
+      if (d < min) { min = d; nearest = i; }
+    });
+    setSlide((prev) => (nearest !== prev ? nearest : prev));
+  };
+  const goToSlide = (i) => {
+    setSlide(i);
+    const child = trackRef.current?.children[i];
+    if (child) trackRef.current.scrollTo({ left: child.offsetLeft, behavior: "smooth" });
+  };
 
   const startStudy = (deck, cards) => {
     const queue = shuffle(cards ?? deck.cards);
@@ -52,7 +98,10 @@ export function FlashCardScreen({
       const results = [...s.results, { cardId: card.id, correct }];
       const nextIndex = s.index + 1;
       if (nextIndex >= s.queue.length) {
-        setTimeout(() => setMode("result"), 0);
+        setTimeout(() => {
+          setMode("result");
+          onSessionComplete?.(deckId, results);
+        }, 0);
         return { ...s, results, flipped: false };
       }
       return { ...s, index: nextIndex, results, flipped: false };
@@ -88,6 +137,9 @@ export function FlashCardScreen({
     }
   };
   const onTouchEnd = () => {
+    // Touch hat das Geschehen erledigt → das nachfolgende synthetische
+    // click-Event ignorieren (sonst Doppel-Flip = kein sichtbarer Effekt).
+    suppressClick.current = true;
     if (!moved.current) {
       flip();
       return;
@@ -95,6 +147,14 @@ export function FlashCardScreen({
     if (drag > SWIPE_ANSWER_PX) answer(true);
     else if (drag < -SWIPE_ANSWER_PX) answer(false);
     else setDrag(0);
+  };
+  // Klick (Desktop bzw. synthetisch nach Touch): nur auf Desktop umdrehen.
+  const onCardClick = () => {
+    if (suppressClick.current) {
+      suppressClick.current = false;
+      return;
+    }
+    flip();
   };
 
   /* ── Übersicht ──────────────────────────────────────────────── */
@@ -115,20 +175,58 @@ export function FlashCardScreen({
       </button>
     );
 
+    const slides = [
+      { key: "recent", Icon: Clock, title: fc.recentlyCreated, items: recentCards, empty: fc.noRecent },
+      { key: "mistakes", Icon: AlertTriangle, title: fc.mistakes, items: mistakeCards, empty: fc.noMistakes },
+    ];
+
     return (
       <div className="fc-screen">
-        <div className="fc-header">
-          <button className="fc-icon-btn" onClick={onBack} aria-label="Back">
-            <ChevronLeft size={22} />
-          </button>
-          <div className="fc-header__title">
-            <FlashcardsIcon size={22} color="var(--color-resource)" />
-            <span>{fc.tool}</span>
+        <div className="fc-body fc-body--with-nav">
+          <div className="fc-section-title">{fc.exercises}</div>
+          <div className="fc-carousel">
+            <div className="fc-carousel__track" ref={trackRef} onScroll={onTrackScroll}>
+              {slides.map((sl) => (
+                <div className="fc-carousel__slide" key={sl.key}>
+                  <div className={`fc-carousel__card fc-carousel__card--${sl.key}`}>
+                    <div className="fc-carousel__head">
+                      <sl.Icon size={15} strokeWidth={2.4} />
+                      <span>{sl.title}</span>
+                    </div>
+                    {sl.items.length === 0 ? (
+                      <div className="fc-carousel__empty">{sl.empty}</div>
+                    ) : (
+                      <div className="fc-carousel__list">
+                        {sl.items.map((it, idx) => (
+                          <button
+                            key={it.cardId || it.id || idx}
+                            className="fc-carousel__row"
+                            onClick={() => it.deck?.cards?.length && startStudy(it.deck)}
+                            disabled={!it.deck?.cards?.length}
+                          >
+                            <span className="fc-carousel__row-emoji">{it.emoji || it.deck?.emoji || "📚"}</span>
+                            <span className="fc-carousel__row-front">{it.front}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="fc-carousel__dots">
+              {slides.map((sl, i) => (
+                <button
+                  key={sl.key}
+                  type="button"
+                  className={`fc-carousel__dot ${i === slide ? "fc-carousel__dot--active" : ""}`}
+                  onClick={() => goToSlide(i)}
+                  aria-label={`${i + 1} / ${slides.length}`}
+                />
+              ))}
+            </div>
           </div>
-          <span className="fc-icon-btn fc-icon-btn--ghost" aria-hidden />
-        </div>
 
-        <div className="fc-body">
           {userDecks.length > 0 && (
             <>
               <div className="fc-section-title">{fc.yourDecks}</div>
@@ -138,6 +236,12 @@ export function FlashCardScreen({
 
           <div className="fc-section-title">{fc.presets}</div>
           <div className="fc-deck-list">{presetDecks.map(renderDeck)}</div>
+        </div>
+
+        <div className="nav-bottom">
+          <button className="nav-bottom__back" onClick={onBack} aria-label="Back">
+            <ChevronLeft size={20} color="#EDEEFF" />
+          </button>
         </div>
       </div>
     );
@@ -234,7 +338,7 @@ export function FlashCardScreen({
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
-            onClick={flip}
+            onClick={onCardClick}
           >
             <div className="fc-card__inner">
               <div className="fc-card__face fc-card__face--front">{card.front}</div>

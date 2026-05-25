@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { Check, Moon, Sun } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
-import { CustomSettingsIcon, BrandLogo } from "./AppIcons";
+import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 
 const SWIPE_THRESHOLD_PX = 60;
 const HAPTIC_TAP_MS = 10;
@@ -9,6 +9,7 @@ const HAPTIC_TAP_MS = 10;
 export function CommandPanel({
   title,
   page,
+  app,
   entries,
   open,
   onToggle,
@@ -110,7 +111,11 @@ export function CommandPanel({
                   onOpenAppSwitcher?.();
                 }}
               >
-                <BrandLogo size={48} />
+                {app?.kind === "flashcards" ? (
+                  <FlashcardsBadge size={48} />
+                ) : (
+                  <BrandLogo size={48} />
+                )}
               </button>
             )}
             <div className="command-panel__titles">
@@ -124,7 +129,7 @@ export function CommandPanel({
                 </>
               ) : (
                 <>
-                  <div className="command-panel__greeting">{title || t.home}</div>
+                  <div className="command-panel__greeting">{app?.title || title || t.home}</div>
                   <div className="command-panel__date">{dateStr}</div>
                 </>
               )}

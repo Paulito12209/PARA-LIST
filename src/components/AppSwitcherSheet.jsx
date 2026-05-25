@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { Home, Languages } from "lucide-react";
+import { Languages } from "lucide-react";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
-import { BrandLogo, FlashcardsIcon } from "./AppIcons";
+import { BrandLogo, FlashcardsBadge } from "./AppIcons";
 
 /**
  * App-Switcher als Bottom-Sheet, geöffnet über das Logo oben links.
@@ -11,11 +11,12 @@ import { BrandLogo, FlashcardsIcon } from "./AppIcons";
  *
  * Props:
  *  - t: Übersetzungen
- *  - currentLabel: Name der aktuellen Ansicht (z.B. "Startseite")
+ *  - app: aktive App/Tool ({ kind: "flashcards", title } | null = Startseite)
+ *  - onOpenHome: wechselt zurück zur Startseite (PARA·LIST)
  *  - onOpenFlashcards: öffnet das Flashcards-Tool
  *  - onClose
  */
-export function AppSwitcherSheet({ t, currentLabel, onOpenFlashcards, onOpenTranslator, onClose }) {
+export function AppSwitcherSheet({ t, app, onOpenHome, onOpenFlashcards, onOpenTranslator, onClose }) {
   const [closing, setClosing] = useState(false);
 
   const handleClose = () => {
@@ -48,29 +49,41 @@ export function AppSwitcherSheet({ t, currentLabel, onOpenFlashcards, onOpenTran
       >
         <div className="action-sheet__handle" />
 
-        {/* Aktuelle Position */}
+        {/* Aktuelle Position: Label oben, darunter Icon + Name der aktiven App */}
         <div className="app-switcher__current">
-          <span className="app-switcher__current-icon">
-            <Home size={18} />
-          </span>
-          <div className="app-switcher__current-text">
-            <div className="app-switcher__current-label">{fc.youAreHere}</div>
-            <div className="app-switcher__current-name">{currentLabel}</div>
+          <div className="app-switcher__current-label">{fc.youAreHere}</div>
+          <div className="app-switcher__current-row">
+            {app?.kind === "flashcards" ? (
+              <FlashcardsBadge size={40} />
+            ) : (
+              <span className="app-switcher__current-icon">
+                <BrandLogo size={34} />
+              </span>
+            )}
+            <div className="app-switcher__current-name">
+              {app?.title || "PARA·LIST"}
+            </div>
           </div>
-          <BrandLogo size={32} />
         </div>
 
         <div className="action-sheet__divider" />
 
-        {/* Tools */}
+        {/* Apps */}
         <div className="app-switcher__section-title">{fc.tools}</div>
         <div className="app-switcher__tools">
-          <button className="app-switcher__tool" onClick={run(onOpenFlashcards)}>
-            <span className="app-switcher__tool-icon app-switcher__tool-icon--fc">
-              <FlashcardsIcon size={22} color="#fff" />
-            </span>
-            <span className="app-switcher__tool-name">{fc.tool}</span>
-          </button>
+          {app && (
+            <button className="app-switcher__tool" onClick={run(onOpenHome)}>
+              <BrandLogo size={40} />
+              <span className="app-switcher__tool-name">PARA·LIST</span>
+            </button>
+          )}
+
+          {app?.kind !== "flashcards" && (
+            <button className="app-switcher__tool" onClick={run(onOpenFlashcards)}>
+              <FlashcardsBadge size={40} />
+              <span className="app-switcher__tool-name">{fc.tool}</span>
+            </button>
+          )}
 
           <button className="app-switcher__tool" onClick={run(onOpenTranslator)}>
             <span className="app-switcher__tool-icon app-switcher__tool-icon--tl">

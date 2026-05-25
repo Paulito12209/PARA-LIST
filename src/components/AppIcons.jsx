@@ -56,6 +56,17 @@ export const FlashcardsIcon = ({ size = 24, color = "currentColor", strokeWidth 
   </svg>
 );
 
+// Flashcards-„App-Logo": eigenständiges Neon-Icon (public/flashcards-icon.png).
+// Für Header, App-Switcher-Kachel & aktuelle Position.
+export const FlashcardsBadge = ({ size = 48, className = "" }) => (
+  <img
+    src={`${import.meta.env.BASE_URL}flashcards-icon.png`}
+    alt=""
+    className={`app-badge app-badge--fc-img ${className}`}
+    style={{ width: size, height: size, borderRadius: size * 0.28 }}
+  />
+);
+
 // Speichern/Merken-Icon im Instagram-Stil (Lesezeichen-Outline).
 export const SaveBookmarkIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.8 }) => (
   <svg

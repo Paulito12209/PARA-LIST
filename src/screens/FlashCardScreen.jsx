@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, Check, X, RotateCcw } from "lucide-react";
 import { FlashcardsIcon } from "../components/AppIcons";
 
@@ -19,6 +19,7 @@ const TAP_TOLERANCE_PX = 12; // darunter gilt es als Tap (= umdrehen)
 export function FlashCardScreen({
   t,
   decks,
+  initialDeckId,
   onBack,
 }) {
   const fc = t.fc || {};
@@ -60,6 +61,17 @@ export function FlashCardScreen({
   };
 
   const flip = () => setSession((s) => (s ? { ...s, flipped: !s.flipped } : s));
+
+  // Direkt-Einstieg: kommt man über das Flashcards-Lesezeichen einer Ressource,
+  // wird das verknüpfte Deck einmalig sofort in den Lernmodus geschaltet.
+  const didInit = useRef(false);
+  useEffect(() => {
+    if (didInit.current || !initialDeckId) return;
+    didInit.current = true;
+    const deck = decks.find((d) => d.id === initialDeckId);
+    if (deck && deck.cards.length) startStudy(deck);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialDeckId]);
 
   // ── Touch-Gesten: Tap = umdrehen, horizontaler Wisch = antworten ──
   const onTouchStart = (e) => {

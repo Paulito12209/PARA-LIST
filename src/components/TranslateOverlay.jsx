@@ -18,11 +18,11 @@ const DEBOUNCE_MS = 500;
  *  - onClose
  *  - defaultFrom / defaultTo: Anzeigenamen (z.B. "Deutsch")
  */
-export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, defaultFrom = "Deutsch", defaultTo = "Spanisch" }) {
+export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initialText = "", defaultFrom = "Deutsch", defaultTo = "Spanisch" }) {
   const fc = t.fc || {};
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText);
   const [result, setResult] = useState("");
   const [status, setStatus] = useState("idle"); // idle | loading | done | error
   const [savedCount, setSavedCount] = useState(0);

@@ -1,9 +1,10 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
+import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
@@ -80,14 +81,30 @@ export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive
 }
 
 
-export function BookmarkRail({ active, onSelect, baseColor, iconOverrides }) {
+export function BookmarkRail({ active, onSelect, baseColor, iconOverrides, mutedIds = [] }) {
   return (
     <div className="bookmark-rail">
       {BOOKMARKS.map((bm) => {
         const BmIcon = iconOverrides?.[bm.id] || bm.Icon;
-        const isActive = active === bm.id;
+        // "muted" = disabled-Look, aber weiterhin klickbar (z.B. Canvas auf
+        // Flashcard-Ressourcen: signalisiert "nicht editierbar", bleibt aber der
+        // Rückweg zur Tabelle).
+        const isMuted = mutedIds.includes(bm.id);
+        const isActive = !isMuted && active === bm.id;
         const color = (bm.id === 'canvas' && baseColor) ? baseColor : bm.color;
-        
+
+        if (isMuted) {
+          return (
+            <button
+              key={bm.id}
+              className="bookmark-rail__tab bookmark-rail__tab--disabled"
+              onClick={() => onSelect(bm.id)}
+            >
+              <BmIcon size={11} />
+            </button>
+          );
+        }
+
         return (
           <button
             key={bm.id}
@@ -154,6 +171,10 @@ export function CatDetailScreen({
   onUpdateTag,
   onDeleteTag,
   onLinkResource,
+  flashcardDeckId,
+  flashcardLang,
+  onOpenFlashcards,
+  onAddWord,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -166,6 +187,12 @@ export function CatDetailScreen({
   const [resSearch, setResSearch] = useState("");
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [coverMode, setCoverMode] = useState(null);
+  const [showFcInfo, setShowFcInfo] = useState(false);
+  const [addWordText, setAddWordText] = useState("");
+
+  // Flashcard-Ressource = hat ein verknüpftes Deck. Diese Seiten sind nicht
+  // frei editierbar; der Canvas zeigt stattdessen einen Hinweis + Info-Sheet.
+  const isFlashcardRes = !!flashcardDeckId;
 
   // Cover-Akzent berechnen
   const catAccentRgb = cat.coverColor
@@ -532,17 +559,63 @@ export function CatDetailScreen({
             }}
           />
         )}
+
+        <BookmarkRail
+          active={bm}
+          onSelect={handleBmSelect}
+          baseColor={cfg.color}
+          mutedIds={isFlashcardRes ? ["canvas"] : []}
+        />
       </div>
 
       {/* Content */}
       <div className="cat-detail__body" onClick={handleDoubleTap}>
         {bm === "canvas" && (
-          <textarea
-            className="cat-detail__textarea"
-            value={cat.body}
-            onChange={(e) => onUpdate({ body: e.target.value })}
-            placeholder={t.writeThoughts}
-          />
+          isFlashcardRes ? (
+            <div className="fc-table">
+              <div className="fc-table__top">
+                <button
+                  className="cat-detail__info-btn"
+                  onClick={() => setShowFcInfo(true)}
+                  aria-label={t.fc?.infoTitle}
+                >
+                  <Info size={16} />
+                </button>
+                <span className="fc-table__hint">{t.fc?.pageNotEditable}</span>
+              </div>
+              {(() => {
+                const words = entries
+                  .filter((e) => e.type === "note")
+                  .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                if (words.length === 0) {
+                  return <div className="fc-table__empty">{t.fc?.emptyWords}</div>;
+                }
+                return (
+                  <div className="fc-table__list">
+                    {words.map((w) => {
+                      const parts = (w.title || "").split(" ↔ ");
+                      const left = parts[0] || w.title;
+                      const right = parts.slice(1).join(" ↔ ");
+                      return (
+                        <div key={w.id} className="fc-table__row">
+                          <span className="fc-table__cell fc-table__cell--front">{left}</span>
+                          <span className="fc-table__sep">↔</span>
+                          <span className="fc-table__cell fc-table__cell--back">{right}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          ) : (
+            <textarea
+              className="cat-detail__textarea"
+              value={cat.body}
+              onChange={(e) => onUpdate({ body: e.target.value })}
+              placeholder={t.writeThoughts}
+            />
+          )
         )}
         {bm === "tasks" && (
           <div
@@ -807,6 +880,15 @@ export function CatDetailScreen({
       />
 
       {/* Settings Bottom Sheet */}
+      {showFcInfo && (
+        <FlashcardInfoSheet
+          t={t}
+          langName={flashcardLang || cat.name}
+          onOpenFlashcards={() => { setShowFcInfo(false); onOpenFlashcards?.(flashcardDeckId); }}
+          onClose={() => setShowFcInfo(false)}
+        />
+      )}
+
       {showSettingsSheet && (
         <div className="settings-sheet-overlay" onClick={closeSettingsSheet} {...settingsSwipe}>
           <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
@@ -892,14 +974,28 @@ export function CatDetailScreen({
         </div>
       )}
 
-      <BookmarkRail active={bm} onSelect={handleBmSelect} baseColor={cfg.color} />
-
       {/* Bottom nav */}
       <div className="nav-bottom" style={{ position: "relative" }}>
         <button className="nav-bottom__back" onClick={onBack}>
           <ChevronLeft size={20} color="#EDEEFF" />
         </button>
-        
+
+        {/* Neues Wort hinzufügen (nur auf Flashcard-Ressourcen, Canvas-Ansicht) */}
+        {isFlashcardRes && bm === "canvas" && (
+          <div className="nav-bottom__add-word">
+            <input
+              type="text"
+              className="nav-bottom__add-word-input"
+              value={addWordText}
+              onChange={(e) => setAddWordText(e.target.value)}
+              placeholder={t.fc?.addWord}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { onAddWord?.(addWordText); setAddWordText(""); }
+              }}
+            />
+          </div>
+        )}
+
         {/* Suchfeld für Ressourcen-Verknüpfungen (Nur im "resources" Sub-Tab sichtbar) */}
         {bm === "media" && resSubTab === "resources" && (
           <div className="nav-bottom__res-search">
@@ -937,12 +1033,26 @@ export function CatDetailScreen({
 
         <div className="nav-bottom__actions">
           {bm === "canvas" ? (
-            <button
-              className="nav-bottom__back"
-              onClick={onHome}
-            >
-              <Home size={20} color="#EDEEFF" />
-            </button>
+            isFlashcardRes ? (
+              <button
+                className="nav-bottom__add"
+                onClick={() => { onAddWord?.(addWordText); setAddWordText(""); }}
+                aria-label={t.fc?.addWord}
+                style={{
+                  background: CC.resource.color,
+                  boxShadow: `0 8px 24px ${CC.resource.color}55`,
+                }}
+              >
+                <Send size={20} color="#fff" strokeWidth={2.2} />
+              </button>
+            ) : (
+              <button
+                className="nav-bottom__back"
+                onClick={onHome}
+              >
+                <Home size={20} color="#EDEEFF" />
+              </button>
+            )
           ) : (
             <button
               className="nav-bottom__add"

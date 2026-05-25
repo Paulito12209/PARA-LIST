@@ -467,7 +467,8 @@
   position: absolute;
   // Slight negative offset removes visible seam to right edge
   right: -1px;
-  top: 116px;
+  // Beginnt knapp unter der Header-Unterkante (3px-Gap wie zwischen den Tabs).
+  top: calc(100% + 3px);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -483,7 +484,26 @@
     border-right: none;
     @include flex-center;
     transition: all 0.18s;
+
+    // Erstes Lesezeichen auf nicht-editierbaren Seiten: disabled-Look,
+    // aber weiterhin klickbar (Rückweg zur Canvas-Tabelle).
+    &--disabled {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-right: none;
+      color: rgba(237, 238, 255, 0.32);
+      cursor: pointer;
+      box-shadow: none;
+    }
   }
+}
+
+// Disabled-Lesezeichen im Light-Mode
+body.light-theme .bookmark-rail__tab--disabled,
+.light-theme .bookmark-rail__tab--disabled {
+  background: rgba(0, 0, 0, 0.035);
+  border-color: rgba(0, 0, 0, 0.10);
+  color: rgba(26, 26, 36, 0.28);
 }
 
 // ── Ressource Sub-Tabs (Notizen / Medien) ──────────────────

@@ -176,6 +176,48 @@ function migrateState(state) {
     dirty = true;
   }
 
+  // Auffindbarkeit: einmalig den Arbeitsbereich "Sprachen" und je eine
+  // "{Sprache} Wörter"-Ressource pro Preset-Sprache anlegen (verknüpft via
+  // relatedId). So entdeckt man das Tool beim Stöbern in der Area. Jede
+  // Ressource ist mit ihrem Preset-Deck verknüpft (deck.catId).
+  if (!next.languagesSeeded) {
+    let cats = next.cats;
+    let langArea = cats.find((c) => c.type === "area" && c.name === "Sprachen");
+    if (!langArea) {
+      langArea = {
+        id: uid(), type: "area", name: "Sprachen", date: null,
+        body: "Vokabeln nach Sprache – gepflegt über das Übersetzer- und Flashcards-Tool.",
+        tags: ["Sprache"], relatedId: null, archived: false, collaborators: [],
+        createdAt: new Date().toISOString(),
+      };
+      cats = [...cats, langArea];
+    }
+
+    const linkByDeck = {};
+    (next.flashcardDecks || []).forEach((deck) => {
+      if (!deck.languagePair) return;
+      const langName = deck.languagePair[0];
+      const resName = wordsResourceName(langName);
+      let res = cats.find((c) => c.type === "resource" && c.name === resName);
+      if (!res) {
+        res = {
+          id: uid(), type: "resource", name: resName, date: null, body: "",
+          tags: ["Vokabel"], relatedId: langArea.id, archived: false, collaborators: [],
+          createdAt: new Date().toISOString(),
+        };
+        cats = [...cats, res];
+      }
+      linkByDeck[deck.id] = res.id;
+    });
+
+    next.cats = cats;
+    next.flashcardDecks = (next.flashcardDecks || []).map((d) =>
+      linkByDeck[d.id] ? { ...d, catId: linkByDeck[d.id] } : d
+    );
+    next.languagesSeeded = true;
+    dirty = true;
+  }
+
   return dirty ? next : state;
 }
 
@@ -242,7 +284,8 @@ export default function App() {
   const [coverAccentRgb, setCoverAccentRgb] = useState(DEFAULT_COVER_ACCENT_RGB);
   const [voiceOverlayOpen, setVoiceOverlayOpen] = useState(false);
   const [appSwitcherOpen, setAppSwitcherOpen] = useState(false);
-  const [translateOpen, setTranslateOpen] = useState(false);
+  // null = geschlossen; sonst { initialText, toLang } für das Übersetzer-Overlay.
+  const [translateConfig, setTranslateConfig] = useState(null);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
 
@@ -906,19 +949,21 @@ export default function App() {
           onOpenTranslator={() => {
             setAppSwitcherOpen(false);
             setPanelOpen(false);
-            setTranslateOpen(true);
+            setTranslateConfig({ initialText: "", toLang: "Spanisch" });
           }}
           onClose={() => setAppSwitcherOpen(false)}
         />
       )}
 
-      {translateOpen && (
+      {translateConfig && (
         <TranslateOverlay
           t={t}
+          initialText={translateConfig.initialText}
+          defaultTo={translateConfig.toLang}
           onSave={saveTranslation}
-          onClose={() => setTranslateOpen(false)}
+          onClose={() => setTranslateConfig(null)}
           onOpenFlashcards={() => {
-            setTranslateOpen(false);
+            setTranslateConfig(null);
             push({ view: VIEW.FLASHCARDS });
           }}
         />
@@ -1027,6 +1072,7 @@ export default function App() {
             );
           }
 
+          const fcDeck = (state.flashcardDecks || []).find((d) => d.catId === cat.id);
           const childIds = state.cats.filter((c) => c.relatedId === cat.id).map((c) => c.id);
           const inclusiveEntries = state.entries
             .filter((e) => {
@@ -1076,6 +1122,12 @@ export default function App() {
               onAddEntry={(type) => setCreating({ type, catId: cat.id })}
               onOpenCat={(resCat) => push({ view: VIEW.CAT_DETAIL, catId: resCat.id })}
               onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+              flashcardDeckId={fcDeck?.id}
+              flashcardLang={fcDeck?.languagePair?.[0]}
+              onOpenFlashcards={(deckId) => push({ view: VIEW.FLASHCARDS, deckId })}
+              onAddWord={(text) =>
+                setTranslateConfig({ initialText: text || "", toLang: fcDeck?.languagePair?.[0] || "Spanisch" })
+              }
             />
           );
         })()}
@@ -1121,6 +1173,7 @@ export default function App() {
             t={t}
             lang={lang}
             decks={state.flashcardDecks || []}
+            initialDeckId={cur.deckId}
             onBack={pop}
             onAddDeck={addDeck}
             onUpdateDeck={updateDeck}

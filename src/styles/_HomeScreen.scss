@@ -1035,8 +1035,10 @@
   cursor: pointer;
   color: var(--color-text);
 
-  // Liquid-Glass-Körper (Dark Mode): leicht getöntes Glas, heller Rand + Icon
-  background: rgba(22, 22, 40, 0.55);
+  // Dark Mode: hohe Grund-Deckkraft, damit die Buttons auch dort milchig (nicht
+  // durchsichtig) sind, wo `backdrop-filter` NICHT rendert (Android/Pixel) –
+  // einheitlich mit dem Input-Dock. Der Blur ist nur Veredelung auf iOS.
+  background: rgba(22, 22, 40, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
@@ -1047,7 +1049,16 @@
 
   &:active {
     transform: scale(0.92);
-    background: rgba(40, 40, 64, 0.65);
+    background: rgba(40, 40, 64, 0.92);
+  }
+
+  // Nur iOS (Blur rendert zuverlässig): echte transluzente Glas-Optik.
+  @supports (-webkit-touch-callout: none) {
+    background: rgba(22, 22, 40, 0.55);
+
+    &:active {
+      background: rgba(40, 40, 64, 0.65);
+    }
   }
 }
 

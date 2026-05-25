@@ -46,7 +46,7 @@ function todayStr() {
   return toDateStr(n.getFullYear(), n.getMonth(), n.getDate());
 }
 
-export function VoiceOverlay({ t, tab, tabColor, accentRgb: accentRgbProp, lang, onTranscribed, onClose }) {
+export function VoiceOverlay({ t, tab, tabColor, accentRgb: accentRgbProp, supportsDate = true, lang, onTranscribed, onClose }) {
   const [phase, setPhase] = useState("title"); // "title" | "date"
   const [text, setText] = useState("");
   const [isListening, setIsListening] = useState(false);
@@ -63,21 +63,25 @@ export function VoiceOverlay({ t, tab, tabColor, accentRgb: accentRgbProp, lang,
 
   // Refs to avoid stale closures in SpeechRecognition callbacks
   const stateRef = useRef({ phase: "title", text: "", lang, selectedDate: todayStr() });
-  stateRef.current = { phase, text, lang, selectedDate };
+  stateRef.current = { phase, text, lang, selectedDate, supportsDate };
 
   const handleResultRef = useRef(null);
   handleResultRef.current = (transcript) => {
     const lower = transcript.toLowerCase().trim();
-    const { phase: p, lang: l, text: currentText, selectedDate: sd } = stateRef.current;
+    const { phase: p, lang: l, text: currentText, selectedDate: sd, supportsDate: canDate } = stateRef.current;
     errorCountRef.current = 0;
 
     if (p === "title") {
       const nextWords = TRIGGER_NEXT[l] || TRIGGER_NEXT.en;
+      const doneWords = TRIGGER_DONE[l] || TRIGGER_DONE.en;
       if (currentText.trim()) {
         // Title already set → only listen for trigger words to proceed
-        if (nextWords.includes(lower)) {
+        if (canDate && nextWords.includes(lower)) {
           setPhase("date");
           navigator.vibrate?.([15, 40, 15]);
+        } else if (!canDate && (nextWords.includes(lower) || doneWords.includes(lower))) {
+          // Ohne Datumsphase (z.B. Bereich/Ressource): direkt anlegen, ohne Datum
+          onTranscribed(currentText.trim(), null);
         }
         // Otherwise ignore – don't overwrite the title
       } else {
@@ -161,7 +165,9 @@ export function VoiceOverlay({ t, tab, tabColor, accentRgb: accentRgbProp, lang,
   const handleSubmit = () => {
     const trimmed = text.trim();
     if (!trimmed) return;
-    onTranscribed(trimmed, phase === "date" ? selectedDate : todayStr());
+    // Ohne Datumsunterstützung (Bereich/Ressource) wird kein Datum gesetzt.
+    const date = supportsDate ? (phase === "date" ? selectedDate : todayStr()) : null;
+    onTranscribed(trimmed, date);
   };
 
   const handleKeyDown = (e) => {
@@ -282,7 +288,7 @@ export function VoiceOverlay({ t, tab, tabColor, accentRgb: accentRgbProp, lang,
 
         {/* Hinweis nur, sobald ein Titel gesprochen/getippt wurde: dann weiß der
             Nutzer, dass er per „Weiter" zur Datumsauswahl gelangt. */}
-        {phase === "title" && hasText && (
+        {phase === "title" && hasText && supportsDate && (
           <div className="voice-overlay__search-hint">
             {renderHighlighted(t.voiceContinueDate, tabColor)}
           </div>

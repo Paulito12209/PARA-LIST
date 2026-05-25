@@ -196,6 +196,9 @@ export function HomeScreen({
   // richten sich nach dem aktiven Erstell-Typ.
   const voiceColor = isEntryType ? tabColor : (CC[activeType]?.color || tabColor);
   const voiceAccentRgb = isEntryType ? null : COVER_ACCENT_RGB[activeType];
+  // Datumsauswahl nur für Einträge und Projekte. Bereiche/Ressourcen brauchen
+  // kein Datum (ihre Pille zeigt später das Entstehungsdatum).
+  const voiceSupportsDate = isEntryType || activeType === "project";
 
   // Ist die aktuell sichtbare Liste leer? Dann darf der Platzhalter nicht
   // wegscrollbar sein (Scrollen wird per CSS gesperrt).
@@ -867,6 +870,7 @@ export function HomeScreen({
           tab={tab}
           tabColor={voiceColor}
           accentRgb={voiceAccentRgb}
+          supportsDate={voiceSupportsDate}
           lang={lang}
           onTranscribed={(title, date) => {
             if (isEntryType) onAddVoiceEntry(title, date);

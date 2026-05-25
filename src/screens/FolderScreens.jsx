@@ -372,7 +372,7 @@ export function CatDetailScreen({
         </div>
         <div className="cat-detail__pills">
           <div className="cat-detail__pills-group">
-          {cat.type === "resource" && cat.createdAt && (
+          {(cat.type === "resource" || cat.type === "area") && cat.createdAt && (
             <div className="cat-detail__date-pill cat-detail__date-pill--static">
               {fmtDate(cat.createdAt.split("T")[0], t.locale)}
             </div>

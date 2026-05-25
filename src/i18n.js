@@ -159,6 +159,8 @@ export const I18N = {
       swapLang: "Sprachen tauschen",
       translateAction: "Übersetzen",
       collapseKeyboard: "Tastatur schließen",
+      copy: "Kopieren",
+      copied: "Kopiert",
       pageNotEditable: "Diese Seite ist nicht editierbar",
       infoTitle: "Über diese Seite",
       infoText: (lang) =>
@@ -365,6 +367,8 @@ export const I18N = {
       swapLang: "Swap languages",
       translateAction: "Translate",
       collapseKeyboard: "Close keyboard",
+      copy: "Copy",
+      copied: "Copied",
       pageNotEditable: "This page is not editable",
       infoTitle: "About this page",
       infoText: (lang) =>
@@ -571,6 +575,8 @@ export const I18N = {
       swapLang: "Intercambiar idiomas",
       translateAction: "Traducir",
       collapseKeyboard: "Cerrar teclado",
+      copy: "Copiar",
+      copied: "Copiado",
       pageNotEditable: "Esta página no es editable",
       infoTitle: "Sobre esta página",
       infoText: (lang) =>

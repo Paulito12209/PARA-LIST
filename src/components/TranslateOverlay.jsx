@@ -1,11 +1,31 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, ArrowLeftRight, Loader2, ChevronDown } from "lucide-react";
+import { X, ArrowLeftRight, Loader2, ChevronDown, Check } from "lucide-react";
 import { translateWord, LANG_CODES } from "../lib/translate";
 import { SaveBookmarkIcon, FlashcardsIcon } from "./AppIcons";
 
 const LANGS = Object.keys(LANG_CODES);
 const DEBOUNCE_MS = 500;
+
+/** Copy-Icon (zwei überlappende, abgerundete Quadrate). */
+function CopyIcon({ size = 18, color = "currentColor" }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="3" y="8" width="13" height="13" rx="3" />
+      <path d="M8 8V6a3 3 0 0 1 3-3h7a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-2" />
+    </svg>
+  );
+}
 
 /**
  * Übersetzer-Overlay im Google-Übersetzer-Stil (Vollbild via Portal).
@@ -28,6 +48,7 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
   const [savedCount, setSavedCount] = useState(0);
   const [closing, setClosing] = useState(false);
   const [kbHeight, setKbHeight] = useState(0);
+  const [copied, setCopied] = useState(false);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -53,6 +74,18 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
   }, []);
 
   const collapseKeyboard = () => inputRef.current?.blur();
+
+  const copyResult = async () => {
+    if (!result) return;
+    try {
+      await navigator.clipboard?.writeText(result);
+      setCopied(true);
+      navigator.vibrate?.(8);
+      setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* Clipboard nicht verfügbar – still ignorieren */
+    }
+  };
 
   // Debounced Live-Übersetzung
   useEffect(() => {
@@ -136,7 +169,18 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
               {status === "error" && (
                 <span className="tl-result__error">{fc.translateError}</span>
               )}
-              {status === "done" && <span className="tl-result__text">{result}</span>}
+              {status === "done" && (
+                <div className="tl-result__row">
+                  <span className="tl-result__text">{result}</span>
+                  <button
+                    className={`tl-copy ${copied ? "tl-copy--done" : ""}`}
+                    onClick={copyResult}
+                    aria-label={copied ? fc.copied : fc.copy}
+                  >
+                    {copied ? <Check size={18} /> : <CopyIcon size={18} />}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

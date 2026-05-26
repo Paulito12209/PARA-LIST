@@ -106,19 +106,16 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
 
   return (
     <div className="modal" onClick={onClose}>
-      <div className="modal__sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="modal__sheet modal__sheet--minimal" onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
 
         <div className="modal__header">
           <div className="modal__header-left" />
           <h3 className="modal__title">{t.newLabel(label)}</h3>
-          <div className="modal__header-right">
-            <button className="modal__close" onClick={onClose}>
-              <X size={18} color="#5858A0" />
-            </button>
-          </div>
+          <div className="modal__header-right" />
         </div>
 
+        <div className="modal__fields">
         <input
           className="modal__input modal__input--title"
           autoFocus
@@ -143,14 +140,14 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
                 className="modal__date-input"
                 value={due}
                 onChange={(e) => setDue(e.target.value)}
-                style={{ color: due ? "#EDEEFF" : "#5858A0" }}
+                style={{ color: due ? "#EDEEFF" : "#8a8a96" }}
               />
               <input
                 type="time"
                 className="modal__time-input"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                style={{ color: time ? "#EDEEFF" : "#5858A0" }}
+                style={{ color: time ? "#EDEEFF" : "#8a8a96" }}
               />
             </div>
           </>
@@ -180,7 +177,7 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
                 className="modal__time-input"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                style={{ color: time ? "#EDEEFF" : "#5858A0" }}
+                style={{ color: time ? "#EDEEFF" : "#8a8a96" }}
               />
             </div>
             <div className="modal__toggle-row">
@@ -243,14 +240,24 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
           CC={CC}
           t={t}
         />
+        </div>
 
-        <button
-          className={`modal__submit ${!title.trim() ? "modal__submit--disabled" : ""}`}
-          onClick={save}
-          style={{ background: accentColor }}
-        >
-          {t.create || "Erstellen"}
-        </button>
+        <div className="modal__footer">
+          <button
+            className="modal__close modal__close--footer"
+            onClick={onClose}
+            aria-label={t.cancel || "Schließen"}
+          >
+            <X size={20} color="#8a8a96" />
+          </button>
+          <button
+            className={`modal__submit ${!title.trim() ? "modal__submit--disabled" : ""}`}
+            onClick={save}
+            style={{ background: accentColor }}
+          >
+            {t.create || "Erstellen"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -283,7 +290,7 @@ function CategoryMultiSelect({ cats, catIds, isOpen, onToggleOpen, onToggleCat, 
             transform: isOpen ? "rotate(90deg)" : "rotate(-90deg)",
             transition: "transform 0.2s",
           }}
-          color="#5858A0"
+          color="#8a8a96"
         />
       </button>
       {isOpen && (

@@ -207,6 +207,14 @@ export const SEED = {
   flashcardDecks: [],
 };
 
+// IDs aller mitgelieferten Default-/Onboarding-Items. Wird in migrateState
+// genutzt, um bestehende (vor dem seed-Flag gespeicherte) States nachträglich
+// zu markieren, damit die Activity/XP-Berechnung Seed-Daten ausschließen kann.
+export const SEED_IDS = new Set([
+  ...SEED.cats.map((c) => c.id),
+  ...SEED.entries.map((e) => e.id),
+]);
+
 /* ── Notification logic ──────────────────────────────────────── */
 export function computeNotif(entries) {
   const overdue = entries.filter((e) => e.type === "task" && !e.done && isOld(e.due));

@@ -586,6 +586,163 @@
   }
 }
 
+// ── Minimalistische Variante (Input-Dock-Designsprache) ─────────────
+// Draft: durchsichtige, randlose Felder mit feinen Trennlinien, Dock-Hintergrund.
+// Nur aktiv über die Modifier-Klasse .modal__sheet--minimal (CreateModal), damit
+// andere Modals (Kategorie anlegen, Settings …) unberührt bleiben.
+.modal__sheet--minimal {
+  background: #16161F;
+  border: none;
+  border-radius: $radius-xl $radius-xl 0 0;
+  padding-bottom: calc(#{$spacing-xl} + env(safe-area-inset-bottom, 0px));
+
+  @media (min-width: 480px) {
+    border-radius: $radius-xl;
+    border: none;
+  }
+
+  // Greift-Pille oben: neutrales Grau statt Lila
+  .modal__handle {
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  // Header schlanker: zentrierter Titel
+  .modal__title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  // Select-Text & Chevron neutral grau (statt Lila); ausgewählt = hell
+  .modal__multi-select-btn {
+    color: #8a8a96;
+
+    &--has-selection {
+      color: #EDEEFF;
+    }
+
+    // Chevron 3px nach links, damit er vertikal bündig mit dem Uhr-Icon darüber
+    // sitzt (Uhr-Icon bleibt unverändert).
+    > svg {
+      margin-right: 3px;
+    }
+  }
+
+  // Native Datum-/Uhrzeit-Icons (Kalender/Uhr) neutral grau statt weiß/lila
+  .modal__date-input::-webkit-calendar-picker-indicator,
+  .modal__time-input::-webkit-calendar-picker-indicator {
+    filter: brightness(0) invert(0.58);
+    opacity: 0.9;
+    cursor: pointer;
+  }
+
+  // Footer: Schließbutton links neben "Erstellen"
+  .modal__footer {
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-sm;
+    margin-top: $spacing-lg;
+
+    .modal__submit {
+      flex: 1;
+      margin-top: 0;
+    }
+  }
+
+  .modal__close--footer {
+    flex-shrink: 0;
+    width: 56px;
+    border-radius: $radius-pill;
+    background: rgba(255, 255, 255, 0.06);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  // Durchsichtige, komplett randlose Eingabefelder – nur Abstände, keine Linien
+  // (puristisch wie das Input-Dock).
+  .modal__input,
+  .modal__textarea,
+  .modal__date-input,
+  .modal__time-input,
+  .modal__multi-select-btn {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 2px;
+
+    &::placeholder {
+      color: #8a8a96;
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  // Alle Eingabe-Zeilen liegen in einer Wrapper-Div: einheitliche 8px-Gap statt
+  // einzelner margin-top-Werte (die werden hier neutralisiert).
+  .modal__fields {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .modal__input,
+    .modal__input + .modal__input,
+    .modal__select,
+    .modal__textarea,
+    .modal__input-row,
+    .modal__multi-select,
+    .modal__toggle-row {
+      margin-top: 0;
+    }
+  }
+
+  // Titel-Feld als prägnante, größere Eingabe (wie eine Überschrift)
+  .modal__input--title {
+    font-size: 20px;
+    font-weight: 700;
+    padding-top: $spacing-xs;
+  }
+
+  .modal__textarea {
+    min-height: 64px;
+  }
+
+  // Datum/Uhrzeit nebeneinander, jeweils mit eigener Hairline
+  .modal__input-row {
+    gap: $spacing-md;
+  }
+
+  // Kategorie-Auswahl: transparenter Button, gleiche Hairline-Optik
+  .modal__multi-select {
+    margin-top: $spacing-sm + 1px;
+  }
+
+  .modal__multi-select-list {
+    background: #1f1f2b;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  // Geburtstag-Toggle-Zeile ohne Kasten, ohne Linie
+  .modal__toggle-row {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: $spacing-xs 2px;
+  }
+
+  // Submit als Dock-artige Pille (Abstand kommt vom .modal__footer)
+  .modal__submit {
+    border-radius: $radius-pill;
+  }
+}
+
 // ── Loading Screen ──────────────────────────────────────────
 .loading {
   @include flex-center;

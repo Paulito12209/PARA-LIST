@@ -51,7 +51,7 @@ const SINGULAR_KEY = {
 // Geklickt navigiert er IMMER zur Startseite (onHome).
 // `canToggleList`: auf der Startseite klappt ein 2. Tap auf das bereits aktive
 // Typ-Icon die Liste auf/zu (onToggleList).
-export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, onOpenVoice, onMenu, onHome, leadingAction = "list" }) {
+export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, leadingAction = "list" }) {
   const [value, setValue] = useState("");
   const isHomeScreen = leadingAction === "list";
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
@@ -72,10 +72,13 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
         {DOCK_TYPES.map((d) => {
           const Icon = d.Icon;
           const isActive = d.id === activeType;
+          // Glow erscheint nur, wenn das aktive Icon getappt wurde und die Liste
+          // dadurch aufgeklappt ist (nur auf der Startseite relevant).
+          const isGlowing = isActive && canToggleList && listExpanded;
           return (
             <button
               key={d.id}
-              className={`command-dock__type ${isActive ? "command-dock__type--active" : ""}`}
+              className={`command-dock__type ${isActive ? "command-dock__type--active" : ""}${isGlowing ? " command-dock__type--glow" : ""}`}
               style={isActive ? { color: d.color, "--type-color": d.color } : undefined}
               onClick={() => {
                 // 2. Tap auf das bereits aktive Icon (nur Startseite) → Liste auf/zu

@@ -126,7 +126,10 @@
   }
 
   // Hinweis im Stil von .voice-overlay__keyword, aber schlanker. Farbe = Kontextfarbe (inline)
+  // Vorübergehend ausgeblendet: Der Doppeltipp-Dialog soll erst an die neue
+  // (Input-Dock-)Designsprache angepasst werden. Markup bleibt im Code erhalten.
   &__empty-hint {
+    display: none;
     margin-top: $spacing-2xs;
     font-size: 14px;
     font-weight: 500;
@@ -199,8 +202,10 @@
     align-items: center;
     justify-content: center;
     padding: 0 5px;
-    background: rgba($color-task, 0.18);
-    color: $color-task;
+    // Zahl in derselben Farbe wie der Header-Text (__left); runder Hintergrund
+    // im gleichen Grau, aber dezent/dunkler als der Text.
+    background: rgba($color-text, 0.1);
+    color: rgba($color-text, 0.55);
   }
 }
 
@@ -224,7 +229,7 @@
 
   &--home {
     border-radius: 0;
-    background: #1A1A2E;
+    background: #16161F;
     border-color: transparent;
     align-items: flex-start;
 
@@ -296,8 +301,32 @@
   // Pin-Indikator für fixierte Einträge/Kategorien
   &__pin {
     flex-shrink: 0;
-    color: #7C83F7;
-    transform: rotate(45deg);
+    // Rötlicher Pin (statt Violett) – wirkt wie eine klassische rote Pinnnadel
+    color: #F2555A;
+    // Button-Reset: Pin ist tippbar → entfernt die Fixierung
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    // Rechts 2px mehr Padding → Pin sitzt optisch 2px weiter links
+    padding: 4px 6px 4px 4px;
+    margin: -4px; // Treffer-Bereich vergrößern, Layout unverändert
+    background: none;
+    border: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform $transition-fast, opacity $transition-fast;
+
+    svg {
+      transform: rotate(45deg);
+    }
+
+    &:hover {
+      opacity: 0.7;
+    }
+
+    &:active {
+      transform: scale(0.88);
+    }
   }
 
   &__checkbox {
@@ -393,7 +422,7 @@
     gap: $spacing-md;
     padding: $spacing-sm + 4px $spacing-md;
     position: relative;
-    background: #1A1A2E !important;
+    background: #16161F !important;
     border-color: transparent !important;
   }
 
@@ -468,10 +497,32 @@
     }
   }
 
-  // Notiz-Platzhalter unter dem Titel
+  // Verknüpfen-Trigger (Git-Branch-Icon in Sekundärfarbe) – ersetzt die
+  // früheren drei leeren PARA-Icons. Öffnet das Verknüpfungs-Sheet.
+  &__link-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: $color-muted;
+    border-radius: $radius-sm;
+    transition: all $transition-fast;
+
+    &:hover { color: $color-text; }
+    &:active { transform: scale(0.9); }
+  }
+
+  // Notiz-Platzhalter unter dem Titel – neutrales Grau wie der Dock-Input-
+  // Placeholder (#8a8a96), nicht mehr das violette $color-muted.
   &__note-hint {
     font-size: 12px;
-    color: $color-muted;
+    color: #8a8a96;
     margin-top: $spacing-2xs;
     line-height: 1.4;
     overflow: hidden;
@@ -571,6 +622,18 @@
       &:active {
         transform: scale(0.95);
       }
+    }
+
+    // Verknüpfte Kategorie als reines Farb-Icon (+optional "+N"), ohne Name.
+    &--cat-icon {
+      padding: 0 4px;
+      gap: 3px;
+      background: transparent;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover { opacity: 0.85; }
+      &:active { transform: scale(0.9); }
     }
   }
 
@@ -870,7 +933,7 @@
   }
 
   &--home {
-    background: #1A1A2E !important;
+    background: #16161F !important;
     border-color: rgba(245, 158, 11, 0.2) !important;
 
     .note-item__title {
@@ -993,7 +1056,7 @@
   }
 
   &--home {
-    background: #1A1A2E !important;
+    background: #16161F !important;
     border-color: color-mix(in srgb, var(--cal-accent) 22%, transparent) !important;
 
     .cal-item__title {
@@ -1032,16 +1095,17 @@
 
 .task-item__type-icon {
   cursor: pointer;
-  background: rgba(124, 131, 247, 0.10);
+  // Akzent-Tint passend zum Aufgaben-Blau im Dock (#0B8CE9), nicht mehr Violett.
+  background: rgba(11, 140, 233, 0.10);
 
   &:active {
     transform: scale(0.94);
-    background: rgba(124, 131, 247, 0.20);
+    background: rgba(11, 140, 233, 0.20);
   }
 
   @media (hover: hover) {
     &:hover {
-      background: rgba(124, 131, 247, 0.16);
+      background: rgba(11, 140, 233, 0.16);
     }
   }
 }
@@ -1473,6 +1537,212 @@ body.light-theme .action-sheet {
     background: #f5f5f8;
     border-color: rgba(0, 0, 0, 0.1);
     color: #1c1c30;
+  }
+}
+
+/* ── Verknüpfen-Sheet (Projekte / Arbeitsbereiche / Ressourcen) ── */
+// Vollhohes Bottom-Sheet, endet unter dem Header (--command-panel-peek).
+.link-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: rgba(0, 0, 0, 0.45);
+  animation: action-sheet-fade-in 0.18s ease-out;
+  -webkit-tap-highlight-color: transparent;
+
+  &--closing {
+    animation: action-sheet-fade-in 0.18s ease-out reverse;
+  }
+
+  &__panel {
+    width: 100%;
+    max-width: 420px;
+    height: calc(100dvh - var(--command-panel-peek, 80px));
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    background: $color-card;
+    border-top-left-radius: $radius-lg;
+    border-top-right-radius: $radius-lg;
+    border-top: 1px solid $color-border;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+    animation: action-sheet-slide-up 0.22s cubic-bezier(0.25, 1, 0.5, 1);
+
+    &--closing {
+      animation: action-sheet-slide-up 0.18s ease-in reverse;
+    }
+
+    // Kompakte Variante (Detail-Sheet einer Pille): Höhe nach Inhalt.
+    &--compact {
+      height: auto;
+      max-height: calc(100dvh - var(--command-panel-peek, 80px));
+    }
+  }
+
+  &__handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: $color-border;
+    margin: 8px auto 4px;
+    flex-shrink: 0;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 700;
+    color: $color-text;
+    text-align: center;
+    padding: 6px 16px 12px;
+    flex-shrink: 0;
+  }
+
+  &__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  &__list {
+    padding: 0 12px 12px;
+  }
+
+  &__group {
+    margin-bottom: 10px;
+  }
+
+  &__group-head {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $color-muted;
+    padding: 10px 8px 6px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 12px;
+    border: none;
+    background: transparent;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 500;
+    text-align: left;
+    border-radius: $radius-md - 2px;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover, &:active { background: $color-hover; }
+    &--selected { background: rgba(255, 255, 255, 0.03); }
+
+    // Reine Anzeige-Zeile (Detail-Sheet) – kein Hover/Klick.
+    &--static {
+      cursor: default;
+      &:hover, &:active { background: transparent; }
+    }
+  }
+
+  &__row-name {
+    flex: 1;
+    min-width: 0;
+    @include text-truncate;
+  }
+
+  // Auswahl-Kreis rechts
+  &__check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: $radius-pill;
+    border: 2px solid $color-border;
+    background: transparent;
+    transition: all $transition-fast;
+
+    &--on { border-width: 0; }
+  }
+
+  // Footer-Buttons identisch zum Create-Task-Sheet (.modal__footer):
+  // ovaler Schließen-Button links, abgerundeter Bestätigen-Button rechts.
+  &__footer {
+    display: flex;
+    align-items: stretch;
+    gap: $spacing-sm;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid $color-border;
+    flex-shrink: 0;
+  }
+
+  &__close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: $radius-pill;
+    background: rgba(255, 255, 255, 0.06);
+    color: #8a8a96;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+    &:active { transform: scale(0.97); }
+  }
+
+  &__confirm-btn {
+    flex: 1;
+    padding: $spacing-sm + 5px;
+    border: none;
+    border-radius: $radius-lg;
+    background: $color-task;
+    color: #fff;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity $transition-fast;
+
+    &:hover { opacity: 0.92; }
+    &:active { transform: scale(0.98); }
+  }
+}
+
+// Light-Theme (Klasse liegt auf <body>, da das Sheet per Portal dort hängt)
+body.light-theme .link-sheet {
+  background: rgba(0, 0, 0, 0.28);
+
+  .link-sheet__panel {
+    background: #ffffff;
+    border-top-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.14);
+  }
+  .link-sheet__handle { background: rgba(0, 0, 0, 0.15); }
+  .link-sheet__title { color: #1c1c30; }
+  .link-sheet__group-head { color: #8a8a96; }
+  .link-sheet__row {
+    color: #1c1c30;
+    &:hover, &:active { background: rgba(0, 0, 0, 0.05); }
+    &--selected { background: rgba(0, 0, 0, 0.03); }
+  }
+  .link-sheet__row-name { color: #1c1c30; }
+  .link-sheet__check { border-color: rgba(0, 0, 0, 0.2); }
+  .link-sheet__footer { border-top-color: rgba(0, 0, 0, 0.08); }
+  .link-sheet__close-btn {
+    background: rgba(0, 0, 0, 0.05);
+    color: #6a6a78;
+    &:hover { background: rgba(0, 0, 0, 0.08); }
   }
 }
 

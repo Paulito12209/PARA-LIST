@@ -48,17 +48,24 @@
       background: rgba(255, 255, 255, 0.06);
     }
 
-    // Aktiver Typ: keine Border, runder Glow der von innen nach außen
-    // ausfadet – innen erkennbar getönt, am Rand transparent, sodass er
-    // (v.a. im Light Mode) mit dem Hintergrund verschmilzt.
+    // Aktiver (= ausgewählter) Typ: nur die Akzentfarbe, KEIN Glow.
+    // Die Farbe kommt per Inline-Style (color: var(--type-color)).
     &--active {
       border-color: transparent;
+      background: transparent;
+      box-shadow: none;
+    }
+
+    // Glow erscheint erst, wenn die Liste aufgeklappt ist (Tap aufs aktive Icon):
+    // runder Glow der von innen nach außen ausfadet – innen erkennbar getönt,
+    // am Rand transparent, sodass er (v.a. im Light Mode) mit dem Hintergrund
+    // verschmilzt. So signalisiert der Glow den aufgeklappten Zustand.
+    &--glow {
       border-radius: 50%;
       background: radial-gradient(circle at center,
           color-mix(in srgb, var(--type-color) 34%, transparent) 0%,
           color-mix(in srgb, var(--type-color) 16%, transparent) 40%,
           transparent 72%);
-      box-shadow: none;
     }
   }
 

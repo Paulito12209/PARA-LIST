@@ -6,7 +6,7 @@
 
 // ── Layout tokens (Dark default) ────────────────────────────
 .dsk-app {
-  --sidebar-w-locked: 264px;
+  --sidebar-w-locked: 284px;
   --rail-w: 384px;
   --rail-w-collapsed: 64px;
   --header-h: 68px;
@@ -280,11 +280,20 @@
     flex-shrink: 0;
   }
   &__section-label {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  &__section-count {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--text-3, var(--text-2));
+    opacity: 0.55;
+    font-variant-numeric: tabular-nums;
   }
   &__section-actions {
     display: flex;
@@ -508,6 +517,7 @@
   min-width: 0;
   height: 100dvh;
   overflow-y: auto;   // scroll the content (e.g. when the calendar wraps below)
+  overflow-x: hidden; // never scroll sideways — tiles shrink to fit instead
   display: flex;
   flex-direction: column;
   background: var(--bg);
@@ -519,11 +529,17 @@
   container-name: dskmain;
 }
 
-// ── Header (floating absolute, on top of cover) ─────────────
+// ── Header (sticky, on top of cover) ────────────────────────
 .dsk-header {
-  position: absolute;
+  // Sticky so the greeting/search/settings stay pinned to the top while the
+  // content scrolls underneath. The negative bottom margin cancels the
+  // header's own height so the cover still starts at the very top behind it
+  // (preserving the floating-over-the-hero look at scroll position 0).
+  position: sticky;
   top: 0;
   left: 0;
+  margin-bottom: calc(-1 * var(--header-h));
+  isolation: isolate;   // own stacking context for the frosted ::before
   // explicit width (rather than right: 0) so the flex container has a
   // *definite* main size — required for percentage flex-basis on the
   // search child to resolve correctly (Chrome/Webkit treat L+R as
@@ -536,6 +552,30 @@
   gap: 16px;
   padding: 16px 28px;
   z-index: 6;
+
+  // Frosted-glass backdrop: solid toward the top, fading to transparent at
+  // the bottom edge so it blends into the content below. Hidden at the very
+  // top (clean hero) and revealed once the user scrolls (.dsk-main--scrolled).
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: rgba(10, 10, 20, 0.92);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    opacity: 0;
+    transition: opacity 0.22s var(--easing);
+    pointer-events: none;
+  }
+
+  .dsk-app--light &::before {
+    background: rgba(255, 255, 255, 0.94);
+  }
+
+  .dsk-main--scrolled &::before {
+    opacity: 1;
+  }
 
   .dsk-app--rail-collapsed & {
     padding-right: 6px;
@@ -595,10 +635,28 @@
     }
 
     // Suche noch nicht verfügbar → ausgegraut, kein Cursor, keine Interaktion
+    // Search not yet available → render as a clearly inactive field:
+    // muted recessed fill so it reads as disabled even over the frosted
+    // header. Works in both dark and light mode.
     &--disabled {
-      opacity: 0.5;
       cursor: not-allowed;
       pointer-events: none;
+      background: rgba(255, 255, 255, 0.02);
+      border-color: rgba(255, 255, 255, 0.16);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      box-shadow: none;
+
+      .dsk-header__search-icon { color: rgba(255, 255, 255, 0.32); }
+      .dsk-header__search-input::placeholder { color: rgba(255, 255, 255, 0.32); }
+
+      .dsk-app--light & {
+        background: rgba(0, 0, 0, 0.03);
+        border-color: rgba(0, 0, 0, 0.18);
+
+        .dsk-header__search-icon { color: rgba(0, 0, 0, 0.32); }
+        .dsk-header__search-input::placeholder { color: rgba(0, 0, 0, 0.34); }
+      }
     }
   }
   &__search-icon { color: var(--text-3); flex-shrink: 0; }
@@ -932,6 +990,20 @@
   .dsk-list-area > .dsk-tile:nth-child(3) { grid-area: calendar; }
 }
 
+// Compact: too narrow for two tiles side by side. Tasks + notes merge into a
+// single tabbed tile (first child), calendar stays below. minmax(0, 1fr) lets
+// the tiles shrink to the available width so nothing overflows and the left/
+// right padding always holds.
+.dsk-list-area--compact {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "main"
+    "calendar";
+
+  > .dsk-tile:nth-child(1) { grid-area: main; }
+  > .dsk-tile:nth-child(2) { grid-area: calendar; }
+}
+
 .dsk-tile {
   display: flex;
   flex-direction: column;
@@ -995,6 +1067,53 @@
       &:hover { background: rgba(0, 0, 0, 0.12); }
     }
   }
+
+  // Tab bar for the compact (merged tasks + notes) tile.
+  &__tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+
+    .dsk-tile__header-add { margin-left: auto; }
+  }
+  &__tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 6px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-2);
+    font-family: $font-heading;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s var(--easing), color 0.15s var(--easing), opacity 0.15s var(--easing);
+    opacity: 0.6;
+
+    &:hover { opacity: 0.85; }
+
+    &--active {
+      opacity: 1;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+
+      .dsk-app--light & { background: rgba(0, 0, 0, 0.05); }
+    }
+  }
+  &__tab-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  &__tab-label { white-space: nowrap; }
 
   &__body {
     position: relative;
@@ -1310,6 +1429,10 @@
     padding: 4px 12px 16px;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+    // reserve the scrollbar space on BOTH inline edges so the (centered)
+    // activity path stays horizontally centered instead of being pushed left
+    // by the scrollbar that only the right edge would otherwise consume.
+    scrollbar-gutter: stable both-edges;
 
     &::-webkit-scrollbar { width: 6px; }
     &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); border-radius: 3px; }
@@ -1617,7 +1740,7 @@
 @media (max-width: 1320px) {
   .dsk-app {
     --rail-w: 340px;
-    --sidebar-w-locked: 240px;
+    --sidebar-w-locked: 260px;
   }
   .dsk-cover { padding: 72px 32px 24px; }
   .dsk-list-area {

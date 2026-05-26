@@ -70,10 +70,13 @@ function formatTime(ts, locale = "de-DE") {
 export function buildActivityState({ entries = [], cats = [], lang = "de" }) {
   const locale = lang === "en" ? "en-US" : lang === "es" ? "es-ES" : "de-DE";
 
-  // Combine cats + entries into a single timeline (cats also award XP at creation)
+  // Combine cats + entries into a single timeline (cats also award XP at
+  // creation). Mitgelieferte Default-/Onboarding-Items (`seed`) zählen NICHT —
+  // XP muss man sich verdienen. Ausnahme: eine Default-Aufgabe, die man wirklich
+  // abschließt (done), wird ab dem Abschlusszeitpunkt gutgeschrieben.
   const timeline = [
     ...cats
-      .filter((c) => !c.archived)
+      .filter((c) => !c.archived && !c.seed)
       .map((c) => ({
         id: `cat-${c.id}`,
         kind: "cat",
@@ -81,13 +84,17 @@ export function buildActivityState({ entries = [], cats = [], lang = "de" }) {
         title: c.name,
         ts: getCreatedTs(c),
       })),
-    ...entries.map((e) => ({
-      id: `entry-${e.id}`,
-      kind: "entry",
-      type: e.type,
-      title: e.title || "(ohne Titel)",
-      ts: getCreatedTs(e),
-    })),
+    ...entries
+      .filter((e) => !e.seed || e.done)
+      .map((e) => ({
+        id: `entry-${e.id}`,
+        kind: "entry",
+        type: e.type,
+        title: e.title || "(ohne Titel)",
+        // Seed-Items haben keinen Erstell-Zeitstempel → für abgeschlossene
+        // Default-Aufgaben den Abschlusszeitpunkt verwenden.
+        ts: e.seed ? getCreatedTs({ createdAt: e.completedAt }) : getCreatedTs(e),
+      })),
   ].filter((it) => it.ts > 0);
 
   // Sort oldest → newest, then accumulate XP and detect milestone crossings
@@ -154,7 +161,8 @@ export function buildActivityState({ entries = [], cats = [], lang = "de" }) {
   return {
     totalXp,
     todayXp,
-    entryCount: entries.length,
+    // nur gezählte (nicht-seed bzw. abgeschlossene Default-)Einträge
+    entryCount: timeline.filter((it) => it.kind === "entry").length,
     currentLevel,
     nextLevel,
     progress,

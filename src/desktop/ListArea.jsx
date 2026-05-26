@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { CheckCircle2, Pencil, Calendar, Circle, Triangle, Square, Plus, Clock } from "lucide-react";
 import { TODAY, isOld, isToday, getTaskGroup } from "../utils";
 
@@ -171,12 +171,51 @@ function EntryCard({ entry, cats, type, CC, onOpenEntry, toggleTask }) {
   );
 }
 
+function addLabelFor(lang) {
+  return lang === "en" ? "Add" : lang === "es" ? "Añadir" : "Hinzufügen";
+}
+
+function TileBody({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask }) {
+  const groups = useMemo(() => buildGroups(entries, t, lang), [entries, t, lang]);
+
+  return (
+    <div className="dsk-tile__body">
+      {groups.length === 0 && (
+        <div className="dsk-tile__empty">
+          {lang === "en" ? "Nothing here yet." : lang === "es" ? "Nada todavía." : "Noch nichts."}
+        </div>
+      )}
+      {groups.map((g) => (
+        <div key={g.key} className="dsk-tile__group">
+          <div className="dsk-tile__group-header">
+            <span className="dsk-tile__group-label">{g.label}</span>
+            <span className="dsk-tile__group-count">{g.items.length}</span>
+            {g.sub && <span className="dsk-tile__group-sub">{g.sub}</span>}
+          </div>
+          <div className="dsk-tile__group-items">
+            {g.items.map((e) => (
+              <EntryCard
+                key={e.id}
+                entry={e}
+                cats={cats}
+                type={type}
+                CC={CC}
+                onOpenEntry={onOpenEntry}
+                toggleTask={toggleTask}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+      <div className="dsk-tile__fade" aria-hidden="true" />
+    </div>
+  );
+}
+
 function Tile({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask, onAddEntry }) {
   const cfg = TILE_CFG[type];
   const Icon = cfg.Icon;
-  const groups = useMemo(() => buildGroups(entries, t, lang), [entries, t, lang]);
-
-  const addLabel = lang === "en" ? "Add" : lang === "es" ? "Añadir" : "Hinzufügen";
+  const addLabel = addLabelFor(lang);
 
   return (
     <div className="dsk-tile">
@@ -195,41 +234,97 @@ function Tile({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask, onAdd
           <Plus size={16} strokeWidth={2.4} />
         </button>
       </div>
-      <div className="dsk-tile__body">
-        {groups.length === 0 && (
-          <div className="dsk-tile__empty">
-            {lang === "en" ? "Nothing here yet." : lang === "es" ? "Nada todavía." : "Noch nichts."}
-          </div>
-        )}
-        {groups.map((g) => (
-          <div key={g.key} className="dsk-tile__group">
-            <div className="dsk-tile__group-header">
-              <span className="dsk-tile__group-label">{g.label}</span>
-              <span className="dsk-tile__group-count">{g.items.length}</span>
-              {g.sub && <span className="dsk-tile__group-sub">{g.sub}</span>}
-            </div>
-            <div className="dsk-tile__group-items">
-              {g.items.map((e) => (
-                <EntryCard
-                  key={e.id}
-                  entry={e}
-                  cats={cats}
-                  type={type}
-                  CC={CC}
-                  onOpenEntry={onOpenEntry}
-                  toggleTask={toggleTask}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
-        <div className="dsk-tile__fade" aria-hidden="true" />
+      <TileBody
+        type={type}
+        t={t}
+        lang={lang}
+        CC={CC}
+        entries={entries}
+        cats={cats}
+        onOpenEntry={onOpenEntry}
+        toggleTask={toggleTask}
+      />
+    </div>
+  );
+}
+
+// Compact view: tasks + notes merged into a single tile with a tab switcher.
+function TabbedTile({ tabs, t, lang, CC, cats, onOpenEntry, toggleTask, onAddEntry }) {
+  const [active, setActive] = useState(tabs[0].id);
+  const current = tabs.find((tab) => tab.id === active) || tabs[0];
+  const addLabel = addLabelFor(lang);
+
+  return (
+    <div className="dsk-tile dsk-tile--tabbed">
+      <div className="dsk-tile__tabs" role="tablist">
+        {tabs.map(({ id }) => {
+          const cfg = TILE_CFG[id];
+          const Icon = cfg.Icon;
+          const isActive = id === active;
+          return (
+            <button
+              key={id}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={`dsk-tile__tab${isActive ? " dsk-tile__tab--active" : ""}`}
+              onClick={() => setActive(id)}
+            >
+              <span
+                className="dsk-tile__tab-icon"
+                style={{ background: cfg.accentSoft, color: cfg.accent }}
+              >
+                <Icon size={15} strokeWidth={2.2} />
+              </span>
+              <span className="dsk-tile__tab-label">{t?.[cfg.labelKey] || cfg.fallback}</span>
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          className="dsk-tile__header-add"
+          onClick={() => onAddEntry?.(active)}
+          title={addLabel}
+          aria-label={addLabel}
+        >
+          <Plus size={16} strokeWidth={2.4} />
+        </button>
       </div>
+      <TileBody
+        key={active}
+        type={active}
+        t={t}
+        lang={lang}
+        CC={CC}
+        entries={current.entries}
+        cats={cats}
+        onOpenEntry={onOpenEntry}
+        toggleTask={toggleTask}
+      />
     </div>
   );
 }
 
 const TILE_TO_ENTRY_TYPE = { tasks: "task", notes: "note", calendar: "calendar" };
+
+// Below this list-area width two side-by-side tiles (min 360px each) no longer
+// fit, so tasks + notes collapse into one tabbed tile instead of overflowing.
+const COMPACT_WIDTH = 792;
+
+function useCompact(ref) {
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect?.width ?? el.clientWidth;
+      setCompact(w < COMPACT_WIDTH);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return compact;
+}
 
 export function ListArea({
   t,
@@ -241,6 +336,9 @@ export function ListArea({
   toggleTask,
   onAddEntry,
 }) {
+  const areaRef = useRef(null);
+  const compact = useCompact(areaRef);
+
   const tasks    = entries.filter((e) => e.type === "task" && !e.done && !isOld(e.due));
   const notes    = entries.filter((e) => e.type === "note" && !e.archived);
   const calendar = entries.filter((e) => e.type === "calendar" && (!e.date || e.date >= TODAY) && !e.done);
@@ -248,9 +346,22 @@ export function ListArea({
   const handleAdd = (tileType) => onAddEntry?.(TILE_TO_ENTRY_TYPE[tileType]);
 
   return (
-    <div className="dsk-list-area">
-      <Tile type="tasks"    t={t} lang={lang} CC={CC} entries={tasks}    cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
-      <Tile type="notes"    t={t} lang={lang} CC={CC} entries={notes}    cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
+    <div ref={areaRef} className={`dsk-list-area${compact ? " dsk-list-area--compact" : ""}`}>
+      {compact ? (
+        <TabbedTile
+          tabs={[
+            { id: "tasks", entries: tasks },
+            { id: "notes", entries: notes },
+          ]}
+          t={t} lang={lang} CC={CC} cats={cats}
+          onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd}
+        />
+      ) : (
+        <>
+          <Tile type="tasks" t={t} lang={lang} CC={CC} entries={tasks} cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
+          <Tile type="notes" t={t} lang={lang} CC={CC} entries={notes} cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
+        </>
+      )}
       <Tile type="calendar" t={t} lang={lang} CC={CC} entries={calendar} cats={cats} onOpenEntry={onOpenEntry} toggleTask={toggleTask} onAddEntry={handleAdd} />
     </div>
   );

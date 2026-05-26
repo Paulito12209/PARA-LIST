@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Clock, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical, Pin, ShieldCheck } from 'lucide-react';
+import { Circle, Triangle, Square, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, FileText, CheckSquare, Calendar, Clock, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, MoreVertical, Pin, ShieldCheck } from 'lucide-react';
 import { TODAY, isOld, isToday, fmtDate, fmtRelative, getTaskGroup, getYouTubeVideoId, NOTIF_RED, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "./SwipeToDelete";
 import { AutoScrollText } from "./AutoScrollText";
 import { EntryActionSheet } from "./EntryActionSheet";
-import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "./AppIcons";
+import { LinkSheet } from "./LinkSheet";
+import { LinkedPillSheet } from "./LinkedPillSheet";
+import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon, GitMergeBranchIcon } from "./AppIcons";
 
 export function EntryMetaTags({ entry, cats, CC, isHome }) {
   const ids = entry.catIds || (entry.catId ? [entry.catId] : []);
@@ -100,9 +102,9 @@ export function EntryMetaTags({ entry, cats, CC, isHome }) {
 export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTogglePin, onUpdateEntry, onOpenEntry, onArchiveEntry, t, CC, isArchive }) {
   const [menuEntryId, setMenuEntryId] = useState(null);
   const [dateEntryId, setDateEntryId] = useState(null);
-  const [pillPopup, setPillPopup] = useState(null);
+  const [linkSheetOpen, setLinkSheetOpen] = useState(false);
+  const [pillSheetType, setPillSheetType] = useState(null);
   const menuRef = useRef(null);
-  const pillPopupRef = useRef(null);
   const suppressNextClick = useRef(false);
 
   useEffect(() => {
@@ -118,19 +120,6 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
     return () => document.removeEventListener('pointerdown', close);
   }, [menuEntryId]);
 
-  useEffect(() => {
-    if (!pillPopup) return;
-    const close = (ev) => {
-      if (pillPopupRef.current && !pillPopupRef.current.contains(ev.target)) {
-        setPillPopup(null);
-        suppressNextClick.current = true;
-        requestAnimationFrame(() => { setTimeout(() => { suppressNextClick.current = false; }, 0); });
-      }
-    };
-    document.addEventListener('pointerdown', close);
-    return () => document.removeEventListener('pointerdown', close);
-  }, [pillPopup]);
-
   const overdue = isOld(e.due || e.date) && !e.done;
   const ids = e.catIds || (e.catId ? [e.catId] : []);
   const linked = cats.filter((c) => ids.includes(c.id));
@@ -141,98 +130,23 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
 
   const PILL_ICONS = { project: Circle, area: Triangle, resource: Square };
 
-  const renderParaPill = (type, items) => {
+  // Verknüpfte Kategorie als farbiges Icon (stellvertretend, ohne Name).
+  // Bei mehreren Einträgen derselben Kategorie zusätzlich "+N" in Kategorie-
+  // farbe. Tippen öffnet das kompakte Detail-Sheet (LinkedPillSheet).
+  const renderLinkedPill = (type, items) => {
+    if (items.length === 0) return null;
     const PillIcon = PILL_ICONS[type];
     const cc = CC[type];
-    const isPopupOpen = pillPopup && pillPopup.entryId === e.id && pillPopup.type === type;
-    const label = type === 'project' ? t.projectSing : type === 'area' ? t.areaSing : t.resourceSing;
-    const available = cats.filter(c => c.type === type && !c.archived && !ids.includes(c.id));
-
     return (
-      <div className="task-item__pill-wrap" key={type}>
-        {items.length === 0 ? (
-          <button
-            className="task-item__pill task-item__pill--icon-btn"
-            style={{ color: cc.color }}
-            onClick={(ev) => {
-              ev.stopPropagation();
-              setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: true });
-            }}
-          >
-            <PillIcon size={12} strokeWidth={2.5} />
-          </button>
-        ) : (
-          <button
-            className="task-item__pill task-item__pill--cat-btn"
-            style={{ color: cc.color, background: `var(--pill-${type}-bg)` }}
-            onClick={(ev) => {
-              ev.stopPropagation();
-              setPillPopup(isPopupOpen ? null : { entryId: e.id, type, showAdd: false });
-            }}
-          >
-            <PillIcon size={10} strokeWidth={2.5} style={{ flexShrink: 0 }} />
-            {items[0].name}{items.length > 1 ? ` +${items.length - 1}` : ''}
-          </button>
-        )}
-
-        {isPopupOpen && (
-          <div className="task-item__pill-popup" ref={pillPopupRef} onClick={(ev) => ev.stopPropagation()}>
-            {items.length > 0 && (
-              <>
-                {items.map(item => (
-                  <div key={item.id} className="task-item__pill-popup-item">
-                    <PillIcon size={10} color={cc.color} strokeWidth={2.5} />
-                    <span className="task-item__pill-popup-name">{item.name}</span>
-                    <button
-                      className="task-item__pill-popup-remove"
-                      onClick={() => {
-                        const nextIds = ids.filter(id => id !== item.id);
-                        onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
-                      }}
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
-                <div className="task-item__pill-popup-divider" />
-              </>
-            )}
-
-            {!pillPopup.showAdd ? (
-              <button
-                className="task-item__pill-popup-add"
-                onClick={() => setPillPopup({ ...pillPopup, showAdd: true })}
-              >
-                <Plus size={12} />
-                <span>{label}</span>
-              </button>
-            ) : (
-              <>
-                {available.length === 0 ? (
-                  <div className="task-item__pill-popup-empty">
-                    {t.noCats(cc.label).split('\n')[0]}
-                  </div>
-                ) : (
-                  available.map(opt => (
-                    <button
-                      key={opt.id}
-                      className="task-item__pill-popup-option"
-                      onClick={() => {
-                        const nextIds = [...ids, opt.id];
-                        onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
-                        setPillPopup({ ...pillPopup, showAdd: false });
-                      }}
-                    >
-                      <PillIcon size={10} color={cc.color} strokeWidth={2} style={{ opacity: 0.5 }} />
-                      <span>{opt.name}</span>
-                    </button>
-                  ))
-                )}
-              </>
-            )}
-          </div>
-        )}
-      </div>
+      <button
+        key={type}
+        className="task-item__pill task-item__pill--cat-icon"
+        style={{ color: cc.color }}
+        onClick={(ev) => { ev.stopPropagation(); setPillSheetType(type); }}
+      >
+        <PillIcon size={12} strokeWidth={2.5} style={{ flexShrink: 0 }} />
+        {items.length > 1 && <span>+{items.length - 1}</span>}
+      </button>
     );
   };
 
@@ -247,7 +161,7 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             ? () => onUpdateEntry(e.id, { done: true })
             : undefined
       }
-      isActive={menuEntryId === e.id || dateEntryId === e.id || (pillPopup && pillPopup.entryId === e.id)}
+      isActive={menuEntryId === e.id || dateEntryId === e.id || linkSheetOpen || !!pillSheetType}
     >
       <div
         className={`task-item task-item--home ${e.done ? "task-item--done" : ""} ${isBirthdayEntry ? "task-item--birthday" : ""}`}
@@ -261,8 +175,8 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             {e.starred
               ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
               : e.done
-                ? <CheckCircle2 size={22} color="#7C83F7" strokeWidth={2.25} />
-                : <Circle size={22} color="#7C83F7" strokeWidth={2.25} />}
+                ? <CheckCircle2 size={22} color="#0B8CE9" strokeWidth={2.25} />
+                : <Circle size={22} color="#0B8CE9" strokeWidth={2.25} />}
           </button>
         )}
         {e.type === 'note' && (
@@ -290,7 +204,20 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             <div className={`task-item__title ${e.done ? "task-item__title--done" : ""}`}>
               <AutoScrollText>{e.title}</AutoScrollText>
             </div>
-            {e.pinned && <Pin size={13} className="task-item__pin" />}
+            {e.pinned && (
+              <button
+                type="button"
+                className="task-item__pin"
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  onTogglePin?.(e.id);
+                }}
+                aria-label={t.actionUnpin || "Fixierung lösen"}
+                title={t.actionUnpin || "Fixierung lösen"}
+              >
+                <Pin size={13} />
+              </button>
+            )}
           </div>
 
           <div className="task-item__note-hint">
@@ -326,9 +253,17 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
                 </button>
               ) : null}
 
-              {renderParaPill('project', projs)}
-              {renderParaPill('area', areas)}
-              {renderParaPill('resource', ress)}
+              {renderLinkedPill('project', projs)}
+              {renderLinkedPill('area', areas)}
+              {renderLinkedPill('resource', ress)}
+
+              <button
+                className="task-item__link-btn"
+                onClick={(ev) => { ev.stopPropagation(); setLinkSheetOpen(true); }}
+                aria-label={t.linkSheetTitle}
+              >
+                <GitMergeBranchIcon size={16} strokeWidth={2} />
+              </button>
             </div>
 
             <button
@@ -395,6 +330,31 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
           />
         );
       })()}
+
+      {pillSheetType && (
+        <LinkedPillSheet
+          type={pillSheetType}
+          items={pillSheetType === 'project' ? projs : pillSheetType === 'area' ? areas : ress}
+          CC={CC}
+          t={t}
+          onMore={() => { setPillSheetType(null); setLinkSheetOpen(true); }}
+          onClose={() => setPillSheetType(null)}
+        />
+      )}
+
+      {linkSheetOpen && (
+        <LinkSheet
+          currentIds={ids}
+          cats={cats}
+          CC={CC}
+          t={t}
+          onConfirm={(nextIds) => {
+            onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
+            setLinkSheetOpen(false);
+          }}
+          onClose={() => setLinkSheetOpen(false)}
+        />
+      )}
     </SwipeToDelete>
   );
 }
@@ -452,7 +412,20 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
             <div className="task-item__title">
               <AutoScrollText>{c.name}</AutoScrollText>
             </div>
-            {c.pinned && <Pin size={13} className="task-item__pin" />}
+            {c.pinned && (
+              <button
+                type="button"
+                className="task-item__pin"
+                onClick={(ev) => {
+                  ev.stopPropagation();
+                  onTogglePin?.(c.id);
+                }}
+                aria-label={t.actionUnpin || "Fixierung lösen"}
+                title={t.actionUnpin || "Fixierung lösen"}
+              >
+                <Pin size={13} />
+              </button>
+            )}
           </div>
 
           <div className="task-item__note-hint">
@@ -590,8 +563,8 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onTogglePin, o
               aria-label={e.done ? t.markUndone || "Mark as not done" : t.markDone || "Mark as done"}
             >
               {e.done
-                ? <CheckCircle2 size={22} color="#7C83F7" strokeWidth={2.25} />
-                : <Circle size={22} color="#7C83F7" strokeWidth={2.25} />}
+                ? <CheckCircle2 size={22} color="#0B8CE9" strokeWidth={2.25} />
+                : <Circle size={22} color="#0B8CE9" strokeWidth={2.25} />}
             </button>
           )}
           <div className="task-item__body">

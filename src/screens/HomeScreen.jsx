@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, User, UserPlus, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, User, UserPlus, ChevronRight, Minimize2 } from "lucide-react";
 import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
 import { DockMenuSheet } from "../components/DockMenuSheet";
@@ -18,10 +18,21 @@ const COVER_ACCENT_RGB = {
 
 const DOUBLE_TAP_WINDOW_MS = 300;
 const SWIPE_THRESHOLD_PX = 60;
-const OVERSCROLL_COLLAPSE_PX = 56;
+// Zuklappen per Pull-down: höhere Schwelle = spürbarer Widerstand, damit man
+// nicht versehentlich beim Scrollen zuklappt. Erst ein bewusst festerer Zug
+// (≈ dieser Wert in roher Fingerbewegung) klappt die Liste zu.
+const OVERSCROLL_COLLAPSE_PX = 88;
+// Dämpfung der Pull-down-Geste (Gummiband-Gefühl): die Liste folgt dem Finger
+// nur zu ~45 %, damit sich das Ziehen "schwerer" anfühlt.
+const PULL_DAMPING = 0.45;
+const PULL_MAX_PX = 150;
+// Nach oben wischen am Listenkopf / Listenanfang → Liste komplett aufklappen.
+const EXPAND_SWIPE_PX = 36;
 const SCROLL_TOP_EPS_PX = 4;
 const GROUP_HEADER_OFFSET_PX = 24;
-const VOICE_TAB_TYPES = ["tasks", "notes", "calendar"];
+// Reihenfolge aller 6 Listen im Dock – Grundlage für das Links-/Rechts-Wischen
+// zwischen den Listen (Projekte → … → Kalender).
+const ALL_LIST_TYPES = ["project", "area", "resource", "tasks", "notes", "calendar"];
 
 const COVER_BADGE_LABELS = {
   project: { key: "projects", fallback: "Projekt" },
@@ -202,9 +213,10 @@ export function HomeScreen({
 
   // Ist die aktuell sichtbare Liste leer? Dann darf der Platzhalter nicht
   // wegscrollbar sein (Scrollen wird per CSS gesperrt).
-  const activeListEmpty = isEntryType
-    ? tabEntries.length === 0
-    : cats.filter((c) => c.type === activeType && !c.archived).length === 0;
+  const activeItemsCount = isEntryType
+    ? tabEntries.length
+    : cats.filter((c) => c.type === activeType && !c.archived).length;
+  const activeListEmpty = activeItemsCount === 0;
 
   const avatarInputRef = useRef(null);
 
@@ -223,7 +235,7 @@ export function HomeScreen({
     if (!container) return;
 
     const scrollTop = container.scrollTop;
-    if (scrollTop > lastScrollTop.current && tabEntries.length > 1 && !listExpanded) {
+    if (scrollTop > lastScrollTop.current && activeItemsCount > 1 && !listExpanded) {
       setListExpanded(true);
     }
     lastScrollTop.current = scrollTop;
@@ -264,41 +276,79 @@ export function HomeScreen({
     }
   };
 
+  // Beim Wechsel der Liste (Dock-Icon / Wischen) den fixierten Gruppen-Header
+  // sofort zurücksetzen und neu berechnen. Sonst bleibt z.B. der Notiz-Header
+  // "Ältester Eintrag: …" stehen, wenn man auf Kalender/Aufgaben/Ressourcen
+  // wechselt (dort ergibt diese Beschriftung keinen Sinn). `activeType` als
+  // Dependency, damit es auch bei PARA-Typen (kein tab-Wechsel) greift.
   useEffect(() => {
+    setActiveGroupHeader(null);
     if (entryListRef.current) {
       setTimeout(handleListScroll, 50);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tab, tabEntries.length]);
+  }, [tab, activeType, tabEntries.length]);
 
-  useEffect(() => {
-    if (tabEntries.length <= 1) setListExpanded(false);
-  }, [tabEntries.length]);
+  // Hinweis: Früher wurde die Liste bei ≤ 1 Eintrag automatisch zugeklappt.
+  // Das ist bewusst entfernt – beim Wechsel zwischen den Listen (Dock-Icons /
+  // Links-Rechts-Wischen) bleibt die Liste aufgeklappt, auch wenn die Zielliste
+  // leer ist (z.B. Kalender). Zugeklappt wird nur explizit: erneuter Tap aufs
+  // aktive Icon, Verkleinern-Button oder Pull-down.
 
   const lastTap = useRef(0);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
   const lastTouchY = useRef(0);
   const atTopAtStart = useRef(false);
+  // Gerichteter "Modus" der laufenden Geste, damit horizontales Wischen und
+  // vertikales Pull-down sich nicht gegenseitig stören. null → noch unklar.
+  const gestureAxis = useRef(null);
+  // Live-Versatz beim Pull-down (gedämpft → Gummiband-/Widerstandsgefühl).
+  const [pullDownPx, setPullDownPx] = useState(0);
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
     lastTouchY.current = e.touches[0].clientY;
+    gestureAxis.current = null;
     const container = entryListRef.current;
     atTopAtStart.current = container ? container.scrollTop <= SCROLL_TOP_EPS_PX : false;
   };
 
   const handleTouchMove = (e) => {
-    lastTouchY.current = e.touches[0].clientY;
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
+    lastTouchY.current = y;
+
+    const dx = x - touchStartX.current;
+    const dy = y - touchStartY.current;
+
+    // Achse einmal festlegen, sobald die Bewegung eindeutig ist – verhindert,
+    // dass ein diagonales Wischen sowohl navigiert als auch zuklappt.
+    if (!gestureAxis.current && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) {
+      gestureAxis.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    }
+
+    // Pull-down nur bei aufgeklappter Liste, am Listenanfang und vertikaler Geste.
+    if (listExpanded && atTopAtStart.current && gestureAxis.current === "y" && dy > 0) {
+      const damped = Math.min(dy * PULL_DAMPING, PULL_MAX_PX);
+      setPullDownPx(damped);
+    } else if (pullDownPx) {
+      setPullDownPx(0);
+    }
   };
 
-  // Nach unten wischen am Listenanfang → aufgeklappte Liste zuklappen (wie der
-  // Verkleinern-Button / Doppeltipp aufs Dock-Icon). Liefert true, wenn die
-  // Geste erkannt und behandelt wurde.
-  const collapseIfSwipedDown = (endX, endY) => {
+  const handleTouchEnd = (e) => {
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
     const dx = endX - touchStartX.current;
     const dy = endY - touchStartY.current;
+
+    const wasPulling = pullDownPx > 0;
+    // Egal wie die Geste endet: der Versatz schnappt per CSS-Transition zurück.
+    if (wasPulling) setPullDownPx(0);
+
+    // Pull-down über die Schwelle (mit Widerstand) am Listenanfang → zuklappen.
     if (
       listExpanded &&
       atTopAtStart.current &&
@@ -306,26 +356,33 @@ export function HomeScreen({
       Math.abs(dy) > Math.abs(dx)
     ) {
       setListExpanded(false);
-      return true;
+      return;
     }
-    return false;
-  };
 
-  const handleTouchEnd = (e) => {
-    const endX = e.changedTouches[0].clientX;
-    const endY = e.changedTouches[0].clientY;
+    // Nach oben wischen am Listenanfang → komplett aufklappen. Greift vor allem
+    // bei leeren/kurzen Listen, die nicht scrollen (sonst übernimmt handleListScroll).
+    if (
+      !listExpanded &&
+      atTopAtStart.current &&
+      dy <= -EXPAND_SWIPE_PX &&
+      Math.abs(dy) > Math.abs(dx)
+    ) {
+      setListExpanded(true);
+      return;
+    }
 
-    if (collapseIfSwipedDown(endX, endY)) return;
+    // War es eine vertikale Pull-Geste, nicht als Links-/Rechts-Wischen werten.
+    if (wasPulling || gestureAxis.current === "y") return;
 
-    const dx = endX - touchStartX.current;
-    if (Math.abs(dx) <= SWIPE_THRESHOLD_PX || panelOpen) return;
+    // Horizontales Wischen → zwischen ALLEN 6 Listen blättern (Liste bleibt im
+    // aktuellen Auf-/Zuklapp-Zustand). Klar horizontale Geste vorausgesetzt.
+    if (Math.abs(dx) <= SWIPE_THRESHOLD_PX || Math.abs(dy) > Math.abs(dx) || panelOpen) return;
 
-    const tabOrder = TABS.map((tCfg) => tCfg.id);
-    const currentIndex = tabOrder.indexOf(tab);
+    const currentIndex = ALL_LIST_TYPES.indexOf(activeType);
     if (dx > 0 && currentIndex > 0) {
-      setTab(tabOrder[currentIndex - 1]);
-    } else if (dx < 0 && currentIndex < tabOrder.length - 1) {
-      setTab(tabOrder[currentIndex + 1]);
+      handleSelectType(ALL_LIST_TYPES[currentIndex - 1]);
+    } else if (dx < 0 && currentIndex < ALL_LIST_TYPES.length - 1) {
+      handleSelectType(ALL_LIST_TYPES[currentIndex + 1]);
     }
   };
 
@@ -333,7 +390,11 @@ export function HomeScreen({
   // werten wir die zuletzt bekannte Position aus, damit das Einklappen dennoch
   // zuverlässig auslöst.
   const handleTouchCancel = () => {
-    collapseIfSwipedDown(touchStartX.current, lastTouchY.current);
+    if (pullDownPx) setPullDownPx(0);
+    const dy = lastTouchY.current - touchStartY.current;
+    if (listExpanded && atTopAtStart.current && dy >= OVERSCROLL_COLLAPSE_PX) {
+      setListExpanded(false);
+    }
   };
 
   // ── Cover-Karussell: horizontales Wischen zwischen Favoriten ──
@@ -352,6 +413,21 @@ export function HomeScreen({
       const cur = Math.min(idx, coverItems.length - 1);
       return dx < 0 ? Math.min(cur + 1, coverItems.length - 1) : Math.max(cur - 1, 0);
     });
+  };
+
+  // ── Listenkopf ("Aufgaben" etc.): nach oben wischen klappt die Liste auf ──
+  const headerTouchX = useRef(0);
+  const headerTouchY = useRef(0);
+  const onHeaderTouchStart = (e) => {
+    headerTouchX.current = e.touches[0].clientX;
+    headerTouchY.current = e.touches[0].clientY;
+  };
+  const onHeaderTouchEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - headerTouchX.current;
+    const dy = e.changedTouches[0].clientY - headerTouchY.current;
+    if (!listExpanded && dy <= -EXPAND_SWIPE_PX && Math.abs(dy) > Math.abs(dx)) {
+      setListExpanded(true);
+    }
   };
 
   const handleDoubleTap = useCallback(
@@ -471,7 +547,18 @@ export function HomeScreen({
 
     return (
       <div className="home-cover__main" key={`cat-${cat.id}`}>
-        <div className="home-cover__primary-action">
+        <div
+          className="home-cover__primary-action"
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpenCat(cat)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onOpenCat(cat);
+            }
+          }}
+        >
           <div className="home-cover__copy">
             <AutoScrollText className="home-cover__title">{cat.name}</AutoScrollText>
             <p className="home-cover__desc">{cat.desc || cat.body || placeholderDesc}</p>
@@ -513,7 +600,18 @@ export function HomeScreen({
 
     return (
       <div className="home-cover__main" key={`entry-${entry.id}`}>
-        <div className="home-cover__primary-action">
+        <div
+          className="home-cover__primary-action"
+          role="button"
+          tabIndex={0}
+          onClick={() => onOpenEntry?.(entry)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onOpenEntry?.(entry);
+            }
+          }}
+        >
           <div className="home-cover__copy">
             <AutoScrollText className="home-cover__title">{entry.title}</AutoScrollText>
             <p className="home-cover__desc">
@@ -756,20 +854,34 @@ export function HomeScreen({
         </div>
       </div>
 
-      <div className={`home__list-container${listExpanded ? ' home__list-container--expanded' : ''}`}>
+      <div
+        className={`home__list-container${listExpanded ? ' home__list-container--expanded' : ''}${pullDownPx > 0 ? ' home__list-container--pulling' : ''}`}
+        style={listExpanded && pullDownPx > 0 ? { transform: `translateY(${pullDownPx}px)` } : undefined}
+      >
         {/* Eingeklappt: Titel · Aufklappen · Archiv im Section-Header.
             Aufgeklappt: Zuklappen + Archiv wandern als schwebende Glas-Buttons nach unten. */}
         {!listExpanded && (
-          <div className="list-section__header">
-            <div className="list-section__header-left">
+          <div
+            className="list-section__header"
+            onTouchStart={onHeaderTouchStart}
+            onTouchEnd={onHeaderTouchEnd}
+          >
+            <div
+              className="list-section__header-left list-section__header-left--clickable"
+              role="button"
+              tabIndex={0}
+              onClick={() => setListExpanded(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setListExpanded(true);
+                }
+              }}
+            >
               <span className="list-section__label">{activeLabel}</span>
-              <button
-                className="list-section__expand"
-                onClick={() => setListExpanded(true)}
-                aria-label={t.open}
-              >
-                <Maximize2 size={18} />
-              </button>
+              <span className="list-section__expand" aria-hidden="true">
+                <ChevronRight size={20} />
+              </span>
             </div>
             {/* Archiv-Zugang – immer gegenüber vom Abschnittstitel */}
             <button
@@ -782,7 +894,7 @@ export function HomeScreen({
           </div>
         )}
 
-        {activeGroupHeader && VOICE_TAB_TYPES.includes(tab) && (
+        {activeGroupHeader && isEntryType && (
           <div className="task-group-header task-group-header--fixed">
             <span className="task-group-header__left">{activeGroupHeader.left}</span>
             {activeGroupHeader.count && <span className="task-group-header__badge">{activeGroupHeader.count}</span>}
@@ -839,6 +951,7 @@ export function HomeScreen({
         onSelectType={handleSelectType}
         onSubmit={onQuickCreate}
         canToggleList
+        listExpanded={listExpanded}
         onToggleList={() => setListExpanded((v) => !v)}
         onHome={() => setListExpanded(false)}
         onOpenVoice={() => setVoiceOverlayOpen(true)}

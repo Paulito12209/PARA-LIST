@@ -26,6 +26,21 @@ export function DesktopApp({ ctx }) {
   const [activeCatType, setActiveCatType] = useState("project");
   const [peeking, setPeeking] = useState(false);
   const peekTimer = useRef(null);
+  const mainRef = useRef(null);
+
+  // Reveal the header's frosted-glass backdrop only once content scrolls
+  // underneath it — at the very top the hero stays clean. Toggled
+  // imperatively to avoid a re-render on every scroll frame.
+  useEffect(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    const onScroll = () => {
+      el.classList.toggle("dsk-main--scrolled", el.scrollTop > 8);
+    };
+    onScroll();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => el.removeEventListener("scroll", onScroll);
+  }, []);
 
   const sidebarMode = tweaks.sidebarMode || "locked";
   const treeOpen = tweaks.sidebarTreeOpen || TWEAK_DEFAULTS.sidebarTreeOpen;
@@ -138,7 +153,7 @@ export function DesktopApp({ ctx }) {
         onPointerLeave={sidebarMode === "hidden" ? schedulePeekClose : undefined}
       />
 
-      <main className="dsk-main">
+      <main className="dsk-main" ref={mainRef}>
         {sidebarMode === "hidden" && (
           <button
             type="button"

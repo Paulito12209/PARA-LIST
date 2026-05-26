@@ -4,10 +4,10 @@ import { useState } from "react";
 export const TWEAK_DEFAULTS = {
   theme: "dark",                // "dark" | "light"
   sidebarMode: "locked",        // "locked" | "hidden" — hidden = auto-hide overlay on hover
-  sidebarTreeOpen: {            // per-section expand state in the tree sidebar
-    project:  true,
-    area:     true,
-    resource: true,
+  sidebarTreeOpen: {            // per-section expand state in the tree sidebar — default collapsed for overview
+    project:  false,
+    area:     false,
+    resource: false,
     archive:  false,
   },
   sidebarCatOpen: {},           // per-cat expand state ({ [catId]: true }) — default collapsed

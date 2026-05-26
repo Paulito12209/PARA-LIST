@@ -52,7 +52,9 @@
   .task-item--home,
   .note-item--home,
   .cal-item--home {
-    background: #f7f7fa !important;
+    // Weiß statt Grau, damit kein sichtbarer Übergang/Sprung zum weißen
+    // Seitenhintergrund entsteht.
+    background: #ffffff !important;
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border: 1px solid transparent !important;
@@ -320,8 +322,9 @@
   }
 
   .task-group-header__badge {
-    background: rgba(#7C83F7, 0.14);
-    color: #5a5fc7;
+    // Zahl in der Header-Textfarbe; runder Hintergrund im gleichen Grau, dezent
+    background: rgba(#3a3a6a, 0.12);
+    color: #3a3a6a;
   }
 
   .task-item,
@@ -607,6 +610,51 @@
 
     .icon-muted {
       color: #5858A0;
+    }
+  }
+
+  // Minimalistische CreateModal-Variante im Light Mode: weißer Sheet,
+  // durchsichtige, komplett randlose Felder (nur Abstände, keine Linien).
+  .modal__sheet--minimal {
+    background: #ffffff;
+    border: none;
+
+    .modal__input,
+    .modal__textarea,
+    .modal__date-input,
+    .modal__time-input,
+    .modal__multi-select-btn,
+    .modal__toggle-row {
+      background: transparent;
+      border: none;
+      border-radius: 0;
+    }
+
+    // Select-Text neutral grau statt Lila (ausgewählt = dunkel)
+    .modal__multi-select-btn {
+      color: #76767f;
+
+      &--has-selection {
+        color: #1a1a24;
+      }
+    }
+
+    // Handle & Footer-Schließbutton auf dunkler Basis (Light Mode)
+    .modal__handle {
+      background: rgba(0, 0, 0, 0.14);
+    }
+
+    .modal__close--footer {
+      background: rgba(0, 0, 0, 0.05);
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.08);
+      }
+    }
+
+    .modal__multi-select-list {
+      background: #ffffff;
+      border: 1px solid #e5e5f0;
     }
   }
 
@@ -1022,11 +1070,25 @@
   }
 
   .home-cover {
-    background: #f7f7fa;
+    background: #ffffff;
     border-bottom: none;
 
     &::after {
-      background: linear-gradient(to bottom, transparent 0%, #f7f7f9 100%);
+      // Fadet exakt in die weiße .home-Fläche darunter → nahtlose Unterkante.
+      background: linear-gradient(to bottom,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.05) 26%,
+        rgba(255, 255, 255, 0.2) 46%,
+        rgba(255, 255, 255, 0.45) 63%,
+        rgba(255, 255, 255, 0.72) 81%,
+        rgba(255, 255, 255, 1) 100%);
+    }
+
+    // Seitlicher U-Verlauf: Ränder deckend weiß, nach innen ausfadend
+    &::before {
+      background:
+        linear-gradient(to right, #ffffff 0%, #ffffff 4%, rgba(255, 255, 255, 0) 30%),
+        linear-gradient(to left, #ffffff 0%, #ffffff 4%, rgba(255, 255, 255, 0) 30%);
     }
 
     &__light-wave {
@@ -1048,8 +1110,6 @@
         radial-gradient(ellipse 65% 55% at 62% 55%,
           rgba(var(--cover-accent-rgb), 0.22) 0%,
           transparent 70%),
-        // Punkt-Textur über die ganze Cover-Card
-        radial-gradient(rgba(0, 0, 0, 0.10) 1px, transparent 1px) 0 0 / 14px 14px,
         #ffffff;
     }
 
@@ -1065,8 +1125,7 @@
         linear-gradient(to top,
           rgba(255, 255, 255, 0.55) 0%,
           rgba(255, 255, 255, 0.25) 40%,
-          transparent 100%),
-        radial-gradient(rgba(0, 0, 0, 0.06) 1px, transparent 1px) 0 0 / 14px 14px;
+          transparent 100%);
     }
 
     &__badge {
@@ -1166,7 +1225,9 @@
   }
 
   .home {
-    background: #f7f7fa;
+    // Reines Weiß, damit der Cover-Fade (::after) nahtlos in die Aufgaben-Fläche
+    // übergeht und keine feine Kante entsteht.
+    background: #ffffff;
   }
 
   .split-nav {
@@ -1226,7 +1287,8 @@
   }
 
   .home__list-container--expanded {
-    background: #f7f7fa;
+    // Weiß wie die Listeneinträge, damit Hintergrund und Einträge nahtlos sind.
+    background: #ffffff;
   }
 }
 

@@ -9,6 +9,7 @@ import {
   getNextBirthday,
   ID_BIRTHDAYS,
   SEED,
+  SEED_IDS,
   computeNotif,
   CAT_ICONS,
 } from "./utils";
@@ -33,7 +34,10 @@ import "./App.scss";
 
 const SWIPE_BACK_DX_PX = 75;
 const SWIPE_BACK_START_PX = 45;
-const SWIPE_PANEL_OPEN_PX = 80;
+// Command-Panel öffnet sich erst nach einem bewussten Pull-down. Höhere
+// Schwelle = spürbarer Widerstand, damit es nicht beim normalen Tippen/Scrollen
+// versehentlich aufgeht.
+const SWIPE_PANEL_OPEN_PX = 110;
 const SWIPE_PANEL_CLOSE_PX = -60;
 const SWIPE_AXIS_TOLERANCE_PX = 50;
 const HAPTIC_TASK_DONE_PATTERN = [30, 50, 30];
@@ -136,6 +140,30 @@ function migrateState(state) {
     return c;
   });
 
+  // Default-/Onboarding-Items als `seed` markieren, damit sie keine "geschenkte"
+  // XP geben. Nur einmalig backfillen (seed === undefined), damit bewusst
+  // gesetzte Flags erhalten bleiben. Neben den SEED-IDs zählen dazu auch die
+  // automatisch angelegten System-Container für Vokabeln (Area "Sprachen" +
+  // "{Sprache} Wörter"-Ressourcen) — der Nutzer verdient XP über die Vokabel-
+  // *Notizen* darin, nicht über die Container selbst.
+  const isSystemLangCat = (c) =>
+    (c.type === "area" && c.name === "Sprachen") ||
+    (c.type === "resource" && Array.isArray(c.tags) && c.tags.includes("Vokabel"));
+  next.cats = next.cats.map((c) => {
+    if (c.seed === undefined) {
+      dirty = true;
+      return { ...c, seed: SEED_IDS.has(c.id) || isSystemLangCat(c) };
+    }
+    return c;
+  });
+  next.entries = next.entries.map((e) => {
+    if (e.seed === undefined) {
+      dirty = true;
+      return { ...e, seed: SEED_IDS.has(e.id) };
+    }
+    return e;
+  });
+
   next.entries = next.entries.map((e) => {
     let patched = e;
     if (!Array.isArray(patched.linkedEntryIds)) {
@@ -192,6 +220,7 @@ function migrateState(state) {
         id: uid(), type: "area", name: "Sprachen", date: null,
         body: "Vokabeln nach Sprache – gepflegt über das Übersetzer- und Flashcards-Tool.",
         tags: ["Sprache"], relatedId: null, archived: false, collaborators: [],
+        seed: true,
         createdAt: new Date().toISOString(),
       };
       cats = [...cats, langArea];
@@ -207,6 +236,7 @@ function migrateState(state) {
         res = {
           id: uid(), type: "resource", name: resName, date: null, body: "",
           tags: ["Vokabel"], relatedId: langArea.id, archived: false, collaborators: [],
+          seed: true,
           createdAt: new Date().toISOString(),
         };
         cats = [...cats, res];
@@ -449,6 +479,7 @@ export default function App() {
           relatedId: null,
           archived: false,
           collaborators: [],
+          seed: false,
           createdAt: new Date().toISOString(),
         },
       ],
@@ -484,7 +515,7 @@ export default function App() {
       }
       return {
         ...s,
-        entries: [...s.entries, { id: newId, createdAt: Date.now(), linkedEntryIds: [], parentId: null, ...entry }],
+        entries: [...s.entries, { id: newId, createdAt: Date.now(), linkedEntryIds: [], parentId: null, seed: false, ...entry }],
       };
     });
 
@@ -498,7 +529,11 @@ export default function App() {
       }
       return {
         ...s,
-        entries: s.entries.map((e) => (e.id === id ? { ...e, done: !e.done } : e)),
+        entries: s.entries.map((e) =>
+          e.id === id
+            ? { ...e, done: !e.done, completedAt: isNowDone ? Date.now() : null }
+            : e
+        ),
       };
     });
 
@@ -514,7 +549,10 @@ export default function App() {
       entries: s.entries.map((e) => {
         if (e.id !== id) return e;
         const next = { ...e, ...patch };
-        if (patch.catId !== undefined) {
+        // Legacy-Sync: catIds aus catId ableiten – aber nur, wenn der Patch
+        // nicht ohnehin schon eine explizite catIds-Liste mitliefert (sonst
+        // würde eine Mehrfach-Verknüpfung auf den ersten Eintrag reduziert).
+        if (patch.catIds === undefined && patch.catId !== undefined) {
           next.catIds = patch.catId ? [patch.catId] : [];
         }
         return next;
@@ -699,6 +737,7 @@ export default function App() {
           {
             id: areaId, type: "area", name: "Sprachen", date: null, body: "",
             tags: [], relatedId: null, archived: false, collaborators: [],
+            seed: true,
             createdAt: new Date().toISOString(),
           },
         ];
@@ -714,6 +753,7 @@ export default function App() {
           {
             id: resId, type: "resource", name: resName, date: null, body: "",
             tags: ["Vokabel"], relatedId: areaId, archived: false, collaborators: [],
+            seed: true,
             createdAt: new Date().toISOString(),
           },
         ];

@@ -155,6 +155,9 @@ export function Sidebar({
                     <section.Icon size={16} strokeWidth={2.2} />
                   </span>
                   <span className="dsk-tree__section-label">{sectionLabel}</span>
+                  {section.id !== "archive" && list.length > 0 && (
+                    <span className="dsk-tree__section-count">{list.length}</span>
+                  )}
                 </button>
                 <div className="dsk-tree__section-actions">
                   <button

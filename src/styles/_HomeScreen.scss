@@ -13,7 +13,7 @@
   overflow: hidden;
   position: relative;
   z-index: 1;
-  background: #1A1A2E;
+  background: #16161F;
 
   &__categories-container {
     // Exakte Hälfte des Viewports minus 112px
@@ -326,7 +326,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: #1A1A2E;
+  background: #16161F;
   border-bottom: none;
 
   // Weicher Fade-Übergang am unteren Rand des Covers in den App-Hintergrund.
@@ -339,10 +339,35 @@
     left: 0;
     right: 0;
     bottom: -1px;
-    height: 160px;
-    background: linear-gradient(to bottom, transparent 0%, #1A1A2E 100%);
+    // Höher gezogen (~bis unter die Pillen) + weiches Easing mit mehreren Stops,
+    // damit kein wahrnehmbarer Band-/Kanten-Übergang entsteht, sondern ein
+    // fließender Verlauf von der Textur in die flache Basisfarbe.
+    height: 52%;
+    background: linear-gradient(to bottom,
+      rgba(22, 22, 31, 0) 0%,
+      rgba(22, 22, 31, 0.05) 26%,
+      rgba(22, 22, 31, 0.2) 46%,
+      rgba(22, 22, 31, 0.45) 63%,
+      rgba(22, 22, 31, 0.72) 81%,
+      rgba(22, 22, 31, 1) 100%);
     z-index: 1;
     pointer-events: none;
+  }
+
+  // Seitlicher Verlauf links + rechts: am Rand deckend in der Basisfarbe, nach
+  // innen ausfadend, sodass die Lichtwellen mittig sichtbar bleiben. Zusammen
+  // mit dem unteren Fade (::after) ergibt sich eine weiche U-Form.
+  // z-index 2: liegt ÜBER der Light-Wave (z1), aber UNTER dem Inhalt (content z2,
+  // wird als späteres DOM-Kind darüber gezeichnet).
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(to right, #16161F 0%, #16161F 4%, rgba(22, 22, 31, 0) 30%),
+      linear-gradient(to left, #16161F 0%, #16161F 4%, rgba(22, 22, 31, 0) 30%);
   }
 
   // Der Haupt-Lichtwellen-Gradient im Hintergrund (Dark Mode)
@@ -376,10 +401,8 @@
       radial-gradient(ellipse 80% 65% at 55% 70%,
         rgba(var(--cover-accent-rgb), 0.35) 0%,
         transparent 70%),
-      // Punkt-Textur über die ganze Cover-Card
-      radial-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px) 0 0 / 14px 14px,
       // Dunkle Basis
-      #1A1A2E;
+      #16161F;
   }
 
   // Wenn ein Cover-Bild vorhanden ist: Light-Wave wird halbtransparent,
@@ -396,8 +419,7 @@
       linear-gradient(to top,
         rgba(0, 0, 0, 0.55) 0%,
         rgba(0, 0, 0, 0.30) 40%,
-        rgba(var(--cover-accent-rgb), 0.10) 100%),
-      radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px) 0 0 / 14px 14px;
+        rgba(var(--cover-accent-rgb), 0.10) 100%);
   }
 
   &__bg-img {
@@ -891,9 +913,19 @@
   max-width: 420px;
   margin: 0 auto;
   z-index: 10;
-  background: #1A1A2E;
+  background: #16161F;
   padding: 8px 0 0;
   animation: listExpand 0.3s ease-out;
+  // Loslassen nach einem Pull-down → sanftes Zurückschnappen des Versatzes.
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+// Während aktiv nach unten gezogen wird, folgt die Liste dem Finger 1:1 (per
+// Inline-Transform) – ohne Transition/Mount-Animation, damit es sich direkt
+// und "physisch" anfühlt.
+.home__list-container--pulling {
+  transition: none;
+  animation: none;
 }
 
 @keyframes listExpand {
@@ -941,8 +973,14 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  // 12px Abstand zwischen Titel-Ende und Aufklapp-Icon
-  gap: 12px;
+  // Chevron sitzt direkt am Wortende ("Aufgaben ›")
+  gap: 2px;
+}
+
+.list-section__header-left--clickable {
+  cursor: pointer;
+  // Eigener Treffer-Bereich für Tap aufs Wort + Chevron
+  -webkit-tap-highlight-color: transparent;
 }
 
 .list-section__expand,

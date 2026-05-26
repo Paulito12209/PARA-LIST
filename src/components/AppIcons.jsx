@@ -84,6 +84,30 @@ export const SaveBookmarkIcon = ({ size = 24, color = "currentColor", strokeWidt
   </svg>
 );
 
+// Verknüpfen-Icon (Git-Verzweigung): drei Knoten – oben links, oben rechts,
+// unten links. Gerade „Spine"-Linie verbindet die linken Knoten; der rechte
+// Knoten mündet mit einer Kurve mittig in die Spine.
+export const GitMergeBranchIcon = ({ size = 24, color = "currentColor", strokeWidth = 2, className = "" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <circle cx="7" cy="6" r="2.5" />
+    <circle cx="17" cy="6" r="2.5" />
+    <circle cx="7" cy="18" r="2.5" />
+    <path d="M7 8.5v7" />
+    <path d="M17 8.5c0 4-4 5-10 5" />
+  </svg>
+);
+
 export const TagIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} className="lucide lucide-tag">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />

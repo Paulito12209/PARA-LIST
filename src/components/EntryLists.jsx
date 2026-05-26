@@ -399,7 +399,8 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
         onClick={() => { if (suppressNextClick.current) return; onOpenCat?.(c); }}
       >
         <button
-          className={`task-item__type-icon ${c.starred ? "task-item__type-icon--starred" : ""}`}
+          className={`task-item__type-icon task-item__type-icon--cat ${c.starred ? "task-item__type-icon--starred" : ""}`}
+          style={{ "--cat-tint": color }}
           onClick={(ev) => { ev.stopPropagation(); update({ starred: !c.starred }); }}
           aria-label={c.starred ? t.unmarkFavorite : t.markFavorite}
         >

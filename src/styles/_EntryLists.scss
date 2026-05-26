@@ -1110,6 +1110,22 @@
   }
 }
 
+// Kategorie-Icon-Box (Projekt/Bereich/Ressource): Hintergrund-Tint folgt der
+// Kategoriefarbe (--cat-tint), statt des fixen Aufgaben-Blaus.
+.task-item__type-icon--cat {
+  background: color-mix(in srgb, var(--cat-tint) 12%, transparent);
+
+  &:active {
+    background: color-mix(in srgb, var(--cat-tint) 22%, transparent);
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      background: color-mix(in srgb, var(--cat-tint) 18%, transparent);
+    }
+  }
+}
+
 .note-item__type-icon {
   background: rgba(251, 191, 36, 0.10);
   cursor: pointer;

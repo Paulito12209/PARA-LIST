@@ -1283,7 +1283,8 @@
   top: 0;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: visible;
+  overflow-y: hidden;
   z-index: 4;
 
   &__top {
@@ -1514,7 +1515,10 @@
       gap: 12px;
     }
     .dsk-rail__path-header { display: none; }
-    .dsk-rail__scroll { padding: 4px 8px 16px; }
+    .dsk-rail__scroll {
+      padding: 4px 8px 16px;
+      overflow: visible;
+    }
     .dsk-rail__target { display: none; }
   }
 }
@@ -1652,10 +1656,137 @@
 
   &--compact {
     .dsk-zigzag__step { align-items: center; }
-    .dsk-zigzag__card { display: none; }
-    .dsk-zigzag__connector { height: 12px; }
+    .dsk-zigzag__card {
+      width: auto;
+      padding: 0;
+      border: none;
+      background: transparent;
+      gap: 0;
+      &:hover {
+        background: transparent;
+        border-color: transparent;
+      }
+    }
+    .dsk-zigzag__card-body { display: none; }
+    .dsk-zigzag__connector { height: 8px; }
     .dsk-zigzag__milestone { width: 32px; height: 32px; font-size: 13px; }
-    .dsk-zigzag__token { width: 24px; height: 24px; }
+    .dsk-zigzag__milestone-label { display: none; }
+    .dsk-zigzag__token { width: 32px; height: 32px; }
+  }
+}
+
+// ── Zigzag Hover-Popup (fixed, portal to body) ────────────
+.dsk-zigzag-popup {
+  position: fixed;
+  transform: translateY(-50%);
+  z-index: 9999;
+  pointer-events: auto;
+
+  width: 240px;
+  padding: 14px 16px;
+  border-radius: 16px;
+
+  background: rgba(30, 30, 50, 0.82);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 0 0.5px rgba(255, 255, 255, 0.06) inset;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: $font-body;
+  color: #fff;
+
+  animation: dsk-popup-in 0.18s cubic-bezier(0.4, 0, 0.2, 1) both;
+
+  &--light {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.12),
+      0 0 0 0.5px rgba(0, 0, 0, 0.04) inset;
+    color: #1a1a2e;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+    background:
+      radial-gradient(circle at 50% 35%, var(--token-c1), var(--token-c2) 70%);
+
+    &--project  { --token-c1: rgba(224, 62, 62, 0.95);   --token-c2: rgba(224, 62, 62, 0.6);  }
+    &--area     { --token-c1: rgba(208, 144, 32, 0.95);  --token-c2: rgba(208, 144, 32, 0.6); }
+    &--resource { --token-c1: rgba(48, 160, 96, 0.95);   --token-c2: rgba(48, 160, 96, 0.6);  }
+    &--task     { --token-c1: rgba(124, 131, 247, 0.95); --token-c2: rgba(124, 131, 247, 0.6); }
+    &--note     { --token-c1: rgba(251, 191, 36, 0.95);  --token-c2: rgba(251, 191, 36, 0.6); }
+    &--cal      { --token-c1: rgba(96, 165, 250, 0.95);  --token-c2: rgba(96, 165, 250, 0.6); }
+  }
+
+  &__title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.3;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__desc {
+    font-size: 12px;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.6);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .dsk-zigzag-popup--light & { color: rgba(26, 26, 46, 0.5); }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__date {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    .dsk-zigzag-popup--light & { color: rgba(26, 26, 46, 0.4); }
+  }
+
+  &__xp {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(124, 131, 247, 1);
+  }
+}
+
+@keyframes dsk-popup-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.92) translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) scale(1) translateX(0);
   }
 }
 

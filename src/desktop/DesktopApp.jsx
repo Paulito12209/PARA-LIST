@@ -199,6 +199,7 @@ export function DesktopApp({ ctx }) {
       <Rail
         t={t}
         lang={lang}
+        light={theme === "light"}
         expanded={railOpen}
         activity={activity}
         onToggle={() => setRailOpen((v) => !v)}

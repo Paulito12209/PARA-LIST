@@ -116,7 +116,7 @@ export function Sidebar({
       aria-hidden={!visible}
     >
       <div className="dsk-sidebar__brand">
-        <BrandLogo size={38} />
+        <BrandLogo size={48} />
         <span className="dsk-sidebar__brand-label">PARA·LIST</span>
         <button
           type="button"

@@ -1,7 +1,7 @@
 import { Trophy } from "lucide-react";
 import { ZigzagPath } from "./ZigzagPath";
 
-function LevelBadge({ level, size = 40 }) {
+function LevelBadge({ level, size = 48 }) {
   return (
     <div className="dsk-rail__level-badge" style={{ width: size, height: size }}>
       <span className="dsk-rail__level-badge-num">{level}</span>
@@ -12,6 +12,7 @@ function LevelBadge({ level, size = 40 }) {
 export function Rail({
   t,
   lang,
+  light,
   expanded,
   activity,
   onToggle,
@@ -98,6 +99,7 @@ export function Rail({
         <ZigzagPath
           items={activity.path}
           compact={!expanded}
+          light={light}
           onOpenEntry={onOpenEntry}
           onOpenCat={onOpenCat}
         />

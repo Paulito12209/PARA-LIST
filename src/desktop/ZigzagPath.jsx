@@ -1,4 +1,6 @@
+import { useState, useCallback, useRef } from "react";
 import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar } from "lucide-react";
+import { createPortal } from "react-dom";
 
 const TOKEN_ICONS = {
   project:  Circle,
@@ -9,13 +11,38 @@ const TOKEN_ICONS = {
   cal:      Calendar,
 };
 
-export function ZigzagPath({ items, compact = false, onOpenEntry, onOpenCat }) {
+export function ZigzagPath({ items, compact = false, light = false, onOpenEntry, onOpenCat }) {
+  const [hover, setHover] = useState(null);
+  const hideTimer = useRef(null);
+
   const handleActivate = (item) => {
     if (item.kind === "milestone") return;
     const rawId = item.id.replace(/^(entry|cat)-/, "");
     if (item.kind === "entry") onOpenEntry?.(rawId);
     else if (item.kind === "cat") onOpenCat?.(rawId);
   };
+
+  const showTooltip = useCallback((e, item) => {
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHover({ item, top: rect.top + rect.height / 2, right: window.innerWidth - rect.left + 12 });
+  }, []);
+
+  const scheduleHide = useCallback(() => {
+    hideTimer.current = setTimeout(() => setHover(null), 120);
+  }, []);
+
+  const cancelHide = useCallback(() => {
+    if (hideTimer.current) {
+      clearTimeout(hideTimer.current);
+      hideTimer.current = null;
+    }
+  }, []);
+
+  const TokenIcon = hover ? (TOKEN_ICONS[hover.item.token] || Square) : null;
 
   return (
     <div className={`dsk-zigzag${compact ? " dsk-zigzag--compact" : ""}`}>
@@ -36,7 +63,7 @@ export function ZigzagPath({ items, compact = false, onOpenEntry, onOpenCat }) {
           );
         }
 
-        const TokenIcon = TOKEN_ICONS[item.token] || Square;
+        const ItemIcon = TOKEN_ICONS[item.token] || Square;
         const isLeft = idx % 2 === 0;
 
         return (
@@ -46,9 +73,11 @@ export function ZigzagPath({ items, compact = false, onOpenEntry, onOpenCat }) {
               type="button"
               className={`dsk-zigzag__card dsk-zigzag__card--${isLeft ? "left" : "right"}`}
               onClick={() => handleActivate(item)}
+              onPointerEnter={compact ? (e) => showTooltip(e, item) : undefined}
+              onPointerLeave={compact ? scheduleHide : undefined}
             >
               <span className={`dsk-zigzag__token dsk-zigzag__token--${item.token}`}>
-                <TokenIcon size={14} strokeWidth={2.2} />
+                <ItemIcon size={14} strokeWidth={2.2} />
               </span>
               <span className="dsk-zigzag__card-body">
                 <span className="dsk-zigzag__card-title">{item.title}</span>
@@ -61,6 +90,30 @@ export function ZigzagPath({ items, compact = false, onOpenEntry, onOpenCat }) {
           </div>
         );
       })}
+
+      {compact && hover && createPortal(
+        <div
+          className={`dsk-zigzag-popup${light ? " dsk-zigzag-popup--light" : ""}`}
+          style={{ top: hover.top, right: hover.right }}
+          onPointerEnter={cancelHide}
+          onPointerLeave={scheduleHide}
+        >
+          <div className="dsk-zigzag-popup__header">
+            <span className={`dsk-zigzag-popup__icon dsk-zigzag-popup__icon--${hover.item.token}`}>
+              <TokenIcon size={14} strokeWidth={2.2} />
+            </span>
+            <span className="dsk-zigzag-popup__title">{hover.item.title}</span>
+          </div>
+          {hover.item.desc && (
+            <span className="dsk-zigzag-popup__desc">{hover.item.desc}</span>
+          )}
+          <div className="dsk-zigzag-popup__footer">
+            <span className="dsk-zigzag-popup__date">{hover.item.subDate}</span>
+            <span className="dsk-zigzag-popup__xp">+ {hover.item.xp} XP</span>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

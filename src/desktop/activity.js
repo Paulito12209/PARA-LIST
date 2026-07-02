@@ -38,21 +38,29 @@ function getCreatedTs(item) {
   return 0;
 }
 
-function typeLabel(type, t) {
-  if (!t) return type;
-  if (type === "task") return t.task || "Aufgabe";
-  if (type === "note") return t.note || "Notiz";
-  if (type === "calendar") return t.calendar || "Termin";
-  if (type === "project") return t.projects?.slice(0, -1) || "Projekt";
-  if (type === "area") return t.areas?.slice(0, -1) || "Bereich";
-  if (type === "resource") return t.resources?.slice(0, -1) || "Ressource";
-  return type;
+const TYPE_LABELS = {
+  de: { task: "Aufgabe", note: "Notiz", calendar: "Termin", project: "Projekt", area: "Bereich", resource: "Ressource" },
+  en: { task: "task", note: "note", calendar: "event", project: "project", area: "area", resource: "resource" },
+  es: { task: "tarea", note: "nota", calendar: "evento", project: "proyecto", area: "área", resource: "recurso" },
+};
+
+function typeLabel(type, lang) {
+  return (TYPE_LABELS[lang] || TYPE_LABELS.de)[type] || type;
 }
 
 function formatTime(ts, locale = "de-DE") {
   if (!ts) return "";
   try {
     return new Date(ts).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+function formatDate(ts, locale = "de-DE") {
+  if (!ts) return "";
+  try {
+    return new Date(ts).toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" });
   } catch {
     return "";
   }
@@ -91,8 +99,7 @@ export function buildActivityState({ entries = [], cats = [], lang = "de" }) {
         kind: "entry",
         type: e.type,
         title: e.title || "(ohne Titel)",
-        // Seed-Items haben keinen Erstell-Zeitstempel → für abgeschlossene
-        // Default-Aufgaben den Abschlusszeitpunkt verwenden.
+        desc: e.body || e.note || "",
         ts: e.seed ? getCreatedTs({ createdAt: e.completedAt }) : getCreatedTs(e),
       })),
   ].filter((it) => it.ts > 0);
@@ -153,8 +160,9 @@ export function buildActivityState({ entries = [], cats = [], lang = "de" }) {
     return {
       ...it,
       token: TYPE_TO_TOKEN[it.type] || "resource",
-      subType: typeLabel(it.type, undefined),
+      subType: typeLabel(it.type, lang),
       subTime: formatTime(it.ts, locale),
+      subDate: formatDate(it.ts, locale),
     };
   });
 

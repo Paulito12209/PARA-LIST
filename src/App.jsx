@@ -329,7 +329,17 @@ export default function App() {
   const CC = getCC(t);
   const TABS = getTABS(t);
 
-  const push = (view) => setStack((s) => [...s, view]);
+  const push = (view) => {
+    // "Zuletzt geöffnet"-Zeitstempel für Cat-Seiten (QuickSwitch ⌘K-Sortierung)
+    if (view?.view === "catDetail" && view.catId) {
+      const now = Date.now();
+      setState((s) => ({
+        ...s,
+        cats: s.cats.map((c) => (c.id === view.catId ? { ...c, lastOpenedAt: now } : c)),
+      }));
+    }
+    setStack((s) => [...s, view]);
+  };
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
 
   const getArchiveCount = (archiveTab) => {

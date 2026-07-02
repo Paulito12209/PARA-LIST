@@ -6,7 +6,7 @@ import { Cover } from "./Cover";
 import { ListArea } from "./ListArea";
 import { Rail } from "./Rail";
 import { useTweaks, TWEAK_DEFAULTS } from "./useTweaks";
-import { buildActivityState } from "./activity";
+import { buildActivityState, typeLabel } from "./activity";
 
 const PEEK_CLOSE_DELAY = 180;
 
@@ -18,10 +18,15 @@ function QuickSwitch({ cats, lang, onSelect, onClose }) {
   const listRef = useRef(null);
   const [sel, setSel] = useState(0);
 
-  // Sortierung nach "zuletzt geöffnet" – fällt auf createdAt zurück
+  // Zuletzt geöffnete zuerst; nie geöffnete danach (nach Erstelldatum)
   const sorted = useMemo(() => {
     const active = cats.filter((c) => !c.archived);
-    active.sort((a, b) => (b.lastOpenedAt || b.createdAt || 0) - (a.lastOpenedAt || a.createdAt || 0));
+    active.sort((a, b) => {
+      const ao = a.lastOpenedAt || 0;
+      const bo = b.lastOpenedAt || 0;
+      if (ao !== bo) return bo - ao;
+      return (b.createdAt || 0) - (a.createdAt || 0);
+    });
     return active;
   }, [cats]);
 
@@ -86,7 +91,7 @@ function QuickSwitch({ cats, lang, onSelect, onClose }) {
                     <Icon size={15} strokeWidth={2.2} />
                   </span>
                   <span className="dsk-qswitch__item-name">{cat.name}</span>
-                  <span className="dsk-qswitch__item-type">{cat.type}</span>
+                  <span className="dsk-qswitch__item-type">{typeLabel(cat.type, lang)}</span>
                 </button>
               </li>
             );
@@ -210,8 +215,6 @@ export function DesktopApp({ ctx }) {
 
   const openCat = (cat) => {
     setActiveCatType(cat.type || activeCatType);
-    // Zeitstempel für "zuletzt geöffnet" setzen (für QuickSwitch-Sortierung)
-    mutations.updateCat(cat.id, { lastOpenedAt: Date.now() });
     push({ view: "catDetail", catId: cat.id });
   };
   const openEntry = (entry) => push({ view: "entryDetail", entryId: entry.id });
@@ -303,8 +306,6 @@ export function DesktopApp({ ctx }) {
         onToggle={() => setRailOpen((v) => !v)}
         onOpenEntry={(entryId) => push({ view: "entryDetail", entryId })}
         onOpenCat={(catId) => {
-          // Zeitstempel für QuickSwitch-Sortierung setzen
-          mutations.updateCat(catId, { lastOpenedAt: Date.now() });
           const cat = state.cats.find((c) => c.id === catId);
           if (cat) setActiveCatType(cat.type || activeCatType);
           push({ view: "catDetail", catId });

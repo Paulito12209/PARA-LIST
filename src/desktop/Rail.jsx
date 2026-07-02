@@ -1,7 +1,7 @@
 import { Trophy } from "lucide-react";
 import { ZigzagPath } from "./ZigzagPath";
 
-function LevelBadge({ level, size = 48 }) {
+function LevelBadge({ level, size = 40 }) {
   return (
     <div className="dsk-rail__level-badge" style={{ width: size, height: size }}>
       <span className="dsk-rail__level-badge-num">{level}</span>

@@ -44,7 +44,7 @@ const TYPE_LABELS = {
   es: { task: "tarea", note: "nota", calendar: "evento", project: "proyecto", area: "área", resource: "recurso" },
 };
 
-function typeLabel(type, lang) {
+export function typeLabel(type, lang) {
   return (TYPE_LABELS[lang] || TYPE_LABELS.de)[type] || type;
 }
 

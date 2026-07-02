@@ -269,7 +269,7 @@
   &__pinned-divider {
     height: 1px;
     background: var(--border);
-    margin: 4px 0 8px;
+    margin: 4px 10px 8px;
   }
 
   &__pinned-head {
@@ -278,15 +278,13 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0 4px;
+    padding: 0 8px;
     border: none;
     background: transparent;
     color: var(--text-3);
     font-family: $font-body;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
     cursor: pointer;
     border-radius: 6px;
     transition: color 0.15s var(--easing);
@@ -942,6 +940,8 @@
     > * + * { margin-left: -8px; }
   }
   &__avatar {
+    position: relative;
+    z-index: 1;   // Avatare liegen über dem Add-Button (Dreiviertelmond-Effekt)
     width: 44px;
     height: 44px;
     border-radius: 50%;
@@ -971,9 +971,20 @@
       backdrop-filter: blur(8px);
     }
     &--add {
+      z-index: 0;   // rutscht unter den letzten Avatar — nur der Rest lugt hervor
       background: transparent !important;
       border: 2px dashed var(--border-strong);
       color: var(--text-2);
+      transition: background 0.15s var(--easing), color 0.15s var(--easing), border-color 0.15s var(--easing);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        color: var(--text);
+        border-color: var(--text-3);
+      }
+      .dsk-app--light &:hover {
+        background: rgba(0, 0, 0, 0.05) !important;
+      }
     }
   }
 
@@ -1437,7 +1448,7 @@
     font-weight: 800;
     flex-shrink: 0;
   }
-  &__level-badge-num { font-size: 16px; }
+  &__level-badge-num { font-size: 15px; }
   &__level-inline {
     display: flex;
     flex-direction: column;

@@ -1139,11 +1139,13 @@
   &__header-icon {
     width: 32px;
     height: 32px;
-    border-radius: 10px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    // Sanfter Glow um das farbige Icon (statt abgerundetem Tint-Rechteck)
+    background: radial-gradient(circle, var(--tile-glow, transparent), transparent 72%);
   }
   &__header-title {
     flex: 1;
@@ -1208,19 +1210,18 @@
     &--active {
       opacity: 1;
       color: var(--text);
-      background: rgba(255, 255, 255, 0.06);
-
-      .dsk-app--light & { background: rgba(0, 0, 0, 0.05); }
     }
   }
   &__tab-icon {
     width: 28px;
     height: 28px;
-    border-radius: 9px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    color: var(--text-3); // inaktiv: grau — aktiv wird per Inline-Style eingefärbt
+    background: radial-gradient(circle, var(--tile-glow, transparent), transparent 72%);
   }
   &__tab-label { white-space: nowrap; }
 
@@ -1699,15 +1700,15 @@
     align-items: center;
     justify-content: center;
     color: var(--token-fg);
-    background: var(--token-bg);
+    background: transparent;
     flex-shrink: 0;
 
-    &--project  { --token-fg: var(--cat-project);  --token-bg: rgba(224, 62, 62, 0.15);  }
-    &--area     { --token-fg: var(--cat-area);     --token-bg: rgba(208, 144, 32, 0.15); }
-    &--resource { --token-fg: var(--cat-resource); --token-bg: rgba(48, 160, 96, 0.15);  }
-    &--task     { --token-fg: var(--cat-task);     --token-bg: rgba(11, 140, 233, 0.16);  }
-    &--note     { --token-fg: var(--cat-note);     --token-bg: rgba(251, 191, 36, 0.18); }
-    &--cal      { --token-fg: var(--cat-cal);      --token-bg: rgba(0, 120, 212, 0.18);  }
+    &--project  { --token-fg: var(--cat-project);  }
+    &--area     { --token-fg: var(--cat-area);     }
+    &--resource { --token-fg: var(--cat-resource); }
+    &--task     { --token-fg: var(--cat-task);     }
+    &--note     { --token-fg: var(--cat-note);     }
+    &--cal      { --token-fg: var(--cat-cal);      }
   }
 
   &__card-title {
@@ -1838,14 +1839,14 @@
     justify-content: center;
     flex-shrink: 0;
     color: var(--token-fg);
-    background: var(--token-bg);
+    background: transparent;
 
-    &--project  { --token-fg: var(--cat-project);  --token-bg: rgba(224, 62, 62, 0.15);  }
-    &--area     { --token-fg: var(--cat-area);     --token-bg: rgba(208, 144, 32, 0.15); }
-    &--resource { --token-fg: var(--cat-resource); --token-bg: rgba(48, 160, 96, 0.15);  }
-    &--task     { --token-fg: var(--cat-task);     --token-bg: rgba(11, 140, 233, 0.16);  }
-    &--note     { --token-fg: var(--cat-note);     --token-bg: rgba(251, 191, 36, 0.18); }
-    &--cal      { --token-fg: var(--cat-cal);      --token-bg: rgba(0, 120, 212, 0.18);  }
+    &--project  { --token-fg: var(--cat-project);  }
+    &--area     { --token-fg: var(--cat-area);     }
+    &--resource { --token-fg: var(--cat-resource); }
+    &--task     { --token-fg: var(--cat-task);     }
+    &--note     { --token-fg: var(--cat-note);     }
+    &--cal      { --token-fg: var(--cat-cal);      }
   }
 
   &__title {

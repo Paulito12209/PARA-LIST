@@ -227,8 +227,8 @@ function Tile({ type, t, lang, CC, entries, cats, onOpenEntry, toggleTask, onAdd
   return (
     <div className="dsk-tile">
       <div className="dsk-tile__header">
-        <span className="dsk-tile__header-icon" style={{ background: cfg.accentSoft, color: cfg.accent }}>
-          <Icon size={16} strokeWidth={2.2} />
+        <span className="dsk-tile__header-icon" style={{ color: cfg.accent, "--tile-glow": cfg.accentSoft }}>
+          <Icon size={17} strokeWidth={2.2} />
         </span>
         <span className="dsk-tile__header-title">{t?.[cfg.labelKey] || cfg.fallback}</span>
         <button
@@ -279,9 +279,9 @@ function TabbedTile({ tabs, t, lang, CC, cats, onOpenEntry, toggleTask, onAddEnt
             >
               <span
                 className="dsk-tile__tab-icon"
-                style={{ background: cfg.accentSoft, color: cfg.accent }}
+                style={isActive ? { color: cfg.accent, "--tile-glow": cfg.accentSoft } : undefined}
               >
-                <Icon size={15} strokeWidth={2.2} />
+                <Icon size={16} strokeWidth={2.2} />
               </span>
               <span className="dsk-tile__tab-label">{t?.[cfg.labelKey] || cfg.fallback}</span>
             </button>

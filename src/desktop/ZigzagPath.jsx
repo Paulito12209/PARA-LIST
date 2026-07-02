@@ -77,7 +77,7 @@ export function ZigzagPath({ items, compact = false, light = false, onOpenEntry,
               onPointerLeave={compact ? scheduleHide : undefined}
             >
               <span className={`dsk-zigzag__token dsk-zigzag__token--${item.token}`}>
-                <ItemIcon size={14} strokeWidth={2.2} />
+                <ItemIcon size={16} strokeWidth={2.2} />
               </span>
               <span className="dsk-zigzag__card-body">
                 <span className="dsk-zigzag__card-title">{item.title}</span>

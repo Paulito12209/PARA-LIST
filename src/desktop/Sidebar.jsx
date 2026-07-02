@@ -16,8 +16,9 @@ import {
   Calendar,
   Image as ImageIcon,
   Link as LinkIcon,
+  Ellipsis,
 } from "lucide-react";
-import { CustomSettingsIcon, BrandLogo } from "../components/AppIcons";
+import { BrandLogo } from "../components/AppIcons";
 
 const SECTIONS = [
   { id: "project",  type: "project",  Icon: Circle,   labelKey: "projects",  fallback: "Projekte",     color: "var(--cat-project)",  canAdd: true },
@@ -55,6 +56,7 @@ export function Sidebar({
   onOpenCat,             // (cat) => void
   onOpenEntry,           // (entry) => void
   onAddCat,              // (type) => void
+  user,                  // { name, avatar }
   onOpenSettings,        // () => void
   onToggleMode,          // () => void — switches locked ↔ hidden
   onToggleCatStar,       // (catId, nextValue) => void
@@ -292,11 +294,18 @@ export function Sidebar({
       <div className="dsk-sidebar__footer">
         <button
           type="button"
-          className="dsk-sidebar__settings-btn"
+          className="dsk-sidebar__profile-btn"
           onClick={onOpenSettings}
         >
-          <CustomSettingsIcon size={18} color="currentColor" />
-          <span>{t?.settings || "Einstellungen"}</span>
+          <span className="dsk-sidebar__profile-avatar">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="" className="dsk-sidebar__profile-avatar-img" />
+            ) : (
+              (user?.name || "U").charAt(0).toUpperCase()
+            )}
+          </span>
+          <span className="dsk-sidebar__profile-name">{user?.name || "User"}</span>
+          <Ellipsis size={16} strokeWidth={2.4} className="dsk-sidebar__profile-more" />
         </button>
       </div>
     </aside>

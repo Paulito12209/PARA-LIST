@@ -145,6 +145,7 @@ export function DesktopApp({ ctx }) {
         onOpenCat={openCat}
         onOpenEntry={openEntry}
         onAddCat={(type) => mutations.addCatModal(type)}
+        user={state.user}
         onOpenSettings={ctx.openSettings}
         onToggleMode={() => setSidebarMode((m) => (m === "locked" ? "hidden" : "locked"))}
         onToggleCatStar={toggleCatStar}

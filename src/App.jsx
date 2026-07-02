@@ -1010,7 +1010,7 @@ export default function App() {
       focusTab: (focusedTab) => setTab(focusedTab),
     };
     return (
-      <div className={theme === "light" ? "light-theme" : ""}>
+      <div className={`app${theme === "light" ? " light-theme" : ""}`}>
         <DesktopApp ctx={desktopCtx} />
         {renderRootModals()}
       </div>

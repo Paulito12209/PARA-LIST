@@ -307,7 +307,9 @@ export function Sidebar({
               onClick={() => setPinnedOpen((v) => !v)}
               aria-expanded={pinnedOpen}
             >
-              <Pin size={14} strokeWidth={2.2} />
+              <span className="dsk-sidebar__pinned-icon">
+                <Pin size={16} strokeWidth={2.2} />
+              </span>
               <span className="dsk-sidebar__pinned-label">
                 {t?.pinned || "Angeheftet"}
               </span>

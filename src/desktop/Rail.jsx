@@ -1,5 +1,4 @@
 import { Trophy } from "lucide-react";
-import { CustomSettingsIcon } from "../components/AppIcons";
 import { ZigzagPath } from "./ZigzagPath";
 
 function LevelBadge({ level, size = 40 }) {
@@ -16,7 +15,6 @@ export function Rail({
   expanded,
   activity,
   onToggle,
-  onOpenSettings,
   onOpenEntry,
   onOpenCat,
 }) {
@@ -34,17 +32,6 @@ export function Rail({
             </div>
           )}
           {expanded && <div className="dsk-rail__spacer" />}
-          {expanded && (
-            <button
-              type="button"
-              className="dsk-rail__icon-btn"
-              onClick={onOpenSettings}
-              title={t?.settings || "Einstellungen"}
-              aria-label={t?.settings || "Einstellungen"}
-            >
-              <CustomSettingsIcon size={22} color="currentColor" />
-            </button>
-          )}
           <button
             type="button"
             className={`dsk-rail__icon-btn dsk-rail__icon-btn--trophy${expanded ? " dsk-rail__icon-btn--active" : ""}`}

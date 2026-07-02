@@ -154,7 +154,7 @@ export function DesktopApp({ ctx }) {
       />
 
       <main className="dsk-main" ref={mainRef}>
-        {sidebarMode === "hidden" && (
+        {sidebarMode === "hidden" && !peeking && (
           <button
             type="button"
             className="dsk-main__sidebar-toggle"
@@ -169,7 +169,6 @@ export function DesktopApp({ ctx }) {
         <Header
           userName={state.user?.name || tweaks.userName}
           lang={lang}
-          railOpen={railOpen}
           onOpenSettings={ctx.openSettings}
         />
 
@@ -203,7 +202,6 @@ export function DesktopApp({ ctx }) {
         expanded={railOpen}
         activity={activity}
         onToggle={() => setRailOpen((v) => !v)}
-        onOpenSettings={ctx.openSettings}
         onOpenEntry={(entryId) => push({ view: "entryDetail", entryId })}
         onOpenCat={(catId) => push({ view: "catDetail", catId })}
       />

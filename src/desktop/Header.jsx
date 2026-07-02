@@ -33,7 +33,6 @@ function formatToday(lang) {
 export function Header({
   userName,
   lang,
-  railOpen,
   onOpenSettings,
 }) {
   return (
@@ -65,17 +64,15 @@ export function Header({
         />
       </div>
 
-      {!railOpen && (
-        <button
-          type="button"
-          className="dsk-header__settings"
-          onClick={onOpenSettings}
-          title={lang === "en" ? "Settings" : "Einstellungen"}
-          aria-label={lang === "en" ? "Settings" : "Einstellungen"}
-        >
-          <CustomSettingsIcon size={22} color="currentColor" />
-        </button>
-      )}
+      <button
+        type="button"
+        className="dsk-header__settings"
+        onClick={onOpenSettings}
+        title={lang === "en" ? "Settings" : "Einstellungen"}
+        aria-label={lang === "en" ? "Settings" : "Einstellungen"}
+      >
+        <CustomSettingsIcon size={22} color="currentColor" />
+      </button>
     </header>
   );
 }

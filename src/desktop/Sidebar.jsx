@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Circle,
   Triangle,
@@ -17,6 +17,7 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   Ellipsis,
+  Pin,
 } from "lucide-react";
 import { BrandLogo } from "../components/AppIcons";
 
@@ -24,7 +25,7 @@ const SECTIONS = [
   { id: "project",  type: "project",  Icon: Circle,   labelKey: "projects",  fallback: "Projekte",     color: "var(--cat-project)",  canAdd: true },
   { id: "area",     type: "area",     Icon: Triangle, labelKey: "areas",     fallback: "Arbeitsbereiche", color: "var(--cat-area)",   canAdd: true },
   { id: "resource", type: "resource", Icon: Square,   labelKey: "resources", fallback: "Ressourcen",   color: "var(--cat-resource)", canAdd: true },
-  { id: "archive",  type: null,       Icon: Archive,  labelKey: "archiveNoun", fallback: "Archiv",     color: "var(--cat-archive)",  canAdd: false },
+  { id: "archive",  type: null,       Icon: Archive,  labelKey: "archiveNoun", fallback: "Archiv",     color: "var(--text-3)",       canAdd: false },
 ];
 
 const ENTRY_ICON = {
@@ -64,7 +65,13 @@ export function Sidebar({
   onPointerEnter,        // for hover-overlay tracking
   onPointerLeave,
 }) {
+  const [pinnedOpen, setPinnedOpen] = useState(true);
   const visible = mode === "locked" || peeking;
+
+  const pinnedCats = useMemo(
+    () => cats.filter((c) => c.starred && !c.archived),
+    [cats]
+  );
 
   const grouped = useMemo(() => {
     // Build { project: cats[], area: cats[], resource: cats[], archive: cats[] }
@@ -290,6 +297,50 @@ export function Sidebar({
           );
         })}
       </div>
+
+      {pinnedCats.length > 0 && (
+        <div className="dsk-sidebar__pinned">
+          <div className="dsk-sidebar__pinned-divider" />
+          <button
+            type="button"
+            className="dsk-sidebar__pinned-head"
+            onClick={() => setPinnedOpen((v) => !v)}
+            aria-expanded={pinnedOpen}
+          >
+            <Pin size={14} strokeWidth={2.2} />
+            <span className="dsk-sidebar__pinned-label">
+              {t?.pinned || "Angeheftet"}
+            </span>
+            <span className="dsk-sidebar__pinned-chevron">
+              {pinnedOpen
+                ? <ChevronDown size={14} strokeWidth={2.4} />
+                : <ChevronRight size={14} strokeWidth={2.4} />}
+            </span>
+          </button>
+          {pinnedOpen && (
+            <ul className="dsk-sidebar__pinned-list">
+              {pinnedCats.map((cat) => {
+                const isActive = cat.id === activeCatId;
+                return (
+                  <li key={cat.id}>
+                    <button
+                      type="button"
+                      className={`dsk-tree__row${isActive ? " dsk-tree__row--active" : ""}`}
+                      onClick={() => onOpenCat?.(cat)}
+                      title={cat.name}
+                    >
+                      <span className="dsk-tree__row-icon dsk-tree__row-icon--star">
+                        <Star size={14} strokeWidth={2} fill="currentColor" />
+                      </span>
+                      <span className="dsk-tree__row-label">{cat.name}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      )}
 
       <div className="dsk-sidebar__footer">
         <button

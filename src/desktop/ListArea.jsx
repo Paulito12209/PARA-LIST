@@ -6,7 +6,7 @@ const TILE_CFG = {
   tasks: {
     Icon: CheckCircle2,
     accent: "var(--cat-task)",
-    accentSoft: "rgba(124, 131, 247, 0.16)",
+    accentSoft: "rgba(11, 140, 233, 0.16)",
     labelKey: "tasks",
     fallback: "Aufgaben",
   },
@@ -20,7 +20,7 @@ const TILE_CFG = {
   calendar: {
     Icon: Calendar,
     accent: "var(--cat-cal)",
-    accentSoft: "rgba(96, 165, 250, 0.18)",
+    accentSoft: "rgba(0, 120, 212, 0.18)",
     labelKey: "calendar",
     fallback: "Kalender",
   },

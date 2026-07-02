@@ -296,51 +296,52 @@ export function Sidebar({
             </section>
           );
         })}
-      </div>
 
-      {pinnedCats.length > 0 && (
-        <div className="dsk-sidebar__pinned">
-          <div className="dsk-sidebar__pinned-divider" />
-          <button
-            type="button"
-            className="dsk-sidebar__pinned-head"
-            onClick={() => setPinnedOpen((v) => !v)}
-            aria-expanded={pinnedOpen}
-          >
-            <Pin size={14} strokeWidth={2.2} />
-            <span className="dsk-sidebar__pinned-label">
-              {t?.pinned || "Angeheftet"}
-            </span>
-            <span className="dsk-sidebar__pinned-chevron">
-              {pinnedOpen
-                ? <ChevronDown size={14} strokeWidth={2.4} />
-                : <ChevronRight size={14} strokeWidth={2.4} />}
-            </span>
-          </button>
-          {pinnedOpen && (
-            <ul className="dsk-sidebar__pinned-list">
-              {pinnedCats.map((cat) => {
-                const isActive = cat.id === activeCatId;
-                return (
-                  <li key={cat.id}>
-                    <button
-                      type="button"
-                      className={`dsk-tree__row${isActive ? " dsk-tree__row--active" : ""}`}
-                      onClick={() => onOpenCat?.(cat)}
-                      title={cat.name}
-                    >
-                      <span className="dsk-tree__row-icon dsk-tree__row-icon--star">
-                        <Star size={14} strokeWidth={2} fill="currentColor" />
-                      </span>
-                      <span className="dsk-tree__row-label">{cat.name}</span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      )}
+        {/* Angeheftet – direkt unter Archiv im Tree-Bereich */}
+        {pinnedCats.length > 0 && (
+          <div className="dsk-sidebar__pinned">
+            <div className="dsk-sidebar__pinned-divider" />
+            <button
+              type="button"
+              className="dsk-sidebar__pinned-head"
+              onClick={() => setPinnedOpen((v) => !v)}
+              aria-expanded={pinnedOpen}
+            >
+              <Pin size={14} strokeWidth={2.2} />
+              <span className="dsk-sidebar__pinned-label">
+                {t?.pinned || "Angeheftet"}
+              </span>
+              <span className="dsk-sidebar__pinned-chevron">
+                {pinnedOpen
+                  ? <ChevronDown size={14} strokeWidth={2.4} />
+                  : <ChevronRight size={14} strokeWidth={2.4} />}
+              </span>
+            </button>
+            {pinnedOpen && (
+              <ul className="dsk-sidebar__pinned-list">
+                {pinnedCats.map((cat) => {
+                  const isActive = cat.id === activeCatId;
+                  return (
+                    <li key={cat.id}>
+                      <button
+                        type="button"
+                        className={`dsk-tree__row${isActive ? " dsk-tree__row--active" : ""}`}
+                        onClick={() => onOpenCat?.(cat)}
+                        title={cat.name}
+                      >
+                        <span className="dsk-tree__row-icon dsk-tree__row-icon--star">
+                          <Star size={14} strokeWidth={2} fill="currentColor" />
+                        </span>
+                        <span className="dsk-tree__row-label">{cat.name}</span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="dsk-sidebar__footer">
         <button

@@ -18,9 +18,10 @@ function QuickSwitch({ cats, lang, onSelect, onClose }) {
   const listRef = useRef(null);
   const [sel, setSel] = useState(0);
 
+  // Sortierung nach "zuletzt geöffnet" – fällt auf createdAt zurück
   const sorted = useMemo(() => {
     const active = cats.filter((c) => !c.archived);
-    active.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    active.sort((a, b) => (b.lastOpenedAt || b.createdAt || 0) - (a.lastOpenedAt || a.createdAt || 0));
     return active;
   }, [cats]);
 
@@ -209,6 +210,8 @@ export function DesktopApp({ ctx }) {
 
   const openCat = (cat) => {
     setActiveCatType(cat.type || activeCatType);
+    // Zeitstempel für "zuletzt geöffnet" setzen (für QuickSwitch-Sortierung)
+    mutations.updateCat(cat.id, { lastOpenedAt: Date.now() });
     push({ view: "catDetail", catId: cat.id });
   };
   const openEntry = (entry) => push({ view: "entryDetail", entryId: entry.id });

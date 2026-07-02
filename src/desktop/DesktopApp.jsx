@@ -276,7 +276,7 @@ export function DesktopApp({ ctx }) {
           activeCatType={activeCatType}
           cats={state.cats}
           firstCat={firstCat}
-          onOpenCat={(cat) => push({ view: "catDetail", catId: cat.id })}
+          onOpenCat={openCat}
           onOpenCatType={(type) => push({ view: "catList", type })}
           onUpdateCat={mutations.updateCat}
           onAddCat={(type) => mutations.addCatModal(type)}
@@ -302,7 +302,13 @@ export function DesktopApp({ ctx }) {
         activity={activity}
         onToggle={() => setRailOpen((v) => !v)}
         onOpenEntry={(entryId) => push({ view: "entryDetail", entryId })}
-        onOpenCat={(catId) => push({ view: "catDetail", catId })}
+        onOpenCat={(catId) => {
+          // Zeitstempel für QuickSwitch-Sortierung setzen
+          mutations.updateCat(catId, { lastOpenedAt: Date.now() });
+          const cat = state.cats.find((c) => c.id === catId);
+          if (cat) setActiveCatType(cat.type || activeCatType);
+          push({ view: "catDetail", catId });
+        }}
       />
 
       {qswitchOpen && (

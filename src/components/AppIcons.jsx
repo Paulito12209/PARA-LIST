@@ -6,12 +6,12 @@ export const BrandLogo = ({ size = 48, className = "" }) => (
   <span className={`brand-logo ${className}`} style={{ width: size, height: size }}>
     <svg
       className="brand-logo__svg"
-      viewBox="0 0 296 296"
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
-        <linearGradient id="brandLogoGrad" x1="48" y1="20" x2="240" y2="272" gradientUnits="userSpaceOnUse">
+        <linearGradient id="brandLogoGrad" x1="4" y1="2" x2="20" y2="22" gradientUnits="userSpaceOnUse">
           <stop offset="0" stopColor="#0B6E5C" />
           <stop offset="0.5" stopColor="#2BE38A" />
           <stop offset="1" stopColor="#0FA968" />
@@ -19,17 +19,16 @@ export const BrandLogo = ({ size = 48, className = "" }) => (
       </defs>
       <g
         stroke="url(#brandLogoGrad)"
-        strokeWidth="28"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
       >
-        <path d="M92 84V200" />
-        <path d="M104 164H156" />
-        <path d="M156 164 C178 164 190 148 198 126 C204 112 208 98 210 84" />
-        <circle cx="92" cy="52" r="30" />
-        <circle cx="92" cy="230" r="30" />
-        <circle cx="208" cy="53" r="30" />
+        <circle cx="7" cy="6" r="2.5" />
+        <circle cx="17" cy="6" r="2.5" />
+        <circle cx="7" cy="18" r="2.5" />
+        <path d="M7 8.5v7" />
+        <path d="M17 8.5c0 4-4 5-10 5" />
       </g>
     </svg>
   </span>

@@ -96,17 +96,24 @@ function MetaPills({ entry, cats, CC }) {
   const proj = linked.find((c) => c.type === "project");
   const area = linked.find((c) => c.type === "area");
   const res  = linked.find((c) => c.type === "resource");
+  if (!proj && !area && !res) return null;
   return (
     <span className="dsk-tile__entry-meta-pills">
-      <span className="dsk-tile__entry-pill" style={{ color: CC.project.color }} title={proj?.name || ""}>
-        <Circle size={9} strokeWidth={2.5} />
-      </span>
-      <span className="dsk-tile__entry-pill" style={{ color: CC.area.color }} title={area?.name || ""}>
-        <Triangle size={9} strokeWidth={2.5} />
-      </span>
-      <span className="dsk-tile__entry-pill" style={{ color: CC.resource.color }} title={res?.name || ""}>
-        <Square size={9} strokeWidth={2.5} />
-      </span>
+      {proj && (
+        <span className="dsk-tile__entry-pill" style={{ color: CC.project.color }} title={proj.name}>
+          <Circle size={9} strokeWidth={2.5} />
+        </span>
+      )}
+      {area && (
+        <span className="dsk-tile__entry-pill" style={{ color: CC.area.color }} title={area.name}>
+          <Triangle size={9} strokeWidth={2.5} />
+        </span>
+      )}
+      {res && (
+        <span className="dsk-tile__entry-pill" style={{ color: CC.resource.color }} title={res.name}>
+          <Square size={9} strokeWidth={2.5} />
+        </span>
+      )}
     </span>
   );
 }

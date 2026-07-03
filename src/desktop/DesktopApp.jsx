@@ -318,6 +318,8 @@ export function DesktopApp({ ctx }) {
           onOpenCat={openCat}
           onOpenEntry={openEntry}
           onUpdateCat={mutations.updateCat}
+          onTogglePin={mutations.togglePin}
+          onToggleStar={mutations.toggleStar}
           onAddCat={(type) => mutations.addCatModal(type)}
         />
 

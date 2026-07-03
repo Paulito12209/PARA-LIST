@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, Plus, UserPlus, CheckCircle2, Pencil } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, Plus, UserPlus, CheckCircle2, Pencil, MoreHorizontal, Star, Pin, PinOff } from "lucide-react";
 import { fmtDate, getInitials } from "../utils";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 
@@ -63,11 +63,14 @@ export function Cover({
   onOpenCat,
   onOpenEntry,
   onUpdateCat,
+  onTogglePin,
+  onToggleStar,
   onAddCat,
 }) {
   const [collabOpen, setCollabOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Karussell-Slides: angeheftete (pinned) Cats + Einträge — identische Regeln
   // wie im Mobile-HomeScreen. Fallback: die erste Cat des aktiven Typs.
@@ -105,6 +108,32 @@ export function Cover({
   const collabs = currentCat?.collaborators || [];
   const visibleAvatars = collabs.slice(0, MAX_AVATARS);
   const overflow = Math.max(0, collabs.length - MAX_AVATARS);
+
+  // Kebab-Menü: Favorit umschalten + aus der Vorschau lösen (defixieren)
+  const isFav = currentEntry ? !!currentEntry.starred : !!currentCat?.starred;
+  const isPinned = !!current?.data?.pinned;
+
+  useEffect(() => {
+    if (!menuOpen) return undefined;
+    const close = () => setMenuOpen(false);
+    const onKey = (e) => { if (e.key === "Escape") setMenuOpen(false); };
+    document.addEventListener("click", close);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", close);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const handleToggleFav = () => {
+    if (currentEntry) onToggleStar?.(currentEntry.id);
+    else if (currentCat) onUpdateCat?.(currentCat.id, { starred: !currentCat.starred });
+    setMenuOpen(false);
+  };
+  const handleTogglePin = () => {
+    if (current) onTogglePin?.(current.data.id, current.kind);
+    setMenuOpen(false);
+  };
 
   const renderBadge = () => {
     if (currentEntry) {
@@ -256,8 +285,27 @@ export function Cover({
       onPointerLeave={() => setPaused(false)}
     >
       <div className="dsk-cover__light-wave" aria-hidden="true" />
+
       <div className="dsk-cover__inner">
-        {renderBadge()}
+        <div className="dsk-cover__badge-row">
+          {renderBadge()}
+          {current && !detail && (
+            <button
+              type="button"
+              className={`dsk-cover__fav-btn${isFav ? " dsk-cover__fav-btn--on" : ""}`}
+              onClick={handleToggleFav}
+              aria-pressed={isFav}
+              aria-label={isFav
+                ? (lang === "en" ? "Remove favorite" : "Favorit entfernen")
+                : (lang === "en" ? "Mark as favorite" : "Als Favorit markieren")}
+              title={isFav
+                ? (lang === "en" ? "Remove favorite" : "Favorit entfernen")
+                : (lang === "en" ? "Mark as favorite" : "Als Favorit markieren")}
+            >
+              <Star size={20} strokeWidth={2} fill={isFav ? "currentColor" : "none"} />
+            </button>
+          )}
+        </div>
 
         {currentCat && (
           <div className="dsk-cover__avatars">
@@ -318,13 +366,47 @@ export function Cover({
             : renderEmpty()}
 
         {current && !detail && (
-          <button
-            type="button"
-            className="dsk-cover__open-btn"
-            onClick={() => (currentEntry ? onOpenEntry?.(currentEntry) : onOpenCat(currentCat))}
-          >
-            <span className="dsk-cover__open-btn-label">{ctaLabel}</span>
-          </button>
+          <div className="dsk-cover__cta-row">
+            <button
+              type="button"
+              className="dsk-cover__open-btn"
+              onClick={() => (currentEntry ? onOpenEntry?.(currentEntry) : onOpenCat(currentCat))}
+            >
+              <span className="dsk-cover__open-btn-label">{ctaLabel}</span>
+            </button>
+
+            <div className="dsk-cover__menu-wrap" onClick={(e) => e.stopPropagation()}>
+              <button
+                type="button"
+                className="dsk-cover__menu-btn"
+                onClick={() => setMenuOpen((o) => !o)}
+                aria-label={lang === "en" ? "Options" : "Optionen"}
+                aria-haspopup="true"
+                aria-expanded={menuOpen}
+              >
+                <MoreHorizontal size={20} strokeWidth={2.2} />
+              </button>
+              {menuOpen && (
+                <div className="dsk-cover__menu" role="menu">
+                  <button
+                    type="button"
+                    className="dsk-cover__menu-item"
+                    role="menuitem"
+                    onClick={handleTogglePin}
+                  >
+                    {isPinned
+                      ? <PinOff size={16} strokeWidth={2} />
+                      : <Pin size={16} strokeWidth={2} />}
+                    <span>
+                      {isPinned
+                        ? (lang === "en" ? "Remove from preview" : "Aus Vorschau entfernen")
+                        : (lang === "en" ? "Pin to preview" : "An Vorschau anheften")}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
 

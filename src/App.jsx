@@ -1014,6 +1014,8 @@ export default function App() {
       mutations: {
         toggleTask,
         updateCat,
+        togglePin,
+        toggleStar,
         addCatModal: (type) => setNewCatType(type),
         addEntryModal: (type) => setCreating({ type, catId: null }),
       },

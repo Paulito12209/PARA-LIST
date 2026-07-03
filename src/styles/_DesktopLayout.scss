@@ -8,8 +8,8 @@
 .dsk-app {
   --sidebar-w-locked: 284px;
   --rail-w: 384px;
-  --rail-w-collapsed: 64px;
-  --header-h: 72px;
+  --rail-w-collapsed: 73px;   // 1px Border + 12px + 48px Icon + 12px → je 12px Abstand
+  --header-h: 80px;   // 48px Suche/Icon + 2×16px Padding → Inhalt exakt im Padding-Bereich
 
   --bg: #0A0A14;
   --bg-cover: #15151F;
@@ -300,6 +300,7 @@
     width: 18px;
     height: 18px;
     flex-shrink: 0;
+    color: #F5C53B;   // goldener Favoriten-Stern (wie im Mobile beim Favorisieren)
   }
 
   &__pinned-label {
@@ -680,9 +681,13 @@
   height: var(--header-h);
   // flex: greeting (natural, left) | min 80 px gap | search (right, up to 50%) | settings
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 16px 16px 28px;
+  // Inhalte oben ausrichten (nicht zentrieren): so sitzen Suche (48px hoch) und
+  // Settings-Icon exakt am 16px-Padding = 16px zum oberen Rand. Bei align-items:
+  // center würden die 48px-Elemente in der 40px-Content-Box überstehen und nur
+  // ~12px Abstand nach oben zeigen.
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 12px 16px 24px;   // links 24px (Material), rechts 12px zum Rand
   z-index: 6;
 
   // Frosted-glass backdrop: solid toward the top, fading to transparent at
@@ -715,12 +720,15 @@
   }
 
   &__greeting {
-    flex-shrink: 0;
+    // Darf schrumpfen, wenn Sidebar + Rail offen sind und der Platz eng wird —
+    // Name/Datum bekommen dann Ellipsis, damit Suche + Settings sichtbar bleiben.
+    // Auf breiten Screens erzeugt margin-left:auto der Suche den großen Abstand.
+    flex: 0 1 auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     line-height: 1.2;
-    min-width: max-content;   // never shrinks — greeting always fully visible
-    margin-right: 64px;       // + 16 px gap = 80 px min to next item
+    overflow: hidden;
   }
   &__greeting-line {
     font-family: $font-heading;
@@ -729,12 +737,16 @@
     letter-spacing: -0.3px;
     color: var(--text);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   &__date {
     font-size: 12px;
     color: var(--text-2);
     margin-top: 2px;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__search {
@@ -919,7 +931,7 @@
     var(--bg-cover);
   overflow: hidden;
   isolation: isolate;
-  padding: 72px 28px 24px;
+  padding: 96px 28px 24px;   // top = header (80px) + 16px Abstand zum Header
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -954,7 +966,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    height: 26px;
+    height: 28px;
     padding: 0 12px;
     border-radius: 999px;
     background: rgba(var(--cover-accent-rgb), 0.18);
@@ -1113,16 +1125,22 @@
   }
 
   // Frosted-Glass-CTA — gleicher Look wie der Mobile "Projekt öffnen"-Button
+  // CTA-Zeile: „öffnen"-Button + sekundäres Drei-Punkte-Menü daneben
+  &__cta-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
   &__open-btn {
-    align-self: flex-start;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 38px;
+    height: 40px;
     max-width: 100%;
     min-width: 0;
     padding: 0 22px;
-    margin-top: 6px;
     border-radius: 999px;
 
     &-label {
@@ -1152,6 +1170,107 @@
 
       &:hover { background: rgba(255, 255, 255, 0.72); }
     }
+  }
+
+  // Badge-Zeile: Typ-Pille + Favoriten-Stern direkt daneben
+  &__badge-row {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  &__fav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;   // gleiches Gehäusemaß wie die Badge-Pille (28px, 4er-Raster)
+    height: 28px;
+    border: none;
+    background: transparent;
+    color: var(--text-3);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 0.18s var(--easing), background 0.18s var(--easing), transform 0.15s var(--easing);
+
+    &:hover { color: #F5C53B; background: rgba(245, 197, 59, 0.12); }
+    &:active { transform: scale(0.9); }
+    &--on { color: #F5C53B; }
+  }
+
+  // Sekundäres Drei-Punkte-Menü (neben dem „öffnen"-Button)
+  &__menu-wrap {
+    position: relative;
+    display: flex;
+  }
+  &__menu-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;   // ohne Kreis — nur die drei Punkte
+    color: var(--text-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.18s var(--easing), color 0.18s var(--easing), border-color 0.18s var(--easing);
+
+    // Kreis-Körper erst bei Hover / geöffnetem Menü
+    &:hover,
+    &[aria-expanded="true"] {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .dsk-app--light & {
+      &:hover,
+      &[aria-expanded="true"] {
+        background: rgba(255, 255, 255, 0.7);
+        border-color: rgba(0, 0, 0, 0.08);
+        color: #1c1c30;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      }
+    }
+  }
+  &__menu {
+    position: absolute;
+    bottom: calc(100% + 8px);   // öffnet nach oben (Cover-Unterkante ist nah)
+    left: 0;
+    min-width: 224px;
+    padding: 6px;
+    border-radius: 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 5;
+
+    .dsk-app--light & { box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12); }
+  }
+  &__menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: background 0.15s var(--easing);
+
+    svg { flex-shrink: 0; color: var(--text-2); }
+
+    &:hover { background: rgba(255, 255, 255, 0.06); }
+    .dsk-app--light &:hover { background: rgba(0, 0, 0, 0.05); }
   }
 
   // Karussell-Dots (Parität mit .home-page-dots auf Mobile)
@@ -1258,8 +1377,7 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    // Sanfter Glow um das farbige Icon (statt abgerundetem Tint-Rechteck)
-    background: radial-gradient(circle, var(--tile-glow, transparent), transparent 72%);
+    // Kein Glow — nur das farbige Icon (Farbe kommt vom SVG selbst)
   }
   &__header-title {
     flex: 1;
@@ -1335,7 +1453,7 @@
     justify-content: center;
     flex-shrink: 0;
     color: var(--text-3); // inaktiv: grau — aktiv wird per Inline-Style eingefärbt
-    background: radial-gradient(circle, var(--tile-glow, transparent), transparent 72%);
+    // Kein Glow mehr — nur das farbige Icon
   }
   &__tab-label { white-space: nowrap; }
 
@@ -1515,7 +1633,7 @@
   z-index: 4;
 
   &__top {
-    padding: 12px;
+    padding: 16px 12px;   // 16px oben (Abstand zum oberen Rand), 12px horizontal
     display: flex;
     flex-direction: column;
     gap: 12px;
@@ -1548,6 +1666,24 @@
       background: rgba(124, 131, 247, 0.16);
       color: var(--cat-task);
       border-color: rgba(124, 131, 247, 0.4);
+    }
+
+    // Pokal: goldene Kontur (nicht gefüllt) — überschreibt --active (auch aufgeklappt gold)
+    &--trophy {
+      color: #E0A82E;
+      background: rgba(224, 168, 46, 0.12);
+      border-color: rgba(224, 168, 46, 0.35);
+
+      &:hover {
+        color: #E0A82E;
+        background: rgba(224, 168, 46, 0.22);
+      }
+
+      &.dsk-rail__icon-btn--active {
+        color: #E0A82E;
+        background: rgba(224, 168, 46, 0.20);
+        border-color: rgba(224, 168, 46, 0.45);
+      }
     }
   }
 
@@ -1734,7 +1870,7 @@
   // collapsed mode
   &--collapsed {
     .dsk-rail__top {
-      padding: 12px 8px;
+      padding: 16px 12px;   // Pokal: 16px oben, je 12px links/rechts
       align-items: center;
     }
     .dsk-rail__top-actions {
@@ -1743,7 +1879,7 @@
     }
     .dsk-rail__path-header { display: none; }
     .dsk-rail__scroll {
-      padding: 4px 8px 16px;
+      padding: 4px 12px 16px;
       overflow: visible;
     }
     .dsk-rail__target { display: none; }
@@ -2100,12 +2236,12 @@
     --rail-w: 340px;
     --sidebar-w-locked: 260px;
   }
-  .dsk-cover { padding: 72px 32px 24px; }
+  .dsk-cover { padding: 96px 32px 24px; }
   .dsk-list-area {
     padding-left: 32px;
     padding-right: 32px;
   }
-  .dsk-header { padding: 16px 22px; }
+  .dsk-header { padding: 16px 12px 16px 24px; }
 }
 @media (max-width: 1180px) {
   .dsk-app { --rail-w: 320px; }

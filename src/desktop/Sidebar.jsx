@@ -36,6 +36,12 @@ const ENTRY_ICON = {
   link:     LinkIcon,
 };
 
+const CAT_ICON = {
+  project:  Circle,
+  area:     Triangle,
+  resource: Square,
+};
+
 const ENTRY_TYPES_BY_CAT_TYPE = {
   project:  ["task", "note", "calendar"],
   area:     ["task", "note", "calendar"],
@@ -314,7 +320,7 @@ export function Sidebar({
               aria-expanded={pinnedOpen}
             >
               <span className="dsk-sidebar__pinned-icon">
-                <Star size={16} strokeWidth={2.2} />
+                <Star size={16} strokeWidth={2.2} fill="currentColor" />
               </span>
               <span className="dsk-sidebar__pinned-label">
                 {t?.favorites || "Favoriten"}
@@ -331,6 +337,7 @@ export function Sidebar({
                   if (item.kind === "cat") {
                     const cat = item.data;
                     const isActive = cat.id === activeCatId;
+                    const CatIcon = CAT_ICON[cat.type] || Circle;
                     return (
                       <li key={`cat-${cat.id}`}>
                         <button
@@ -339,8 +346,8 @@ export function Sidebar({
                           onClick={() => onOpenCat?.(cat)}
                           title={cat.name}
                         >
-                          <span className="dsk-tree__row-icon dsk-tree__row-icon--star">
-                            <Star size={14} strokeWidth={2} fill="currentColor" />
+                          <span className="dsk-tree__row-icon">
+                            <CatIcon size={14} strokeWidth={2} />
                           </span>
                           <span className="dsk-tree__row-label">{cat.name}</span>
                         </button>

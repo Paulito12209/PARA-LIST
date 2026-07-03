@@ -323,24 +323,24 @@ export function Cover({
             className="dsk-cover__open-btn"
             onClick={() => (currentEntry ? onOpenEntry?.(currentEntry) : onOpenCat(currentCat))}
           >
-            {ctaLabel}
+            <span className="dsk-cover__open-btn-label">{ctaLabel}</span>
           </button>
         )}
-
-        {coverItems.length > 1 && (
-          <div className="dsk-cover__dots">
-            {coverItems.map((item, i) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`dsk-cover__dot${i === safeIndex ? " dsk-cover__dot--active" : ""}`}
-                onClick={() => setIndex(i)}
-                aria-label={`${i + 1} / ${coverItems.length}`}
-              />
-            ))}
-          </div>
-        )}
       </div>
+
+      {coverItems.length > 1 && (
+        <div className="dsk-cover__dots">
+          {coverItems.map((item, i) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`dsk-cover__dot${i === safeIndex ? " dsk-cover__dot--active" : ""}`}
+              onClick={() => setIndex(i)}
+              aria-label={`${i + 1} / ${coverItems.length}`}
+            />
+          ))}
+        </div>
+      )}
 
       {collabOpen && currentCat && (
         <CollaboratorsModal

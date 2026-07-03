@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Trash2, Plus, Camera } from "lucide-react";
 import { uid } from "../utils";
+import { SheetFooter } from "../components/SheetFooter";
 
 const VIEW_LIST = "list";
 const VIEW_ADD = "add";
@@ -87,16 +88,15 @@ export function CollaboratorsModal({ t, cat, onUpdateCat, onClose, initialView }
                 ))}
               </div>
             )}
-            <button
-              className="collab-modal__add-btn"
-              onClick={() => setView(VIEW_ADD)}
-            >
-              <Plus size={16} />
-              {t.addCollaborator}
-            </button>
-            <button className="collab-modal__bottom-close-btn" onClick={onClose}>
-              {t.closeBtn}
-            </button>
+            <SheetFooter onClose={onClose} closeLabel={t.closeBtn}>
+              <button
+                className="collab-modal__add-btn"
+                onClick={() => setView(VIEW_ADD)}
+              >
+                <Plus size={16} />
+                {t.addCollaborator}
+              </button>
+            </SheetFooter>
           </div>
         )}
 
@@ -129,17 +129,14 @@ export function CollaboratorsModal({ t, cat, onUpdateCat, onClose, initialView }
               autoFocus
               onKeyDown={(e) => e.key === "Enter" && handleAdd()}
             />
-            <div className="collab-modal__actions">
-              <button
-                className="collab-modal__cancel-btn"
-                onClick={() => {
-                  setName("");
-                  setAvatar(null);
-                  setView(VIEW_LIST);
-                }}
-              >
-                {t.closeBtn}
-              </button>
+            <SheetFooter
+              onClose={() => {
+                setName("");
+                setAvatar(null);
+                setView(VIEW_LIST);
+              }}
+              closeLabel={t.closeBtn}
+            >
               <button
                 className="collab-modal__submit-btn"
                 onClick={handleAdd}
@@ -147,7 +144,7 @@ export function CollaboratorsModal({ t, cat, onUpdateCat, onClose, initialView }
               >
                 {t.createBtn}
               </button>
-            </div>
+            </SheetFooter>
           </div>
         )}
       </div>

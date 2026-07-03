@@ -68,10 +68,16 @@ export function Sidebar({
   const [pinnedOpen, setPinnedOpen] = useState(true);
   const visible = mode === "locked" || peeking;
 
-  const pinnedCats = useMemo(
-    () => cats.filter((c) => c.starred && !c.archived),
-    [cats]
-  );
+  // Favoriten = alle gesternten Items (Kategorien UND Einträge), Kategorien zuerst.
+  const favoriteItems = useMemo(() => {
+    const c = cats
+      .filter((x) => x.starred && !x.archived)
+      .map((x) => ({ kind: "cat", data: x }));
+    const e = entries
+      .filter((x) => x.starred && !x.archived)
+      .map((x) => ({ kind: "entry", data: x }));
+    return [...c, ...e];
+  }, [cats, entries]);
 
   const grouped = useMemo(() => {
     // Build { project: cats[], area: cats[], resource: cats[], archive: cats[] }
@@ -297,8 +303,8 @@ export function Sidebar({
           );
         })}
 
-        {/* Favoriten (starred) – direkt unter Archiv im Tree-Bereich */}
-        {pinnedCats.length > 0 && (
+        {/* Favoriten (starred) – Kategorien UND Einträge, unter Archiv im Tree-Bereich */}
+        {favoriteItems.length > 0 && (
           <div className="dsk-sidebar__pinned">
             <div className="dsk-sidebar__pinned-divider" />
             <button
@@ -321,20 +327,41 @@ export function Sidebar({
             </button>
             {pinnedOpen && (
               <ul className="dsk-sidebar__pinned-list">
-                {pinnedCats.map((cat) => {
-                  const isActive = cat.id === activeCatId;
+                {favoriteItems.map((item) => {
+                  if (item.kind === "cat") {
+                    const cat = item.data;
+                    const isActive = cat.id === activeCatId;
+                    return (
+                      <li key={`cat-${cat.id}`}>
+                        <button
+                          type="button"
+                          className={`dsk-tree__row${isActive ? " dsk-tree__row--active" : ""}`}
+                          onClick={() => onOpenCat?.(cat)}
+                          title={cat.name}
+                        >
+                          <span className="dsk-tree__row-icon dsk-tree__row-icon--star">
+                            <Star size={14} strokeWidth={2} fill="currentColor" />
+                          </span>
+                          <span className="dsk-tree__row-label">{cat.name}</span>
+                        </button>
+                      </li>
+                    );
+                  }
+                  const entry = item.data;
+                  const isActive = entry.id === activeEntryId;
+                  const EntryIcon = ENTRY_ICON[entry.type] || Circle;
                   return (
-                    <li key={cat.id}>
+                    <li key={`entry-${entry.id}`}>
                       <button
                         type="button"
                         className={`dsk-tree__row${isActive ? " dsk-tree__row--active" : ""}`}
-                        onClick={() => onOpenCat?.(cat)}
-                        title={cat.name}
+                        onClick={() => onOpenEntry?.(entry)}
+                        title={entry.title}
                       >
-                        <span className="dsk-tree__row-icon dsk-tree__row-icon--star">
-                          <Star size={14} strokeWidth={2} fill="currentColor" />
+                        <span className="dsk-tree__row-icon">
+                          <EntryIcon size={14} strokeWidth={2} />
                         </span>
-                        <span className="dsk-tree__row-label">{cat.name}</span>
+                        <span className="dsk-tree__row-label">{entry.title}</span>
                       </button>
                     </li>
                   );

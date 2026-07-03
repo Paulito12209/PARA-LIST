@@ -1,6 +1,5 @@
 import { useState, useRef } from "react";
 import {
-  X,
   ChevronLeft,
   Check,
   Video as VideoIcon,
@@ -9,6 +8,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { TODAY, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
+import { SheetFooter } from "../components/SheetFooter";
 
 const TYPE_COLORS = {
   task: "#0B8CE9",
@@ -242,14 +242,7 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
         />
         </div>
 
-        <div className="modal__footer">
-          <button
-            className="modal__close modal__close--footer"
-            onClick={onClose}
-            aria-label={t.cancel || "Schließen"}
-          >
-            <X size={20} color="#8a8a96" />
-          </button>
+        <SheetFooter onClose={onClose} closeLabel={t.cancel || "Schließen"}>
           <button
             className={`modal__submit ${!title.trim() ? "modal__submit--disabled" : ""}`}
             onClick={save}
@@ -257,7 +250,7 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
           >
             {t.create || "Erstellen"}
           </button>
-        </div>
+        </SheetFooter>
       </div>
     </div>
   );

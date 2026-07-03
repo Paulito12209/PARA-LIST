@@ -743,6 +743,46 @@
   }
 }
 
+// ── Einheitlicher Sheet-Footer (roter runder X-Button + breite Aktion) ──
+// Struktur analog zur Dock-Eingabezeile: kleiner Button in Home-Button-Form
+// (hier rot mit weißem X) links, breiter Aktions-Slot rechts.
+.sheet-footer {
+  display: flex;
+  align-items: stretch;
+  gap: $spacing-sm;
+  margin-top: $spacing-lg;
+
+  &__close {
+    flex: 0 0 auto;
+    width: 48px;
+    min-height: 44px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-notif-red);
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    transition: filter $transition-fast, transform $transition-fast;
+
+    &:hover { filter: brightness(1.08); }
+    &:active { transform: scale(0.97); }
+  }
+
+  &__action {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+
+    > button {
+      flex: 1;
+      min-width: 0;
+      margin-top: 0;
+    }
+  }
+}
+
 // ── Loading Screen ──────────────────────────────────────────
 .loading {
   @include flex-center;

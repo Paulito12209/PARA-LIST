@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Circle, Triangle, Square, X } from "lucide-react";
+import { Circle, Triangle, Square } from "lucide-react";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
+import { SheetFooter } from "./SheetFooter";
 
 const TYPE_ICONS = { project: Circle, area: Triangle, resource: Square };
 
@@ -69,14 +70,11 @@ export function LinkedPillSheet({ type, items = [], CC, t, onMore, onClose }) {
           </div>
         </div>
 
-        <div className="link-sheet__footer">
-          <button className="link-sheet__close-btn" onClick={handleClose} aria-label={t.closeBtn}>
-            <X size={20} />
-          </button>
+        <SheetFooter onClose={handleClose} closeLabel={t.closeBtn}>
           <button className="link-sheet__confirm-btn" onClick={handleMore}>
             {t.linkMore}
           </button>
-        </div>
+        </SheetFooter>
       </div>
     </div>,
     document.body

@@ -922,7 +922,7 @@
   padding: 72px 28px 24px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: flex-start;
 
   &__light-wave {
     position: absolute;
@@ -1119,9 +1119,18 @@
     align-items: center;
     justify-content: center;
     height: 38px;
+    max-width: 100%;
+    min-width: 0;
     padding: 0 22px;
     margin-top: 6px;
     border-radius: 999px;
+
+    &-label {
+      min-width: 0;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
     border: 1px solid var(--border);
     background: rgba(255, 255, 255, 0.06);
     backdrop-filter: blur(14px) saturate(160%);
@@ -1146,11 +1155,16 @@
   }
 
   // Karussell-Dots (Parität mit .home-page-dots auf Mobile)
+  // Am unteren Rand der Cover-Flexspalte fixiert (margin-top:auto) und über die
+  // volle Breite horizontal zentriert (wie Apple-Games-App).
   &__dots {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    margin-top: 10px;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 16px;
   }
   &__dot {
     appearance: none;

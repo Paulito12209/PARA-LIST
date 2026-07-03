@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CAT_ICONS } from "../utils";
+import { SheetFooter } from "../components/SheetFooter";
 
 export function NewCatModal({ type, onSave, onClose, t, CC }) {
   const [name, setName] = useState("");
@@ -27,13 +28,15 @@ export function NewCatModal({ type, onSave, onClose, t, CC }) {
           onKeyDown={(e) => e.key === "Enter" && trySave()}
           style={{ borderColor: cfg.color + "45" }}
         />
-        <button
-          className={`modal__submit ${!name.trim() ? "modal__submit--disabled" : ""}`}
-          onClick={trySave}
-          style={{ background: cfg.color }}
-        >
-          {t.create || "Erstellen"}
-        </button>
+        <SheetFooter onClose={onClose} closeLabel={t.closeBtn || t.cancel || "Schließen"}>
+          <button
+            className={`modal__submit ${!name.trim() ? "modal__submit--disabled" : ""}`}
+            onClick={trySave}
+            style={{ background: cfg.color }}
+          >
+            {t.create || "Erstellen"}
+          </button>
+        </SheetFooter>
       </div>
     </div>
   );

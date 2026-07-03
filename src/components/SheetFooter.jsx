@@ -1,0 +1,29 @@
+import { X } from "lucide-react";
+
+/**
+ * Einheitlicher Footer für Sheets/Dialoge mit Primär-Aktion.
+ *
+ * Struktur analog zur Dock-Eingabezeile: links ein kleiner runder Button in der
+ * Form des Home-Buttons – hier rot mit weißem X (Schließen/Zurück); rechts der
+ * breite Slot für die Primär-Aktion (als `children` übergeben).
+ *
+ * Props:
+ *  - onClose: Handler für den roten X-Button
+ *  - closeLabel: aria-label des X-Buttons (default "Schließen")
+ *  - children: die breite Primär-Aktion (z.B. ein <button>)
+ */
+export function SheetFooter({ onClose, closeLabel = "Schließen", children }) {
+  return (
+    <div className="sheet-footer">
+      <button
+        type="button"
+        className="sheet-footer__close"
+        onClick={onClose}
+        aria-label={closeLabel}
+      >
+        <X size={20} />
+      </button>
+      <div className="sheet-footer__action">{children}</div>
+    </div>
+  );
+}

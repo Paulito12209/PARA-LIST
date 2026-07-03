@@ -137,33 +137,6 @@
     }
   }
 
-  &__bottom-close-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: $spacing-sm;
-    padding: 14px;
-    border-radius: 20px;
-    background: $color-notif-red;
-    border: none;
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    font-family: $font-body;
-    cursor: pointer;
-    transition: all $transition-fast;
-    flex-shrink: 0;
-
-    &:hover {
-      filter: brightness(1.1);
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-  }
-
   &__avatar-picker {
     @include flex-center;
     width: 72px;
@@ -204,30 +177,6 @@
 
     &::placeholder {
       color: $color-muted;
-    }
-  }
-
-  &__actions {
-    display: flex;
-    gap: $spacing-sm;
-    width: 100%;
-  }
-
-  &__cancel-btn {
-    flex: 1;
-    padding: 12px;
-    border-radius: $radius-sm;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: $color-muted;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: $font-body;
-    cursor: pointer;
-    transition: all $transition-fast;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.1);
     }
   }
 

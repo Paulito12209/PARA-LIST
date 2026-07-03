@@ -1450,6 +1450,19 @@
     white-space: nowrap;
   }
 
+  &__subtitle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: $color-muted;
+
+    svg { color: $color-muted; }
+  }
+
   &__list {
     display: flex;
     flex-direction: column;

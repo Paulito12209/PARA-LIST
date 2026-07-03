@@ -105,8 +105,9 @@ export function HomeScreen({
   onHeaderTitleChange,
 }) {
   const { entries, cats } = state;
-  // Aktiver Typ der unteren Eingabeleiste (Standard: Aufgaben)
-  const [activeType, setActiveType] = useState("tasks");
+  // Aktiver Typ der unteren Eingabeleiste. Seed aus dem persistenten App-`tab`,
+  // damit Titel (activeType) und Entry-Liste (tab) beim Remount nicht divergieren.
+  const [activeType, setActiveType] = useState(() => tab);
   // Aktueller Index im Favoriten-Karussell des Covers
   const [coverIndex, setCoverIndex] = useState(0);
   // Dock-3-Punkte-Menü (Bottom-Sheet) und Papierkorb-Ansicht
@@ -130,6 +131,15 @@ export function HomeScreen({
     setActiveType(type);
     if (ENTRY_TYPES.includes(type)) setTab(type);
   };
+
+  // Externe tab-Änderungen (Remount, Desktop-Bridge `focusTab`, direktes setTab)
+  // auf activeType spiegeln. So bleiben Abschnittstitel (aus activeType) und
+  // Entry-Liste (aus tab) immer synchron und können nie divergieren. Bei
+  // Kategorie-Auswahl (project/area/resource) ändert sich `tab` nicht, der
+  // Effekt feuert also nicht und activeType bleibt auf dem Kategorie-Typ.
+  useEffect(() => {
+    setActiveType(tab);
+  }, [tab]);
 
   const [collabModalOpen, setCollabModalOpen] = useState(false);
   const [collabModalInitialView, setCollabModalInitialView] = useState("list");
@@ -961,6 +971,10 @@ export function HomeScreen({
       {dockMenuOpen && (
         <DockMenuSheet
           t={t}
+          cats={cats}
+          entries={entries}
+          onOpenCat={onOpenCat}
+          onOpenEntry={onOpenEntry}
           onOpenTrash={() => setTrashOpen(true)}
           onClose={() => setDockMenuOpen(false)}
         />

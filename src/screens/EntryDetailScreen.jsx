@@ -4,7 +4,7 @@ import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
-import { BookmarkRail } from "./FolderScreens";
+import { DetailDock } from "../components/DetailDock";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 const COVER_COLORS = [
@@ -24,8 +24,8 @@ const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 export function EntryDetailScreen({
   t, CC, theme, lang, entry, cat: _cat, allCats, onUpdate, onDelete, onHome,
   entries, onOpenEntry, toggleTask, deleteEntry,
-  onAddLinkedEntry, onAddSubtask, onUnlinkEntry,
-  tags, onCreateTag, onUpdateTag, onDeleteTag,
+  onUnlinkEntry,
+  tags, onUpdateTag, onDeleteTag,
 }) {
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showDate, setShowDate] = useState(false);
@@ -151,27 +151,6 @@ export function EntryDetailScreen({
     if (bm === "media") setResSubTab((prev) => stepInOrder(RES_SUB_TAB_ORDER, prev));
     else if (bm === "tasks") setTaskSubTab((prev) => stepInOrder(TASK_SUB_TAB_ORDER, prev));
   }, [bm]);
-
-  // FAB action based on active bookmark
-  const handleFabAction = useCallback(() => {
-    if (bm === "tags") {
-      const name = window.prompt("Neues Tag (Label) erstellen:");
-      if (name && name.trim()) onCreateTag?.(name.trim());
-      return;
-    }
-    if (bm === "tasks" && entry.type === "task") {
-      onAddSubtask?.();
-    } else if (bm === "tasks") {
-      onAddLinkedEntry?.("task");
-    } else if (bm === "cal") {
-      onAddLinkedEntry?.("calendar");
-    } else if (bm === "media") {
-      if (resSubTab === "notes") onAddLinkedEntry?.("note");
-      else onAddLinkedEntry?.("media");
-    } else if (bm === "link") {
-      onAddLinkedEntry?.("link");
-    }
-  }, [bm, entry.type, resSubTab, onAddSubtask, onAddLinkedEntry, onCreateTag]);
 
   return (
     <div
@@ -392,16 +371,6 @@ export function EntryDetailScreen({
           </div>
         )}
       </div>
-
-      {/* Lesezeichen-Leiste direkt unter dem Header. */}
-      <BookmarkRail
-        active={bm}
-        onSelect={handleBmSelect}
-        iconOverrides={iconOverrides}
-        iconColors={iconColors}
-        onOptions={openSettingsSheet}
-        optionsLabel={t.settingsBtn}
-      />
 
       {/* Content */}
       <div className="cat-detail__body" style={{ flex: 1 }}>
@@ -790,31 +759,19 @@ export function EntryDetailScreen({
         </div>
       )}
 
-      {/* Bottom nav */}
-      <div className="nav-bottom" style={{ position: "relative" }}>
-        {/* Unten links: nur der Home-Button (Zurück liegt oben links im Header). */}
-        <button className="nav-bottom__home" onClick={onHome} aria-label={t.home}>
-          <Home size={20} color="currentColor" />
-        </button>
-
-        <div className="nav-bottom__actions">
-          {(bm === "canvas" || bm === "details") ? (
-            // Canvas & Details: keine Hinzufügen-Aktion → bottom-rechts leer.
-            null
-          ) : (
-            <button
-              className="nav-bottom__add"
-              onClick={handleFabAction}
-              style={{
-                background: getFabColor(),
-                boxShadow: `0 8px 24px ${getFabColor()}55`,
-              }}
-            >
-              <Plus size={22} color="#fff" strokeWidth={2.4} />
-            </button>
-          )}
-        </div>
-      </div>
+      {/* Kontextabhängiges Dock (Icon-Reihe = Lesezeichen + Home + Optionen).
+          Verlinkte Einträge inline hinzufügen kommt später – vorerst kein Feld. */}
+      <DetailDock
+        t={t}
+        active={bm}
+        onSelect={handleBmSelect}
+        iconOverrides={iconOverrides}
+        iconColors={iconColors}
+        onOptions={openSettingsSheet}
+        onHome={onHome}
+        showInput={false}
+        accentColor={getFabColor()}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
+import { DetailDock } from "../components/DetailDock";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
@@ -81,43 +82,6 @@ export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive
 }
 
 
-// Horizontale Lesezeichen-Leiste (unter dem Header). Nur Icons: das aktive
-// Lesezeichen erscheint in seiner Farbe, alle anderen ausgegraut – keine
-// farbig gefüllten Kästen. Das erste ("canvas") Icon kann per iconOverrides/
-// iconColors zum Kontext-Icon (Projekt/Bereich/…) gemacht werden. Am Ende
-// steht das Drei-Punkte-Menü (kein Lesezeichen, öffnet die Optionen).
-export function BookmarkRail({ active, onSelect, iconOverrides, iconColors, onOptions, optionsLabel = "Menü" }) {
-  // "tags" wird nicht mehr als Lesezeichen geführt.
-  const items = BOOKMARKS.filter((bm) => bm.id !== "tags");
-  return (
-    <div className="bookmark-bar">
-      {items.map((bm) => {
-        const BmIcon = iconOverrides?.[bm.id] || bm.Icon;
-        const isActive = active === bm.id;
-        const color = iconColors?.[bm.id] || bm.color;
-        return (
-          <button
-            key={bm.id}
-            className={`bookmark-bar__item ${isActive ? "bookmark-bar__item--active" : ""}`}
-            onClick={() => onSelect(bm.id)}
-            style={isActive ? { color } : undefined}
-          >
-            <BmIcon size={20} color={isActive ? color : "currentColor"} />
-          </button>
-        );
-      })}
-      <button
-        type="button"
-        className="bookmark-bar__item bookmark-bar__menu"
-        onClick={onOptions}
-        aria-label={optionsLabel}
-      >
-        <MoreHorizontal size={20} />
-      </button>
-    </div>
-  );
-}
-
 const CAT_ACCENT_RGB = {
   project: "224, 62, 62",
   area: "208, 144, 32",
@@ -152,18 +116,17 @@ export function CatDetailScreen({
   toggleTask,
   deleteEntry,
   onAddEntry,
+  onQuickAddEntry,
   onOpenCat,
   onOpenEntry,
   tags,
   onCreateTag,
   onUpdateTag,
   onDeleteTag,
-  onLinkResource,
   flashcardDeckId,
   flashcardLang,
   flashcardCards,
   onOpenFlashcards,
-  onAddWord,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -173,11 +136,9 @@ export function CatDetailScreen({
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
-  const [resSearch, setResSearch] = useState("");
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [coverMode, setCoverMode] = useState(null);
   const [showFcInfo, setShowFcInfo] = useState(false);
-  const [addWordText, setAddWordText] = useState("");
 
   // Flashcard-Ressource = hat ein verknüpftes Deck. Diese Seiten sind nicht
   // frei editierbar; der Canvas zeigt stattdessen einen Hinweis + Info-Sheet.
@@ -550,17 +511,6 @@ export function CatDetailScreen({
         )}
 
       </div>
-
-      {/* Lesezeichen-Leiste direkt unter dem Header. Canvas-Icon = Kontext-Icon
-          (Projekt/Bereich/Ressource) in der Typ-Farbe. */}
-      <BookmarkRail
-        active={bm}
-        onSelect={handleBmSelect}
-        iconOverrides={{ canvas: CatIcon }}
-        iconColors={{ canvas: cfg.color }}
-        onOptions={openSettingsSheet}
-        optionsLabel={t.settingsBtn}
-      />
 
       {/* Content */}
       <div className="cat-detail__body" onClick={handleDoubleTap}>
@@ -999,99 +949,27 @@ export function CatDetailScreen({
         </div>
       )}
 
-      {/* Bottom nav */}
-      <div
-        className={`nav-bottom ${isFlashcardRes && bm === "canvas" ? "nav-bottom--word-dock" : ""}`}
-        style={isFlashcardRes && bm === "canvas" ? undefined : { position: "relative" }}
-      >
-        {/* Unten links: nur der Home-Button (Zurück liegt jetzt oben links im
-            Header). Weiße Pille (Farben gegenüber dem Dock-Home invertiert). */}
-        <button className="nav-bottom__home" onClick={onHome} aria-label={t.home}>
-          <Home size={20} color="currentColor" />
-        </button>
-
-        {/* Neues Wort hinzufügen (nur auf Flashcard-Ressourcen, Canvas-Ansicht) */}
-        {isFlashcardRes && bm === "canvas" && (
-          <div className="nav-bottom__add-word">
-            <input
-              type="text"
-              className="nav-bottom__add-word-input"
-              value={addWordText}
-              onChange={(e) => setAddWordText(e.target.value)}
-              placeholder={t.fc?.addWord}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") { onAddWord?.(addWordText); setAddWordText(""); }
-              }}
-            />
-          </div>
+      {/* Kontextabhängiges Dock (Icon-Reihe = Lesezeichen, darunter Home +
+          optionales Eingabefeld). Eingabefeld nur auf Tabs mit Hinzufügen-
+          Aktion – auf Canvas & Details ausgeblendet. */}
+      <DetailDock
+        t={t}
+        active={bm}
+        onSelect={handleBmSelect}
+        iconOverrides={{ canvas: CatIcon }}
+        iconColors={{ canvas: cfg.color }}
+        onOptions={openSettingsSheet}
+        onHome={onHome}
+        showInput={bm !== "canvas" && bm !== "details"}
+        placeholder={t.addPlaceholder(
+          bm === "cal" ? (t.calSing || t.calendar)
+            : bm === "media" ? (t.media || "")
+            : bm === "link" ? (t.link || "")
+            : t.task
         )}
-
-        {/* Suchfeld für Ressourcen-Verknüpfungen (Nur im "resources" Sub-Tab sichtbar) */}
-        {bm === "media" && resSubTab === "resources" && (
-          <div className="nav-bottom__res-search">
-            <div className="nav-bottom__res-search-container">
-              <Search className="nav-bottom__res-search-icon" size={16} color={CC.resource.color} />
-              <input
-                type="text"
-                className="nav-bottom__res-search-input"
-                value={resSearch}
-                onChange={(e) => setResSearch(e.target.value)}
-                placeholder={t.searchResources || "Ressourcen suchen..."}
-              />
-            </div>
-            {resSearch.trim() && (
-              <div className="nav-bottom__res-search-results">
-                {allCats
-                  .filter(c => c.type === 'resource' && c.id !== cat.id && c.relatedId !== cat.id && c.name.toLowerCase().includes(resSearch.toLowerCase()))
-                  .map(res => (
-                    <button
-                      key={res.id}
-                      className="nav-bottom__res-search-item"
-                      onClick={() => {
-                        onLinkResource(res.id);
-                        setResSearch("");
-                      }}
-                    >
-                      <Square size={14} color={CC.resource.color} />
-                      <span>{res.name}</span>
-                    </button>
-                  ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        <div className="nav-bottom__actions">
-          {isFlashcardRes && bm === "canvas" ? (
-            <button
-              className="nav-bottom__add"
-              onClick={() => { onAddWord?.(addWordText); setAddWordText(""); }}
-              aria-label={t.fc?.addWord}
-              style={{
-                background: CC.resource.color,
-                boxShadow: `0 8px 24px ${CC.resource.color}55`,
-              }}
-            >
-              <Send size={20} color="#fff" strokeWidth={2.2} />
-            </button>
-          ) : (bm === "canvas" || bm === "details") ? (
-            // Canvas & Details: keine Hinzufügen-Aktion → bottom-rechts leer.
-            // Optionen liegen im Drei-Punkte-Menü der Lesezeichen-Leiste.
-            null
-          ) : (
-            <button
-              className="nav-bottom__add"
-              onClick={createEntryFromBookmark}
-              style={{
-                background: getFabColor(),
-                boxShadow: `0 8px 24px ${getFabColor()}55`,
-              }}
-            >
-              <Plus size={22} color="#fff" strokeWidth={2.4} />
-            </button>
-          )}
-        </div>
-      </div>
+        accentColor={getFabColor()}
+        onSubmit={(title) => onQuickAddEntry?.(getEntryTypeFromBookmark(), title)}
+      />
     </div>
   );
 }

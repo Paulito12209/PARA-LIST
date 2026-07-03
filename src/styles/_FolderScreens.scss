@@ -143,8 +143,12 @@
   background: #1A1A2E;
 
   &__header {
+    // Feste optische Höhe von 160px (inkl. der 80px, die unter dem Command-Panel
+    // liegen). Weniger Leerraum zwischen Titel und Pillen.
+    height: 160px;
+    box-sizing: border-box;
     margin-top: -80px;
-    padding-top: 80px + $spacing-md + $spacing-2xs;
+    padding-top: 80px + $spacing-2xs;
     padding-right: $spacing-md;
     padding-bottom: $spacing-md - $spacing-2xs;
     padding-left: $spacing-md;
@@ -497,41 +501,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-// ── Bookmark-Leiste (horizontal, unter dem Header) ──────────
-// Nur Icons: das aktive Lesezeichen erscheint in seiner Farbe (inline gesetzt),
-// alle übrigen ausgegraut – keine farbig gefüllten Kästen.
-
-.bookmark-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: $spacing-xs;
-  padding: $spacing-sm $spacing-md;
-  border-bottom: 1px solid $color-border;
-  flex-shrink: 0;
-
-  &__item {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 1 1 0;
-    height: 40px;
-    border-radius: $radius-md;
-    background: transparent;
-    border: none;
-    color: $color-muted; // inaktiv = ausgegraut
-    cursor: pointer;
-    transition: color $transition-fast, transform $transition-fast;
-
-    &:active { transform: scale(0.9); }
-  }
-
-  // Drei-Punkte-Menü: bleibt immer neutral-grau (kein aktiver Zustand).
-  &__menu {
-    color: $color-muted;
   }
 }
 

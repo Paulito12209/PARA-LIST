@@ -10,6 +10,13 @@
   right: 0;
   bottom: 0;
   z-index: 20;
+
+  // Auf Detailseiten liegt das Dock in-flow als letztes Element der Flex-Spalte
+  // (Header · Body · Dock), nicht absolut über dem Inhalt.
+  &--detail {
+    position: relative;
+    z-index: auto;
+  }
   display: flex;
   flex-direction: column;
   // +4px Abstand zwischen Icon-Reihe und Eingabezeile (8px → 12px)

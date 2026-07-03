@@ -1264,6 +1264,16 @@ export default function App() {
               toggleTask={toggleTask}
               deleteEntry={deleteEntry}
               onAddEntry={(type) => setCreating({ type, catId: cat.id })}
+              onQuickAddEntry={(entryType, title) => {
+                const base = { ...VOICE_ENTRY_BASE, catId: cat.id, catIds: [cat.id], title };
+                const entry =
+                  entryType === "note" ? { ...base, type: "note", body: "" }
+                  : entryType === "calendar" ? { ...base, type: "calendar", date: TODAY, time: "", isBirthday: false }
+                  : entryType === "media" ? { ...base, type: "media" }
+                  : entryType === "link" ? { ...base, type: "link" }
+                  : { ...base, type: "task", due: TODAY, done: false };
+                addEntry(entry);
+              }}
               onOpenCat={(resCat) => push({ view: VIEW.CAT_DETAIL, catId: resCat.id })}
               onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
               flashcardDeckId={fcDeck?.id}

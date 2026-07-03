@@ -1,8 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera } from 'lucide-react';
 import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
-import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
+import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { BookmarkRail } from "./FolderScreens";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
@@ -22,7 +22,7 @@ const TASK_SUB_TAB_ORDER = ["open", "completed"];
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 
 export function EntryDetailScreen({
-  t, CC, theme, lang, entry, cat: _cat, allCats, onUpdate, onDelete, onBack, onHome,
+  t, CC, theme, lang, entry, cat: _cat, allCats, onUpdate, onDelete, onHome,
   entries, onOpenEntry, toggleTask, deleteEntry,
   onAddLinkedEntry, onAddSubtask, onUnlinkEntry,
   tags, onCreateTag, onUpdateTag, onDeleteTag,
@@ -74,8 +74,10 @@ export function EntryDetailScreen({
     : defaultAccentRgb;
   const hasEntryCoverImg = !!entry.coverImage;
 
-  // BookmarkRail icon override for task pages
-  const iconOverrides = entry.type === "task" ? { tasks: ListChecks } : undefined;
+  // BookmarkRail-Icons: Canvas = Kontext-Icon (Eintragstyp) in Typ-Farbe;
+  // Task-Seiten zeigen zusätzlich das ListChecks-Icon fürs Aufgaben-Lesezeichen.
+  const iconOverrides = { canvas: TypeIcon, ...(entry.type === "task" ? { tasks: ListChecks } : {}) };
+  const iconColors = { canvas: cfgColor };
 
   // Linked entries computation
   const allEntries = entries || [];
@@ -390,6 +392,16 @@ export function EntryDetailScreen({
           </div>
         )}
       </div>
+
+      {/* Lesezeichen-Leiste direkt unter dem Header. */}
+      <BookmarkRail
+        active={bm}
+        onSelect={handleBmSelect}
+        iconOverrides={iconOverrides}
+        iconColors={iconColors}
+        onOptions={openSettingsSheet}
+        optionsLabel={t.settingsBtn}
+      />
 
       {/* Content */}
       <div className="cat-detail__body" style={{ flex: 1 }}>
@@ -778,30 +790,17 @@ export function EntryDetailScreen({
         </div>
       )}
 
-      <BookmarkRail active={bm} onSelect={handleBmSelect} baseColor={cfgColor} iconOverrides={iconOverrides} />
-
       {/* Bottom nav */}
       <div className="nav-bottom" style={{ position: "relative" }}>
-        {/* Unten links: Zurück (oben) + Home (unten) als vertikaler Stapel. */}
-        <div className="nav-bottom__left-stack">
-          <button className="nav-bottom__back" onClick={onBack} aria-label={t.back || "Zurück"}>
-            <ChevronLeft size={20} color="#EDEEFF" />
-          </button>
-          <button className="nav-bottom__back" onClick={onHome} aria-label={t.home}>
-            <Home size={20} color="#EDEEFF" />
-          </button>
-        </div>
+        {/* Unten links: nur der Home-Button (Zurück liegt oben links im Header). */}
+        <button className="nav-bottom__home" onClick={onHome} aria-label={t.home}>
+          <Home size={20} color="currentColor" />
+        </button>
 
         <div className="nav-bottom__actions">
-          {bm === "canvas" ? (
-            // Zahnrad statt (verstecktem) Platzhalter: öffnet das Einstellungen-Sheet.
-            <button
-              className="nav-bottom__back"
-              onClick={openSettingsSheet}
-              aria-label={t.settingsBtn}
-            >
-              <CustomSettingsIcon size={22} color="#EDEEFF" />
-            </button>
+          {(bm === "canvas" || bm === "details") ? (
+            // Canvas & Details: keine Hinzufügen-Aktion → bottom-rechts leer.
+            null
           ) : (
             <button
               className="nav-bottom__add"

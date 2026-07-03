@@ -972,11 +972,6 @@
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
   box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.45);
   pointer-events: all;
-
-  // Docked Eingabeleiste bleibt einreihig: nur der Zurück-Button, kein Home.
-  .nav-bottom__left-stack > button + button {
-    display: none;
-  }
 }
 
 /* Eingabefeld "Neues Wort hinzufügen" in der Nav-Leiste */

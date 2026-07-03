@@ -1,9 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
-import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon } from "../components/AppIcons";
+import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
@@ -81,50 +81,39 @@ export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive
 }
 
 
-export function BookmarkRail({ active, onSelect, baseColor, iconOverrides, mutedIds = [] }) {
+// Horizontale Lesezeichen-Leiste (unter dem Header). Nur Icons: das aktive
+// Lesezeichen erscheint in seiner Farbe, alle anderen ausgegraut – keine
+// farbig gefüllten Kästen. Das erste ("canvas") Icon kann per iconOverrides/
+// iconColors zum Kontext-Icon (Projekt/Bereich/…) gemacht werden. Am Ende
+// steht das Drei-Punkte-Menü (kein Lesezeichen, öffnet die Optionen).
+export function BookmarkRail({ active, onSelect, iconOverrides, iconColors, onOptions, optionsLabel = "Menü" }) {
+  // "tags" wird nicht mehr als Lesezeichen geführt.
+  const items = BOOKMARKS.filter((bm) => bm.id !== "tags");
   return (
-    <div className="bookmark-rail">
-      {BOOKMARKS.map((bm) => {
+    <div className="bookmark-bar">
+      {items.map((bm) => {
         const BmIcon = iconOverrides?.[bm.id] || bm.Icon;
-        // "muted" = disabled-Look, aber weiterhin klickbar (z.B. Canvas auf
-        // Flashcard-Ressourcen: signalisiert "nicht editierbar", bleibt aber der
-        // Rückweg zur Tabelle).
-        const isMuted = mutedIds.includes(bm.id);
-        const isActive = !isMuted && active === bm.id;
-        const color = (bm.id === 'canvas' && baseColor) ? baseColor : bm.color;
-
-        if (isMuted) {
-          return (
-            <button
-              key={bm.id}
-              className="bookmark-rail__tab bookmark-rail__tab--disabled"
-              onClick={() => onSelect(bm.id)}
-            >
-              <BmIcon size={11} />
-            </button>
-          );
-        }
-
+        const isActive = active === bm.id;
+        const color = iconColors?.[bm.id] || bm.color;
         return (
           <button
             key={bm.id}
-            className={`bookmark-rail__tab ${
-              isActive
-                ? "bookmark-rail__tab--active"
-                : "bookmark-rail__tab--inactive"
-            }`}
+            className={`bookmark-bar__item ${isActive ? "bookmark-bar__item--active" : ""}`}
             onClick={() => onSelect(bm.id)}
-            style={{
-              background: isActive ? color : color + "28",
-              borderWidth: "1px 0px 1px 1px",
-              borderStyle: "solid",
-              borderColor: `${color}${isActive ? "" : "50"}`,
-            }}
+            style={isActive ? { color } : undefined}
           >
-            <BmIcon size={11} color={isActive ? "#fff" : color} />
+            <BmIcon size={20} color={isActive ? color : "currentColor"} />
           </button>
         );
       })}
+      <button
+        type="button"
+        className="bookmark-bar__item bookmark-bar__menu"
+        onClick={onOptions}
+        aria-label={optionsLabel}
+      >
+        <MoreHorizontal size={20} />
+      </button>
     </div>
   );
 }
@@ -159,7 +148,6 @@ export function CatDetailScreen({
   entries,
   onUpdate,
   onDelete,
-  onBack,
   onHome,
   toggleTask,
   deleteEntry,
@@ -561,13 +549,18 @@ export function CatDetailScreen({
           />
         )}
 
-        <BookmarkRail
-          active={bm}
-          onSelect={handleBmSelect}
-          baseColor={cfg.color}
-          mutedIds={isFlashcardRes ? ["canvas"] : []}
-        />
       </div>
+
+      {/* Lesezeichen-Leiste direkt unter dem Header. Canvas-Icon = Kontext-Icon
+          (Projekt/Bereich/Ressource) in der Typ-Farbe. */}
+      <BookmarkRail
+        active={bm}
+        onSelect={handleBmSelect}
+        iconOverrides={{ canvas: CatIcon }}
+        iconColors={{ canvas: cfg.color }}
+        onOptions={openSettingsSheet}
+        optionsLabel={t.settingsBtn}
+      />
 
       {/* Content */}
       <div className="cat-detail__body" onClick={handleDoubleTap}>
@@ -1011,15 +1004,11 @@ export function CatDetailScreen({
         className={`nav-bottom ${isFlashcardRes && bm === "canvas" ? "nav-bottom--word-dock" : ""}`}
         style={isFlashcardRes && bm === "canvas" ? undefined : { position: "relative" }}
       >
-        {/* Unten links: Zurück (oben) + Home (unten) als vertikaler Stapel. */}
-        <div className="nav-bottom__left-stack">
-          <button className="nav-bottom__back" onClick={onBack} aria-label={t.back || "Zurück"}>
-            <ChevronLeft size={20} color="#EDEEFF" />
-          </button>
-          <button className="nav-bottom__back" onClick={onHome} aria-label={t.home}>
-            <Home size={20} color="#EDEEFF" />
-          </button>
-        </div>
+        {/* Unten links: nur der Home-Button (Zurück liegt jetzt oben links im
+            Header). Weiße Pille (Farben gegenüber dem Dock-Home invertiert). */}
+        <button className="nav-bottom__home" onClick={onHome} aria-label={t.home}>
+          <Home size={20} color="currentColor" />
+        </button>
 
         {/* Neues Wort hinzufügen (nur auf Flashcard-Ressourcen, Canvas-Ansicht) */}
         {isFlashcardRes && bm === "canvas" && (
@@ -1073,31 +1062,22 @@ export function CatDetailScreen({
         )}
 
         <div className="nav-bottom__actions">
-          {bm === "canvas" ? (
-            isFlashcardRes ? (
-              <button
-                className="nav-bottom__add"
-                onClick={() => { onAddWord?.(addWordText); setAddWordText(""); }}
-                aria-label={t.fc?.addWord}
-                style={{
-                  background: CC.resource.color,
-                  boxShadow: `0 8px 24px ${CC.resource.color}55`,
-                }}
-              >
-                <Send size={20} color="#fff" strokeWidth={2.2} />
-              </button>
-            ) : (
-              // Zahnrad statt Home: öffnet das Einstellungen-Sheet
-              // (Cover, Favorit, Archivieren, Löschen). Ersetzt das frühere
-              // "settings"-Lesezeichen.
-              <button
-                className="nav-bottom__back"
-                onClick={openSettingsSheet}
-                aria-label={t.settingsBtn}
-              >
-                <CustomSettingsIcon size={22} color="#EDEEFF" />
-              </button>
-            )
+          {isFlashcardRes && bm === "canvas" ? (
+            <button
+              className="nav-bottom__add"
+              onClick={() => { onAddWord?.(addWordText); setAddWordText(""); }}
+              aria-label={t.fc?.addWord}
+              style={{
+                background: CC.resource.color,
+                boxShadow: `0 8px 24px ${CC.resource.color}55`,
+              }}
+            >
+              <Send size={20} color="#fff" strokeWidth={2.2} />
+            </button>
+          ) : (bm === "canvas" || bm === "details") ? (
+            // Canvas & Details: keine Hinzufügen-Aktion → bottom-rechts leer.
+            // Optionen liegen im Drei-Punkte-Menü der Lesezeichen-Leiste.
+            null
           ) : (
             <button
               className="nav-bottom__add"

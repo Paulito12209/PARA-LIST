@@ -1068,6 +1068,7 @@ export default function App() {
         onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
         voiceOverlayOpen={voiceOverlayOpen}
         onOpenAppSwitcher={() => setAppSwitcherOpen(true)}
+        onBack={handleSmartBack}
       />
 
       {panelOpen && (

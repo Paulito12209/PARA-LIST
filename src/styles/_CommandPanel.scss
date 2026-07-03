@@ -147,6 +147,25 @@
     }
   }
 
+  // Zurück-Button auf Detailseiten (ersetzt das Page-Icon oben links).
+  // Neutrale, helle Glas-Pille – wie der frühere Detail-Zurück-Button.
+  &__back {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    color: $color-text;
+    cursor: pointer;
+    transition: transform $transition-fast, filter $transition-fast;
+
+    &:active { transform: scale(0.94); }
+  }
+
   &__titles {
     display: flex;
     flex-direction: column;

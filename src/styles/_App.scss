@@ -112,19 +112,32 @@
   pointer-events: none;
   z-index: 5;
 
-  // Unten links: Zurück (oben) + Home (unten) vertikal gestapelt.
-  &__left-stack {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-sm;
-    pointer-events: none; // die Buttons selbst re-aktivieren die Klicks
-  }
-
   &__back {
     pointer-events: all;
     @include floating-btn($spacing-3xl, 50%);
     background: $color-surface;
     border: 1px solid $color-border;
+  }
+
+  // Home-Button: liegende Pille (48 × 40, radius 20) in der Form des
+  // Dock-Home-Buttons – aber NICHT "aktiv" gefüllt, sondern hell/weiß wie der
+  // Zurück-Button (Farben gegenüber dem Startseiten-Home invertiert).
+  &__home {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 40px;
+    border-radius: 20px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    color: $color-text;
+    cursor: pointer;
+    transition: filter $transition-fast, transform $transition-fast;
+
+    &:active { transform: scale(0.97); }
   }
 
   &__res-search {

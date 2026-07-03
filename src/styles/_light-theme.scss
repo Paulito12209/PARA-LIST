@@ -459,8 +459,7 @@
     }
 
     &__details-row {
-      background: rgba(0, 0, 0, 0.03);
-      border-color: rgba(0, 0, 0, 0.06);
+      border-bottom-color: #e5e5f0;
     }
 
     &__details-label {
@@ -496,8 +495,15 @@
     }
 
     &__tag {
-      background: #e5e5f0;
+      // Frosted-White wie die Datums-Pille (statt grauem Kasten).
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.85);
       color: #5858A0;
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      box-shadow:
+        inset 0 1px 6px rgba(255, 255, 255, 0.7),
+        0 1px 4px rgba(0, 0, 0, 0.05);
     }
 
     &__conn-popup {
@@ -678,6 +684,20 @@
     svg {
       stroke: #5858A0;
     }
+  }
+
+  // Home-Pille im Light Mode: weiß mit dunklem Icon (nicht "aktiv" gefüllt).
+  .nav-bottom__home {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #5858A0;
+  }
+
+  // Zurück-Button im Command-Panel (Detailseiten): weiß.
+  .command-panel__back {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    color: #5858A0;
   }
 
   .category-card {

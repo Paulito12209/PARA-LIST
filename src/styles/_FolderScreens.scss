@@ -332,9 +332,13 @@
     line-height: 1;
     font-weight: 600;
     border-radius: $radius-pill;
-    padding: 0 8px;
-    background: $color-dim;
-    color: rgba($color-text, 0.55); // Heller als $color-muted für bessere Lesbarkeit
+    padding: 0 10px;
+    // Frosted-White-Glas wie die Datums-/Verknüpfungs-Pillen daneben.
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: rgba($color-text, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   &__date-input {
@@ -348,9 +352,8 @@
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    // Rechts: 24px Rail + 16px Abstand = 40px, unten: 16px
-    padding: $spacing-sm (
-      $bookmark-width + $spacing-md) $spacing-md $spacing-md;
+    // Rail liegt jetzt horizontal über dem Body → rundum 16px, oben 8px.
+    padding: $spacing-sm $spacing-md $spacing-md;
     gap: $spacing-sm;
   }
 
@@ -376,10 +379,11 @@
   }
 
   // ── Details-Lesezeichen: Metadaten der Seite ──────────────
+  // Schlichte Zeilen direkt auf der Seite (keine abgerundeten Kästen).
   &__details {
     display: flex;
     flex-direction: column;
-    gap: $spacing-sm;
+    padding-top: $spacing-2xs;
   }
 
   &__details-row {
@@ -387,10 +391,12 @@
     align-items: center;
     justify-content: space-between;
     gap: $spacing-md;
-    padding: 14px 16px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 14px 4px;
+    border-bottom: 1px solid $color-border;
+
+    &:last-child {
+      border-bottom: none;
+    }
   }
 
   &__details-label {
@@ -494,60 +500,42 @@
   }
 }
 
-// ── Bookmark Rail ───────────────────────────────────────────
+// ── Bookmark-Leiste (horizontal, unter dem Header) ──────────
+// Nur Icons: das aktive Lesezeichen erscheint in seiner Farbe (inline gesetzt),
+// alle übrigen ausgegraut – keine farbig gefüllten Kästen.
 
-.bookmark-rail {
-  position: absolute;
-  // Slight negative offset removes visible seam to right edge
-  right: -1px;
-  // Beginnt knapp unter der Header-Unterkante (3px-Gap wie zwischen den Tabs).
-  top: calc(100% + 3px);
+.bookmark-bar {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 3px;
-  z-index: 5;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
 
-  &__tab {
-    width: $bookmark-width;
-    height: $spacing-3xl + $spacing-2xs;
-    margin: 0;
-    padding: 0;
-    border-radius: $spacing-sm 0 0 $spacing-sm;
-    border-right: none;
-    @include flex-center;
-    transition: all 0.18s;
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    height: 40px;
+    border-radius: $radius-md;
+    background: transparent;
+    border: none;
+    color: $color-muted; // inaktiv = ausgegraut
+    cursor: pointer;
+    transition: color $transition-fast, transform $transition-fast;
 
-    // Erstes Lesezeichen auf nicht-editierbaren Seiten: disabled-Look,
-    // aber weiterhin klickbar (Rückweg zur Canvas-Tabelle).
-    &--disabled {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-right: none;
-      color: rgba(237, 238, 255, 0.32);
-      cursor: pointer;
-      box-shadow: none;
-    }
+    &:active { transform: scale(0.9); }
   }
-}
 
-// Disabled-Lesezeichen im Light-Mode
-body.light-theme .bookmark-rail__tab--disabled,
-.light-theme .bookmark-rail__tab--disabled {
-  background: rgba(0, 0, 0, 0.035);
-  border-color: rgba(0, 0, 0, 0.10);
-  color: rgba(26, 26, 36, 0.28);
+  // Drei-Punkte-Menü: bleibt immer neutral-grau (kein aktiver Zustand).
+  &__menu {
+    color: $color-muted;
+  }
 }
 
 // ── Ressource Sub-Tabs (Notizen / Medien) ──────────────────
-
-.bookmark-rail {
-  &__tab {
-    &--active {
-      box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2);
-    }
-  }
-}
 
 .res-sub-tabs {
   display: flex;

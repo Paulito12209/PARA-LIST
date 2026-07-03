@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Check, Moon, Sun } from "lucide-react";
+import { Check, Moon, Sun, ChevronLeft } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 
@@ -23,6 +23,7 @@ export function CommandPanel({
   setLang,
   voiceOverlayOpen,
   onOpenAppSwitcher,
+  onBack,
 }) {
   const [subTab, setSubTab] = useState("today");
   const touchStartX = useRef(0);
@@ -77,9 +78,8 @@ export function CommandPanel({
     month: "long",
   });
 
-  // Seiten-Modus: auf Detailseiten zeigt der Header Seiten-Icon + Titel,
+  // Seiten-Modus: auf Detailseiten zeigt der Header Zurück-Button + Titel,
   // mit dem Datum oberhalb des Titels und ohne Einstellungen-Icon.
-  const PageIcon = page?.Icon;
 
   return (
     <div
@@ -95,12 +95,16 @@ export function CommandPanel({
         <div className="command-panel__header-row">
           <div className="command-panel__brand">
             {page ? (
-              <span
-                className="command-panel__page-icon"
+              // Detailseiten: Zurück-Button oben links (ersetzt das Page-Icon).
+              <button
+                type="button"
+                className="command-panel__back"
                 style={{ "--page-accent-rgb": page.accentRgb }}
+                onClick={(e) => { e.stopPropagation(); onBack?.(); }}
+                aria-label={t.back || "Zurück"}
               >
-                <PageIcon size={22} color={`rgb(${page.accentRgb})`} strokeWidth={2.4} />
-              </span>
+                <ChevronLeft size={22} strokeWidth={2.4} />
+              </button>
             ) : (
               <button
                 type="button"

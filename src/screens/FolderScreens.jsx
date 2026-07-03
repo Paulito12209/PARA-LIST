@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -7,6 +7,8 @@ import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { DetailDock } from "../components/DetailDock";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
+import { CollaboratorsModal } from "../modals/CollaboratorsModal";
+import { getInitials } from "../utils";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
@@ -108,6 +110,7 @@ export function CatDetailScreen({
   theme,
   lang,
   cat,
+  user,
   allCats,
   entries,
   onUpdate,
@@ -139,6 +142,8 @@ export function CatDetailScreen({
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [coverMode, setCoverMode] = useState(null);
   const [showFcInfo, setShowFcInfo] = useState(false);
+  const [collabOpen, setCollabOpen] = useState(false);
+  const collaborators = cat.collaborators || [];
 
   // Flashcard-Ressource = hat ein verknüpftes Deck. Diese Seiten sind nicht
   // frei editierbar; der Canvas zeigt stattdessen einen Hinweis + Info-Sheet.
@@ -347,6 +352,34 @@ export function CatDetailScreen({
             tabIndex={-1}
           />
         </div>
+
+        {/* Avatare der Seite (eigener + Kollaboratoren), über den Pillen.
+            Horizontal daneben ein Button zum Hinzufügen. */}
+        <div className="cat-detail__avatars">
+          {user?.avatar ? (
+            <img src={user.avatar} className="cat-detail__avatar" alt={user?.name || ""} />
+          ) : (
+            <span className="cat-detail__avatar cat-detail__avatar--initials">{getInitials(user?.name)}</span>
+          )}
+          {collaborators.map((c) => (
+            c.avatar ? (
+              <img key={c.id} src={c.avatar} className="cat-detail__avatar" alt={c.name} />
+            ) : (
+              <span key={c.id} className="cat-detail__avatar cat-detail__avatar--initials">
+                {c.name.charAt(0).toUpperCase()}
+              </span>
+            )
+          ))}
+          <button
+            type="button"
+            className="cat-detail__avatar-add"
+            onClick={(e) => { e.stopPropagation(); setCollabOpen(true); }}
+            aria-label={t.addCollaborator}
+          >
+            <UserPlus size={14} />
+          </button>
+        </div>
+
         <div className="cat-detail__pills">
           <div className="cat-detail__pills-group">
           {(cat.type === "resource" || cat.type === "area") && cat.createdAt && (
@@ -358,7 +391,7 @@ export function CatDetailScreen({
               <button
                 ref={datePillRef}
                 className="cat-detail__date-pill"
-                onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
+                onClick={(e) => { e.stopPropagation(); setShowDate((v) => !v); setShowConnSelect(false); setShowTagSelect(false); }}
                 style={{ gap: "6px" }}
               >
                 <Calendar size={14} />
@@ -369,7 +402,7 @@ export function CatDetailScreen({
           <button
             ref={connPillRef}
             className="cat-detail__date-pill"
-            onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+            onClick={(e) => { e.stopPropagation(); setShowConnSelect((v) => !v); setShowTagSelect(false); setShowDate(false); }}
             style={
               relatedCfg
                 ? {
@@ -400,7 +433,7 @@ export function CatDetailScreen({
           <div 
             style={{ display: "flex", gap: "6px", alignItems: "center", cursor: "pointer" }}
             ref={tagTriggerRef}
-            onClick={(e) => { e.stopPropagation(); setShowTagSelect(!showTagSelect); }}
+            onClick={(e) => { e.stopPropagation(); setShowTagSelect((v) => !v); setShowConnSelect(false); setShowDate(false); }}
           >
             {(() => {
               const selectedTags = cat.tags || [];
@@ -861,6 +894,16 @@ export function CatDetailScreen({
           langName={flashcardLang || cat.name}
           onOpenFlashcards={() => { setShowFcInfo(false); onOpenFlashcards?.(flashcardDeckId); }}
           onClose={() => setShowFcInfo(false)}
+        />
+      )}
+
+      {collabOpen && (
+        <CollaboratorsModal
+          t={t}
+          cat={cat}
+          onUpdateCat={(_id, patch) => onUpdate(patch)}
+          onClose={() => setCollabOpen(false)}
+          initialView={collaborators.length === 0 ? "add" : "list"}
         />
       )}
 

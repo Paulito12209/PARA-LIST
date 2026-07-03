@@ -1248,6 +1248,7 @@ export default function App() {
               theme={theme}
               lang={lang}
               cat={cat}
+              user={state.user}
               allCats={state.cats}
               entries={inclusiveEntries}
               tags={state.tags}

@@ -506,6 +506,22 @@
         0 1px 4px rgba(0, 0, 0, 0.05);
     }
 
+    // Avatar-Ringe wie im Startseiten-Cover: reinweißer Rand.
+    &__avatar {
+      border-color: #ffffff;
+    }
+
+    &__avatar-add {
+      background: rgba(0, 0, 0, 0.05);
+      border-color: #ffffff;
+      color: #3a3a6a;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.08);
+        color: #1a1a24;
+      }
+    }
+
     &__conn-popup {
       background: #ffffff;
       border-color: #e5e5f0;

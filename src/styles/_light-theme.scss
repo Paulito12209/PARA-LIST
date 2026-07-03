@@ -1129,17 +1129,18 @@
     }
 
     &__badge {
-      // Getönte Farbfläche in Akzentfarbe statt Frosted Glass (wie Desktop)
-      background: rgba(var(--cover-accent-rgb), 0.12);
-      border: 1px solid rgba(var(--cover-accent-rgb), 0.3);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      // Deckendes, sehr helles Pastell in Akzentfarbe — Schriftfarbe bleibt
+      background: color-mix(in srgb, rgb(var(--cover-accent-rgb)) 9%, #fff);
+      border: 1px solid color-mix(in srgb, rgb(var(--cover-accent-rgb)) 26%, #fff);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       box-shadow: none;
       text-shadow: none;
     }
 
     &__avatar {
-      border-color: rgba(0, 0, 0, 0.08);
+      // Heller, weißer Rand — einheitlich mit den Desktop-Avataren
+      border-color: #ffffff;
     }
 
     &__avatar-placeholder {
@@ -1151,13 +1152,25 @@
         background: #f0f0f5;
         color: #1a1a24;
       }
+
+      // Initialen-Variante behält den Brand-Gradient auch im Light Mode
+      &--initials {
+        background: linear-gradient(135deg, #7C83F7, #4F46E5);
+        border: none;
+        color: #fff;
+
+        &:hover {
+          background: linear-gradient(135deg, #8A90F8, #5B52E8);
+          color: #fff;
+        }
+      }
     }
 
     &__collab-avatar {
-      border-color: rgba(0, 0, 0, 0.1);
+      border-color: #ffffff;
       background: #eeeef5;
       color: #3a3a6a;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: none;
 
       &:hover {
         background: #e5e5f0;
@@ -1165,8 +1178,8 @@
     }
 
     &__collab-btn {
-      background: rgba(0, 0, 0, 0.04);
-      border-color: rgba(0, 0, 0, 0.1);
+      background: rgba(0, 0, 0, 0.05);
+      border-color: #ffffff;
       color: #3a3a6a;
 
       &:hover {
@@ -1199,24 +1212,24 @@
     }
 
     &__tag {
-      // Getönte Farbflächen statt Frosted Glass — einheitlich mit Desktop
+      // Deckende, sehr helle Pastelltöne — Schriftfarben bleiben
       color: #3a3a6a;
-      background: rgba(15, 15, 30, 0.05);
-      border: 1px solid rgba(15, 15, 30, 0.1);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: #F4F4F8;
+      border: 1px solid #E6E6EE;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
       box-shadow: none;
 
       &--date {
         color: #1D4ED8;
-        background: rgba(96, 165, 250, 0.12);
-        border-color: rgba(96, 165, 250, 0.3);
+        background: color-mix(in srgb, #60A5FA 11%, #fff);
+        border-color: color-mix(in srgb, #60A5FA 30%, #fff);
       }
 
       &--area {
         color: #B07A10;
-        background: rgba(208, 144, 32, 0.12);
-        border-color: rgba(208, 144, 32, 0.3);
+        background: color-mix(in srgb, #D09020 11%, #fff);
+        border-color: color-mix(in srgb, #D09020 30%, #fff);
       }
     }
   }

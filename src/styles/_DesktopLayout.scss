@@ -963,6 +963,12 @@
     font-size: 10.5px;
     font-weight: 700;
     letter-spacing: 0.6px;
+
+    // Light: deckendes, sehr helles Pastell statt durchsichtigem Tint
+    .dsk-app--light & {
+      background: color-mix(in srgb, rgb(var(--cover-accent-rgb)) 9%, #fff);
+      border-color: color-mix(in srgb, rgb(var(--cover-accent-rgb)) 26%, #fff);
+    }
   }
 
   &__avatars {
@@ -1008,6 +1014,7 @@
     }
     &--add {
       z-index: 0;   // rutscht unter den letzten Avatar — nur der Rest lugt hervor
+      margin-left: -11px; // ¼ des 44px-Kreises verdeckt
       background: rgba(255, 255, 255, 0.08) !important;
       backdrop-filter: blur(8px);
       color: var(--text-2);
@@ -1087,6 +1094,21 @@
       cursor: pointer;
       color: var(--text);
       background: rgba(255, 255, 255, 0.08);
+    }
+
+    // Light: deckende, sehr helle Pastelltöne — Schriftfarben bleiben
+    .dsk-app--light & {
+      background: #F4F4F8;
+      border-color: #E6E6EE;
+      backdrop-filter: none;
+    }
+    .dsk-app--light &--date {
+      background: color-mix(in srgb, #60A5FA 11%, #fff);
+      border-color: color-mix(in srgb, #60A5FA 30%, #fff);
+    }
+    .dsk-app--light &--area {
+      background: color-mix(in srgb, #D09020 11%, #fff);
+      border-color: color-mix(in srgb, #D09020 30%, #fff);
     }
   }
 

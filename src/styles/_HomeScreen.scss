@@ -538,11 +538,12 @@
   }
 
   &__collab-avatar {
-    width: 36px;
-    height: 36px;
+    // Einheitlich mit Owner-Avatar: 40px, ¼ (10px) überlappt
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     position: absolute;
-    top: 32px; // 40px avatar - 8px overlap
+    top: 30px; // 40px Avatar − 10px Überlappung
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
@@ -574,11 +575,12 @@
   }
 
   &__collab-btn {
-    width: 28px;
-    height: 28px;
+    // Gleiche Größe wie die Avatare, liegt immer ¼ (10px) hinter dem letzten
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.08);
-    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.12);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -590,8 +592,8 @@
     transform: translateX(-50%);
     z-index: 1;
 
-    // No collabs: directly below avatar
-    top: 40px; // 40px - 4px overlap
+    // Ohne Kollaboratoren: ¼ hinter dem Owner-Avatar
+    top: 30px; // 40px − 10px Überlappung
 
     &:hover {
       background: rgba(255, 255, 255, 0.14);
@@ -599,9 +601,9 @@
     }
   }
 
-  // When collab-avatar is present, push btn below it
+  // Mit Kollaborator-Avatar rutscht der Button eine Stufe tiefer
   &__collab-avatar+&__collab-btn {
-    top: 60px; // 32px (collab-avatar top) + 36px - 8px overlap
+    top: 60px; // 30px (collab-avatar top) + 40px − 10px Überlappung
   }
 
   &__collab-count {

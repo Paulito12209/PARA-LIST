@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { PanelLeft, Circle, Triangle, Square, Archive, Search } from "lucide-react";
+import { PanelLeft, Circle, Triangle, Square, Archive, Search, ChevronLeft } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { Cover } from "./Cover";
@@ -109,7 +109,7 @@ function QuickSwitch({ cats, lang, onSelect, onClose }) {
  * owned here. Anything related to entries/cats is delegated upward.
  */
 export function DesktopApp({ ctx }) {
-  const { t, lang, CC, theme, state, mutations, push } = ctx;
+  const { t, lang, CC, theme, state, mutations, push, pop, detailCatId } = ctx;
 
   const [tweaks, setTweaks] = useTweaks({
     ...TWEAK_DEFAULTS,
@@ -203,6 +203,25 @@ export function DesktopApp({ ctx }) {
   const activeCats = state.cats.filter((c) => c.type === activeCatType && !c.archived);
   const firstCat = activeCats[0] || null;
 
+  // Detail-Modus: eine konkrete Cat-Seite wird im Main-Bereich angezeigt
+  // (Sidebar + Rail bleiben sichtbar). Fällt auf HOME zurück, wenn die
+  // Cat nicht (mehr) existiert.
+  const detailCat = detailCatId
+    ? state.cats.find((c) => c.id === detailCatId) || null
+    : null;
+
+  const coverCat = detailCat || firstCat;
+  const coverCatType = detailCat ? detailCat.type : activeCatType;
+
+  // Im Detail-Modus zeigt der Main-Bereich nur die Einträge dieser Cat
+  const visibleEntries = useMemo(() => {
+    if (!detailCat) return state.entries;
+    return state.entries.filter((e) => {
+      const ids = e.catIds && e.catIds.length ? e.catIds : (e.catId ? [e.catId] : []);
+      return ids.includes(detailCat.id);
+    });
+  }, [state.entries, detailCat]);
+
   const appClass = [
     "dsk-app",
     `dsk-app--sidebar-${sidebarMode}`,
@@ -214,6 +233,7 @@ export function DesktopApp({ ctx }) {
     .join(" ");
 
   const openCat = (cat) => {
+    if (cat.id === detailCatId) return; // schon geöffnet
     setActiveCatType(cat.type || activeCatType);
     push({ view: "catDetail", catId: cat.id });
   };
@@ -242,6 +262,7 @@ export function DesktopApp({ ctx }) {
         onToggleCat={toggleCat}
         cats={state.cats}
         entries={state.entries}
+        activeCatId={detailCat?.id}
         onOpenCat={openCat}
         onOpenEntry={openEntry}
         onAddCat={(type) => mutations.addCatModal(type)}
@@ -273,14 +294,26 @@ export function DesktopApp({ ctx }) {
           onOpenSettings={ctx.openSettings}
         />
 
+        {detailCat && (
+          <button
+            type="button"
+            className="dsk-main__back"
+            onClick={pop}
+            aria-label={lang === "en" ? "Back" : "Zurück"}
+          >
+            <ChevronLeft size={16} strokeWidth={2.4} />
+            {lang === "en" ? "Back" : lang === "es" ? "Atrás" : "Zurück"}
+          </button>
+        )}
+
         <Cover
           t={t}
           lang={lang}
-          activeCatType={activeCatType}
+          activeCatType={coverCatType}
           cats={state.cats}
-          firstCat={firstCat}
+          firstCat={coverCat}
+          detail={!!detailCat}
           onOpenCat={openCat}
-          onOpenCatType={(type) => push({ view: "catList", type })}
           onUpdateCat={mutations.updateCat}
           onAddCat={(type) => mutations.addCatModal(type)}
         />
@@ -289,7 +322,7 @@ export function DesktopApp({ ctx }) {
           t={t}
           lang={lang}
           CC={CC}
-          entries={state.entries}
+          entries={visibleEntries}
           cats={state.cats}
           onOpenEntry={(e) => push({ view: "entryDetail", entryId: e.id })}
           toggleTask={mutations.toggleTask}

@@ -1000,8 +1000,8 @@ export default function App() {
     </>
   );
 
-  // ── Desktop branch: HOME view renders the 3-column layout ──
-  if (isDesktop && cur.view === VIEW.HOME) {
+  // ── Desktop branch: HOME + CAT_DETAIL render inside the 3-column layout ──
+  if (isDesktop && (cur.view === VIEW.HOME || cur.view === VIEW.CAT_DETAIL)) {
     const desktopCtx = {
       t,
       lang,
@@ -1009,6 +1009,8 @@ export default function App() {
       theme,
       state,
       push,
+      pop,
+      detailCatId: cur.view === VIEW.CAT_DETAIL ? cur.catId : null,
       mutations: {
         toggleTask,
         updateCat,

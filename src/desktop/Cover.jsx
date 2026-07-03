@@ -38,8 +38,8 @@ export function Cover({
   activeCatType,
   cats,
   firstCat,
+  detail = false,   // true: Cat wird bereits als Detailseite im Main-Bereich angezeigt
   onOpenCat,
-  onOpenCatType,
   onUpdateCat,
   onAddCat,
 }) {
@@ -112,11 +112,11 @@ export function Cover({
           ? "Flexible"
           : "Flexibel";
 
+    const Copy = detail ? "div" : "button";
     return (
-      <button
-        type="button"
-        className="dsk-cover__copy dsk-cover__copy--button"
-        onClick={() => onOpenCat(cat)}
+      <Copy
+        {...(detail ? {} : { type: "button", onClick: () => onOpenCat(cat) })}
+        className={`dsk-cover__copy${detail ? "" : " dsk-cover__copy--button"}`}
       >
         <h1 className="dsk-cover__title">{cat.name}</h1>
         <p className="dsk-cover__desc">{desc}</p>
@@ -133,7 +133,7 @@ export function Cover({
             <span className="dsk-cover__tag">{cat.tags[0]}</span>
           )}
         </div>
-      </button>
+      </Copy>
     );
   };
 
@@ -188,16 +188,16 @@ export function Cover({
 
         {firstCat ? renderFirst() : renderEmpty()}
 
-        {firstCat && activeCatType !== "archive" && (
+        {firstCat && !detail && activeCatType !== "archive" && (
           <button
             type="button"
             className="dsk-cover__textlink"
-            onClick={() => onOpenCatType(activeCatType)}
+            onClick={() => onOpenCat(firstCat)}
           >
             <ChevronRight size={12} />
-            {activeCatType === "project" && (lang === "en" ? "Show all projects" : "Alle Projekte anzeigen")}
-            {activeCatType === "area" && (lang === "en" ? "Show all areas" : "Alle Bereiche anzeigen")}
-            {activeCatType === "resource" && (lang === "en" ? "Show all resources" : "Alle Ressourcen anzeigen")}
+            {activeCatType === "project" && (lang === "en" ? "Open project" : lang === "es" ? "Abrir proyecto" : "Projekt öffnen")}
+            {activeCatType === "area" && (lang === "en" ? "Open area" : lang === "es" ? "Abrir área" : "Bereich öffnen")}
+            {activeCatType === "resource" && (lang === "en" ? "Open resource" : lang === "es" ? "Abrir recurso" : "Ressource öffnen")}
           </button>
         )}
       </div>

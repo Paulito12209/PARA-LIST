@@ -608,6 +608,39 @@
   }
 }
 
+// ── Back button (cat detail inside the main column) ─────────
+.dsk-main .dsk-main__back {
+  position: absolute;
+  top: calc(var(--header-h) + 14px);
+  left: 20px;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  color: var(--text-2);
+  font-family: $font-body;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s var(--easing), color 0.18s var(--easing);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+  }
+  .dsk-app--light & {
+    background: rgba(255, 255, 255, 0.55);
+    &:hover { background: rgba(255, 255, 255, 0.8); }
+  }
+}
+
 // ── Main column ─────────────────────────────────────────────
 .dsk-main {
   grid-column: 2;     // always second column, even when sidebar is fixed-overlay

@@ -38,11 +38,13 @@ export function Header({
   return (
     <header className="dsk-header">
       <div className="dsk-header__greeting">
+        {/* Datum als Eyebrow oben, darunter die große Begrüßung – einheitlich
+            mit Mobile-Header und Detailseiten (Datum über dem Titel). */}
+        <div className="dsk-header__date">{formatToday(lang)}</div>
         <div className="dsk-header__greeting-line">
           {getGreeting(lang)},{" "}
           <strong>{userName || "Paul"}</strong>
         </div>
-        <div className="dsk-header__date">{formatToday(lang)}</div>
       </div>
 
       {/* Suche ist noch nicht implementiert → deaktiviert dargestellt */}

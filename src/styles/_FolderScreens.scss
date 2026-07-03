@@ -375,6 +375,39 @@
     padding: $spacing-xl 0;
   }
 
+  // ── Details-Lesezeichen: Metadaten der Seite ──────────────
+  &__details {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+  }
+
+  &__details-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding: 14px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  &__details-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-muted;
+    font-family: $font-body;
+  }
+
+  &__details-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: $color-text;
+    font-family: $font-body;
+    text-align: right;
+  }
+
   // Floating connection pop-up
   &__conn-popup {
     position: absolute;

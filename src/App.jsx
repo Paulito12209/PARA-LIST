@@ -330,12 +330,21 @@ export default function App() {
   const TABS = getTABS(t);
 
   const push = (view) => {
-    // "Zuletzt geöffnet"-Zeitstempel für Cat-Seiten (QuickSwitch ⌘K-Sortierung)
+    // "Zuletzt geöffnet"-Zeitstempel für Cat-Seiten (QuickSwitch ⌘K-Sortierung
+    // + Details-Lesezeichen)
     if (view?.view === "catDetail" && view.catId) {
       const now = Date.now();
       setState((s) => ({
         ...s,
         cats: s.cats.map((c) => (c.id === view.catId ? { ...c, lastOpenedAt: now } : c)),
+      }));
+    }
+    // Ebenso für Eintrags-Detailseiten (Details-Lesezeichen)
+    if (view?.view === "entryDetail" && view.entryId) {
+      const now = Date.now();
+      setState((s) => ({
+        ...s,
+        entries: s.entries.map((e) => (e.id === view.entryId ? { ...e, lastOpenedAt: now } : e)),
       }));
     }
     setStack((s) => [...s, view]);
@@ -498,7 +507,8 @@ export default function App() {
   const updateCat = (id, patch) =>
     setState((s) => ({
       ...s,
-      cats: s.cats.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+      // updatedAt bei jeder Änderung mitschreiben → "Zuletzt geändert" im Details-Tab.
+      cats: s.cats.map((c) => (c.id === id ? { ...c, ...patch, updatedAt: Date.now() } : c)),
     }));
 
   // Löschen = in den Papierkorb verschieben (nicht endgültig). Auto-Purge nach
@@ -558,7 +568,8 @@ export default function App() {
       ...s,
       entries: s.entries.map((e) => {
         if (e.id !== id) return e;
-        const next = { ...e, ...patch };
+        // updatedAt mitschreiben → "Zuletzt geändert" im Details-Lesezeichen.
+        const next = { ...e, ...patch, updatedAt: Date.now() };
         // Legacy-Sync: catIds aus catId ableiten – aber nur, wenn der Patch
         // nicht ohnehin schon eine explizite catIds-Liste mitliefert (sonst
         // würde eine Mehrfach-Verknüpfung auf den ersten Eintrag reduziert).
@@ -1287,6 +1298,7 @@ export default function App() {
                 pop();
               }}
               onBack={handleSmartBack}
+              onHome={() => setStack([{ view: VIEW.HOME }])}
               entries={state.entries}
               onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
               toggleTask={toggleTask}

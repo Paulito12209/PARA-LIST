@@ -3,8 +3,8 @@
 // Keep this file free of React components so Fast Refresh works
 // reliably across the codebase.
 // ============================================================
-import { Circle, Triangle, Square, FileText, CheckCircle2, Calendar, Paperclip } from "lucide-react";
-import { BookmarkIcon, TagIcon, CustomSettingsIcon } from "./components/AppIcons";
+import { Circle, Triangle, Square, FileText, CheckCircle2, Calendar, Paperclip, Info } from "lucide-react";
+import { BookmarkIcon, TagIcon } from "./components/AppIcons";
 import { I18N } from "./i18n";
 
 /* ── ID helpers ──────────────────────────────────────────────── */
@@ -160,7 +160,10 @@ export const BOOKMARKS = [
   { id: "media", color: "#10B981", Icon: Paperclip },
   { id: "link", color: "#7C3AED", Icon: BookmarkIcon },
   { id: "tags", color: "#EC4899", Icon: TagIcon },
-  { id: "settings", color: "#5858A0", Icon: CustomSettingsIcon },
+  // Details-Lesezeichen: zeigt Metadaten der Seite (erstellt/geändert/geöffnet).
+  // Löst das frühere "settings"-Lesezeichen ab – Einstellungen sind jetzt der
+  // Zahnrad-Button unten rechts in der Bottom-Nav.
+  { id: "details", color: "#5858A0", Icon: Info },
 ];
 
 export const NOTIF_RED = "#F26565";

@@ -105,10 +105,20 @@
   padding: 0 $spacing-md;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  // Beide Seiten am unteren Rand ausrichten, damit der linke Zurück/Home-Stapel
+  // und der rechte Button/FAB gemeinsam unten sitzen.
+  align-items: flex-end;
   gap: $spacing-sm;
   pointer-events: none;
   z-index: 5;
+
+  // Unten links: Zurück (oben) + Home (unten) vertikal gestapelt.
+  &__left-stack {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    pointer-events: none; // die Buttons selbst re-aktivieren die Klicks
+  }
 
   &__back {
     pointer-events: all;
@@ -747,15 +757,20 @@
 // Struktur analog zur Dock-Eingabezeile: kleiner Button in Home-Button-Form
 // (hier rot mit weißem X) links, breiter Aktions-Slot rechts.
 .sheet-footer {
+  // Volle Breite, damit die Zeile exakt so weit reicht wie die Listen-Karten
+  // darüber (der zentrierende Body-Flex würde sie sonst schmal einrücken).
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: $spacing-sm;
   margin-top: $spacing-lg;
+  width: 100%;
 
+  // Schließen-Button exakt in der Form des Dock-Home-Buttons: 48 × 40px,
+  // liegende Pille (radius 20px).
   &__close {
-    flex: 0 0 auto;
+    flex: 0 0 48px;
     width: 48px;
-    min-height: 44px;
+    height: 40px;
     border-radius: 20px;
     display: flex;
     align-items: center;
@@ -770,6 +785,7 @@
     &:active { transform: scale(0.97); }
   }
 
+  // Primär-Aktion füllt die restliche Breite.
   &__action {
     flex: 1;
     min-width: 0;

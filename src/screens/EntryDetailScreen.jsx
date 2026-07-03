@@ -22,7 +22,7 @@ const TASK_SUB_TAB_ORDER = ["open", "completed"];
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 
 export function EntryDetailScreen({
-  t, CC, theme, lang, entry, cat: _cat, allCats, onUpdate, onDelete, onBack,
+  t, CC, theme, lang, entry, cat: _cat, allCats, onUpdate, onDelete, onBack, onHome,
   entries, onOpenEntry, toggleTask, deleteEntry,
   onAddLinkedEntry, onAddSubtask, onUnlinkEntry,
   tags, onCreateTag, onUpdateTag, onDeleteTag,
@@ -40,7 +40,6 @@ export function EntryDetailScreen({
   const connPillRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
-  const prevBmRef = useRef("canvas");
   const subTabTouchX = useRef(0);
   const coverInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -92,15 +91,15 @@ export function EntryDetailScreen({
   // All tasks for tasks tab (subtasks + linked tasks)
   const allTasksForTab = entry.type === "task" ? [...subtasks, ...linkedTasks] : linkedTasks;
 
-  // Settings bookmark handler
+  // Lesezeichen-Auswahl: alle Lesezeichen (inkl. "details") wechseln nur den
+  // Inhaltsbereich. Einstellungen liegen jetzt auf dem Zahnrad-Button unten rechts.
   const handleBmSelect = useCallback((id) => {
-    if (id === "settings") {
-      prevBmRef.current = bm;
-      setShowSettingsSheet(true);
-    } else {
-      setBm(id);
-    }
-  }, [bm]);
+    setBm(id);
+  }, []);
+
+  const openSettingsSheet = useCallback(() => {
+    setShowSettingsSheet(true);
+  }, []);
 
   const closeSettingsSheet = useCallback(() => {
     setShowSettingsSheet(false);
@@ -655,6 +654,31 @@ export function EntryDetailScreen({
             })()}
           </div>
         )}
+        {bm === "details" && (() => {
+          // Zeitstempel (Zahl oder ISO-String) → "3. Juli 2026, 14:32"
+          const fmtStamp = (ts) => {
+            if (!ts) return t.neverLabel;
+            const d = new Date(ts);
+            if (isNaN(d.getTime())) return t.neverLabel;
+            return d.toLocaleDateString(t.locale, { day: "numeric", month: "long", year: "numeric" })
+              + ", " + d.toLocaleTimeString(t.locale, { hour: "2-digit", minute: "2-digit" });
+          };
+          const rows = [
+            { label: t.createdAtLabel, value: fmtStamp(entry.createdAt) },
+            { label: t.lastModifiedLabel, value: fmtStamp(entry.updatedAt) },
+            { label: t.lastOpenedLabel, value: fmtStamp(entry.lastOpenedAt) },
+          ];
+          return (
+            <div className="cat-detail__details">
+              {rows.map((r) => (
+                <div key={r.label} className="cat-detail__details-row">
+                  <span className="cat-detail__details-label">{r.label}</span>
+                  <span className="cat-detail__details-value">{r.value}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Settings Bottom Sheet */}
@@ -758,18 +782,25 @@ export function EntryDetailScreen({
 
       {/* Bottom nav */}
       <div className="nav-bottom" style={{ position: "relative" }}>
-        <button className="nav-bottom__back" onClick={onBack}>
-          <ChevronLeft size={20} color="#EDEEFF" />
-        </button>
+        {/* Unten links: Zurück (oben) + Home (unten) als vertikaler Stapel. */}
+        <div className="nav-bottom__left-stack">
+          <button className="nav-bottom__back" onClick={onBack} aria-label={t.back || "Zurück"}>
+            <ChevronLeft size={20} color="#EDEEFF" />
+          </button>
+          <button className="nav-bottom__back" onClick={onHome} aria-label={t.home}>
+            <Home size={20} color="#EDEEFF" />
+          </button>
+        </div>
 
         <div className="nav-bottom__actions">
           {bm === "canvas" ? (
+            // Zahnrad statt (verstecktem) Platzhalter: öffnet das Einstellungen-Sheet.
             <button
               className="nav-bottom__back"
-              onClick={onBack}
-              style={{ visibility: 'hidden' }}
+              onClick={openSettingsSheet}
+              aria-label={t.settingsBtn}
             >
-              <Home size={20} color="#EDEEFF" />
+              <CustomSettingsIcon size={22} color="#EDEEFF" />
             </button>
           ) : (
             <button

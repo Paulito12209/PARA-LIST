@@ -3,7 +3,8 @@
 
 .collab-modal {
   max-height: calc(100dvh - var(--command-panel-peek, 80px));
-  padding-bottom: 24px;
+  // Nur 16px Abstand nach unten – analog zum Dock-Padding der Startseite.
+  padding-bottom: $spacing-md;
   display: flex;
   flex-direction: column;
   overflow: hidden !important;
@@ -40,6 +41,12 @@
     padding: $spacing-lg 0;
   }
 
+  // Der Body trennt seine Kinder bereits per `gap` – der Footer darf hier
+  // keinen zusätzlichen margin-top draufsatteln (sonst doppelter Abstand oben).
+  .sheet-footer {
+    margin-top: 0;
+  }
+
   &__list {
     width: 100%;
     display: flex;
@@ -56,7 +63,8 @@
     align-items: center;
     gap: 12px;
     padding: 10px 12px;
-    border-radius: $radius-sm;
+    // Einheitlich abgerundet wie die Footer-Buttons (20px).
+    border-radius: 20px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.06);
     transition: background $transition-fast;
@@ -116,14 +124,18 @@
 
   &__add-btn {
     width: 100%;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: $spacing-sm;
-    padding: 12px;
-    border-radius: $radius-sm;
-    background: rgba($color-task, 0.12);
-    border: 1px solid rgba($color-task, 0.2);
+    padding: 0 16px;
+    // Gleiche liegende Pillenform wie der Schließen-Button daneben.
+    border-radius: 20px;
+    // Heller, klar als Button erkennbarer Körper mit blauem Rahmen + Text
+    // (Task-Blau des Design-Systems, wie das Voice-Icon im Dock).
+    background: rgba($color-task, 0.1);
+    border: 1.5px solid rgba($color-task, 0.45);
     color: $color-task;
     font-size: 14px;
     font-weight: 600;
@@ -133,7 +145,8 @@
     flex-shrink: 0;
 
     &:hover {
-      background: rgba($color-task, 0.2);
+      background: rgba($color-task, 0.18);
+      border-color: rgba($color-task, 0.6);
     }
   }
 
@@ -182,8 +195,9 @@
 
   &__submit-btn {
     flex: 1;
-    padding: 12px;
-    border-radius: $radius-sm;
+    height: 40px;
+    padding: 0 16px;
+    border-radius: 20px;
     background: $color-task;
     border: none;
     color: #fff;

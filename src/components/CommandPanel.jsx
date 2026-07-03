@@ -119,20 +119,12 @@ export function CommandPanel({
               </button>
             )}
             <div className="command-panel__titles">
-              {(page || isVoiceMode) ? (
-                <>
-                  {/* Detailseiten + Voice-Modus: Datum über dem Titel/der Frage */}
-                  <div className="command-panel__date">{dateStr}</div>
-                  <div className={`command-panel__greeting ${page ? "command-panel__greeting--page" : ""}`}>
-                    {page ? page.title : t.voiceQuestion}
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="command-panel__greeting">{app?.title || title || t.home}</div>
-                  <div className="command-panel__date">{dateStr}</div>
-                </>
-              )}
+              {/* Einheitlich in allen Modi (Startseite, Detailseiten, Voice):
+                  Datum als Eyebrow oben, darunter der große Titel/die Frage. */}
+              <div className="command-panel__date">{dateStr}</div>
+              <div className={`command-panel__greeting ${page ? "command-panel__greeting--page" : ""}`}>
+                {page ? page.title : isVoiceMode ? t.voiceQuestion : (app?.title || title || t.home)}
+              </div>
             </div>
           </div>
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>

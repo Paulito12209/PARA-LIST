@@ -216,7 +216,6 @@ export function CatDetailScreen({
   const datePillRef = useRef(null);
   const tagPopupRef = useRef(null);
   const tagTriggerRef = useRef(null);
-  const prevBmRef = useRef("canvas");
 
   // Swipe-Refs für Sub-Tab-Wechsel (wiederverwendbar)
   const subTabTouchX = useRef(0);
@@ -263,15 +262,16 @@ export function CatDetailScreen({
   // Event-Listener für Click-Outside
   // (useRef + useCallback statt useEffect, da wir den Handler auf dem cat-detail div setzen)
 
-  // Settings bookmark handler
+  // Lesezeichen-Auswahl: alle Lesezeichen (inkl. "details") wechseln nur den
+  // Inhaltsbereich. Die Einstellungen liegen jetzt auf dem Zahnrad-Button unten
+  // rechts (nicht mehr auf einem Lesezeichen).
   const handleBmSelect = useCallback((id) => {
-    if (id === "settings") {
-      prevBmRef.current = bm;
-      setShowSettingsSheet(true);
-    } else {
-      setBm(id);
-    }
-  }, [bm]);
+    setBm(id);
+  }, []);
+
+  const openSettingsSheet = useCallback(() => {
+    setShowSettingsSheet(true);
+  }, []);
 
   const closeSettingsSheet = useCallback(() => {
     setShowSettingsSheet(false);
@@ -867,6 +867,31 @@ export function CatDetailScreen({
             })()}
           </div>
         )}
+        {bm === "details" && (() => {
+          // Zeitstempel (Zahl oder ISO-String) → "3. Juli 2026, 14:32"
+          const fmtStamp = (ts) => {
+            if (!ts) return t.neverLabel;
+            const d = new Date(ts);
+            if (isNaN(d.getTime())) return t.neverLabel;
+            return d.toLocaleDateString(t.locale, { day: "numeric", month: "long", year: "numeric" })
+              + ", " + d.toLocaleTimeString(t.locale, { hour: "2-digit", minute: "2-digit" });
+          };
+          const rows = [
+            { label: t.createdAtLabel, value: fmtStamp(cat.createdAt) },
+            { label: t.lastModifiedLabel, value: fmtStamp(cat.updatedAt) },
+            { label: t.lastOpenedLabel, value: fmtStamp(cat.lastOpenedAt) },
+          ];
+          return (
+            <div className="cat-detail__details">
+              {rows.map((r) => (
+                <div key={r.label} className="cat-detail__details-row">
+                  <span className="cat-detail__details-label">{r.label}</span>
+                  <span className="cat-detail__details-value">{r.value}</span>
+                </div>
+              ))}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Hidden file inputs for cover upload */}
@@ -986,9 +1011,15 @@ export function CatDetailScreen({
         className={`nav-bottom ${isFlashcardRes && bm === "canvas" ? "nav-bottom--word-dock" : ""}`}
         style={isFlashcardRes && bm === "canvas" ? undefined : { position: "relative" }}
       >
-        <button className="nav-bottom__back" onClick={onBack}>
-          <ChevronLeft size={20} color="#EDEEFF" />
-        </button>
+        {/* Unten links: Zurück (oben) + Home (unten) als vertikaler Stapel. */}
+        <div className="nav-bottom__left-stack">
+          <button className="nav-bottom__back" onClick={onBack} aria-label={t.back || "Zurück"}>
+            <ChevronLeft size={20} color="#EDEEFF" />
+          </button>
+          <button className="nav-bottom__back" onClick={onHome} aria-label={t.home}>
+            <Home size={20} color="#EDEEFF" />
+          </button>
+        </div>
 
         {/* Neues Wort hinzufügen (nur auf Flashcard-Ressourcen, Canvas-Ansicht) */}
         {isFlashcardRes && bm === "canvas" && (
@@ -1056,11 +1087,15 @@ export function CatDetailScreen({
                 <Send size={20} color="#fff" strokeWidth={2.2} />
               </button>
             ) : (
+              // Zahnrad statt Home: öffnet das Einstellungen-Sheet
+              // (Cover, Favorit, Archivieren, Löschen). Ersetzt das frühere
+              // "settings"-Lesezeichen.
               <button
                 className="nav-bottom__back"
-                onClick={onHome}
+                onClick={openSettingsSheet}
+                aria-label={t.settingsBtn}
               >
-                <Home size={20} color="#EDEEFF" />
+                <CustomSettingsIcon size={22} color="#EDEEFF" />
               </button>
             )
           ) : (

@@ -458,6 +458,19 @@
       color: #1a1a24;
     }
 
+    &__details-row {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: rgba(0, 0, 0, 0.06);
+    }
+
+    &__details-label {
+      color: #5858A0;
+    }
+
+    &__details-value {
+      color: #1c1c30;
+    }
+
     &__textarea {
       color: #1a1a24;
     }
@@ -1389,12 +1402,15 @@
   }
 
   &__add-btn {
-    background: rgba(#7C83F7, 0.1);
-    border-color: rgba(#7C83F7, 0.18);
-    color: #7C83F7;
+    // Weißer Button-Körper, blauer Rahmen + blauer Text (Task-Blau),
+    // statt des früheren Lila – klar als Button erkennbar.
+    background: #ffffff;
+    border-color: rgba($color-task, 0.55);
+    color: $color-task;
 
     &:hover {
-      background: rgba(#7C83F7, 0.16);
+      background: rgba($color-task, 0.06);
+      border-color: rgba($color-task, 0.75);
     }
   }
 

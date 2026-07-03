@@ -48,6 +48,15 @@ export const fmtDate = (d, locale) =>
     ? ""
     : new Date(d + "T12:00").toLocaleDateString(locale, { day: "numeric", month: "short" });
 
+// Initialen aus dem Nutzernamen: "Paul" → "P", "Paul Angeles Chaquire" → "PA"
+// (Vorname + erster Nachname). Fallback "U" wenn kein Name gesetzt ist.
+export const getInitials = (name) => {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "U";
+  if (parts.length === 1) return parts[0][0].toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
 export const fmtRelative = (ts, locale) => {
   if (!ts) return "";
   const now = Date.now();

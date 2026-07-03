@@ -456,8 +456,9 @@
   }
 
   &__badge {
-    background: rgba(15, 15, 30, 0.17);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    // Getönte Farbfläche in Akzentfarbe (einheitlich mit Desktop-Cover)
+    background: rgba(var(--cover-accent-rgb), 0.14);
+    border: 1px solid rgba(var(--cover-accent-rgb), 0.3);
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 10px;
@@ -519,6 +520,20 @@
     &:hover {
       background: rgba(15, 15, 30, 0.25);
       color: rgba(255, 255, 255, 0.8);
+    }
+
+    // Initialen statt Platzhalter-Icon: Brand-Gradient wie im Settings-Profil
+    &--initials {
+      background: linear-gradient(135deg, #7C83F7, #4F46E5);
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+
+      &:hover {
+        background: linear-gradient(135deg, #8A90F8, #5B52E8);
+        color: #fff;
+      }
     }
   }
 
@@ -743,10 +758,14 @@
 
     &--date {
       color: #1D4ED8;
+      background: rgba(96, 165, 250, 0.12);
+      border-color: rgba(96, 165, 250, 0.3);
     }
 
     &--area {
       color: $color-area;
+      background: rgba(208, 144, 32, 0.12);
+      border-color: rgba(208, 144, 32, 0.3);
     }
 
     display: inline-flex;

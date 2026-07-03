@@ -311,9 +311,12 @@ export function DesktopApp({ ctx }) {
           lang={lang}
           activeCatType={coverCatType}
           cats={state.cats}
+          entries={state.entries}
           firstCat={coverCat}
+          user={state.user}
           detail={!!detailCat}
           onOpenCat={openCat}
+          onOpenEntry={openEntry}
           onUpdateCat={mutations.updateCat}
           onAddCat={(type) => mutations.addCatModal(type)}
         />

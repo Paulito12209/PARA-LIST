@@ -212,8 +212,8 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
                   ev.stopPropagation();
                   onTogglePin?.(e.id);
                 }}
-                aria-label={t.actionUnpin || "Fixierung lösen"}
-                title={t.actionUnpin || "Fixierung lösen"}
+                aria-label={t.actionUnpin || "Lösen"}
+                title={t.actionUnpin || "Lösen"}
               >
                 <Pin size={13} />
               </button>
@@ -421,8 +421,8 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
                   ev.stopPropagation();
                   onTogglePin?.(c.id);
                 }}
-                aria-label={t.actionUnpin || "Fixierung lösen"}
-                title={t.actionUnpin || "Fixierung lösen"}
+                aria-label={t.actionUnpin || "Lösen"}
+                title={t.actionUnpin || "Lösen"}
               >
                 <Pin size={13} />
               </button>

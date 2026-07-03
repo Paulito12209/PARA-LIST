@@ -17,9 +17,9 @@ import {
   Image as ImageIcon,
   Link as LinkIcon,
   Ellipsis,
-  Pin,
 } from "lucide-react";
 import { BrandLogo } from "../components/AppIcons";
+import { getInitials } from "../utils";
 
 const SECTIONS = [
   { id: "project",  type: "project",  Icon: Circle,   labelKey: "projects",  fallback: "Projekte",     color: "var(--cat-project)",  canAdd: true },
@@ -297,7 +297,7 @@ export function Sidebar({
           );
         })}
 
-        {/* Angeheftet – direkt unter Archiv im Tree-Bereich */}
+        {/* Favoriten (starred) – direkt unter Archiv im Tree-Bereich */}
         {pinnedCats.length > 0 && (
           <div className="dsk-sidebar__pinned">
             <div className="dsk-sidebar__pinned-divider" />
@@ -308,10 +308,10 @@ export function Sidebar({
               aria-expanded={pinnedOpen}
             >
               <span className="dsk-sidebar__pinned-icon">
-                <Pin size={16} strokeWidth={2.2} />
+                <Star size={16} strokeWidth={2.2} />
               </span>
               <span className="dsk-sidebar__pinned-label">
-                {t?.pinned || "Angeheftet"}
+                {t?.favorites || "Favoriten"}
               </span>
               <span className="dsk-sidebar__pinned-chevron">
                 {pinnedOpen
@@ -355,7 +355,7 @@ export function Sidebar({
             {user?.avatar ? (
               <img src={user.avatar} alt="" className="dsk-sidebar__profile-avatar-img" />
             ) : (
-              (user?.name || "U").charAt(0).toUpperCase()
+              getInitials(user?.name)
             )}
           </span>
           <span className="dsk-sidebar__profile-name">{user?.name || "User"}</span>

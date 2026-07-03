@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, User, UserPlus, ChevronRight, Minimize2 } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, Minimize2 } from "lucide-react";
 import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
 import { DockMenuSheet } from "../components/DockMenuSheet";
@@ -7,7 +7,7 @@ import { TrashSheet } from "../components/TrashSheet";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
-import { getNextBirthday, isOld, isToday, fmtDate, getTaskGroup } from "../utils";
+import { getNextBirthday, isOld, isToday, fmtDate, getTaskGroup, getInitials } from "../utils";
 
 const COVER_ACCENT_RGB = {
   project: "224, 62, 62",
@@ -800,10 +800,10 @@ export function HomeScreen({
                 />
               ) : (
                 <button
-                  className="home-cover__avatar-placeholder"
+                  className="home-cover__avatar-placeholder home-cover__avatar-placeholder--initials"
                   onClick={() => avatarInputRef.current?.click()}
                 >
-                  <User size={20} />
+                  {getInitials(state.user.name)}
                 </button>
               )}
               {/* Kollaboratoren gibt es nur bei Kategorien, nicht bei Einträgen */}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Circle,
   Triangle,
@@ -13,6 +13,7 @@ import { ArchiveIcon } from "../components/AppIcons";
 import { isOld, CAT_ICONS } from "../utils";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CommandDock } from "../components/CommandDock";
+import { DetailDock } from "../components/DetailDock";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 
 const TYPE_COLORS = {
@@ -109,6 +110,7 @@ export function ArchiveScreen({
   onQuickCreate,
   onAddVoiceEntry,
   onHome,
+  onHeaderTitleChange,
 }) {
   const [activeArchiveTab, setActiveArchiveTab] = useState(() =>
     VALID_ARCHIVE_TABS.includes(tab) ? tab : null
@@ -172,20 +174,27 @@ export function ArchiveScreen({
     return "";
   };
 
+  // Meldet den Seitentitel nach oben ans Command-Panel: in einer aufgeklappten
+  // archivierten Liste deren Titel (z.B. "Erledigte Aufgaben"), sonst null
+  // (Dashboard zeigt weiterhin "Startseite").
+  useEffect(() => {
+    onHeaderTitleChange?.(activeArchiveTab ? getSectionTitle() : null);
+    return () => onHeaderTitleChange?.(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeArchiveTab, lang]);
+
   return (
     <div className="cat-detail archive-dashboard-container">
-      <div className="cat-detail__header">
-        <div className="cat-detail__title-row">
-          <ArchiveIcon size={18} color="#7C83F7" />
-          <div className="cat-detail__title-input" style={{ pointerEvents: "none" }}>
-            {activeArchiveTab
-              ? getSectionTitle()
-              : lang === "de"
-              ? "Archiv-Dashboard"
-              : "Archive Dashboard"}
+      {!activeArchiveTab && (
+        <div className="cat-detail__header">
+          <div className="cat-detail__title-row">
+            <ArchiveIcon size={18} color="#7C83F7" />
+            <div className="cat-detail__title-input" style={{ pointerEvents: "none" }}>
+              {lang === "de" ? "Archiv-Dashboard" : "Archive Dashboard"}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <div className="cat-detail__body" style={{ padding: "16px", paddingBottom: "160px" }}>
         {!activeArchiveTab ? (
@@ -329,39 +338,45 @@ export function ArchiveScreen({
         )}
       </div>
 
-      <div className="home__floating-actions">
-        <button
-          className="home__floating-btn"
-          onClick={activeArchiveTab ? () => setActiveArchiveTab(null) : onBack}
-          aria-label={t.back || (lang === "de" ? "Zurück" : "Back")}
-        >
-          <ChevronLeft size={20} />
-        </button>
-      </div>
+      {activeArchiveTab ? (
+        <DetailDock t={t} onHome={onHome} />
+      ) : (
+        <>
+          <div className="home__floating-actions">
+            <button
+              className="home__floating-btn"
+              onClick={onBack}
+              aria-label={t.back || (lang === "de" ? "Zurück" : "Back")}
+            >
+              <ChevronLeft size={20} />
+            </button>
+          </div>
 
-      <CommandDock
-        t={t}
-        activeType={dockType}
-        onSelectType={(type) => setActiveArchiveTab(type)}
-        onSubmit={onQuickCreate}
-        onOpenVoice={() => setVoiceOverlayOpen(true)}
-        onMenu={() => {}}
-        onHome={onHome}
-        leadingAction="home"
-      />
+          <CommandDock
+            t={t}
+            activeType={dockType}
+            onSelectType={(type) => setActiveArchiveTab(type)}
+            onSubmit={onQuickCreate}
+            onOpenVoice={() => setVoiceOverlayOpen(true)}
+            onMenu={() => {}}
+            onHome={onHome}
+            leadingAction="home"
+          />
 
-      {voiceOverlayOpen && (
-        <VoiceOverlay
-          t={t}
-          tab={dockType}
-          tabColor={TYPE_COLORS[dockType] || "#7C83F7"}
-          lang={lang}
-          onTranscribed={(title, date) => {
-            onAddVoiceEntry(dockType, title, date);
-            setVoiceOverlayOpen(false);
-          }}
-          onClose={() => setVoiceOverlayOpen(false)}
-        />
+          {voiceOverlayOpen && (
+            <VoiceOverlay
+              t={t}
+              tab={dockType}
+              tabColor={TYPE_COLORS[dockType] || "#7C83F7"}
+              lang={lang}
+              onTranscribed={(title, date) => {
+                onAddVoiceEntry(dockType, title, date);
+                setVoiceOverlayOpen(false);
+              }}
+              onClose={() => setVoiceOverlayOpen(false)}
+            />
+          )}
+        </>
       )}
     </div>
   );

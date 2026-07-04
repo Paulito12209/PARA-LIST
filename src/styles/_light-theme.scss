@@ -1026,22 +1026,9 @@
 // Feedback Styles
 
 .app.light-theme {
-  .feedback-trigger-btn {
+  .feedback-submit-btn {
     background: rgba(#7C83F7, 0.08);
     border-color: rgba(#7C83F7, 0.2);
-  }
-
-  .feedback-types {
-    background: #f0f0f5;
-  }
-
-  .feedback-type-btn {
-    color: #5858A0;
-
-    &--active {
-      background: #7C83F7;
-      color: white;
-    }
   }
 
   .feedback-callout {
@@ -1050,8 +1037,16 @@
     color: #5858A0;
   }
 
-  .feedback-label {
-    color: #1a1a24;
+  .feedback-embed {
+    border-color: #e5e5f0;
+  }
+
+  .feedback-board-link {
+    color: #5858A0;
+
+    &:active {
+      color: #7C83F7;
+    }
   }
 }
 

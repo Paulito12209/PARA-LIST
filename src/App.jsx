@@ -322,6 +322,9 @@ export default function App() {
   const [translateConfig, setTranslateConfig] = useState(null);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
+  // Header-Titel des Archivs: null → Dashboard ("Startseite"); in einer aufgeklappten
+  // archivierten Liste → deren Titel (z.B. "Erledigte Aufgaben").
+  const [archiveHeaderTitle, setArchiveHeaderTitle] = useState(null);
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -1059,7 +1062,13 @@ export default function App() {
     >
       <CommandPanel
         t={t}
-        title={cur.view === VIEW.HOME ? homeHeaderTitle : null}
+        title={
+          cur.view === VIEW.HOME
+            ? homeHeaderTitle
+            : cur.view === VIEW.ARCHIVE
+            ? archiveHeaderTitle
+            : null
+        }
         page={headerPage}
         app={activeApp}
         lang={lang}
@@ -1199,6 +1208,7 @@ export default function App() {
             }}
             onAddVoiceEntry={(type, title, date) => addEntry(buildVoiceEntry(type, title, date))}
             onHome={() => setStack([{ view: VIEW.HOME }])}
+            onHeaderTitleChange={setArchiveHeaderTitle}
           />
         )}
 

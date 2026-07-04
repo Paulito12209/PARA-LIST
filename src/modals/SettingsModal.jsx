@@ -6,6 +6,7 @@ import {
   Sun,
   Trash2,
   Image as ImageIcon,
+  ExternalLink,
 } from "lucide-react";
 import { clear } from "idb-keyval";
 
@@ -13,18 +14,18 @@ const VIEW_MAIN = "main";
 const VIEW_PROFILE = "profile";
 const VIEW_FEEDBACK = "feedback";
 
-const FEEDBACK_EMAIL = "kontakt@paulangeles.com";
+// Notion-Seite, auf der Feedback (inkl. Screenshot-Upload) gesammelt wird.
+// /ebd/ ist Notions Embed-Pfad fürs Einbetten per iframe; die normale Seiten-
+// URL dient als Fallback zum Öffnen in einem neuen Tab.
+const FEEDBACK_FORM_URL =
+  "https://married-agustinia-98f.notion.site/34430c14dde780779112c1653e7746df?pvs=105";
+const FEEDBACK_FORM_EMBED_URL =
+  "https://married-agustinia-98f.notion.site/ebd/34430c14dde780779112c1653e7746df";
 
 const LANGUAGES = [
   { code: "de", flag: "🇩🇪" },
   { code: "en", flag: "🇬🇧" },
   { code: "es", flag: "🇪🇸" },
-];
-
-const FEEDBACK_TYPES = (t) => [
-  { id: "bug", label: t.bug, desc: t.bugDesc, subject: "Bug" },
-  { id: "improvement", label: t.improvement, desc: t.improvementDesc, subject: "Verbesserung" },
-  { id: "feature", label: t.feature, desc: t.featureDesc, subject: "Feature" },
 ];
 
 export function SettingsModal({
@@ -38,8 +39,6 @@ export function SettingsModal({
   onUpdateUser,
 }) {
   const [view, setView] = useState(VIEW_MAIN);
-  const [feedbackType, setFeedbackType] = useState("bug");
-  const [feedbackText, setFeedbackText] = useState("");
   const fileInputRef = useRef(null);
 
   const handleAvatarChange = (e) => {
@@ -48,15 +47,6 @@ export function SettingsModal({
     const reader = new FileReader();
     reader.onloadend = () => onUpdateUser({ avatar: reader.result });
     reader.readAsDataURL(file);
-  };
-
-  const sendFeedback = () => {
-    const typeConfig = FEEDBACK_TYPES(t).find((ft) => ft.id === feedbackType);
-    const subject = `Feedback: ${typeConfig?.subject || "Feedback"}`;
-    const mailto = `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(feedbackText)}`;
-    window.location.href = mailto;
   };
 
   const handleDeleteApp = async () => {
@@ -84,13 +74,7 @@ export function SettingsModal({
       >
         <div className="modal__handle" />
         <div className="modal__header">
-          <div className="modal__header-left">
-            {view === VIEW_FEEDBACK && (
-              <button className="settings-modal__back-inline" onClick={() => setView(VIEW_MAIN)}>
-                <ChevronLeft size={20} color="#5858A0" />
-              </button>
-            )}
-          </div>
+          <div className="modal__header-left" />
           <h3 className="modal__title">{titleByView[view]}</h3>
           <div className="modal__header-right" />
         </div>
@@ -120,14 +104,7 @@ export function SettingsModal({
           />
         )}
         {view === VIEW_FEEDBACK && (
-          <FeedbackView
-            t={t}
-            feedbackType={feedbackType}
-            setFeedbackType={setFeedbackType}
-            feedbackText={feedbackText}
-            setFeedbackText={setFeedbackText}
-            onSend={sendFeedback}
-          />
+          <FeedbackView t={t} onBack={() => setView(VIEW_MAIN)} onClose={onClose} />
         )}
       </div>
     </div>
@@ -269,21 +246,8 @@ function MainSettingsView({
         <div className="settings-section">
           <div className="settings-row">
             <span className="settings-label">{t.feedback}</span>
-            <button className="feedback-trigger-btn" onClick={onOpenFeedback}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                style={{ width: 18, height: 18 }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"
-                />
-              </svg>
+            <button className="feedback-submit-btn" onClick={onOpenFeedback}>
+              {t.submitFeedback}
             </button>
           </div>
         </div>
@@ -313,7 +277,7 @@ function ProfileSettingsView({ t, onBack, onClose, onDeleteApp }) {
 
       <div className="settings-modal__footer">
         <button className="settings-modal__footer-back" onClick={onBack}>
-          <ChevronLeft size={20} color="#EDEEFF" />
+          <ChevronLeft size={20} color="currentColor" />
         </button>
         <button className="settings-modal__footer-close" onClick={onClose}>
           {t.closeBtn}
@@ -323,46 +287,54 @@ function ProfileSettingsView({ t, onBack, onClose, onDeleteApp }) {
   );
 }
 
-function FeedbackView({ t, feedbackType, setFeedbackType, feedbackText, setFeedbackText, onSend }) {
-  const types = FEEDBACK_TYPES(t);
-  const activeDesc = types.find((ft) => ft.id === feedbackType)?.desc;
+function FeedbackView({ t, onBack, onClose }) {
+  const [formOpen, setFormOpen] = useState(false);
 
   return (
     <div className="settings-modal__content settings-modal__content--sub">
-      <div className="feedback-form">
-        <div className="feedback-types">
-          {types.map((ft) => (
+      <div className="settings-modal__body">
+        <div className="feedback-form">
+          <div className="feedback-callout">{t.feedbackScreenshotHint}</div>
+
+          {!formOpen ? (
             <button
-              key={ft.id}
-              className={`feedback-type-btn ${
-                feedbackType === ft.id ? "feedback-type-btn--active" : ""
-              }`}
-              onClick={() => setFeedbackType(ft.id)}
+              className="modal__submit"
+              onClick={() => setFormOpen(true)}
+              style={{ background: "#7C83F7" }}
             >
-              {ft.label}
+              {t.openFeedbackForm}
             </button>
-          ))}
+          ) : (
+            <>
+              <iframe
+                className="feedback-embed"
+                src={FEEDBACK_FORM_EMBED_URL}
+                width="100%"
+                height="600"
+                frameBorder="0"
+                allowFullScreen
+                title="Feedback"
+              />
+              <a
+                className="feedback-board-link"
+                href={FEEDBACK_FORM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink size={14} />
+                {t.feedbackOpenNewTab}
+              </a>
+            </>
+          )}
         </div>
+      </div>
 
-        <div className="feedback-callout">{activeDesc}</div>
-
-        <div className="feedback-textarea-group">
-          <label className="feedback-label">{t.feedbackQuestion}</label>
-          <textarea
-            className="modal__textarea"
-            value={feedbackText}
-            onChange={(e) => setFeedbackText(e.target.value)}
-            placeholder="..."
-            rows={6}
-          />
-        </div>
-
-        <button
-          className={`modal__submit ${!feedbackText.trim() ? "modal__submit--disabled" : ""}`}
-          onClick={onSend}
-          style={{ background: "#7C83F7" }}
-        >
-          {t.send}
+      <div className="settings-modal__footer">
+        <button className="settings-modal__footer-back" onClick={onBack}>
+          <ChevronLeft size={20} color="currentColor" />
+        </button>
+        <button className="settings-modal__footer-close" onClick={onClose}>
+          {t.closeBtn}
         </button>
       </div>
     </div>

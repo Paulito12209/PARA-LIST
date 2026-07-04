@@ -203,21 +203,6 @@
     height: auto;
   }
 
-  &__back-inline {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    padding: 0;
-    margin-right: 4px;
-    transition: transform 0.2s ease;
-
-    &:active {
-      transform: translateX(-2px);
-    }
-  }
-
   &__content {
     flex: 1;
     overflow-y: auto;
@@ -359,18 +344,18 @@
 
 // Feedback Styles
 
-.feedback-trigger-btn {
-  @include flex-center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
+.feedback-submit-btn {
+  padding: 8px 16px;
+  border-radius: $radius-pill;
   background: rgba($color-task, 0.12);
   border: 1px solid rgba($color-task, 0.25);
   color: $color-task;
+  font-size: 13px;
+  font-weight: 600;
   transition: all 0.2s;
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.96);
     background: rgba($color-task, 0.2);
   }
 }
@@ -380,32 +365,6 @@
   flex-direction: column;
   gap: 20px;
   padding-top: 8px;
-}
-
-.feedback-types {
-  display: flex;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px;
-  border-radius: $radius-md;
-}
-
-.feedback-type-btn {
-  flex: 1;
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  color: #5858A0;
-  transition: all 0.2s;
-
-  &--active {
-    background: #7C83F7;
-    color: white;
-    box-shadow: 0 2px 8px rgba(124, 131, 247, 0.3);
-  }
 }
 
 .feedback-callout {
@@ -419,16 +378,27 @@
   animation: fade-in 0.3s ease;
 }
 
-.feedback-textarea-group {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.feedback-embed {
+  width: 100%;
+  border-radius: $radius-md;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  animation: fade-in 0.3s ease;
 }
 
-.feedback-label {
-  font-size: 14px;
+.feedback-board-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
   font-weight: 600;
-  color: #EDEEFF;
-  margin-left: 4px;
+  color: #8E8EB2;
+  text-decoration: none;
+  padding: 4px;
+  transition: color 0.2s;
+
+  &:active {
+    color: $color-task;
+  }
 }
 

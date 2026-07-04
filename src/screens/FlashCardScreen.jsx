@@ -51,15 +51,25 @@ export function FlashCardScreen({
     ...decks
       .filter((d) => !d.isPreset)
       .flatMap((d) =>
-        d.cards.map((c) => ({ id: c.id, front: c.front, back: c.back, createdAt: c.createdAt, deck: d }))
+        d.cards.map((c) => ({
+          id: c.id, front: c.front, back: c.back, createdAt: c.createdAt, deck: d,
+          // Deck-Karten: front = Fremdsprache → Richtung entspricht languagePair.
+          langPair: d.languagePair || null,
+        }))
       ),
-    ...vocabEntries.map((v) => ({
-      id: v.id,
-      front: v.front,
-      back: v.back,
-      createdAt: v.createdAt,
-      deck: decks.find((d) => d.id === v.deckId) || null,
-    })),
+    ...vocabEntries.map((v) => {
+      const deck = decks.find((d) => d.id === v.deckId) || null;
+      return {
+        id: v.id,
+        front: v.front,
+        back: v.back,
+        createdAt: v.createdAt,
+        deck,
+        // Übersetzer-Wortpaare: front = deutsches Quellwort, back = Übersetzung
+        // → Richtung ist gegenüber dem Deck-languagePair umgekehrt.
+        langPair: deck?.languagePair ? [deck.languagePair[1], deck.languagePair[0]] : null,
+      };
+    }),
   ]
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
     .slice(0, 5);
@@ -104,7 +114,13 @@ export function FlashCardScreen({
       // bei gemischten Sessions (Karten aus mehreren Decks) korrekt befüllt wird.
       const results = [
         ...s.results,
-        { cardId: card.id, correct, front: card.front, back: card.back, deckId: card.deck?.id ?? card.deckId ?? null },
+        {
+          cardId: card.id, correct, front: card.front, back: card.back,
+          deckId: card.deck?.id ?? card.deckId ?? null,
+          // Richtungs-Snapshot für die Fehler-Liste (Übersetzer-Karten laufen
+          // entgegen dem Deck-languagePair).
+          langPair: card.langPair ?? card.deck?.languagePair ?? activeDeck?.languagePair ?? null,
+        },
       ];
       const nextIndex = s.index + 1;
       if (nextIndex >= s.queue.length) {
@@ -355,9 +371,9 @@ export function FlashCardScreen({
     const rot = drag / 18;
     const hintCorrect = drag > SWIPE_ANSWER_PX;
     const hintWrong = drag < -SWIPE_ANSWER_PX;
-    // Sprachrichtung: bei gemischten Sessions steckt das Deck an der Karte,
-    // sonst gilt das aktive Deck. Presets/Übersetzer-Decks haben languagePair.
-    const langPair = card.deck?.languagePair || activeDeck?.languagePair || null;
+    // Sprachrichtung: kartenindividuell (Übersetzer-Wortpaare sind gegenüber
+    // dem Deck umgekehrt), sonst Deck der Karte bzw. aktives Deck.
+    const langPair = card.langPair || card.deck?.languagePair || activeDeck?.languagePair || null;
 
     return (
       <div className="fc-screen fc-screen--study">

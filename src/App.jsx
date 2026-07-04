@@ -739,6 +739,9 @@ export default function App() {
           cardId: r.cardId,
           front: r.front ?? card?.front ?? "",
           back: r.back ?? card?.back ?? "",
+          // Sprachrichtung der Karte (Übersetzer-Wortpaare laufen entgegen dem
+          // Deck-languagePair) – für die Richtungs-Pille im Fehler-Training.
+          langPair: r.langPair ?? owner?.languagePair ?? null,
           emoji: owner?.emoji,
           deckName: owner?.name,
           wrongAt: now,

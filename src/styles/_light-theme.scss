@@ -488,8 +488,7 @@
       linear-gradient(to top,
         rgba(247, 247, 249, 0.80) 0%,
         rgba(247, 247, 249, 0.40) 35%,
-        transparent 100%),
-      radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px) 0 0 / 14px 14px;
+        transparent 100%);
   }
 
   .cat-detail {
@@ -512,8 +511,6 @@
           rgba(var(--entry-accent-rgb), 0.14) 130px,
           transparent 165px,
           transparent 250px),
-        // Punkt-Textur
-        radial-gradient(rgba(0, 0, 0, 0.10) 1px, transparent 1px) 0 0 / 14px 14px,
         // Akzent-Gradient
         linear-gradient(to bottom,
           rgba(var(--entry-accent-rgb), 0.15) 0%,

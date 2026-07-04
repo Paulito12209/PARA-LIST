@@ -29,6 +29,7 @@ export function EntryDetailScreen({
   tags, onUpdateTag, onDeleteTag,
 }) {
   const [showConnSelect, setShowConnSelect] = useState(false);
+  const [showTagSelect, setShowTagSelect] = useState(false);
   const [collabOpen, setCollabOpen] = useState(false);
   const collaborators = entry.collaborators || [];
   const [showDate, setShowDate] = useState(false);
@@ -41,6 +42,8 @@ export function EntryDetailScreen({
 
   const connPopupRef = useRef(null);
   const connPillRef = useRef(null);
+  const tagPopupRef = useRef(null);
+  const tagTriggerRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
   const subTabTouchX = useRef(0);
@@ -54,7 +57,10 @@ export function EntryDetailScreen({
     if (showDate && dateInputRef.current && !dateInputRef.current.contains(e.target) && datePillRef.current && !datePillRef.current.contains(e.target)) {
       setShowDate(false);
     }
-  }, [showConnSelect, showDate]);
+    if (showTagSelect && tagPopupRef.current && !tagPopupRef.current.contains(e.target) && tagTriggerRef.current && !tagTriggerRef.current.contains(e.target)) {
+      setShowTagSelect(false);
+    }
+  }, [showConnSelect, showDate, showTagSelect]);
 
   const typeIcon = {
     task: CheckCircle2,
@@ -231,12 +237,15 @@ export function EntryDetailScreen({
         </div>
 
         <div className="cat-detail__pills">
+          {/* Gleicher Wrapper wie auf den Ordner-Detailseiten → identischer
+              vertikaler Abstand zwischen Avataren und Pillen (8px + 4px). */}
+          <div className="cat-detail__pills-group">
             {/* 1. Datumspille (Aufgabe / Kalender / Notiz-Erstellung) — kommt zuerst */}
             {(entry.type === "task" || entry.type === "calendar") && (
               <button
                 ref={datePillRef}
                 className="cat-detail__date-pill"
-                onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); }}
+                onClick={(e) => { e.stopPropagation(); setShowDate(!showDate); setShowConnSelect(false); setShowTagSelect(false); }}
                 style={{ gap: "6px" }}
               >
                 <Calendar size={14} />
@@ -258,7 +267,7 @@ export function EntryDetailScreen({
                   <button
                     ref={connPillRef}
                     className="cat-detail__date-pill"
-                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); setShowTagSelect(false); setShowDate(false); }}
                   >
                     {t.connectSelection}
                   </button>
@@ -269,7 +278,7 @@ export function EntryDetailScreen({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} ref={connPillRef}>
                   <button
                     className="cat-detail__date-pill"
-                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); setShowTagSelect(false); setShowDate(false); }}
                     style={{
                       background: CC[selectedCats[0].type].color + "18",
                       borderColor: "transparent",
@@ -283,7 +292,7 @@ export function EntryDetailScreen({
                     return (
                       <button
                         key={c.id}
-                        onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); }}
+                        onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); setShowTagSelect(false); setShowDate(false); }}
                         style={{
                           background: 'transparent',
                           border: 'none',
@@ -301,6 +310,35 @@ export function EntryDetailScreen({
                 </div>
               );
             })()}
+
+          {/* 3. Tags — überall verfügbar (wie auf den Ordner-Detailseiten) */}
+          <div
+            style={{ display: "flex", gap: "6px", alignItems: "center", cursor: "pointer" }}
+            ref={tagTriggerRef}
+            onClick={(e) => { e.stopPropagation(); setShowTagSelect((v) => !v); setShowConnSelect(false); setShowDate(false); }}
+          >
+            {(() => {
+              const selectedTags = entry.tags || [];
+              if (selectedTags.length === 0) return null;
+              if (selectedTags.length === 1) {
+                return (
+                  <span className="cat-detail__tag">
+                    {selectedTags[0]}
+                  </span>
+                );
+              }
+              return (
+                <span className="cat-detail__tag">
+                  {selectedTags[0]} +{selectedTags.length - 1}
+                </span>
+              );
+            })()}
+            {(!entry.tags || entry.tags.length === 0) && (
+              <span className="cat-detail__tag" style={{ background: "transparent", border: "1px dashed #5858A066", opacity: 0.8 }}>
+                {t.addTag || "+ Tag"}
+              </span>
+            )}
+          </div>
 
           {entry.type === "calendar" && entry.isBirthday && (
             <button
@@ -325,6 +363,7 @@ export function EntryDetailScreen({
               </svg>
             </button>
           )}
+          </div>
 
           {/* Connection Popup */}
           {showConnSelect && (
@@ -370,6 +409,41 @@ export function EntryDetailScreen({
               >
                 {t.noConnection}
               </button>
+            </div>
+          )}
+
+          {/* Tag Popup */}
+          {showTagSelect && (
+            <div className="cat-detail__conn-popup" ref={tagPopupRef} onClick={(e) => e.stopPropagation()} style={{ left: "auto", right: 0 }}>
+              <div className="cat-detail__conn-list">
+                {(!tags || tags.length === 0) ? (
+                  <div className="cat-detail__conn-empty">{t.noTagsPopup || "Keine Tags"}</div>
+                ) : (
+                  tags.map(tag => {
+                    const isSelected = (entry.tags || []).includes(tag.name);
+                    return (
+                      <button
+                        key={tag.id}
+                        className="cat-detail__conn-item"
+                        onClick={() => {
+                          const currentTags = entry.tags || [];
+                          if (isSelected) {
+                            onUpdate({ tags: currentTags.filter(name => name !== tag.name) });
+                          } else {
+                            onUpdate({ tags: [...currentTags, tag.name] });
+                          }
+                        }}
+                        style={{ display: 'flex', justifyContent: 'space-between' }}
+                      >
+                        <span className="cat-detail__conn-name" style={{ color: isSelected ? CC.resource.color : 'inherit', fontWeight: isSelected ? 600 : 400 }}>
+                          {tag.name}
+                        </span>
+                        {isSelected && <Check size={14} color={CC.resource.color} />}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
             </div>
           )}
 

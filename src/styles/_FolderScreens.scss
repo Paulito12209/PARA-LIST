@@ -132,6 +132,61 @@
   }
 }
 
+// ── Schmale Lesezeichen-Leiste zwischen Header und Canvas ───
+// So flach wie möglich: 36px hohe Buttons, minimales vertikales Padding.
+.detail-iconbar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
+  padding: $spacing-2xs $spacing-md;
+  border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+
+  &__btn {
+    flex: 1;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $radius-md;
+    background: transparent;
+    border: 1px solid transparent;
+    color: #8a8a96;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(.detail-iconbar__btn--active) {
+      color: #ededf2;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    // Aktives Lesezeichen: Akzentfarbe per Inline-Style (--type-color)
+    &--active {
+      background: transparent;
+    }
+  }
+
+  &__menu {
+    flex: 0 0 36px;
+  }
+}
+
+// ── Schwebender Home-Button (statt Dock, wenn kein Eingabefeld) ──
+// Glass-Optik kommt von .home__floating-btn; hier Position unten links und
+// die Form des Dock-Home-Buttons der Startseite: liegende Pille 48×40px
+// (statt komplett rund).
+.home__floating-btn.detail-home-fab {
+  position: absolute;
+  left: $spacing-md;
+  bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
+  z-index: 20;
+  width: 48px;
+  height: 40px;
+  border-radius: 20px;
+}
+
 // ── Bottom Navigation (Back + Action) ───────────────────────
 
 .cat-detail {
@@ -157,6 +212,9 @@
     border-bottom: 1px solid $color-border;
     transition: background $transition-normal;
     position: relative;
+    // Über der DetailIconBar/dem Body: Popups (Verknüpfung/Tags/Datum), die
+    // aus dem Header nach unten aufklappen, dürfen nie verdeckt werden.
+    z-index: 2;
     overflow: visible;
 
     // Lichtwellen-Gradient (wie HomeScreen Cover)
@@ -287,6 +345,33 @@
     position: relative;
     z-index: 1;
     padding: 0;
+  }
+
+  // Details-Lesezeichen ("i") ganz rechts in der Pillen-Zeile
+  &__details-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    color: rgba($color-text, 0.65);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $color-text;
+      background: rgba(255, 255, 255, 0.10);
+    }
+
+    &--active {
+      color: #5858A0;
+      border-color: rgba(#5858A0, 0.45);
+      background: rgba(#5858A0, 0.14);
+    }
   }
 
   &__pills-group {
@@ -687,9 +772,11 @@
 // ── Settings Bottom Sheet ────────────────────────────────────
 
 .settings-sheet-overlay {
-  position: absolute;
+  // Fixed + hoher z-index: das Backdrop deckt den GESAMTEN Viewport ab,
+  // inklusive des Command-Panel-Headers (Titel oben, z-index 100).
+  position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 1000;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: flex-end;

@@ -1256,6 +1256,7 @@ export default function App() {
               onUpdateTag={updateGlobalTag}
               onDeleteTag={deleteGlobalTag}
               onUpdate={(p) => updateCat(cat.id, p)}
+              onTogglePin={() => togglePin(cat.id, "cat")}
               onLinkResource={(resourceId) => updateCat(resourceId, { relatedId: cat.id })}
               onDelete={() => {
                 if (window.confirm(t.confirmDelete(cat.name))) deleteCat(cat.id);
@@ -1306,6 +1307,7 @@ export default function App() {
               allCats={state.cats}
               user={state.user}
               onUpdate={(p) => updateEntry(entry.id, p)}
+              onTogglePin={() => togglePin(entry.id, "entry")}
               onDelete={() => {
                 deleteEntry(entry.id);
                 pop();

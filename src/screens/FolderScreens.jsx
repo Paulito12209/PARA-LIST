@@ -1,13 +1,14 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus, Pin, PinOff } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
-import { DetailDock } from "../components/DetailDock";
+import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
+import { ConnSheet, TagSheet } from "../components/PillSheets";
 import { getInitials } from "../utils";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
@@ -100,7 +101,7 @@ const COVER_COLORS = [
   { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
 ];
 
-const RES_SUB_TAB_ORDER = ["resources", "notes", "media"];
+const RES_SUB_TAB_ORDER = ["resources", "media"];
 const TASK_SUB_TAB_ORDER = ["open", "completed"];
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 
@@ -114,6 +115,7 @@ export function CatDetailScreen({
   allCats,
   entries,
   onUpdate,
+  onTogglePin,
   onDelete,
   onHome,
   toggleTask,
@@ -163,13 +165,9 @@ export function CatDetailScreen({
   const [resSubTab, setResSubTab] = useState("resources");
   const [taskSubTab, setTaskSubTab] = useState("open");
 
-  // Refs für Click-Outside-Erkennung
-  const connPopupRef = useRef(null);
-  const connPillRef = useRef(null);
+  // Refs für Click-Outside-Erkennung (nur noch Datums-Picker)
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
-  const tagPopupRef = useRef(null);
-  const tagTriggerRef = useRef(null);
 
   // Swipe-Refs für Sub-Tab-Wechsel (wiederverwendbar)
   const subTabTouchX = useRef(0);
@@ -191,27 +189,16 @@ export function CatDetailScreen({
   const noteCount = entries.filter(e => e.type === "note").length;
   const mediaCount = entries.filter(e => e.type === "media").length;
 
-  // Click-Outside: Popups schließen wenn außerhalb geklickt wird
+  // Verknüpfung & Tags öffnen Bottom-Sheets (eigenes Backdrop) – Click-Outside
+  // wird nur noch für den Datums-Picker gebraucht.
   const handleClickOutside = useCallback((e) => {
-    // Connection-Popup schließen
-    if (showConnSelect &&
-        connPopupRef.current && !connPopupRef.current.contains(e.target) &&
-        connPillRef.current && !connPillRef.current.contains(e.target)) {
-      setShowConnSelect(false);
-    }
     // Datum-Picker schließen
     if (showDate &&
         dateInputRef.current && !dateInputRef.current.contains(e.target) &&
         datePillRef.current && !datePillRef.current.contains(e.target)) {
       setShowDate(false);
     }
-    // Tag-Popup schließen
-    if (showTagSelect &&
-        tagPopupRef.current && !tagPopupRef.current.contains(e.target) &&
-        tagTriggerRef.current && !tagTriggerRef.current.contains(e.target)) {
-      setShowTagSelect(false);
-    }
-  }, [showConnSelect, showDate, showTagSelect]);
+  }, [showDate]);
 
   // Event-Listener für Click-Outside
   // (useRef + useCallback statt useEffect, da wir den Handler auf dem cat-detail div setzen)
@@ -248,18 +235,17 @@ export function CatDetailScreen({
 
   // Mapping: Bookmark → Entry-Typ (inkl. Sub-Tab bei Ressource)
   const getEntryTypeFromBookmark = useCallback(() => {
-    if (bm === "media") {
-      return resSubTab === "notes" ? "note" : "media";
-    }
     const map = {
       canvas: "note",
       tasks: "task",
+      notes: "note",
       cal: "calendar",
+      media: "media",
       link: "link",
       tags: "tags",
     };
     return map[bm] || "note";
-  }, [bm, resSubTab]);
+  }, [bm]);
 
   // Mapping: Entry-Typ → FAB-Farbe
   const getFabColor = useCallback(() => {
@@ -391,7 +377,7 @@ export function CatDetailScreen({
               <button
                 ref={datePillRef}
                 className="cat-detail__date-pill"
-                onClick={(e) => { e.stopPropagation(); setShowDate((v) => !v); setShowConnSelect(false); setShowTagSelect(false); }}
+                onClick={(e) => { e.stopPropagation(); setShowDate((v) => !v); }}
                 style={{ gap: "6px" }}
               >
                 <Calendar size={14} />
@@ -400,9 +386,8 @@ export function CatDetailScreen({
             )}
 
           <button
-            ref={connPillRef}
             className="cat-detail__date-pill"
-            onClick={(e) => { e.stopPropagation(); setShowConnSelect((v) => !v); setShowTagSelect(false); setShowDate(false); }}
+            onClick={(e) => { e.stopPropagation(); setShowConnSelect(true); setShowDate(false); }}
             style={
               relatedCfg
                 ? {
@@ -430,10 +415,9 @@ export function CatDetailScreen({
             </div>
           )}
 
-          <div 
+          <div
             style={{ display: "flex", gap: "6px", alignItems: "center", cursor: "pointer" }}
-            ref={tagTriggerRef}
-            onClick={(e) => { e.stopPropagation(); setShowTagSelect((v) => !v); setShowConnSelect(false); setShowDate(false); }}
+            onClick={(e) => { e.stopPropagation(); setShowTagSelect(true); setShowDate(false); }}
           >
             {(() => {
               const selectedTags = cat.tags || [];
@@ -460,74 +444,15 @@ export function CatDetailScreen({
           </div>
 
           <div className="cat-detail__archive-placeholder" style={{ flex: 1 }} />
-          {showConnSelect && (
-            <div className="cat-detail__conn-popup" ref={connPopupRef} onClick={(e) => e.stopPropagation()}>
-              <div className="cat-detail__conn-list">
-                {connOptions.length === 0 ? (
-                  <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
-                ) : (
-                  connOptions.map(opt => (
-                    <button
-                      key={opt.id}
-                      className="cat-detail__conn-item"
-                      onClick={() => {
-                        onUpdate({ relatedId: opt.id });
-                        setShowConnSelect(false);
-                      }}
-                    >
-                      <span 
-                        className="cat-detail__conn-dot" 
-                        style={{ background: (CC[opt.type]?.color || CC.resource.color) }} 
-                      />
-                      <span className="cat-detail__conn-name">{opt.name}</span>
-                    </button>
-                  ))
-                )}
-              </div>
-              <button
-                className="cat-detail__conn-none"
-                onClick={() => {
-                  onUpdate({ relatedId: null });
-                  setShowConnSelect(false);
-                }}
-              >
-                {t.noConnection}
-              </button>
-            </div>
-          )}
-          {showTagSelect && (
-            <div className="cat-detail__conn-popup" ref={tagPopupRef} onClick={(e) => e.stopPropagation()} style={{ left: "auto", right: 0 }}>
-              <div className="cat-detail__conn-list">
-                {(!tags || tags.length === 0) ? (
-                  <div className="cat-detail__conn-empty">{t.noTagsPopup || "Keine Tags"}</div>
-                ) : (
-                  tags.map(tag => {
-                    const isSelected = (cat.tags || []).includes(tag.name);
-                    return (
-                      <button
-                        key={tag.id}
-                        className="cat-detail__conn-item"
-                        onClick={() => {
-                          const currentTags = cat.tags || [];
-                          if (isSelected) {
-                            onUpdate({ tags: currentTags.filter(t => t !== tag.name) });
-                          } else {
-                            onUpdate({ tags: [...currentTags, tag.name] });
-                          }
-                        }}
-                        style={{ display: 'flex', justifyContent: 'space-between' }}
-                      >
-                        <span className="cat-detail__conn-name" style={{ color: isSelected ? CC.resource.color : 'inherit', fontWeight: isSelected ? 600 : 400 }}>
-                          {tag.name}
-                        </span>
-                        {isSelected && <Check size={14} color={CC.resource.color} />}
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
+
+          {/* Details-Lesezeichen ("i"): ganz rechts in der Pillen-Zeile */}
+          <button
+            className={`cat-detail__details-btn ${bm === "details" ? "cat-detail__details-btn--active" : ""}`}
+            onClick={(e) => { e.stopPropagation(); handleBmSelect("details"); }}
+            aria-label={t.detailsBm || "Details"}
+          >
+            <Info size={18} />
+          </button>
         </div>
         {showDate && (
           <input
@@ -544,6 +469,16 @@ export function CatDetailScreen({
         )}
 
       </div>
+
+      {/* Schmale Lesezeichen-Leiste zwischen Header und Canvas */}
+      <DetailIconBar
+        t={t}
+        active={bm}
+        onSelect={handleBmSelect}
+        iconOverrides={{ canvas: CatIcon }}
+        iconColors={{ canvas: cfg.color }}
+        onOptions={openSettingsSheet}
+      />
 
       {/* Content */}
       <div className="cat-detail__body" onClick={handleDoubleTap}>
@@ -670,6 +605,19 @@ export function CatDetailScreen({
               onOpenEntry={onOpenEntry}
             />
           ))}
+        {bm === "notes" && (
+          entries.filter((e) => e.type === "note").length === 0 ? (
+            <div className="cat-detail__section-empty">{t.notes}: {t.noMedia}</div>
+          ) : (
+            <NoteList t={t} CC={CC}
+              entries={entries.filter((e) => e.type === "note")}
+              cats={allCats}
+              onDelete={deleteEntry}
+              onOpenEntry={onOpenEntry}
+            />
+          )
+        )}
+
         {bm === "media" && (
           <div
             onTouchStart={onSubTabTouchStart}
@@ -686,16 +634,6 @@ export function CatDetailScreen({
                 <span>{t.linkedRes}</span>
                 {resCount > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--res">{resCount}</span>
-                )}
-              </button>
-              <button
-                className={`res-sub-tabs__btn ${resSubTab === "notes" ? "res-sub-tabs__btn--active-notes" : ""}`}
-                onClick={() => setResSubTab("notes")}
-              >
-                <Pencil size={14} />
-                <span>{t.notes}</span>
-                {noteCount > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--notes">{noteCount}</span>
                 )}
               </button>
               <button
@@ -737,20 +675,6 @@ export function CatDetailScreen({
                     />
                   </button>
                 ))
-              )
-            )}
-
-            {/* Notizen-Ansicht */}
-            {resSubTab === "notes" && (
-              entries.filter((e) => e.type === "note").length === 0 ? (
-                <div className="cat-detail__section-empty">{t.notes}: {t.noMedia}</div>
-              ) : (
-                <NoteList t={t} CC={CC}
-                  entries={entries.filter((e) => e.type === "note")}
-                  cats={allCats}
-                  onDelete={deleteEntry}
-                  onOpenEntry={onOpenEntry}
-                />
               )
             )}
 
@@ -907,6 +831,35 @@ export function CatDetailScreen({
         />
       )}
 
+      {/* Verknüpfungs-Sheet (ersetzt das frühere Popup an der Pille) */}
+      {showConnSelect && (
+        <ConnSheet
+          t={t}
+          CC={CC}
+          options={connOptions}
+          currentId={cat.relatedId || null}
+          onSelect={(id) => {
+            onUpdate({ relatedId: id });
+            setShowConnSelect(false);
+          }}
+          onClose={() => setShowConnSelect(false)}
+        />
+      )}
+
+      {/* Tag-Sheet (ersetzt das frühere Popup an der "+ Tag"-Pille) */}
+      {showTagSelect && (
+        <TagSheet
+          t={t}
+          tags={tags}
+          currentTags={cat.tags || []}
+          onConfirm={(nextTags) => {
+            onUpdate({ tags: nextTags });
+            setShowTagSelect(false);
+          }}
+          onClose={() => setShowTagSelect(false)}
+        />
+      )}
+
       {showSettingsSheet && (
         <div className="settings-sheet-overlay" onClick={closeSettingsSheet} {...settingsSwipe}>
           <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
@@ -974,6 +927,13 @@ export function CatDetailScreen({
               </button>
               <button
                 className="settings-sheet__item"
+                onClick={() => { onTogglePin?.(); closeSettingsSheet(); }}
+              >
+                {cat.pinned ? <PinOff size={18} color="#5858A0" /> : <Pin size={18} color="#5858A0" />}
+                <span>{cat.pinned ? t.actionUnpin : t.actionPin}</span>
+              </button>
+              <button
+                className="settings-sheet__item"
                 onClick={() => { onUpdate({ archived: !cat.archived }); closeSettingsSheet(); }}
               >
                 {cat.archived ? <ArchiveRestore size={18} color="#5858A0" /> : <Archive size={18} color="#5858A0" />}
@@ -992,20 +952,16 @@ export function CatDetailScreen({
         </div>
       )}
 
-      {/* Kontextabhängiges Dock (Icon-Reihe = Lesezeichen, darunter Home +
-          optionales Eingabefeld). Eingabefeld nur auf Tabs mit Hinzufügen-
+      {/* Unteres Dock: Home + optionales Eingabefeld (Lesezeichen liegen oben
+          in der DetailIconBar). Eingabefeld nur auf Tabs mit Hinzufügen-
           Aktion – auf Canvas & Details ausgeblendet. */}
       <DetailDock
         t={t}
-        active={bm}
-        onSelect={handleBmSelect}
-        iconOverrides={{ canvas: CatIcon }}
-        iconColors={{ canvas: cfg.color }}
-        onOptions={openSettingsSheet}
         onHome={onHome}
         showInput={bm !== "canvas" && bm !== "details"}
         placeholder={t.addPlaceholder(
           bm === "cal" ? (t.calSing || t.calendar)
+            : bm === "notes" ? (t.noteSing || t.notes)
             : bm === "media" ? (t.media || "")
             : bm === "link" ? (t.link || "")
             : t.task

@@ -1,11 +1,13 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera, UserPlus } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera, UserPlus, Pin, PinOff, Info } from 'lucide-react';
 import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, getInitials } from "../utils";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
+import { LinkSheet } from "../components/LinkSheet";
+import { TagSheet } from "../components/PillSheets";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
-import { DetailDock } from "../components/DetailDock";
+import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 const COVER_COLORS = [
@@ -18,13 +20,14 @@ const COVER_COLORS = [
   { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
 ];
 
-const RES_SUB_TAB_ORDER = ["resources", "notes", "media"];
+const RES_SUB_TAB_ORDER = ["resources", "media"];
 const TASK_SUB_TAB_ORDER = ["open", "completed"];
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 
 export function EntryDetailScreen({
-  t, CC, theme, lang, entry, cat: _cat, allCats, user, onUpdate, onDelete, onHome,
+  t, CC, theme, lang, entry, cat: _cat, allCats, user, onUpdate, onTogglePin, onDelete, onHome,
   entries, onOpenEntry, toggleTask, deleteEntry,
+  onAddLinkedEntry, onAddSubtask,
   onUnlinkEntry,
   tags, onUpdateTag, onDeleteTag,
 }) {
@@ -40,27 +43,19 @@ export function EntryDetailScreen({
   const [resSubTab, setResSubTab] = useState("resources");
   const [tagSort, setTagSort] = useState({ by: 'date', desc: true });
 
-  const connPopupRef = useRef(null);
-  const connPillRef = useRef(null);
-  const tagPopupRef = useRef(null);
-  const tagTriggerRef = useRef(null);
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
   const subTabTouchX = useRef(0);
   const coverInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
+  // Verknüpfung & Tags öffnen Bottom-Sheets (eigenes Backdrop) – Click-Outside
+  // wird nur noch für den Datums-Picker gebraucht.
   const handleClickOutside = useCallback((e) => {
-    if (showConnSelect && connPopupRef.current && !connPopupRef.current.contains(e.target) && connPillRef.current && !connPillRef.current.contains(e.target)) {
-      setShowConnSelect(false);
-    }
     if (showDate && dateInputRef.current && !dateInputRef.current.contains(e.target) && datePillRef.current && !datePillRef.current.contains(e.target)) {
       setShowDate(false);
     }
-    if (showTagSelect && tagPopupRef.current && !tagPopupRef.current.contains(e.target) && tagTriggerRef.current && !tagTriggerRef.current.contains(e.target)) {
-      setShowTagSelect(false);
-    }
-  }, [showConnSelect, showDate, showTagSelect]);
+  }, [showDate]);
 
   const typeIcon = {
     task: CheckCircle2,
@@ -136,6 +131,7 @@ export function EntryDetailScreen({
     const colorMap = {
       canvas: cfgColor,
       tasks: "#0B8CE9",
+      notes: "#F59E0B",
       cal: "#0078D4",
       media: "#10B981",
       link: "#7C3AED",
@@ -143,6 +139,31 @@ export function EntryDetailScreen({
     };
     return colorMap[bm] || cfgColor;
   }, [bm, cfgColor]);
+
+  // Doppeltipp in den Listen-Bereich → neuen (verknüpften) Eintrag des aktiven
+  // Lesezeichen-Typs erstellen (wie auf den Ordner-Detailseiten).
+  const lastTap = useRef(0);
+  const handleDoubleTap = useCallback(
+    (e) => {
+      const isEmptyPlaceholder = e.target.closest('.cat-detail__empty') || e.target.closest('.cat-detail__section-empty') || e.target.closest('.entry-list__empty');
+      if (e.target !== e.currentTarget && !isEmptyPlaceholder) return;
+      const typeMap = { tasks: "task", notes: "note", cal: "calendar", media: "media", link: "link" };
+      const type = typeMap[bm];
+      if (!type) return; // Canvas/Details: kein Erstellen per Doppeltipp
+      const now = Date.now();
+      if (now - lastTap.current < 300) {
+        if (type === "task" && entry.type === "task") {
+          onAddSubtask?.();
+        } else {
+          onAddLinkedEntry?.(type);
+        }
+        lastTap.current = 0;
+      } else {
+        lastTap.current = now;
+      }
+    },
+    [bm, entry.type, onAddSubtask, onAddLinkedEntry]
+  );
 
   // Swipe handler for sub-tab switching
   const onSubTabTouchStart = useCallback((e) => {
@@ -265,9 +286,8 @@ export function EntryDetailScreen({
               if (selectedCats.length === 0) {
                 return (
                   <button
-                    ref={connPillRef}
                     className="cat-detail__date-pill"
-                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); setShowTagSelect(false); setShowDate(false); }}
+                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(true); setShowDate(false); }}
                   >
                     {t.connectSelection}
                   </button>
@@ -275,10 +295,10 @@ export function EntryDetailScreen({
               }
 
               return (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} ref={connPillRef}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button
                     className="cat-detail__date-pill"
-                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); setShowTagSelect(false); setShowDate(false); }}
+                    onClick={(e) => { e.stopPropagation(); setShowConnSelect(true); setShowDate(false); }}
                     style={{
                       background: CC[selectedCats[0].type].color + "18",
                       borderColor: "transparent",
@@ -292,7 +312,7 @@ export function EntryDetailScreen({
                     return (
                       <button
                         key={c.id}
-                        onClick={(e) => { e.stopPropagation(); setShowConnSelect(!showConnSelect); setShowTagSelect(false); setShowDate(false); }}
+                        onClick={(e) => { e.stopPropagation(); setShowConnSelect(true); setShowDate(false); }}
                         style={{
                           background: 'transparent',
                           border: 'none',
@@ -314,8 +334,7 @@ export function EntryDetailScreen({
           {/* 3. Tags — überall verfügbar (wie auf den Ordner-Detailseiten) */}
           <div
             style={{ display: "flex", gap: "6px", alignItems: "center", cursor: "pointer" }}
-            ref={tagTriggerRef}
-            onClick={(e) => { e.stopPropagation(); setShowTagSelect((v) => !v); setShowConnSelect(false); setShowDate(false); }}
+            onClick={(e) => { e.stopPropagation(); setShowTagSelect(true); setShowDate(false); }}
           >
             {(() => {
               const selectedTags = entry.tags || [];
@@ -365,88 +384,15 @@ export function EntryDetailScreen({
           )}
           </div>
 
-          {/* Connection Popup */}
-          {showConnSelect && (
-            <div className="cat-detail__conn-popup" ref={connPopupRef} onClick={(e) => e.stopPropagation()}>
-              <div className="cat-detail__conn-list">
-                {allCats.length === 0 ? (
-                  <div className="cat-detail__conn-empty">{t.noCats('?').split('\n')[0]}</div>
-                ) : (
-                  allCats.map(opt => {
-                    const isSelected = (entry.catIds || []).includes(opt.id);
-                    return (
-                      <button
-                        key={opt.id}
-                        className={`cat-detail__conn-item ${isSelected ? 'cat-detail__conn-item--selected' : ''}`}
-                        onClick={() => {
-                          const nextIds = isSelected
-                            ? (entry.catIds || []).filter(id => id !== opt.id)
-                            : [...(entry.catIds || []), opt.id];
-                          onUpdate({ catIds: nextIds, catId: nextIds[0] || null });
-                        }}
-                      >
-                        <span
-                          className="cat-detail__conn-dot"
-                          style={{
-                            background: (CC[opt.type]?.color || CC.resource.color),
-                            border: isSelected ? '2px solid #fff' : 'none',
-                            boxShadow: isSelected ? '0 0 0 1px ' + (CC[opt.type]?.color || CC.resource.color) : 'none'
-                          }}
-                        />
-                        <span className="cat-detail__conn-name" style={{ fontWeight: isSelected ? 600 : 400 }}>{opt.name}</span>
-                        {isSelected && <Check size={12} color={CC[opt.type]?.color} style={{ marginLeft: 'auto' }} />}
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-              <button
-                className="cat-detail__conn-none"
-                onClick={() => {
-                  onUpdate({ catIds: [], catId: null });
-                  setShowConnSelect(false);
-                }}
-              >
-                {t.noConnection}
-              </button>
-            </div>
-          )}
-
-          {/* Tag Popup */}
-          {showTagSelect && (
-            <div className="cat-detail__conn-popup" ref={tagPopupRef} onClick={(e) => e.stopPropagation()} style={{ left: "auto", right: 0 }}>
-              <div className="cat-detail__conn-list">
-                {(!tags || tags.length === 0) ? (
-                  <div className="cat-detail__conn-empty">{t.noTagsPopup || "Keine Tags"}</div>
-                ) : (
-                  tags.map(tag => {
-                    const isSelected = (entry.tags || []).includes(tag.name);
-                    return (
-                      <button
-                        key={tag.id}
-                        className="cat-detail__conn-item"
-                        onClick={() => {
-                          const currentTags = entry.tags || [];
-                          if (isSelected) {
-                            onUpdate({ tags: currentTags.filter(name => name !== tag.name) });
-                          } else {
-                            onUpdate({ tags: [...currentTags, tag.name] });
-                          }
-                        }}
-                        style={{ display: 'flex', justifyContent: 'space-between' }}
-                      >
-                        <span className="cat-detail__conn-name" style={{ color: isSelected ? CC.resource.color : 'inherit', fontWeight: isSelected ? 600 : 400 }}>
-                          {tag.name}
-                        </span>
-                        {isSelected && <Check size={14} color={CC.resource.color} />}
-                      </button>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
-
+          {/* Details-Lesezeichen ("i"): ganz rechts in der Pillen-Zeile */}
+          <button
+            className={`cat-detail__details-btn ${bm === "details" ? "cat-detail__details-btn--active" : ""}`}
+            style={{ marginLeft: "auto" }}
+            onClick={(e) => { e.stopPropagation(); handleBmSelect("details"); }}
+            aria-label={t.detailsBm || "Details"}
+          >
+            <Info size={18} />
+          </button>
         </div>
 
         {/* Date/Time Popup */}
@@ -477,8 +423,18 @@ export function EntryDetailScreen({
         )}
       </div>
 
+      {/* Schmale Lesezeichen-Leiste zwischen Header und Canvas */}
+      <DetailIconBar
+        t={t}
+        active={bm}
+        onSelect={handleBmSelect}
+        iconOverrides={iconOverrides}
+        iconColors={iconColors}
+        onOptions={openSettingsSheet}
+      />
+
       {/* Content */}
-      <div className="cat-detail__body" style={{ flex: 1 }}>
+      <div className="cat-detail__body" style={{ flex: 1 }} onClick={handleDoubleTap}>
         {bm === "canvas" && (
           <>
             {entry.type === "note" && (
@@ -567,6 +523,19 @@ export function EntryDetailScreen({
           </div>
         )}
 
+        {bm === "notes" && (
+          linkedNotes.length === 0 ? (
+            <div className="cat-detail__section-empty">{t.notes}: {t.noMedia}</div>
+          ) : (
+            <NoteList t={t} CC={CC}
+              entries={linkedNotes}
+              cats={allCats}
+              onDelete={deleteEntry}
+              onOpenEntry={onOpenEntry}
+            />
+          )
+        )}
+
         {bm === "cal" && (
           linkedCalEntries.length === 0 ? (
             <div className="cat-detail__section-empty">{t.noCal}</div>
@@ -599,16 +568,6 @@ export function EntryDetailScreen({
                 )}
               </button>
               <button
-                className={`res-sub-tabs__btn ${resSubTab === "notes" ? "res-sub-tabs__btn--active-notes" : ""}`}
-                onClick={() => setResSubTab("notes")}
-              >
-                <Pencil size={14} />
-                <span>{t.notes}</span>
-                {linkedNotes.length > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--notes">{linkedNotes.length}</span>
-                )}
-              </button>
-              <button
                 className={`res-sub-tabs__btn ${resSubTab === "media" ? "res-sub-tabs__btn--active-media" : ""}`}
                 onClick={() => setResSubTab("media")}
               >
@@ -624,20 +583,6 @@ export function EntryDetailScreen({
             {resSubTab === "resources" && (
               linkedNotes.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noLinkedRes}</div>
-              ) : (
-                <NoteList t={t} CC={CC}
-                  entries={linkedNotes}
-                  cats={allCats}
-                  onDelete={deleteEntry}
-                  onOpenEntry={onOpenEntry}
-                />
-              )
-            )}
-
-            {/* Notizen-Ansicht */}
-            {resSubTab === "notes" && (
-              linkedNotes.length === 0 ? (
-                <div className="cat-detail__section-empty">{t.notes}: {t.noMedia}</div>
               ) : (
                 <NoteList t={t} CC={CC}
                   entries={linkedNotes}
@@ -835,6 +780,13 @@ export function EntryDetailScreen({
               </button>
               <button
                 className="settings-sheet__item"
+                onClick={() => { onTogglePin?.(); closeSettingsSheet(); }}
+              >
+                {entry.pinned ? <PinOff size={18} color="#5858A0" /> : <Pin size={18} color="#5858A0" />}
+                <span>{entry.pinned ? t.actionUnpin : t.actionPin}</span>
+              </button>
+              <button
+                className="settings-sheet__item"
                 onClick={() => { onUpdate({ archived: !entry.archived }); closeSettingsSheet(); }}
               >
                 {entry.archived ? <ArchiveRestore size={18} color="#5858A0" /> : <Archive size={18} color="#5858A0" />}
@@ -864,6 +816,35 @@ export function EntryDetailScreen({
         </div>
       )}
 
+      {/* Verknüpfungs-Sheet (ersetzt das frühere Popup an der Pille) */}
+      {showConnSelect && (
+        <LinkSheet
+          t={t}
+          CC={CC}
+          cats={allCats}
+          currentIds={entry.catIds || []}
+          onConfirm={(nextIds) => {
+            onUpdate({ catIds: nextIds, catId: nextIds[0] || null });
+            setShowConnSelect(false);
+          }}
+          onClose={() => setShowConnSelect(false)}
+        />
+      )}
+
+      {/* Tag-Sheet (ersetzt das frühere Popup an der "+ Tag"-Pille) */}
+      {showTagSelect && (
+        <TagSheet
+          t={t}
+          tags={tags}
+          currentTags={entry.tags || []}
+          onConfirm={(nextTags) => {
+            onUpdate({ tags: nextTags });
+            setShowTagSelect(false);
+          }}
+          onClose={() => setShowTagSelect(false)}
+        />
+      )}
+
       {collabOpen && (
         <CollaboratorsModal
           t={t}
@@ -874,15 +855,10 @@ export function EntryDetailScreen({
         />
       )}
 
-      {/* Kontextabhängiges Dock (Icon-Reihe = Lesezeichen + Home + Optionen).
-          Verlinkte Einträge inline hinzufügen kommt später – vorerst kein Feld. */}
+      {/* Unteres Dock: nur noch Home-Button (Lesezeichen liegen oben in der
+          DetailIconBar). Verlinkte Einträge inline hinzufügen kommt später. */}
       <DetailDock
         t={t}
-        active={bm}
-        onSelect={handleBmSelect}
-        iconOverrides={iconOverrides}
-        iconColors={iconColors}
-        onOptions={openSettingsSheet}
         onHome={onHome}
         showInput={false}
         accentColor={getFabColor()}

@@ -3,7 +3,7 @@
 // Keep this file free of React components so Fast Refresh works
 // reliably across the codebase.
 // ============================================================
-import { Circle, Triangle, Square, FileText, CheckCircle2, Calendar, Paperclip, Info } from "lucide-react";
+import { Circle, Triangle, Square, FileText, CheckCircle2, Calendar, Paperclip, Pencil, Info } from "lucide-react";
 import { BookmarkIcon, TagIcon } from "./components/AppIcons";
 import { I18N } from "./i18n";
 
@@ -156,6 +156,8 @@ export const getYouTubeVideoId = (rawUrl) => {
 export const BOOKMARKS = [
   { id: "canvas", color: "#818CF8", Icon: FileText },
   { id: "tasks", color: "#0B8CE9", Icon: CheckCircle2 },
+  // Notizen: eigenes Lesezeichen (früher Sub-Tab unter "media"/Ressourcen)
+  { id: "notes", color: "#F59E0B", Icon: Pencil },
   { id: "cal", color: "#0078D4", Icon: Calendar },
   { id: "media", color: "#10B981", Icon: Paperclip },
   { id: "link", color: "#7C3AED", Icon: BookmarkIcon },

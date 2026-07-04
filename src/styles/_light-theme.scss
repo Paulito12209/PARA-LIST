@@ -1454,6 +1454,36 @@
 }
 
 
+// Details-Button ("i") in der Pillen-Zeile der Detailseiten-Header
+.app.light-theme .cat-detail__details-btn {
+  color: rgba(26, 26, 36, 0.55);
+
+  &:hover {
+    color: #1a1a24;
+    background: rgba(0, 0, 0, 0.06);
+  }
+
+  &--active {
+    color: #5858A0;
+    border-color: rgba(88, 88, 160, 0.45);
+    background: rgba(88, 88, 160, 0.10);
+  }
+}
+
+// Schmale Lesezeichen-Leiste der Detailseiten (zwischen Header und Canvas)
+.app.light-theme .detail-iconbar {
+  border-bottom-color: #e5e5f0;
+
+  .detail-iconbar__btn {
+    color: #8e8eb2;
+
+    &:hover:not(.detail-iconbar__btn--active) {
+      color: #1a1a24;
+      background: rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
 .app.light-theme .command-panel--closed {
   background: transparent;
   box-shadow: none;

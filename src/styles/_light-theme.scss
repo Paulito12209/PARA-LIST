@@ -1462,10 +1462,10 @@
   box-shadow: none;
 }
 
-// Aufgeklappte Startseiten-Liste: Header opak im gleichen Grau wie das
-// geöffnete Panel (statt durchscheinendem Cover).
+// Aufgeklappte Startseiten-Liste: Header opak in exakt der Farbe der
+// erweiterten Liste darunter (Weiß) – eine durchgehende, einheitliche Fläche.
 .app.light-theme .command-panel--closed.command-panel--solid {
-  background: #f0f0f5;
+  background: #ffffff;
 }
 
 // Kein heller Verlauf mehr – Cover bleibt bis oben sichtbar (nur Basis-Blur/Maske)

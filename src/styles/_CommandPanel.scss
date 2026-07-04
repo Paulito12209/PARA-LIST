@@ -41,10 +41,11 @@
     pointer-events: none;
   }
 
-  // Aufgeklappte Startseiten-Liste: Header wird opak (gleiches Grau wie das
-  // geöffnete Panel), damit das Cover dahinter nicht mehr durchscheint.
+  // Aufgeklappte Startseiten-Liste: Header wird opak in exakt der Farbe der
+  // erweiterten Liste darunter (#16161F) – eine durchgehende Fläche ohne
+  // sichtbare Kante, das Cover scheint nicht mehr durch.
   &--closed#{&}--solid {
-    background: $color-hover;
+    background: #16161F;
   }
 
   &--closed#{&}--solid::before {

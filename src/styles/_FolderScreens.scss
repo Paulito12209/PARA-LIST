@@ -140,7 +140,9 @@
   flex-direction: column;
   position: relative;
   animation: slide-in-right $transition-normal;
-  background: #1A1A2E;
+  // Gleiches dunkles Grau wie die erweiterte Liste auf der Startseite
+  // (statt des alten dunklen Lilas #1A1A2E)
+  background: #16161F;
 
   &__header {
     // Feste optische Höhe von 160px (inkl. der 80px, die unter dem Command-Panel

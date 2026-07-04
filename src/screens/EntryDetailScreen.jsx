@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera } from 'lucide-react';
-import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
+import { Circle, Triangle, Square, Plus, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera, UserPlus } from 'lucide-react';
+import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, getInitials } from "../utils";
+import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
@@ -22,12 +23,14 @@ const TASK_SUB_TAB_ORDER = ["open", "completed"];
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 
 export function EntryDetailScreen({
-  t, CC, theme, lang, entry, cat: _cat, allCats, onUpdate, onDelete, onHome,
+  t, CC, theme, lang, entry, cat: _cat, allCats, user, onUpdate, onDelete, onHome,
   entries, onOpenEntry, toggleTask, deleteEntry,
   onUnlinkEntry,
   tags, onUpdateTag, onDeleteTag,
 }) {
   const [showConnSelect, setShowConnSelect] = useState(false);
+  const [collabOpen, setCollabOpen] = useState(false);
+  const collaborators = entry.collaborators || [];
   const [showDate, setShowDate] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [coverMode, setCoverMode] = useState(null);
@@ -199,6 +202,34 @@ export function EntryDetailScreen({
             tabIndex={-1}
           />
         </div>
+
+        {/* Avatare der Seite (eigener + Kollaboratoren), über den Pillen –
+            identisch zu den Ordner-Detailseiten (Projekte/Bereiche/Ressourcen). */}
+        <div className="cat-detail__avatars">
+          {user?.avatar ? (
+            <img src={user.avatar} className="cat-detail__avatar" alt={user?.name || ""} />
+          ) : (
+            <span className="cat-detail__avatar cat-detail__avatar--initials">{getInitials(user?.name)}</span>
+          )}
+          {collaborators.map((c) => (
+            c.avatar ? (
+              <img key={c.id} src={c.avatar} className="cat-detail__avatar" alt={c.name} />
+            ) : (
+              <span key={c.id} className="cat-detail__avatar cat-detail__avatar--initials">
+                {c.name.charAt(0).toUpperCase()}
+              </span>
+            )
+          ))}
+          <button
+            type="button"
+            className="cat-detail__avatar-add"
+            onClick={(e) => { e.stopPropagation(); setCollabOpen(true); }}
+            aria-label={t.addCollaborator}
+          >
+            <UserPlus size={14} />
+          </button>
+        </div>
+
         <div className="cat-detail__pills">
             {/* 1. Datumspille (Aufgabe / Kalender / Notiz-Erstellung) — kommt zuerst */}
             {(entry.type === "task" || entry.type === "calendar") && (
@@ -757,6 +788,16 @@ export function EntryDetailScreen({
             </div>
           </div>
         </div>
+      )}
+
+      {collabOpen && (
+        <CollaboratorsModal
+          t={t}
+          cat={entry}
+          onUpdateCat={(_id, patch) => onUpdate(patch)}
+          onClose={() => setCollabOpen(false)}
+          initialView={collaborators.length === 0 ? "add" : "list"}
+        />
       )}
 
       {/* Kontextabhängiges Dock (Icon-Reihe = Lesezeichen + Home + Optionen).

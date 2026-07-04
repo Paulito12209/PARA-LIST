@@ -1304,6 +1304,7 @@ export default function App() {
               entry={entry}
               cat={cat}
               allCats={state.cats}
+              user={state.user}
               onUpdate={(p) => updateEntry(entry.id, p)}
               onDelete={() => {
                 deleteEntry(entry.id);

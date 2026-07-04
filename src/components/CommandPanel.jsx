@@ -80,6 +80,9 @@ export function CommandPanel({
 
   // Seiten-Modus: auf Detailseiten zeigt der Header Zurück-Button + Titel,
   // mit dem Datum oberhalb des Titels und ohne Einstellungen-Icon.
+  // Geöffnet (Backlog) sieht der Header IMMER gleich aus – Logo + "Backlog" +
+  // Settings-Icon –, egal von welcher Seite aus er aufgezogen wurde.
+  const headerPage = open ? null : page;
 
   return (
     <div
@@ -98,12 +101,12 @@ export function CommandPanel({
       >
         <div className="command-panel__header-row">
           <div className="command-panel__brand">
-            {page ? (
+            {headerPage ? (
               // Detailseiten: Zurück-Button oben links (ersetzt das Page-Icon).
               <button
                 type="button"
                 className="command-panel__back"
-                style={{ "--page-accent-rgb": page.accentRgb }}
+                style={{ "--page-accent-rgb": headerPage.accentRgb }}
                 onClick={(e) => { e.stopPropagation(); onBack?.(); }}
                 aria-label={t.back || "Zurück"}
               >
@@ -130,9 +133,9 @@ export function CommandPanel({
               {/* Einheitlich in allen Modi (Startseite, Detailseiten, Voice):
                   Datum als Eyebrow oben, darunter der große Titel/die Frage. */}
               <div className="command-panel__date">{dateStr}</div>
-              <div className={`command-panel__greeting ${page ? "command-panel__greeting--page" : ""}`}>
-                {page
-                  ? page.title
+              <div className={`command-panel__greeting ${headerPage ? "command-panel__greeting--page" : ""}`}>
+                {headerPage
+                  ? headerPage.title
                   : isVoiceMode
                   ? t.voiceQuestion
                   : open
@@ -143,7 +146,7 @@ export function CommandPanel({
           </div>
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
             {/* Einstellungen oben rechts – geschlossen UND geöffnet sichtbar */}
-            {!page && (
+            {!headerPage && (
               <button
                 className="command-panel__bell command-panel__filter-btn"
                 onClick={(e) => {

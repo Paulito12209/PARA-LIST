@@ -4,6 +4,7 @@ export const I18N = {
   de: {
     greeting: (h, n) => (h < 12 ? "Guten Morgen" : h < 18 ? "Guten Tag" : "Guten Abend") + `, ${n}`,
     home: "Startseite",
+    backlog: "Backlog",
     addPlaceholder: (sing) => `${sing} hinzufügen`,
     openLabel: (sing) => `${sing} öffnen`,
     emptyDrawer: "Keine offenen Einträge für heute 🎉",
@@ -228,6 +229,7 @@ export const I18N = {
   en: {
     greeting: (h, n) => (h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening") + `, ${n}`,
     home: "Home",
+    backlog: "Backlog",
     addPlaceholder: (sing) => `Add ${sing}`,
     openLabel: (sing) => `Open ${sing}`,
     emptyDrawer: "No open entries for today 🎉",
@@ -452,6 +454,7 @@ export const I18N = {
   es: {
     greeting: (h, n) => (h < 12 ? "Buenos días" : h < 20 ? "Buenas tardes" : "Buenas noches") + `, ${n}`,
     home: "Inicio",
+    backlog: "Backlog",
     addPlaceholder: (sing) => `Añadir ${sing}`,
     openLabel: (sing) => `Abrir ${sing}`,
     emptyDrawer: "No hay entradas para hoy 🎉",

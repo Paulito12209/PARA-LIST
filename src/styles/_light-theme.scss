@@ -1462,6 +1462,12 @@
   box-shadow: none;
 }
 
+// Aufgeklappte Startseiten-Liste: Header opak im gleichen Grau wie das
+// geöffnete Panel (statt durchscheinendem Cover).
+.app.light-theme .command-panel--closed.command-panel--solid {
+  background: #f0f0f5;
+}
+
 // Kein heller Verlauf mehr – Cover bleibt bis oben sichtbar (nur Basis-Blur/Maske)
 .app.light-theme .command-panel--closed::before {
   background: transparent;

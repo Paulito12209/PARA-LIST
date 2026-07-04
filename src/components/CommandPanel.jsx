@@ -83,7 +83,11 @@ export function CommandPanel({
 
   return (
     <div
-      className={`command-panel command-panel--${open ? "open" : "closed"}`}
+      className={`command-panel command-panel--${open ? "open" : "closed"}${
+        // Aufgeklappte Startseiten-Liste (title gesetzt): Header opak statt
+        // Liquid-Glass, damit das Cover nicht mehr durchscheint.
+        !open && !page && title ? " command-panel--solid" : ""
+      }`}
       onTouchStart={open ? handleTouchStart : undefined}
       onTouchEnd={open ? handleTouchEnd : undefined}
     >
@@ -127,7 +131,13 @@ export function CommandPanel({
                   Datum als Eyebrow oben, darunter der große Titel/die Frage. */}
               <div className="command-panel__date">{dateStr}</div>
               <div className={`command-panel__greeting ${page ? "command-panel__greeting--page" : ""}`}>
-                {page ? page.title : isVoiceMode ? t.voiceQuestion : (app?.title || title || t.home)}
+                {page
+                  ? page.title
+                  : isVoiceMode
+                  ? t.voiceQuestion
+                  : open
+                  ? t.backlog
+                  : (app?.title || title || t.home)}
               </div>
             </div>
           </div>

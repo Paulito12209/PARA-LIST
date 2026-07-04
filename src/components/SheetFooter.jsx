@@ -13,7 +13,8 @@ import { X } from "lucide-react";
  *  - children: die breite Primär-Aktion (z.B. ein <button>)
  */
 export function SheetFooter({ onClose, closeLabel = "Schließen", children }) {
-  // Ohne Primär-Aktion nimmt der Schließ-Button die volle Breite ein.
+  // Ohne Primär-Aktion nimmt der Schließ-Button die volle Breite ein und
+  // zeigt das Text-Label (wie der Schließen-Button im Einstellungs-Menü).
   const closeOnly = !children;
   return (
     <div className="sheet-footer">
@@ -23,7 +24,7 @@ export function SheetFooter({ onClose, closeLabel = "Schließen", children }) {
         onClick={onClose}
         aria-label={closeLabel}
       >
-        <X size={20} />
+        {closeOnly ? closeLabel : <X size={20} />}
       </button>
       {!closeOnly && <div className="sheet-footer__action">{children}</div>}
     </div>

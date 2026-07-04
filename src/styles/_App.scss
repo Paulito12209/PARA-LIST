@@ -797,10 +797,14 @@
     &:hover { filter: brightness(1.08); }
     &:active { transform: scale(0.97); }
 
-    // Ohne Primär-Aktion daneben: volle Breite
+    // Ohne Primär-Aktion daneben: volle Breite mit Text-Label
+    // (wie der Schließen-Button im Einstellungs-Menü)
     &--full {
       flex: 1;
       width: 100%;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: $font-body;
     }
   }
 

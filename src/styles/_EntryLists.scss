@@ -1424,7 +1424,8 @@
     border-top-right-radius: $radius-lg;
     border-top: 1px solid $color-border;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
-    padding: 8px 12px calc(16px + env(safe-area-inset-bottom));
+    // Seitlich 16px – einheitlich mit den Modal-Sheets (z.B. Kollaborateure)
+    padding: 8px $spacing-md calc(16px + env(safe-area-inset-bottom));
     animation: action-sheet-slide-up 0.22s cubic-bezier(0.25, 1, 0.5, 1);
 
     &--closing {

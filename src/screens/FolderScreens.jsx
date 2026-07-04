@@ -4,6 +4,7 @@ import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
+import { DetailsPopup } from "../components/DetailsPopup";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
@@ -141,6 +142,7 @@ export function CatDetailScreen({
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
+  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [coverMode, setCoverMode] = useState(null);
   const [showFcInfo, setShowFcInfo] = useState(false);
@@ -445,13 +447,13 @@ export function CatDetailScreen({
 
           <div className="cat-detail__archive-placeholder" style={{ flex: 1 }} />
 
-          {/* Details-Lesezeichen ("i"): ganz rechts in der Pillen-Zeile */}
+          {/* Details ("i"): öffnet das Metadaten-Popup */}
           <button
-            className={`cat-detail__details-btn ${bm === "details" ? "cat-detail__details-btn--active" : ""}`}
-            onClick={(e) => { e.stopPropagation(); handleBmSelect("details"); }}
+            className="cat-detail__details-btn"
+            onClick={(e) => { e.stopPropagation(); setShowDetailsPopup(true); }}
             aria-label={t.detailsBm || "Details"}
           >
-            <Info size={18} />
+            <Info size={16} />
           </button>
         </div>
         {showDate && (
@@ -767,31 +769,6 @@ export function CatDetailScreen({
             })()}
           </div>
         )}
-        {bm === "details" && (() => {
-          // Zeitstempel (Zahl oder ISO-String) → "3. Juli 2026, 14:32"
-          const fmtStamp = (ts) => {
-            if (!ts) return t.neverLabel;
-            const d = new Date(ts);
-            if (isNaN(d.getTime())) return t.neverLabel;
-            return d.toLocaleDateString(t.locale, { day: "numeric", month: "long", year: "numeric" })
-              + ", " + d.toLocaleTimeString(t.locale, { hour: "2-digit", minute: "2-digit" });
-          };
-          const rows = [
-            { label: t.createdAtLabel, value: fmtStamp(cat.createdAt) },
-            { label: t.lastModifiedLabel, value: fmtStamp(cat.updatedAt) },
-            { label: t.lastOpenedLabel, value: fmtStamp(cat.lastOpenedAt) },
-          ];
-          return (
-            <div className="cat-detail__details">
-              {rows.map((r) => (
-                <div key={r.label} className="cat-detail__details-row">
-                  <span className="cat-detail__details-label">{r.label}</span>
-                  <span className="cat-detail__details-value">{r.value}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
       </div>
 
       {/* Hidden file inputs for cover upload */}
@@ -829,6 +806,11 @@ export function CatDetailScreen({
           onClose={() => setCollabOpen(false)}
           initialView={collaborators.length === 0 ? "add" : "list"}
         />
+      )}
+
+      {/* Metadaten-Popup (Info-Button in der Pillen-Zeile) */}
+      {showDetailsPopup && (
+        <DetailsPopup t={t} item={cat} onClose={() => setShowDetailsPopup(false)} />
       )}
 
       {/* Verknüpfungs-Sheet (ersetzt das frühere Popup an der Pille) */}

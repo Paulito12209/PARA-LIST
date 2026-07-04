@@ -173,6 +173,87 @@
   }
 }
 
+// ── Metadaten-Popup (Info-Button in der Pillen-Zeile) ───────
+.details-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+  background: rgba(0, 0, 0, 0.6);
+  animation: fade-in 0.18s ease-out;
+
+  &__card {
+    width: 100%;
+    max-width: 340px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    padding: $spacing-md;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+    animation: slide-up-small 0.2s ease-out;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__title {
+    font-family: $font-heading;
+    font-size: 16px;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__close {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $color-hover;
+    border: none;
+    color: $color-muted;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $color-text;
+    }
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding: $spacing-sm + $spacing-2xs 0;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid $color-border;
+    }
+  }
+
+  &__label {
+    font-size: 13px;
+    color: $color-muted;
+    flex-shrink: 0;
+  }
+
+  &__value {
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-text;
+    text-align: right;
+  }
+}
+
 // ── Schwebender Home-Button (statt Dock, wenn kein Eingabefeld) ──
 // Glass-Optik kommt von .home__floating-btn; hier Position unten links und
 // die Form des Dock-Home-Buttons der Startseite: liegende Pille 48×40px
@@ -347,17 +428,19 @@
     padding: 0;
   }
 
-  // Details-Lesezeichen ("i") ganz rechts in der Pillen-Zeile
+  // Details-Button ("i") ganz rechts in der Pillen-Zeile – öffnet das
+  // Metadaten-Popup. Gleiche Höhe wie die Header-Pillen (24px), kein
+  // eigener Rahmen/aktiver Zustand – der Kreis kommt vom Info-Icon selbst.
   &__details-btn {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
     background: transparent;
-    border: 1px solid transparent;
+    border: none;
     color: rgba($color-text, 0.65);
     cursor: pointer;
     transition: all $transition-fast;
@@ -365,12 +448,6 @@
     &:hover {
       color: $color-text;
       background: rgba(255, 255, 255, 0.10);
-    }
-
-    &--active {
-      color: #5858A0;
-      border-color: rgba(#5858A0, 0.45);
-      background: rgba(#5858A0, 0.14);
     }
   }
 
@@ -792,7 +869,8 @@
   overscroll-behavior: contain;
   background: $color-surface;
   border-radius: $radius-xl $radius-xl 0 0;
-  padding: $spacing-sm $spacing-md $spacing-xl;
+  // Einheitliches Sheet-Padding (wie .action-sheet__panel): 8 / 16 / 16+Safe-Area
+  padding: $spacing-sm $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
   border: 1px solid $color-border;
   border-bottom: none;
   animation: slide-up $transition-normal;

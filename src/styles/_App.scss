@@ -283,7 +283,9 @@
     width: 100%;
     background: $color-surface;
     border-radius: $radius-xl $radius-xl 0 0;
-    padding: $spacing-md + $spacing-xs $spacing-md $spacing-xl + $spacing-xs;
+    // Einheitliches Sheet-Padding: seitlich 16px, unten 16px + Safe-Area
+    // (gleicher Wert wie .action-sheet__panel und .settings-sheet).
+    padding: $spacing-md + $spacing-xs $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
     border: 1px solid $color-border;
     border-bottom: none;
     max-height: 82vh;
@@ -617,7 +619,7 @@
   background: #16161F;
   border: none;
   border-radius: $radius-xl $radius-xl 0 0;
-  padding-bottom: calc(#{$spacing-xl} + env(safe-area-inset-bottom, 0px));
+  // padding-bottom kommt einheitlich von .modal__sheet (16px + Safe-Area)
 
   @media (min-width: 480px) {
     border-radius: $radius-xl;

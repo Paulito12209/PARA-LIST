@@ -1714,6 +1714,17 @@ body.light-theme .action-sheet {
     flex-shrink: 0;
   }
 
+  // SheetFooter-Komponente (X-Button + Aktions-Slot) innerhalb der Link-
+  // Sheets: gleiche Abstände wie __footer – das Panel selbst hat kein
+  // Padding, daher muss der Footer sie mitbringen (seitlich 16px, unten
+  // 12px + Safe-Area, Trennlinie oben).
+  .sheet-footer {
+    margin-top: $spacing-xs;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid $color-border;
+    flex-shrink: 0;
+  }
+
   &__close-btn {
     display: flex;
     align-items: center;
@@ -1769,6 +1780,7 @@ body.light-theme .link-sheet {
   .link-sheet__row-name { color: #1c1c30; }
   .link-sheet__check { border-color: rgba(0, 0, 0, 0.2); }
   .link-sheet__footer { border-top-color: rgba(0, 0, 0, 0.08); }
+  .sheet-footer { border-top-color: rgba(0, 0, 0, 0.08); }
   .link-sheet__close-btn {
     background: rgba(0, 0, 0, 0.05);
     color: #6a6a78;

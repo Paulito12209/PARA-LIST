@@ -1462,11 +1462,41 @@
     color: #1a1a24;
     background: rgba(0, 0, 0, 0.06);
   }
+}
 
-  &--active {
+// Metadaten-Popup (Info-Button)
+.app.light-theme .details-popup {
+  background: rgba(0, 0, 0, 0.35);
+
+  .details-popup__card {
+    background: #ffffff;
+    border-color: #e5e5f0;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+  }
+
+  .details-popup__title {
+    color: #1a1a24;
+  }
+
+  .details-popup__close {
+    background: #f0f0f5;
     color: #5858A0;
-    border-color: rgba(88, 88, 160, 0.45);
-    background: rgba(88, 88, 160, 0.10);
+
+    &:hover {
+      color: #1a1a24;
+    }
+  }
+
+  .details-popup__row:not(:last-child) {
+    border-bottom-color: #ececf4;
+  }
+
+  .details-popup__label {
+    color: #8e8eb2;
+  }
+
+  .details-popup__value {
+    color: #1a1a24;
   }
 }
 

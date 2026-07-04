@@ -6,6 +6,7 @@ import { LinkSheet } from "../components/LinkSheet";
 import { TagSheet } from "../components/PillSheets";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
+import { DetailsPopup } from "../components/DetailsPopup";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
@@ -33,6 +34,7 @@ export function EntryDetailScreen({
 }) {
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
+  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
   const [collabOpen, setCollabOpen] = useState(false);
   const collaborators = entry.collaborators || [];
   const [showDate, setShowDate] = useState(false);
@@ -384,14 +386,14 @@ export function EntryDetailScreen({
           )}
           </div>
 
-          {/* Details-Lesezeichen ("i"): ganz rechts in der Pillen-Zeile */}
+          {/* Details ("i"): öffnet das Metadaten-Popup */}
           <button
-            className={`cat-detail__details-btn ${bm === "details" ? "cat-detail__details-btn--active" : ""}`}
+            className="cat-detail__details-btn"
             style={{ marginLeft: "auto" }}
-            onClick={(e) => { e.stopPropagation(); handleBmSelect("details"); }}
+            onClick={(e) => { e.stopPropagation(); setShowDetailsPopup(true); }}
             aria-label={t.detailsBm || "Details"}
           >
-            <Info size={18} />
+            <Info size={16} />
           </button>
         </div>
 
@@ -685,31 +687,6 @@ export function EntryDetailScreen({
             })()}
           </div>
         )}
-        {bm === "details" && (() => {
-          // Zeitstempel (Zahl oder ISO-String) → "3. Juli 2026, 14:32"
-          const fmtStamp = (ts) => {
-            if (!ts) return t.neverLabel;
-            const d = new Date(ts);
-            if (isNaN(d.getTime())) return t.neverLabel;
-            return d.toLocaleDateString(t.locale, { day: "numeric", month: "long", year: "numeric" })
-              + ", " + d.toLocaleTimeString(t.locale, { hour: "2-digit", minute: "2-digit" });
-          };
-          const rows = [
-            { label: t.createdAtLabel, value: fmtStamp(entry.createdAt) },
-            { label: t.lastModifiedLabel, value: fmtStamp(entry.updatedAt) },
-            { label: t.lastOpenedLabel, value: fmtStamp(entry.lastOpenedAt) },
-          ];
-          return (
-            <div className="cat-detail__details">
-              {rows.map((r) => (
-                <div key={r.label} className="cat-detail__details-row">
-                  <span className="cat-detail__details-label">{r.label}</span>
-                  <span className="cat-detail__details-value">{r.value}</span>
-                </div>
-              ))}
-            </div>
-          );
-        })()}
       </div>
 
       {/* Settings Bottom Sheet */}
@@ -814,6 +791,11 @@ export function EntryDetailScreen({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Metadaten-Popup (Info-Button in der Pillen-Zeile) */}
+      {showDetailsPopup && (
+        <DetailsPopup t={t} item={entry} onClose={() => setShowDetailsPopup(false)} />
       )}
 
       {/* Verknüpfungs-Sheet (ersetzt das frühere Popup an der Pille) */}

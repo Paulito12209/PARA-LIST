@@ -761,7 +761,8 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onTogglePin, o
     if (!items || items.length === 0) return "";
     const oldest = items.reduce((a, b) => (a.createdAt < b.createdAt ? a : b));
     const d = new Date(oldest.createdAt);
-    return `${t.oldestEntry}: ${d.toLocaleDateString(t.locale, { day: 'numeric', month: 'short' })} ・ ${d.toLocaleTimeString(t.locale, { hour: '2-digit', minute: '2-digit' })}`;
+    // Nur das Datum – ohne Uhrzeit
+    return `${t.oldestEntry}: ${d.toLocaleDateString(t.locale, { day: 'numeric', month: 'short' })}`;
   };
 
   return (

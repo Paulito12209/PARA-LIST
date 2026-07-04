@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, Check, X, RotateCcw, Clock, AlertTriangle } from "lucide-react";
+import { ChevronLeft, Check, X, RotateCcw, RefreshCw, Clock, AlertTriangle, Home, ArrowUp, AudioLines } from "lucide-react";
 
 // Fisher-Yates – einmaliges Mischen zu Session-Beginn (kein Spaced-Repetition,
 // wie in der Referenz-App).
@@ -23,6 +23,8 @@ export function FlashCardScreen({
   onSessionComplete,
   initialDeckId,
   onBack,
+  onHome,
+  onAddWord,
 }) {
   const fc = t.fc || {};
   const [mode, setMode] = useState("overview"); // overview | study | result
@@ -30,6 +32,7 @@ export function FlashCardScreen({
   const [session, setSession] = useState(null); // { queue, index, results, flipped }
   const [drag, setDrag] = useState(0); // aktueller Karten-Versatz beim Wischen
   const [slide, setSlide] = useState(0); // aktiver Karussell-Slide (Übersicht)
+  const [word, setWord] = useState(""); // Eingabefeld im Dock (neues Wort)
 
   const startX = useRef(0);
   const startY = useRef(0);
@@ -61,7 +64,7 @@ export function FlashCardScreen({
     .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
     .slice(0, 5);
   const mistakeCards = mistakes
-    .map((m) => ({ ...m, deck: decks.find((d) => d.id === m.deckId) || null }))
+    .map((m) => ({ ...m, id: m.cardId, deck: decks.find((d) => d.id === m.deckId) || null }))
     .slice(0, 5);
 
   // Aktiven Slide anhand der tatsächlichen Position bestimmen (gap-unabhängig).
@@ -82,10 +85,12 @@ export function FlashCardScreen({
     if (child) trackRef.current.scrollTo({ left: child.offsetLeft, behavior: "smooth" });
   };
 
+  // `deck` darf null sein (gemischte Sessions wie "Zuletzt erstellt"/"Fehler",
+  // deren Karten aus mehreren Decks stammen können).
   const startStudy = (deck, cards) => {
-    const queue = shuffle(cards ?? deck.cards);
+    const queue = shuffle(cards ?? deck?.cards ?? []);
     if (!queue.length) return;
-    setDeckId(deck.id);
+    setDeckId(deck?.id ?? null);
     setSession({ queue, index: 0, results: [], flipped: false });
     setDrag(0);
     setMode("study");
@@ -95,7 +100,12 @@ export function FlashCardScreen({
     setSession((s) => {
       if (!s) return s;
       const card = s.queue[s.index];
-      const results = [...s.results, { cardId: card.id, correct }];
+      // Snapshot von front/back/deckId mitgeben, damit die Fehler-Liste auch
+      // bei gemischten Sessions (Karten aus mehreren Decks) korrekt befüllt wird.
+      const results = [
+        ...s.results,
+        { cardId: card.id, correct, front: card.front, back: card.back, deckId: card.deck?.id ?? card.deckId ?? null },
+      ];
       const nextIndex = s.index + 1;
       if (nextIndex >= s.queue.length) {
         setTimeout(() => {
@@ -201,8 +211,9 @@ export function FlashCardScreen({
                           <button
                             key={it.cardId || it.id || idx}
                             className="fc-carousel__row"
-                            onClick={() => it.deck?.cards?.length && startStudy(it.deck)}
-                            disabled={!it.deck?.cards?.length}
+                            // Es werden NUR die im Slide gelisteten Karten geübt
+                            // (nicht das komplette Deck dahinter).
+                            onClick={() => startStudy(null, sl.items)}
                           >
                             <span className="fc-carousel__row-emoji">{it.emoji || it.deck?.emoji || "📚"}</span>
                             <span className="fc-carousel__row-front">{it.front}</span>
@@ -238,10 +249,43 @@ export function FlashCardScreen({
           <div className="fc-deck-list">{presetDecks.map(renderDeck)}</div>
         </div>
 
-        <div className="nav-bottom">
-          <button className="nav-bottom__back" onClick={onBack} aria-label="Back">
-            <ChevronLeft size={20} color="#EDEEFF" />
-          </button>
+        {/* Opakes Dock unten (verdeckt die Liste dahinter): Home-Button links,
+            Eingabefeld für ein neues Wort in der Mitte, rechts Voice bzw.
+            Senden. Absenden öffnet den Übersetzer mit dem Wort → daraus wird
+            die neue Karteikarte samt Übersetzung. */}
+        <div className="command-dock command-dock--detail" style={{ "--dock-accent": "#7C83F7" }}>
+          <div className="command-dock__input-row">
+            <button
+              className="command-dock__icon-btn command-dock__list-btn"
+              onClick={onHome || onBack}
+              aria-label={t.home || "Startseite"}
+            >
+              <Home size={20} />
+            </button>
+            <input
+              className="command-dock__input"
+              value={word}
+              onChange={(e) => setWord(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && word.trim()) {
+                  onAddWord?.(word.trim());
+                  setWord("");
+                }
+              }}
+              placeholder={fc.addWord || "Neues Wort hinzufügen"}
+              enterKeyHint="done"
+            />
+            <button
+              className={`command-dock__icon-btn ${word.trim() ? "command-dock__send-btn" : "command-dock__voice-btn"}`}
+              onClick={() => {
+                onAddWord?.(word.trim());
+                setWord("");
+              }}
+              aria-label={word.trim() ? (t.send || "Senden") : (fc.addWord || "Neues Wort")}
+            >
+              {word.trim() ? <ArrowUp size={20} /> : <AudioLines size={20} />}
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -265,7 +309,7 @@ export function FlashCardScreen({
             <ChevronLeft size={22} />
           </button>
           <div className="fc-header__title">
-            <span>{activeDeck?.name}</span>
+            <span>{activeDeck?.name || fc.exercises}</span>
           </div>
           <span className="fc-icon-btn fc-icon-btn--ghost" aria-hidden />
         </div>
@@ -291,7 +335,7 @@ export function FlashCardScreen({
                 <RotateCcw size={18} /> {fc.retryWrong}
               </button>
             )}
-            <button className="fc-btn" onClick={() => startStudy(activeDeck)}>
+            <button className="fc-btn" onClick={() => startStudy(activeDeck, activeDeck ? undefined : session.queue)}>
               {fc.retryAll}
             </button>
             <button className="fc-btn fc-btn--ghost" onClick={() => setMode("overview")}>
@@ -311,13 +355,13 @@ export function FlashCardScreen({
     const rot = drag / 18;
     const hintCorrect = drag > SWIPE_ANSWER_PX;
     const hintWrong = drag < -SWIPE_ANSWER_PX;
+    // Sprachrichtung: bei gemischten Sessions steckt das Deck an der Karte,
+    // sonst gilt das aktive Deck. Presets/Übersetzer-Decks haben languagePair.
+    const langPair = card.deck?.languagePair || activeDeck?.languagePair || null;
 
     return (
       <div className="fc-screen fc-screen--study">
         <div className="fc-header">
-          <button className="fc-icon-btn" onClick={() => setMode("overview")} aria-label="Close">
-            <X size={22} />
-          </button>
           <div className="fc-progress">
             <div className="fc-progress__bar" style={{ width: `${pct}%` }} />
           </div>
@@ -344,16 +388,22 @@ export function FlashCardScreen({
               <div className="fc-card__face fc-card__face--front">{card.front}</div>
               <div className="fc-card__face fc-card__face--back">{card.back}</div>
             </div>
+            {langPair && (
+              <div className="fc-card__lang">{`${langPair[0]} → ${langPair[1]}`}</div>
+            )}
             {!session.flipped && <div className="fc-card__hint">{fc.tapToFlip}</div>}
           </div>
         </div>
 
         <div className="fc-study__actions">
+          <button className="fc-answer fc-answer--close" onClick={() => setMode("overview")} aria-label="Close">
+            <X size={20} />
+          </button>
           <button className="fc-answer fc-answer--again" onClick={() => answer(false)}>
-            <X size={20} /> {fc.again}
+            <RefreshCw size={18} /> {fc.again}
           </button>
           <button className="fc-answer fc-answer--known" onClick={() => answer(true)}>
-            <Check size={20} /> {fc.known}
+            <Check size={18} /> {fc.known}
           </button>
         </div>
       </div>

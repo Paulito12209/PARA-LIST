@@ -712,28 +712,36 @@ export default function App() {
   // entfernt. Neueste zuerst, auf 30 Einträge begrenzt. Speist das „Fehler"-Slide.
   const recordStudyResults = (deckId, results = []) =>
     setState((s) => {
-      const deck = (s.flashcardDecks || []).find((d) => d.id === deckId);
-      if (!deck || !results.length) return s;
+      const decksArr = s.flashcardDecks || [];
+      if (!results.length) return s;
       const now = Date.now();
       let mistakes = [...(s.flashcardMistakes || [])];
       results.forEach((r) => {
         const idx = mistakes.findIndex((m) => m.cardId === r.cardId);
         if (r.correct) {
           if (idx >= 0) mistakes.splice(idx, 1);
-        } else {
-          const card = deck.cards.find((c) => c.id === r.cardId);
-          const entry = {
-            deckId,
-            cardId: r.cardId,
-            front: card?.front ?? "",
-            back: card?.back ?? "",
-            emoji: deck.emoji,
-            deckName: deck.name,
-            wrongAt: now,
-          };
-          if (idx >= 0) mistakes[idx] = entry;
-          else mistakes.push(entry);
+          return;
         }
+        // Karte + Deck über ALLE Decks suchen – Sessions können Karten aus
+        // mehreren Decks mischen ("Zuletzt erstellt"/"Fehler"). Fallback auf
+        // den Snapshot (front/back/deckId), den die Session mitliefert.
+        let card = null;
+        let owner = null;
+        for (const d of decksArr) {
+          const c = d.cards.find((c2) => c2.id === r.cardId);
+          if (c) { card = c; owner = d; break; }
+        }
+        const entry = {
+          deckId: owner?.id ?? r.deckId ?? deckId,
+          cardId: r.cardId,
+          front: r.front ?? card?.front ?? "",
+          back: r.back ?? card?.back ?? "",
+          emoji: owner?.emoji,
+          deckName: owner?.name,
+          wrongAt: now,
+        };
+        if (idx >= 0) mistakes[idx] = entry;
+        else mistakes.push(entry);
       });
       mistakes.sort((a, b) => b.wrongAt - a.wrongAt);
       return { ...s, flashcardMistakes: mistakes.slice(0, 30) };
@@ -1339,6 +1347,10 @@ export default function App() {
             onSessionComplete={recordStudyResults}
             initialDeckId={cur.deckId}
             onBack={pop}
+            onHome={() => setStack([{ view: VIEW.HOME }])}
+            onAddWord={(text) =>
+              setTranslateConfig({ initialText: text || "", toLang: "Spanisch" })
+            }
             onAddDeck={addDeck}
             onUpdateDeck={updateDeck}
             onDeleteDeck={deleteDeck}

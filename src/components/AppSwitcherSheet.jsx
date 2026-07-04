@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Languages } from "lucide-react";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
+import { SheetFooter } from "./SheetFooter";
 import { BrandLogo, FlashcardsBadge } from "./AppIcons";
 
 /**
@@ -92,6 +93,9 @@ export function AppSwitcherSheet({ t, app, onOpenHome, onOpenFlashcards, onOpenT
             <span className="app-switcher__tool-name">{fc.translator}</span>
           </button>
         </div>
+
+        {/* Einheitlicher Schließ-Button unten (wie in den anderen Sheets) */}
+        <SheetFooter onClose={handleClose} closeLabel={t.closeBtn} />
       </div>
     </div>,
     document.body

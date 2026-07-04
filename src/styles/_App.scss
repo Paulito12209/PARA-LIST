@@ -796,6 +796,12 @@
 
     &:hover { filter: brightness(1.08); }
     &:active { transform: scale(0.97); }
+
+    // Ohne Primär-Aktion daneben: volle Breite
+    &--full {
+      flex: 1;
+      width: 100%;
+    }
   }
 
   // Primär-Aktion füllt die restliche Breite.

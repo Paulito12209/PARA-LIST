@@ -127,24 +127,42 @@
     &__tab {
       color: #8e8eb2;
 
+      // Aktiv: Heute = kräftiger dunkler Text, Überfällig = rote Schrift
+      &--active-today,
+      &--active-overdue {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+      }
+
       &--active-today {
-        background: rgba(#0078D4, 0.12);
-        color: #0063b1;
-        border-color: rgba(#0078D4, 0.30);
-        box-shadow: 0 0 10px rgba(#0078D4, 0.08);
+        color: #1a1a24;
       }
 
       &--active-overdue {
-        background: rgba(#F26565, 0.12);
-        color: #c04040;
-        border-color: rgba(#F26565, 0.30);
-        box-shadow: 0 0 10px rgba(#F26565, 0.08);
+        color: #F26565;
       }
 
       &:hover:not(&--active-today):not(&--active-overdue) {
         color: #1a1a24;
         background: #f0f0f5;
       }
+    }
+
+    // Zähler-Kreis: neutral grau mit weißer Zahl
+    &__badge {
+      background: #b4b4c6;
+      color: #ffffff;
+    }
+
+    // Hinweis: kein doppeltes `&` – das würde den vollen Light-Theme-Selektor
+    // zweimal expandieren und nie matchen.
+    &__tab--active-today .command-panel__badge--today {
+      background: #0B8CE9;
+    }
+
+    &__tab--active-overdue .command-panel__badge--overdue {
+      background: #F26565;
     }
 
     &__drawer-item {
@@ -215,6 +233,20 @@
       }
     }
 
+    &__qs-search-btn:disabled:hover {
+      background: #ffffff;
+    }
+
+    &__qs-close-btn {
+      background: #ffffff;
+      border-color: #e5e5f0;
+      color: #1a1a24;
+
+      &:hover {
+        background: #f0f0f5;
+      }
+    }
+
     &__qs-btn {
       color: #8e8eb2;
 
@@ -223,11 +255,51 @@
         background: #f0f0f5;
       }
 
+      // Light Mode: Glows deutlich transparenter/heller als im Dark Mode –
+      // v.a. der dunkle Rand-Ton bei Deutschland war zu kräftig.
+      &--lang-de {
+        --qs-glow-1: rgba(255, 206, 0, 0.28);
+        --qs-glow-2: rgba(221, 0, 0, 0.12);
+        --qs-glow-3: rgba(0, 0, 0, 0.05);
+      }
+
+      &--lang-en {
+        --qs-glow-1: rgba(255, 255, 255, 0.55);
+        --qs-glow-2: rgba(200, 16, 46, 0.14);
+        --qs-glow-3: rgba(1, 33, 105, 0.16);
+      }
+
+      &--lang-es {
+        --qs-glow-1: rgba(255, 196, 0, 0.28);
+        --qs-glow-2: rgba(198, 84, 0, 0.14);
+        --qs-glow-3: rgba(120, 50, 0, 0.06);
+      }
+
+      // Sonne: Linien kräftig Gelb-Orange, Glow dezenter
+      &--theme-light {
+        --qs-glow-1: rgba(255, 193, 7, 0.26);
+        --qs-glow-2: rgba(255, 140, 0, 0.10);
+        --qs-glow-3: transparent;
+        --qs-active-icon: #EA8A00;
+      }
+
+      &--theme-dark {
+        --qs-glow-1: rgba(96, 148, 255, 0.22);
+        --qs-glow-2: rgba(37, 64, 175, 0.14);
+        --qs-glow-3: rgba(15, 23, 84, 0.08);
+      }
+
+      // Glow im Light Mode: gleiche Varianten-Farben (Flaggen/Sonne/Mond),
+      // Fallback = dunkler Ton statt hellem Schein.
       &--active {
-        background: rgba(#0078D4, 0.12);
-        color: #0063b1;
-        border-color: rgba(#0078D4, 0.30);
-        box-shadow: 0 0 10px rgba(#0078D4, 0.08);
+        background: radial-gradient(circle at center,
+            var(--qs-glow-1, rgba(26, 26, 36, 0.16)) 0%,
+            var(--qs-glow-2, rgba(26, 26, 36, 0.07)) 38%,
+            var(--qs-glow-3, transparent) 60%,
+            transparent 78%);
+        color: var(--qs-active-icon, #1a1a24);
+        border-color: transparent;
+        box-shadow: none;
       }
     }
 

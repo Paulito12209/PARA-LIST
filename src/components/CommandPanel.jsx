@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Check, Moon, Sun, ChevronLeft } from "lucide-react";
+import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 
@@ -132,7 +132,8 @@ export function CommandPanel({
             </div>
           </div>
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
-            {!open && !page && (
+            {/* Einstellungen oben rechts – geschlossen UND geöffnet sichtbar */}
+            {!page && (
               <button
                 className="command-panel__bell command-panel__filter-btn"
                 onClick={(e) => {
@@ -199,17 +200,20 @@ export function CommandPanel({
                       }
                     }}
                   >
+                    {/* Kleines Typ-Icon: Aufgabe bzw. Kalender – immer in der
+                        Typ-Farbe (Task-Blau/Kalender-Blau), auch bei überfällig */}
                     <span
-                      className="command-panel__drawer-dot"
+                      className="command-panel__drawer-icon"
                       style={{
-                        background:
-                          e.type === "calendar"
-                            ? "#0078D4"
-                            : isOld(d)
-                            ? NOTIF_RED
-                            : "#0B8CE9",
+                        color: e.type === "calendar" ? "#0078D4" : "#0B8CE9",
                       }}
-                    />
+                    >
+                      {e.type === "calendar" ? (
+                        <Calendar size={16} strokeWidth={2.2} />
+                      ) : (
+                        <CheckCircle2 size={16} strokeWidth={2.2} />
+                      )}
+                    </span>
                     <div className="command-panel__drawer-info">
                       <div className="command-panel__drawer-title">{e.title}</div>
                       <div className="command-panel__drawer-meta">
@@ -240,11 +244,19 @@ export function CommandPanel({
       {open && (
         <div className="command-panel__footer">
           <div className="command-panel__quick-settings" onClick={(e) => e.stopPropagation()}>
+            {/* Rundes Schließ-Icon links neben der Sprach-/Theme-Pille */}
+            <button
+              className="command-panel__qs-close-btn"
+              onClick={onToggle}
+              aria-label={t.closeBtn || "Schließen"}
+            >
+              <X size={18} />
+            </button>
             <div className="command-panel__qs-pill">
               {["de", "en", "es"].map((l) => (
                 <button
                   key={l}
-                  className={`command-panel__qs-btn command-panel__qs-btn--lang ${
+                  className={`command-panel__qs-btn command-panel__qs-btn--lang command-panel__qs-btn--lang-${l} ${
                     lang === l ? "command-panel__qs-btn--active" : ""
                   }`}
                   onClick={() => setLang(l)}
@@ -257,7 +269,7 @@ export function CommandPanel({
               <div className="command-panel__qs-divider" />
 
               <button
-                className={`command-panel__qs-btn command-panel__qs-btn--theme ${
+                className={`command-panel__qs-btn command-panel__qs-btn--theme command-panel__qs-btn--theme-dark ${
                   theme === "dark" ? "command-panel__qs-btn--active" : ""
                 }`}
                 onClick={() => setTheme("dark")}
@@ -266,7 +278,7 @@ export function CommandPanel({
                 <Moon size={16} />
               </button>
               <button
-                className={`command-panel__qs-btn command-panel__qs-btn--theme ${
+                className={`command-panel__qs-btn command-panel__qs-btn--theme command-panel__qs-btn--theme-light ${
                   theme === "light" ? "command-panel__qs-btn--active" : ""
                 }`}
                 onClick={() => setTheme("light")}
@@ -276,11 +288,14 @@ export function CommandPanel({
               </button>
             </div>
 
+            {/* Suche (noch nicht implementiert → deaktiviert dargestellt) */}
             <button
-              className="command-panel__qs-settings-btn"
-              onClick={() => onOpenSettings()}
+              className="command-panel__qs-settings-btn command-panel__qs-search-btn"
+              aria-label={lang === "en" ? "Search" : "Suche"}
+              aria-disabled="true"
+              disabled
             >
-              <CustomSettingsIcon size={18} />
+              <Search size={18} />
             </button>
           </div>
           <div className="command-panel__handle command-panel__handle--open" onClick={onToggle}>

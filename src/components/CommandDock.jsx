@@ -89,7 +89,7 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
               }}
               title={t[SINGULAR_KEY[d.id]]}
             >
-              <Icon size={22} strokeWidth={isActive ? 2.6 : 2} />
+              <Icon size={24} strokeWidth={isActive ? 2.6 : 2} />
             </button>
           );
         })}
@@ -97,7 +97,7 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
         {/* 7. Icon: Menü – öffnet das Dock-Bottom-Sheet (u.a. Papierkorb) */}
         <button className="command-dock__menu" onClick={onMenu} aria-label="Menü">
           <span className="command-dock__menu-circle">
-            <MoreHorizontal size={16} />
+            <MoreHorizontal size={14} />
           </span>
         </button>
       </div>

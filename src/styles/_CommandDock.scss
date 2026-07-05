@@ -38,20 +38,16 @@
   }
 
   &__type {
-    flex: 1;
-
-    // Erster Typ-Button (Projekt): fixe Breite = Pokal-Button darunter (48px),
-    // damit der Projekt-Icon visuell links bündig mit dem Pokal-Icon ist.
-    &:first-child {
-      flex: 0 0 48px;
-    }
+    // Fixe Breite = Icon-Größe (24px). justify-content: space-between im
+    // Container verteilt den Abstand zwischen allen Icons gleichmäßig.
+    flex: 0 0 24px;
     height: 44px;
     border-radius: $radius-md;
     display: flex;
     align-items: center;
     justify-content: center;
     background: transparent;
-    border: 1px solid transparent;
+    border: none;
     color: #8a8a96;
     cursor: pointer;
     transition: all $transition-fast;
@@ -64,7 +60,6 @@
     // Aktiver (= ausgewählter) Typ: nur die Akzentfarbe, KEIN Glow.
     // Die Farbe kommt per Inline-Style (color: var(--type-color)).
     &--active {
-      border-color: transparent;
       background: transparent;
       box-shadow: none;
     }
@@ -82,10 +77,10 @@
     }
   }
 
-  // 7. Icon: Menü-Kreis – fixe Breite = Audio-Button darunter (48px), damit
-  // das Drei-Punkte-Icon visuell rechts bündig mit dem Audio-Icon ist.
+  // 7. Icon: Menü-Kreis – fixe Breite = Icon-Größe (24px), damit
+  // das Drei-Punkte-Icon visuell rechts bündig mit dem Audio-Icon darunter ist.
   &__menu {
-    flex: 0 0 48px;
+    flex: 0 0 24px;
     height: 44px;
     display: flex;
     align-items: center;
@@ -104,10 +99,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    // Kleiner als vorher (40px), damit das Icon visuell die gleiche Größe
-    // einnimmt wie die 22px Lucide-Icons der übrigen Dock-Buttons.
-    width: 32px;
-    height: 32px;
+    // Gleiche Größe wie die Typ-Icons (24px) für konsistente Optik.
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
     // 5% dunkler als die übrigen Dock-Icons (Light Mode überschreibt analog)
     background: #21212d;

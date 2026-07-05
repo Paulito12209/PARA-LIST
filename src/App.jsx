@@ -1148,7 +1148,14 @@ export default function App() {
         />
       )}
 
-      <div className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}`}>
+      {/* Wenn das Command-Panel (Backlog/Suche) offen ist, liegt der Home-
+          Inhalt dahinter. `inert` nimmt ihn samt Dock-Eingabefeld aus dem
+          Fokus-Baum – sonst zählt iOS das Dock-Feld als zweites Formularfeld
+          und blendet seine native „vor/zurück/Fertig"-Leiste über der Tastatur ein. */}
+      <div
+        inert={panelOpen || undefined}
+        className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}`}
+      >
         {cur.view === VIEW.HOME && (
           <HomeScreen
             t={t}

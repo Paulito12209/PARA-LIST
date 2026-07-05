@@ -456,10 +456,10 @@
     height: 40px;
     padding: 0 $spacing-md;
     border-radius: 20px;
-    background: rgba($color-dim, 0.6);
+    // Deckende Fläche (kein durchscheinender Hintergrund): die Einträge
+    // dürfen nicht durchschimmern – auch nicht während des Einblendens.
+    background: $color-dim;
     @include glass-border;
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
     color: $color-text;
     font-size: 14px;
     font-weight: 500;
@@ -652,8 +652,8 @@
     @include floating-btn(40px, 50%);
     position: relative;
     @include glass-border;
-    // Gleiche Fläche wie Schließen/Suche (homogener Footer)
-    background: rgba($color-dim, 0.6);
+    // Gleiche Fläche wie Schließen/Suche (homogener Footer) – deckend.
+    background: $color-dim;
     color: $color-text;
     cursor: pointer;
     flex-shrink: 0;
@@ -675,7 +675,7 @@
     width: 48px;
     position: relative;
     @include glass-border;
-    background: rgba($color-dim, 0.6);
+    background: $color-dim;
     color: $color-text;
     cursor: pointer;
     flex-shrink: 0;
@@ -694,7 +694,7 @@
     width: 48px;
     position: relative;
     @include glass-border;
-    background: rgba($color-dim, 0.6);
+    background: $color-dim;
     color: $color-text;
     cursor: pointer;
     flex-shrink: 0;

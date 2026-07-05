@@ -3,6 +3,7 @@ import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, Circl
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 import { SearchPanel } from "./SearchPanel";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 
 const SWIPE_THRESHOLD_PX = 60;
 const HAPTIC_TAP_MS = 10;
@@ -46,6 +47,7 @@ export function CommandPanel({
   const [sort, setSort] = useState({ by: "date", desc: true });
   const [searchQuery, setSearchQuery] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
+  const isDesktop = useIsDesktop();
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
@@ -541,6 +543,13 @@ export function CommandPanel({
                   onBlur={() => setInputFocused(false)}
                   placeholder={lang === "de" ? "Suchen..." : lang === "es" ? "Buscar..." : "Search..."}
                   aria-label={t.searchTitle || "Suchen"}
+                  // Auf Mobilgeräten übernimmt bei aktiver Tastatur die schwebende
+                  // Leiste (SearchPanel-Portal) die Eingabe. Dieses Feld dann aus
+                  // dem Fokus-/Formular-Baum nehmen, damit iOS nicht seine native
+                  // „vor/zurück/Fertig"-Assistentenleiste über der Tastatur zeigt
+                  // (die entsteht nur, wenn iOS mehrere fokussierbare Felder sieht).
+                  readOnly={!isDesktop && inputFocused}
+                  tabIndex={!isDesktop && inputFocused ? -1 : undefined}
                 />
               </div>
             ) : (

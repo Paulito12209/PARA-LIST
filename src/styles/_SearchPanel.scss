@@ -150,7 +150,7 @@
     flex-shrink: 0;
     border-radius: 50%;
     border: 1px solid $color-border;
-    background: rgba($color-card, 0.65);
+    background: $color-dim;
     color: $color-text;
     cursor: pointer;
     padding: 0;
@@ -169,10 +169,8 @@
     align-items: center;
     padding: 0 $spacing-md;
     border-radius: $radius-pill;
-    background: rgba($color-card, 0.75);
+    background: $color-dim;
     border: 1px solid $color-border;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
   }
 
   &__kb-input {
@@ -203,7 +201,7 @@
     flex-shrink: 0;
     border-radius: 50%;
     border: 1px solid $color-border;
-    background: rgba($color-card, 0.65);
+    background: $color-dim;
     color: $color-text;
     cursor: pointer;
     padding: 0;

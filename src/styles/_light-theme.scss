@@ -101,7 +101,8 @@
     }
 
     &--open {
-      background: #f0f0f5;
+      // Reines Weiß wie die Startseite (statt sekundärem Lavendel-Grau).
+      background: #ffffff;
     }
 
     &__greeting {
@@ -173,12 +174,14 @@
       background: #ffffff;
       border-color: #e5e5f0;
       color: #8e8eb2;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
     }
 
     &__search-input {
       background: #ffffff;
       border-color: #e5e5f0;
       color: #1a1a24;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
 
       &::placeholder {
         color: #8e8eb2;
@@ -235,12 +238,14 @@
     }
 
     // Footer-Buttons im Light Mode (Schließen · Sprache · Theme · Suche)
+    // Backdrop-Schatten wie das Startseiten-Dock → auf weißem Grund erkennbar.
     &__qs-settings-btn,
     &__qs-close-btn,
     &__qs-round-btn {
       background: #ffffff;
       border-color: #e5e5f0;
       color: #1a1a24;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
 
       &:hover {
         background: #f0f0f5;

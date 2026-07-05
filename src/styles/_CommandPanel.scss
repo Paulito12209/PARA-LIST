@@ -484,7 +484,8 @@
     transition: all $transition-fast;
 
     &::placeholder {
-      color: $color-muted;
+      // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
+      color: #8a8a96;
     }
   }
 

@@ -19,7 +19,8 @@
   &__meta-label {
     font-size: 12px;
     font-weight: 600;
-    color: $color-muted;
+    // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
+    color: #8a8a96;
     min-height: 16px;
     border: none;
     background: transparent;
@@ -49,7 +50,7 @@
     padding: $spacing-xl $spacing-sm;
     text-align: center;
     font-size: 14px;
-    color: $color-muted;
+    color: #8a8a96;
   }
 
   &__group {
@@ -68,7 +69,7 @@
     z-index: 5;
     font-size: 12px;
     font-weight: 600;
-    color: $color-muted;
+    color: #8a8a96;
     padding: $spacing-xs $spacing-2xs $spacing-sm;
     background: $color-hover;
   }
@@ -118,7 +119,8 @@
 
   &__item-location {
     font-size: 12px;
-    color: $color-muted;
+    // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
+    color: #8a8a96;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -184,7 +186,7 @@
     outline: none;
 
     &::placeholder {
-      color: $color-muted;
+      color: #8a8a96;
     }
 
     &::-webkit-search-cancel-button {
@@ -223,10 +225,10 @@
       color: #8e8eb2;
     }
 
-    // Opaker Hintergrund der Sticky-Titel = heller Panel-Hintergrund,
+    // Opaker Hintergrund der Sticky-Titel = weißer Panel-Hintergrund,
     // damit Einträge sauber darunter durchscrollen.
     &__group-label {
-      background: #f0f0f5;
+      background: #ffffff;
     }
 
     &__item {

@@ -127,6 +127,7 @@ export function SearchPanel({
   setQuery,
   inputFocused,
   setInputFocused,
+  lang,
 }) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
@@ -356,7 +357,7 @@ export function SearchPanel({
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={handleInputFocus}
                 onBlur={handleInputBlur}
-                placeholder={t.searchPlaceholder || "Suchen..."}
+                placeholder={lang === "de" ? "Suchen..." : lang === "es" ? "Buscar..." : "Search..."}
                 aria-label={t.searchTitle || "Suchen"}
               />
             </div>

@@ -301,6 +301,7 @@ export function CommandPanel({
           setQuery={setSearchQuery}
           inputFocused={inputFocused}
           setInputFocused={setInputFocused}
+          lang={lang}
         />
       )}
 
@@ -538,7 +539,7 @@ export function CommandPanel({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setInputFocused(true)}
                   onBlur={() => setInputFocused(false)}
-                  placeholder={t.searchPlaceholder || "Suchen..."}
+                  placeholder={lang === "de" ? "Suchen..." : lang === "es" ? "Buscar..." : "Search..."}
                   aria-label={t.searchTitle || "Suchen"}
                 />
               </div>

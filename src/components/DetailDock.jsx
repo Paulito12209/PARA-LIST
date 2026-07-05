@@ -12,12 +12,14 @@ export function DetailIconBar({
   onSelect,
   iconOverrides,
   iconColors,
+  onTouchStart,
+  onTouchEnd,
 }) {
   // "tags" wird nicht mehr als Lesezeichen geführt.
   const items = BOOKMARKS.filter((bm) => bm.id !== "tags");
 
   return (
-    <div className="detail-iconbar">
+    <div className="detail-iconbar" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       {items.map((bm) => {
         const Icon = iconOverrides?.[bm.id] || bm.Icon;
         const isActive = active === bm.id;

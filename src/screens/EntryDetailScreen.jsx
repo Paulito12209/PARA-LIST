@@ -23,6 +23,8 @@ const COVER_COLORS = [
 
 const RES_SUB_TAB_ORDER = ["resources", "media"];
 const TASK_SUB_TAB_ORDER = ["open", "completed"];
+// Reihenfolge der Lesezeichen für den seitlichen Wisch-Wechsel (wie Iconbar)
+const BM_ORDER = BOOKMARKS.filter((b) => b.id !== "tags").map((b) => b.id);
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 
 export function EntryDetailScreen({
@@ -173,11 +175,14 @@ export function EntryDetailScreen({
     [bm, entry.type, onAddSubtask, onAddLinkedEntry]
   );
 
-  // Swipe handler for sub-tab switching
+  // Swipe handler for sub-tab switching. stopPropagation: innerhalb dieser
+  // Bereiche wechselt der Wisch die Sub-Tabs, nicht die Lesezeichen.
   const onSubTabTouchStart = useCallback((e) => {
+    e.stopPropagation();
     subTabTouchX.current = e.touches[0].clientX;
   }, []);
   const onSubTabTouchEnd = useCallback((e) => {
+    e.stopPropagation();
     const dx = e.changedTouches[0].clientX - subTabTouchX.current;
     if (Math.abs(dx) <= SUB_TAB_SWIPE_THRESHOLD_PX) return;
     const stepInOrder = (order, prev) => {
@@ -189,6 +194,33 @@ export function EntryDetailScreen({
     if (bm === "media") setResSubTab((prev) => stepInOrder(RES_SUB_TAB_ORDER, prev));
     else if (bm === "tasks") setTaskSubTab((prev) => stepInOrder(TASK_SUB_TAB_ORDER, prev));
   }, [bm]);
+
+  // Seitliches Wischen (Body + Iconbar): wechselt zwischen den Lesezeichen
+  // der Iconbar – rechts→links = nächstes, links→rechts = vorheriges.
+  const bmTouch = useRef({ x: 0, y: 0, skip: false });
+  const onBmTouchStart = useCallback((e) => {
+    bmTouch.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+      // Wisch-Gesten auf Einträgen (Löschen/Erledigen) und in Textfeldern
+      // nicht als Lesezeichen-Wechsel deuten
+      skip: !!e.target.closest?.(".swipe-delete-wrapper, textarea, input"),
+    };
+  }, []);
+  const onBmTouchEnd = useCallback((e) => {
+    if (bmTouch.current.skip) return;
+    const dx = e.changedTouches[0].clientX - bmTouch.current.x;
+    const dy = e.changedTouches[0].clientY - bmTouch.current.y;
+    // Nur klar horizontale Wische zählen (kein Scrollen)
+    if (Math.abs(dx) <= SUB_TAB_SWIPE_THRESHOLD_PX || Math.abs(dx) <= Math.abs(dy)) return;
+    setBm((prev) => {
+      const idx = BM_ORDER.indexOf(prev);
+      if (idx === -1) return prev;
+      const next = dx > 0 ? Math.max(0, idx - 1) : Math.min(BM_ORDER.length - 1, idx + 1);
+      if (BM_ORDER[next] !== prev) navigator.vibrate?.(10);
+      return BM_ORDER[next];
+    });
+  }, []);
 
   return (
     <div
@@ -402,11 +434,19 @@ export function EntryDetailScreen({
           onSelect={handleBmSelect}
           iconOverrides={iconOverrides}
           iconColors={iconColors}
+          onTouchStart={onBmTouchStart}
+          onTouchEnd={onBmTouchEnd}
         />
       </div>
 
-      {/* Content */}
-      <div className="cat-detail__body" style={{ flex: 1 }} onClick={handleDoubleTap}>
+      {/* Content – seitliches Wischen wechselt das aktive Lesezeichen */}
+      <div
+        className="cat-detail__body"
+        style={{ flex: 1 }}
+        onClick={handleDoubleTap}
+        onTouchStart={onBmTouchStart}
+        onTouchEnd={onBmTouchEnd}
+      >
         {bm === "canvas" && (
           <>
             {entry.type === "note" && (

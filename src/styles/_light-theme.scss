@@ -814,55 +814,45 @@
     &__btn {
       color: #8e8eb2;
 
-      // Notizen-Tab: Helleres Gelb/Gold für Light Mode
-      &--active-notes {
-        background: rgba(#F59E0B, 0.12);
-        color: #b87a00;
-        border-color: rgba(#F59E0B, 0.30);
-        box-shadow: 0 0 10px rgba(#F59E0B, 0.08);
+      // Alle Sub-Tabs im Backlog-Stil: aktiv = kräftiges Schwarz, keine Pille
+      &--active-notes,
+      &--active-res,
+      &--active-media,
+      &--active-open,
+      &--active-completed {
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+        color: #1a1a24;
       }
 
-      // Ressourcen-Tab: Helleres Grün für Light Mode
-      &--active-res {
-        background: rgba(#10B981, 0.12);
-        color: #0a8a5e;
-        border-color: rgba(#10B981, 0.30);
-        box-shadow: 0 0 10px rgba(#10B981, 0.08);
-      }
-
-      // Medien-Tab: Cooles Magenta-Rosa für Light Mode
-      &--active-media {
-        background: rgba(#EC4899, 0.12);
-        color: #be185d;
-        border-color: rgba(#EC4899, 0.30);
-        box-shadow: 0 0 10px rgba(#EC4899, 0.08);
-      }
-
-      &:hover:not(&--active-notes):not(&--active-media):not(&--active-res) {
+      &:hover:not(&--active-notes):not(&--active-media):not(&--active-res):not(&--active-open):not(&--active-completed) {
         color: #1a1a24;
         background: #f0f0f5;
       }
     }
 
+    // Badges: inaktiv neutral grau, Farbe nur am aktiven Tab
     &__count {
+      background: rgba(#8B8BA8, 0.16);
+      color: #6b6b80;
+    }
 
-      // Notizen-Badge in sattem Goldton
-      &--notes {
-        background: rgba(#F59E0B, 0.14);
-        color: #b87a00;
-      }
-
-      // Ressourcen-Badge in sattem Grünton
-      &--res {
-        background: rgba(#10B981, 0.14);
-        color: #0a8a5e;
-      }
-
-      // Medien-Badge in tiefem Magenta-Rosa
-      &--media {
-        background: rgba(#EC4899, 0.14);
-        color: #be185d;
-      }
+    &__btn--active-notes .res-sub-tabs__count {
+      background: rgba(#F59E0B, 0.14);
+      color: #b87a00;
+    }
+    &__btn--active-res .res-sub-tabs__count {
+      background: rgba(#10B981, 0.14);
+      color: #0a8a5e;
+    }
+    &__btn--active-media .res-sub-tabs__count {
+      background: rgba(#EC4899, 0.14);
+      color: #be185d;
+    }
+    &__btn--active-completed .res-sub-tabs__count {
+      background: rgba(#10B981, 0.14);
+      color: #0a8a5e;
     }
   }
 
@@ -1493,9 +1483,40 @@
   .details-popup__value {
     color: #1a1a24;
   }
+
+  // Kollaboratoren-Zeile: weißer Avatar-Rand + dunkles Icon auf hellem Grund
+  .details-popup__avatar {
+    border-color: #ffffff;
+    background: #e8e8ee;
+    color: #1a1a24;
+  }
+
+  .details-popup__avatar-add {
+    background: #f0f0f5;
+    border-color: #e0e0ea;
+    color: #5858A0;
+
+    &:hover { background: #e8e8ee; }
+  }
 }
 
-// Schmale Lesezeichen-Leiste der Detailseiten (zwischen Header und Canvas)
+// Einträge auf Detailseiten: flach wie auf der Startseite (überstimmt die
+// generelle helle Card-Fläche der .task-item/.note-item/.cal-item oben).
+// !important nötig, weil die "Erledigt"-Regeln (.task-item--done etc.)
+// selbst mit !important weiße Cards erzwingen.
+.app.light-theme .cat-detail__body {
+  .task-item,
+  .note-item,
+  .cal-item,
+  .media-item {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
+
+// Schmale Lesezeichen-Leiste am unteren Header-Rand (transparent – der
+// Verlauf kommt vom Header selbst)
 .app.light-theme .detail-iconbar {
   border-bottom-color: #e5e5f0;
 

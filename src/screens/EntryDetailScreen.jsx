@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Circle, Triangle, Square, Plus, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, ListChecks, Palette, Camera, UserPlus, Pin, PinOff, Info } from 'lucide-react';
-import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, getInitials } from "../utils";
+import { fmtDate, fmtRelative, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { LinkSheet } from "../components/LinkSheet";
 import { TagSheet } from "../components/PillSheets";
@@ -232,33 +232,8 @@ export function EntryDetailScreen({
           />
         </div>
 
-        {/* Avatare der Seite (eigener + Kollaboratoren), über den Pillen –
-            identisch zu den Ordner-Detailseiten (Projekte/Bereiche/Ressourcen). */}
-        <div className="cat-detail__avatars">
-          {user?.avatar ? (
-            <img src={user.avatar} className="cat-detail__avatar" alt={user?.name || ""} />
-          ) : (
-            <span className="cat-detail__avatar cat-detail__avatar--initials">{getInitials(user?.name)}</span>
-          )}
-          {collaborators.map((c) => (
-            c.avatar ? (
-              <img key={c.id} src={c.avatar} className="cat-detail__avatar" alt={c.name} />
-            ) : (
-              <span key={c.id} className="cat-detail__avatar cat-detail__avatar--initials">
-                {c.name.charAt(0).toUpperCase()}
-              </span>
-            )
-          ))}
-          <button
-            type="button"
-            className="cat-detail__avatar-add"
-            onClick={(e) => { e.stopPropagation(); setCollabOpen(true); }}
-            aria-label={t.addCollaborator}
-          >
-            <UserPlus size={14} />
-          </button>
-        </div>
-
+        {/* Kollaboratoren sind aus dem Header ins Details-Popup gewandert –
+            die Pillen rücken dadurch nach oben. */}
         <div className="cat-detail__pills">
           {/* Gleicher Wrapper wie auf den Ordner-Detailseiten → identischer
               vertikaler Abstand zwischen Avataren und Pillen (8px + 4px). */}
@@ -423,17 +398,18 @@ export function EntryDetailScreen({
             </div>
           </div>
         )}
-      </div>
 
-      {/* Schmale Lesezeichen-Leiste zwischen Header und Canvas */}
-      <DetailIconBar
-        t={t}
-        active={bm}
-        onSelect={handleBmSelect}
-        iconOverrides={iconOverrides}
-        iconColors={iconColors}
-        onOptions={openSettingsSheet}
-      />
+        {/* Schmale Lesezeichen-Leiste: Teil des 160px-Headers – transparent,
+            damit dessen Farbverlauf durchscheint. */}
+        <DetailIconBar
+          t={t}
+          active={bm}
+          onSelect={handleBmSelect}
+          iconOverrides={iconOverrides}
+          iconColors={iconColors}
+          onOptions={openSettingsSheet}
+        />
+      </div>
 
       {/* Content */}
       <div className="cat-detail__body" style={{ flex: 1 }} onClick={handleDoubleTap}>
@@ -478,7 +454,6 @@ export function EntryDetailScreen({
                 className={`res-sub-tabs__btn ${taskSubTab === "open" ? "res-sub-tabs__btn--active-open" : ""}`}
                 onClick={() => setTaskSubTab("open")}
               >
-                <CheckCircle2 size={14} />
                 <span>{t.open || "Offen"}</span>
                 {allTasksForTab.filter((e) => !e.done).length > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--open">{allTasksForTab.filter((e) => !e.done).length}</span>
@@ -488,7 +463,6 @@ export function EntryDetailScreen({
                 className={`res-sub-tabs__btn ${taskSubTab === "completed" ? "res-sub-tabs__btn--active-completed" : ""}`}
                 onClick={() => setTaskSubTab("completed")}
               >
-                <CheckCircle2 size={14} />
                 <span>{t.markDone || "Erledigt"}</span>
                 {allTasksForTab.filter((e) => e.done).length > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--completed">{allTasksForTab.filter((e) => e.done).length}</span>
@@ -563,7 +537,6 @@ export function EntryDetailScreen({
                 className={`res-sub-tabs__btn ${resSubTab === "resources" ? "res-sub-tabs__btn--active-res" : ""}`}
                 onClick={() => setResSubTab("resources")}
               >
-                <Square size={14} />
                 <span>{t.linkedRes}</span>
                 {linkedNotes.length > 0 && resSubTab !== "resources" && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--res">{linkedNotes.length}</span>
@@ -573,7 +546,6 @@ export function EntryDetailScreen({
                 className={`res-sub-tabs__btn ${resSubTab === "media" ? "res-sub-tabs__btn--active-media" : ""}`}
                 onClick={() => setResSubTab("media")}
               >
-                <Paperclip size={14} />
                 <span>{t.mediaTab}</span>
                 {linkedMedia.length > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--media">{linkedMedia.length}</span>
@@ -795,7 +767,14 @@ export function EntryDetailScreen({
 
       {/* Metadaten-Popup (Info-Button in der Pillen-Zeile) */}
       {showDetailsPopup && (
-        <DetailsPopup t={t} item={entry} onClose={() => setShowDetailsPopup(false)} />
+        <DetailsPopup
+          t={t}
+          item={entry}
+          user={user}
+          collaborators={collaborators}
+          onAddCollaborator={() => { setShowDetailsPopup(false); setCollabOpen(true); }}
+          onClose={() => setShowDetailsPopup(false)}
+        />
       )}
 
       {/* Verknüpfungs-Sheet (ersetzt das frühere Popup an der Pille) */}

@@ -132,17 +132,25 @@
   }
 }
 
-// ── Schmale Lesezeichen-Leiste zwischen Header und Canvas ───
-// So flach wie möglich: 36px hohe Buttons, minimales vertikales Padding.
+// ── Schmale Lesezeichen-Leiste am unteren Rand des Headers ──
+// Sitzt INNERHALB des 160px-Headers (letztes Kind, margin-top: auto) und
+// ist transparent, damit dessen Farbverlauf durchscheint. Die negativen
+// Seitenränder heben das Header-Padding auf → volle Breite. Das aktive
+// Lesezeichen wird durch einen kurzen, dickeren Strich in seiner
+// Akzentfarbe auf der grauen Trennlinie darunter markiert.
 .detail-iconbar {
   display: flex;
   align-items: center;
   gap: $spacing-2xs;
-  padding: $spacing-2xs $spacing-md;
+  height: 40px;
+  box-sizing: border-box;
+  padding: 0 $spacing-md;
+  margin: auto (-$spacing-md) 0;
   border-bottom: 1px solid $color-border;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
+  background: transparent;
 
   &__btn {
     flex: 1;
@@ -150,6 +158,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
     border-radius: $radius-md;
     background: transparent;
     border: 1px solid transparent;
@@ -162,14 +171,44 @@
       background: rgba(255, 255, 255, 0.06);
     }
 
-    // Aktives Lesezeichen: Akzentfarbe per Inline-Style (--type-color)
+    // Aktives Lesezeichen: Akzentfarbe per Inline-Style (--type-color);
+    // zusätzlich ein kurzer Indikator-Strich auf der Trennlinie darunter.
     &--active {
       background: transparent;
+
+      &::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: -3px; // überdeckt Restluft (2px) + 1px-Trennlinie der Leiste
+        transform: translateX(-50%);
+        width: 28px;
+        height: 3px;
+        border-radius: 2px;
+        background: var(--type-color, currentColor);
+      }
     }
   }
 
   &__menu {
     flex: 0 0 36px;
+  }
+}
+
+// ── Einträge auf Detailseiten im Startseiten-Look ───────────
+// Flache Zeilen ohne eigene Card-Fläche: kein Hintergrund/Rand/Schatten,
+// kein horizontales Eigen-Padding – der 16px-Seitenabstand kommt allein
+// vom Body-Padding (kein doppelter Einzug mehr bis zum Typ-Icon).
+.cat-detail__body {
+  .task-item,
+  .note-item,
+  .cal-item,
+  .media-item {
+    padding-left: 0;
+    padding-right: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
 }
 
@@ -252,6 +291,55 @@
     color: $color-text;
     text-align: right;
   }
+
+  // ── Kollaboratoren-Zeile (Avatar-Stapel aus dem Header hierher gezogen) ──
+  &__avatars {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  &__avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: $color-dim;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: $font-body;
+    color: $color-text;
+
+    // Leichte Überlappung der Stapel-Avatare
+    & + & { margin-left: -8px; }
+  }
+
+  &__avatar-add {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-left: -8px;
+    position: relative;
+    z-index: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover { background: rgba(255, 255, 255, 0.14); }
+  }
 }
 
 // ── Schwebender Home-Button (statt Dock, wenn kein Eingabefeld) ──
@@ -282,15 +370,19 @@
 
   &__header {
     // Feste optische Höhe von 160px (inkl. der 80px, die unter dem Command-Panel
-    // liegen). Weniger Leerraum zwischen Titel und Pillen.
+    // liegen). Die DetailIconBar ist Teil des Headers und sitzt an dessen
+    // Unterkante (margin-top: auto) – ihr Farbverlauf kommt vom Header selbst.
     height: 160px;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     margin-top: -80px;
-    padding-top: 80px + $spacing-2xs;
+    padding-top: 80px;
     padding-right: $spacing-md;
-    padding-bottom: $spacing-md - $spacing-2xs;
+    padding-bottom: 0;
     padding-left: $spacing-md;
-    border-bottom: 1px solid $color-border;
+    border-bottom: none;
     transition: background $transition-normal;
     position: relative;
     // Über der DetailIconBar/dem Body: Popups (Verknüpfung/Tags/Datum), die
@@ -744,10 +836,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: $spacing-xs;
+    // 8px zwischen Label und Zähler-Badge (wie im Backlog)
+    gap: $spacing-sm;
     height: 100%;
     border-radius: 20px;
-    font-size: 12px;
+    // Wie die Backlog-Tabs im Command-Panel (14px)
+    font-size: 14px;
     font-weight: 600;
     font-family: $font-body;
     color: $color-muted;
@@ -756,44 +850,19 @@
     transition: all $transition-fast;
     cursor: pointer;
 
-    // Notizen-Tab: Gelb/Gold (Notiz-Farbe)
-    &--active-notes {
-      background: rgba(#F59E0B, 0.15);
-      color: #F59E0B;
-      border-color: rgba(#F59E0B, 0.35);
-      box-shadow: 0 0 12px rgba(#F59E0B, 0.12);
-    }
-
-    // Ressourcen-Tab: Kräftiges Grün (altes Medien-Grün)
-    &--active-res {
-      background: rgba(#10B981, 0.15);
-      color: #10B981;
-      border-color: rgba(#10B981, 0.35);
-      box-shadow: 0 0 12px rgba(#10B981, 0.12);
-    }
-
-    // Medien-Tab: Cool Magenta-Rosa
-    &--active-media {
-      background: rgba(#EC4899, 0.15);
-      color: #EC4899;
-      border-color: rgba(#EC4899, 0.35);
-      box-shadow: 0 0 12px rgba(#EC4899, 0.12);
-    }
-
-    // Aufgaben - Offen Tab: Grau (inaktiv aussehend)
-    &--active-open {
-      background: rgba(#8B8BA8, 0.12);
-      color: #8B8BA8;
-      border-color: rgba(#8B8BA8, 0.2);
-      box-shadow: 0 0 8px rgba(#8B8BA8, 0.08);
-    }
-
-    // Aufgaben - Erledigt Tab: Grün
+    // Alle Sub-Tabs im Backlog-Stil des Command-Panels: aktiv = kräftiger
+    // Text ohne Pillen-Füllung; die Tab-Farbe zeigt sich nur im Zähler-Badge
+    // des AKTIVEN Tabs (inaktive Badges sind neutral grau).
+    &--active-notes,
+    &--active-res,
+    &--active-media,
+    &--active-open,
     &--active-completed {
-      background: rgba(#10B981, 0.15);
-      color: #10B981;
-      border-color: rgba(#10B981, 0.35);
-      box-shadow: 0 0 12px rgba(#10B981, 0.12);
+      background: transparent;
+      border-color: transparent;
+      box-shadow: none;
+      color: $color-text;
+      font-weight: 700;
     }
 
     &:hover:not(&--active-notes):not(&--active-media):not(&--active-res):not(&--active-open):not(&--active-completed) {
@@ -802,7 +871,8 @@
     }
   }
 
-  // Anzahl-Badge im Sub-Tab
+  // Anzahl-Badge im Sub-Tab: standardmäßig (inaktiver Tab) neutral grau –
+  // wie im Backlog färbt sich das Badge erst, wenn sein Tab aktiv ist.
   &__count {
     font-size: 10px;
     font-weight: 700;
@@ -813,37 +883,28 @@
     align-items: center;
     justify-content: center;
     padding: 0 5px;
-
-    // Notizen-Anzahl in Gelb/Gold
-    &--notes {
-      background: rgba(#F59E0B, 0.18);
-      color: #F59E0B;
-    }
-
-    // Ressourcen-Anzahl
-    &--res {
-      background: rgba(#10B981, 0.18);
-      color: #10B981;
-    }
-
-    // Medien-Anzahl in Magenta-Rosa
-    &--media {
-      background: rgba(#EC4899, 0.18);
-      color: #EC4899;
-    }
-
-    // Aufgaben - Offen Count: Grau
-    &--open {
-      background: rgba(#8B8BA8, 0.18);
-      color: #8B8BA8;
-    }
-
-    // Aufgaben - Erledigt Count: Grün
-    &--completed {
-      background: rgba(#10B981, 0.18);
-      color: #10B981;
-    }
+    background: rgba(#8B8BA8, 0.18);
+    color: #8B8BA8;
   }
+
+  // Badge-Farben nur am aktiven Tab
+  &__btn--active-notes &__count {
+    background: rgba(#F59E0B, 0.18);
+    color: #F59E0B;
+  }
+  &__btn--active-res &__count {
+    background: rgba(#10B981, 0.18);
+    color: #10B981;
+  }
+  &__btn--active-media &__count {
+    background: rgba(#EC4899, 0.18);
+    color: #EC4899;
+  }
+  &__btn--active-completed &__count {
+    background: rgba(#10B981, 0.18);
+    color: #10B981;
+  }
+  // "Offen" behält auch aktiv sein Grau (Tab-Farbe = Grau)
 }
 
 // ── Settings Bottom Sheet ────────────────────────────────────

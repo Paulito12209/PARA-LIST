@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, CheckCircle2, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus, Pin, PinOff } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus, Pin, PinOff } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -10,7 +10,6 @@ import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { ConnSheet, TagSheet } from "../components/PillSheets";
-import { getInitials } from "../utils";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
@@ -341,33 +340,8 @@ export function CatDetailScreen({
           />
         </div>
 
-        {/* Avatare der Seite (eigener + Kollaboratoren), über den Pillen.
-            Horizontal daneben ein Button zum Hinzufügen. */}
-        <div className="cat-detail__avatars">
-          {user?.avatar ? (
-            <img src={user.avatar} className="cat-detail__avatar" alt={user?.name || ""} />
-          ) : (
-            <span className="cat-detail__avatar cat-detail__avatar--initials">{getInitials(user?.name)}</span>
-          )}
-          {collaborators.map((c) => (
-            c.avatar ? (
-              <img key={c.id} src={c.avatar} className="cat-detail__avatar" alt={c.name} />
-            ) : (
-              <span key={c.id} className="cat-detail__avatar cat-detail__avatar--initials">
-                {c.name.charAt(0).toUpperCase()}
-              </span>
-            )
-          ))}
-          <button
-            type="button"
-            className="cat-detail__avatar-add"
-            onClick={(e) => { e.stopPropagation(); setCollabOpen(true); }}
-            aria-label={t.addCollaborator}
-          >
-            <UserPlus size={14} />
-          </button>
-        </div>
-
+        {/* Kollaboratoren sind aus dem Header ins Details-Popup gewandert –
+            die Pillen rücken dadurch nach oben. */}
         <div className="cat-detail__pills">
           <div className="cat-detail__pills-group">
           {(cat.type === "resource" || cat.type === "area") && cat.createdAt && (
@@ -470,17 +444,17 @@ export function CatDetailScreen({
           />
         )}
 
+        {/* Schmale Lesezeichen-Leiste: Teil des 160px-Headers – transparent,
+            damit dessen Farbverlauf durchscheint. */}
+        <DetailIconBar
+          t={t}
+          active={bm}
+          onSelect={handleBmSelect}
+          iconOverrides={{ canvas: CatIcon }}
+          iconColors={{ canvas: cfg.color }}
+          onOptions={openSettingsSheet}
+        />
       </div>
-
-      {/* Schmale Lesezeichen-Leiste zwischen Header und Canvas */}
-      <DetailIconBar
-        t={t}
-        active={bm}
-        onSelect={handleBmSelect}
-        iconOverrides={{ canvas: CatIcon }}
-        iconColors={{ canvas: cfg.color }}
-        onOptions={openSettingsSheet}
-      />
 
       {/* Content */}
       <div className="cat-detail__body" onClick={handleDoubleTap}>
@@ -549,7 +523,6 @@ export function CatDetailScreen({
                 className={`res-sub-tabs__btn ${taskSubTab === "open" ? "res-sub-tabs__btn--active-open" : ""}`}
                 onClick={() => setTaskSubTab("open")}
               >
-                <CheckCircle2 size={14} />
                 <span>{t.open || "Offen"}</span>
                 {entries.filter((e) => e.type === "task" && !e.done).length > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--open">{entries.filter((e) => e.type === "task" && !e.done).length}</span>
@@ -559,7 +532,6 @@ export function CatDetailScreen({
                 className={`res-sub-tabs__btn ${taskSubTab === "completed" ? "res-sub-tabs__btn--active-completed" : ""}`}
                 onClick={() => setTaskSubTab("completed")}
               >
-                <CheckCircle2 size={14} />
                 <span>{t.markDone || "Erledigt"}</span>
                 {entries.filter((e) => e.type === "task" && e.done).length > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--completed">{entries.filter((e) => e.type === "task" && e.done).length}</span>
@@ -632,7 +604,6 @@ export function CatDetailScreen({
                 className={`res-sub-tabs__btn ${resSubTab === "resources" ? "res-sub-tabs__btn--active-res" : ""}`}
                 onClick={() => setResSubTab("resources")}
               >
-                <Square size={14} />
                 <span>{t.linkedRes}</span>
                 {resCount > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--res">{resCount}</span>
@@ -642,7 +613,6 @@ export function CatDetailScreen({
                 className={`res-sub-tabs__btn ${resSubTab === "media" ? "res-sub-tabs__btn--active-media" : ""}`}
                 onClick={() => setResSubTab("media")}
               >
-                <Paperclip size={14} />
                 <span>{t.mediaTab}</span>
                 {mediaCount > 0 && (
                   <span className="res-sub-tabs__count res-sub-tabs__count--media">{mediaCount}</span>
@@ -810,7 +780,14 @@ export function CatDetailScreen({
 
       {/* Metadaten-Popup (Info-Button in der Pillen-Zeile) */}
       {showDetailsPopup && (
-        <DetailsPopup t={t} item={cat} onClose={() => setShowDetailsPopup(false)} />
+        <DetailsPopup
+          t={t}
+          item={cat}
+          user={user}
+          collaborators={collaborators}
+          onAddCollaborator={() => { setShowDetailsPopup(false); setCollabOpen(true); }}
+          onClose={() => setShowDetailsPopup(false)}
+        />
       )}
 
       {/* Verknüpfungs-Sheet (ersetzt das frühere Popup an der Pille) */}

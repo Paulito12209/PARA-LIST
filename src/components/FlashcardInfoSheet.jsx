@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
-import { FlashcardsIcon } from "./AppIcons";
+import { FlashcardsBadge } from "./AppIcons";
 
 /**
  * Info-Bottom-Sheet für die nicht-editierbaren "{Sprache} Wörter"-Ressourcen.
@@ -47,7 +47,7 @@ export function FlashcardInfoSheet({ t, langName, onOpenFlashcards, onClose }) {
 
         <button className="fc-info__cta" onClick={() => { onOpenFlashcards?.(); handleClose(); }}>
           <span className="fc-info__cta-icon">
-            <FlashcardsIcon size={20} color="#fff" />
+            <FlashcardsBadge size={24} />
           </span>
           {fc.openTool}
         </button>

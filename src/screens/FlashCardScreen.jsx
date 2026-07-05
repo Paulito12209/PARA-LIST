@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, Check, X, RotateCcw, RefreshCw, Clock, AlertTriangle, Home, ArrowUp, AudioLines } from "lucide-react";
+import { ChevronLeft, Check, X, RotateCcw, RefreshCw, Clock, AlertTriangle, Home, AudioLines } from "lucide-react";
 
 // Fisher-Yates – einmaliges Mischen zu Session-Beginn (kein Spaced-Repetition,
 // wie in der Referenz-App).
@@ -14,6 +14,29 @@ function shuffle(arr) {
 
 const SWIPE_ANSWER_PX = 80; // ab hier zählt eine horizontale Wischgeste als Antwort
 const TAP_TOLERANCE_PX = 12; // darunter gilt es als Tap (= umdrehen)
+
+// Mini-Icon "Kartenfächer" für die Kartenanzahl in der Deck-Liste (ersetzt
+// das Wort "Karten"): zwei hochkant gefächerte Spielkarten, die vordere
+// (links, nach links gekippt) verdeckt die hintere – deren Füllung kommt
+// per CSS (.mini-card-front) und entspricht dem Seitenhintergrund.
+function MiniCardsIcon({ size = 14 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="10.5" y="4" width="10" height="14" rx="2.5" transform="rotate(14 15.5 11)" />
+      <rect className="mini-card-front" x="3.5" y="6" width="10" height="14" rx="2.5" transform="rotate(-14 8.5 13)" />
+    </svg>
+  );
+}
 
 export function FlashCardScreen({
   t,
@@ -32,7 +55,6 @@ export function FlashCardScreen({
   const [session, setSession] = useState(null); // { queue, index, results, flipped }
   const [drag, setDrag] = useState(0); // aktueller Karten-Versatz beim Wischen
   const [slide, setSlide] = useState(0); // aktiver Karussell-Slide (Übersicht)
-  const [word, setWord] = useState(""); // Eingabefeld im Dock (neues Wort)
 
   const startX = useRef(0);
   const startY = useRef(0);
@@ -195,7 +217,9 @@ export function FlashCardScreen({
         <span className="fc-deck__emoji">{deck.emoji}</span>
         <span className="fc-deck__info">
           <span className="fc-deck__name">{deck.name}</span>
-          <span className="fc-deck__meta">{fc.cardsCount?.(deck.cards.length)}</span>
+          <span className="fc-deck__meta">
+            <MiniCardsIcon size={14} /> {deck.cards.length}
+          </span>
         </span>
         <span className="fc-deck__cta">{fc.learn}</span>
       </button>
@@ -265,10 +289,11 @@ export function FlashCardScreen({
           <div className="fc-deck-list">{presetDecks.map(renderDeck)}</div>
         </div>
 
-        {/* Opakes Dock unten (verdeckt die Liste dahinter): Home-Button links,
-            Eingabefeld für ein neues Wort in der Mitte, rechts Voice bzw.
-            Senden. Absenden öffnet den Übersetzer mit dem Wort → daraus wird
-            die neue Karteikarte samt Übersetzung. */}
+        {/* Opakes Dock unten (verdeckt die Liste dahinter): Home-Button links.
+            Das Eingabefeld ist nur ein Trigger – ein Tap öffnet direkt den
+            Übersetzer (dessen Textfeld fokussiert sich → Tastatur samt
+            Sprachleiste erscheint). Der Audio-Button rechts öffnet den
+            Übersetzer im Spracheingabe-Modus. */}
         <div className="command-dock command-dock--detail" style={{ "--dock-accent": "#7C83F7" }}>
           <div className="command-dock__input-row">
             <button
@@ -280,26 +305,20 @@ export function FlashCardScreen({
             </button>
             <input
               className="command-dock__input"
-              value={word}
-              onChange={(e) => setWord(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && word.trim()) {
-                  onAddWord?.(word.trim());
-                  setWord("");
-                }
+              value=""
+              readOnly
+              onFocus={(e) => {
+                e.target.blur();
+                onAddWord?.("");
               }}
               placeholder={fc.addWord || "Neues Wort hinzufügen"}
-              enterKeyHint="done"
             />
             <button
-              className={`command-dock__icon-btn ${word.trim() ? "command-dock__send-btn" : "command-dock__voice-btn"}`}
-              onClick={() => {
-                onAddWord?.(word.trim());
-                setWord("");
-              }}
-              aria-label={word.trim() ? (t.send || "Senden") : (fc.addWord || "Neues Wort")}
+              className="command-dock__icon-btn command-dock__voice-btn"
+              onClick={() => onAddWord?.("", { voice: true })}
+              aria-label={fc.voiceInput || "Spracheingabe"}
             >
-              {word.trim() ? <ArrowUp size={20} /> : <AudioLines size={20} />}
+              <AudioLines size={20} />
             </button>
           </div>
         </div>

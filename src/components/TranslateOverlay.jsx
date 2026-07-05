@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { X, ArrowLeftRight, Loader2, ChevronDown, Check } from "lucide-react";
-import { translateWord, LANG_CODES } from "../lib/translate";
-import { SaveBookmarkIcon, FlashcardsIcon } from "./AppIcons";
+import { X, ArrowLeftRight, Loader2, ChevronDown, Check, AudioLines, TriangleAlert } from "lucide-react";
+import { translateWord, LANG_CODES, toLangCode } from "../lib/translate";
+import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
+import { SaveBookmarkIcon, FlashcardsBadge } from "./AppIcons";
 
 const LANGS = Object.keys(LANG_CODES);
 const DEBOUNCE_MS = 500;
@@ -37,8 +38,10 @@ function CopyIcon({ size = 18, color = "currentColor" }) {
  *  - onSave({ source, translation, fromLang, toLang })
  *  - onClose
  *  - defaultFrom / defaultTo: Anzeigenamen (z.B. "Deutsch")
+ *  - autoVoice: startet direkt die Spracheingabe statt die Tastatur zu öffnen
+ *  - lang: UI-Sprache (für Fehlermeldungen der Spracherkennung)
  */
-export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initialText = "", defaultFrom = "Deutsch", defaultTo = "Spanisch" }) {
+export function TranslateOverlay({ t, lang = "de", onSave, onClose, onOpenFlashcards, initialText = "", defaultFrom = "Deutsch", defaultTo = "Spanisch", autoVoice = false }) {
   const fc = t.fc || {};
   const [from, setFrom] = useState(defaultFrom);
   const [to, setTo] = useState(defaultTo);
@@ -51,8 +54,29 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
   const [copied, setCopied] = useState(false);
   const inputRef = useRef(null);
 
+  // Spracheingabe: gesprochener Text landet direkt im Eingabefeld und
+  // stößt damit die Live-Übersetzung an. Erkannt wird in der Quellsprache.
+  // Fehler (z.B. kein Speech-Backend im Browser) erscheinen als Dialog mit
+  // Backdrop statt als blockierender alert.
+  const [voiceError, setVoiceError] = useState("");
+  const { isListening, start: startVoice } = useSpeechRecognition(
+    toLangCode(from) || "de",
+    (spoken) => setText(spoken),
+    { uiLang: lang, onError: setVoiceError }
+  );
+
+  // Hinweis nach ein paar Sekunden automatisch ausblenden
   useEffect(() => {
-    inputRef.current?.focus();
+    if (!voiceError) return;
+    const id = setTimeout(() => setVoiceError(""), 6000);
+    return () => clearTimeout(id);
+  }, [voiceError]);
+
+  useEffect(() => {
+    // Voice-Modus: Tastatur zulassen wäre störend – stattdessen sofort zuhören.
+    if (autoVoice) startVoice();
+    else inputRef.current?.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Tastaturhöhe via visualViewport ermitteln, damit der Floating-Balken
@@ -187,11 +211,25 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
           <textarea
             ref={inputRef}
             className="tl-input"
-            placeholder={fc.translatePlaceholder}
+            placeholder={isListening ? fc.listening : fc.translatePlaceholder}
             value={text}
             onChange={(e) => setText(e.target.value)}
             rows={2}
           />
+
+          {/* Audio-Button: pulsiert, solange die Spracherkennung zuhört */}
+          <button
+            className={`tl-voice ${isListening ? "tl-voice--listening" : ""}`}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => {
+              setVoiceError("");
+              startVoice();
+            }}
+            aria-label={fc.voiceInput}
+            aria-pressed={isListening}
+          >
+            <AudioLines size={22} />
+          </button>
         </div>
 
         <div className="tl-bottom">
@@ -247,28 +285,90 @@ export function TranslateOverlay({ t, onSave, onClose, onOpenFlashcards, initial
               onClick={() => { handleClose(); onOpenFlashcards?.(); }}
               aria-label={fc.tool}
             >
-              <FlashcardsIcon size={24} color="#fff" />
+              <FlashcardsBadge size={56} />
             </button>
           </div>
         </div>
 
         {kbHeight > 0 && (
           <div className="tl-kbbar" style={{ bottom: kbHeight }}>
-            <button
-              className="tl-kbbar__translate"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={collapseKeyboard}
-            >
-              {fc.translateAction}
-            </button>
-            <button
-              className="tl-kbbar__collapse"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={collapseKeyboard}
-              aria-label={fc.collapseKeyboard}
-            >
-              <ChevronDown size={22} />
-            </button>
+            {/* Sprachrichtung auch bei offener Tastatur sichtbar/änderbar */}
+            <div className="tl-langbar tl-kbbar__langbar">
+              <select
+                className="tl-lang"
+                value={from}
+                onChange={(e) => setFrom(e.target.value)}
+                aria-label="from"
+              >
+                {LANGS.map((l) => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+              <button
+                className="tl-swap"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={swap}
+                aria-label={fc.swapLang}
+              >
+                <ArrowLeftRight size={18} />
+              </button>
+              <select
+                className="tl-lang"
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                aria-label="to"
+              >
+                {LANGS.map((l) => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+            </div>
+            <div className="tl-kbbar__row">
+              {/* Übersetzt wird live beim Tippen – der Button räumt stattdessen
+                  die Eingabe ab (Tastatur bleibt offen). */}
+              <button
+                className="tl-kbbar__clear"
+                disabled={!text.trim()}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => {
+                  setText("");
+                  setResult("");
+                  setStatus("idle");
+                }}
+              >
+                {fc.clearInput}
+              </button>
+              <button
+                className="tl-kbbar__collapse"
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={collapseKeyboard}
+                aria-label={fc.collapseKeyboard}
+              >
+                <ChevronDown size={22} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Spracheingabe-Fehler als Dialog: dunkelt den Übersetzer ab und
+            verschwindet nach 6s von selbst (oder per Tap sofort). */}
+        {voiceError && (
+          <div
+            className="tl-voice-dialog"
+            role="alertdialog"
+            onClick={() => {
+              // Tap schließt sofort – und die Tastatur öffnet sich als
+              // Fallback, damit man das Wort tippen kann.
+              setVoiceError("");
+              inputRef.current?.focus();
+            }}
+          >
+            <div className="tl-voice-dialog__card">
+              <span className="tl-voice-dialog__icon">
+                <TriangleAlert size={22} />
+              </span>
+              <p className="tl-voice-dialog__text">{voiceError}</p>
+            </div>
           </div>
         )}
       </div>

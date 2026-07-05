@@ -1121,8 +1121,10 @@ export default function App() {
       {translateConfig && (
         <TranslateOverlay
           t={t}
+          lang={lang}
           initialText={translateConfig.initialText}
           defaultTo={translateConfig.toLang}
+          autoVoice={translateConfig.voice}
           onSave={saveTranslation}
           onClose={() => setTranslateConfig(null)}
           onOpenFlashcards={() => {
@@ -1361,8 +1363,8 @@ export default function App() {
             initialDeckId={cur.deckId}
             onBack={pop}
             onHome={() => setStack([{ view: VIEW.HOME }])}
-            onAddWord={(text) =>
-              setTranslateConfig({ initialText: text || "", toLang: "Spanisch" })
+            onAddWord={(text, opts) =>
+              setTranslateConfig({ initialText: text || "", toLang: "Spanisch", voice: !!opts?.voice })
             }
             onAddDeck={addDeck}
             onUpdateDeck={updateDeck}

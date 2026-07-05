@@ -41,13 +41,27 @@
     pointer-events: none;
   }
 
-  // Aufgeklappte Startseiten-Liste: Header-Hintergrund wächst per Gradient-
-  // Animation von unten nach oben. So entsteht kein sichtbares Durchblitzen
-  // der Cover-Farbe zwischen Header und Liste beim Maximieren.
+  // Aufgeklappte Startseiten-Liste: Header-Hintergrund wächst über ein
+  // Pseudo-Element von unten nach oben. Die Farbe folgt dem jeweiligen Theme
+  // (Dark: #16161F, Light: #ffffff via Override).
   &--closed#{&}--solid {
-    animation: headerSolidFill 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    // Grundfarbe erst nach Animation-Ende (forwards) → Pseudo übernimmt davor
+    background: transparent;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: #16161F;
+      transform-origin: bottom center;
+      animation: headerSolidReveal 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      pointer-events: none;
+    }
   }
 
+  // Solid-Header: den normalen Blur-Layer ausblenden, damit die Cover-Farbe
+  // nicht durch den Blur-Effekt durchscheint.
   &--closed#{&}--solid::before {
     display: none;
   }
@@ -681,24 +695,14 @@
 
 }
 
-// Header-Hintergrund wächst von unten nach oben beim Maximieren der Liste.
-// Gradient startet transparent und füllt sich synchron mit der listExpand-
-// Animation, damit kein farbiges Durchblitzen zwischen Header und Liste entsteht.
-@keyframes headerSolidFill {
+// Header-Hintergrund: Pseudo-Element wächst per scaleY von unten (0) nach
+// oben (1). Die Farbe wird im ::after gesetzt und ist Theme-fähig.
+@keyframes headerSolidReveal {
   0% {
-    background: linear-gradient(to top,
-      #16161F 0%,
-      rgba(22, 22, 31, 0) 0%);
-  }
-
-  40% {
-    background: linear-gradient(to top,
-      #16161F 0%,
-      #16161F 60%,
-      rgba(22, 22, 31, 0) 100%);
+    transform: scaleY(0);
   }
 
   100% {
-    background: #16161F;
+    transform: scaleY(1);
   }
 }

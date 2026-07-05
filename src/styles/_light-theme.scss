@@ -1553,10 +1553,14 @@
   box-shadow: none;
 }
 
-// Aufgeklappte Startseiten-Liste: Header opak in exakt der Farbe der
-// erweiterten Liste darunter (Weiß) – eine durchgehende, einheitliche Fläche.
+// Aufgeklappte Startseiten-Liste: Header-Hintergrund im Light Mode weiß.
+// Das ::after-Pseudo-Element (Reveal-Animation) muss ebenfalls weiß sein.
 .app.light-theme .command-panel--closed.command-panel--solid {
-  background: #ffffff;
+  background: transparent;
+
+  &::after {
+    background: #ffffff;
+  }
 }
 
 // Kein heller Verlauf mehr – Cover bleibt bis oben sichtbar (nur Basis-Blur/Maske)

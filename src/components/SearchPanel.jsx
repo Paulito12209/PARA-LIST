@@ -340,10 +340,10 @@ export function SearchPanel({
           {/* Alle Gruppen werden einheitlich gerendert für die Scroll-Positions-Erfassung */}
           {groups.map(([label, items]) => (
             <div key={label} className="search-panel__group" data-label={label}>
-              {/* Wenn die Gruppe oben als Sticky-Header einrastet, blenden wir das Label in der Liste visuell aus (um Doppelungen zu vermeiden), behalten aber den Platz bei (um Flackern beim Scrollen zu verhindern) */}
+              {/* Wenn die Gruppe oben als Sticky-Header einrastet, blenden wir das Label in der Liste komplett aus (um Doppelungen und Leerraum zu vermeiden) */}
               <div
                 className="search-panel__group-label"
-                style={{ visibility: activeLabel === label ? "hidden" : "visible" }}
+                style={{ display: activeLabel === label ? "none" : "block" }}
               >
                 {label}
               </div>

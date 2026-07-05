@@ -40,7 +40,9 @@ export function CommandPanel({
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
-  const [typeFilter, setTypeFilter] = useState("all");
+  // Typ-Filter: "all" (Sonderfall = alles) ODER Array aus ["task","project",
+  // "calendar"] (Mehrfachauswahl). Standard: Aufgaben + Termine.
+  const [typeFilter, setTypeFilter] = useState(["task", "calendar"]);
   const [sort, setSort] = useState({ by: "date", desc: true });
   const [searchQuery, setSearchQuery] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
@@ -129,7 +131,7 @@ export function CommandPanel({
 
   // Typ-Filter + Sortierung auf beide Ansichten anwenden (Liste + Zähler)
   const byType = (list) =>
-    typeFilter === "all" ? list : list.filter((e) => e.type === typeFilter);
+    typeFilter === "all" ? list : list.filter((e) => typeFilter.includes(e.type));
   const filteredToday = sortEntries(byType(todayEntries));
   const filteredOverdue = sortEntries(byType(overdueEntries));
 
@@ -138,6 +140,24 @@ export function CommandPanel({
   // Sortierung weicht von der Norm ab (Standard: Fälligkeitsdatum absteigend,
   // neueste zuerst) → Sortier-Icon blau hervorheben.
   const sortChanged = !(sort.by === "date" && sort.desc === true);
+
+  // Typ-Filter weicht von der Norm ab (Standard: Aufgaben + Termine) → Filter-
+  // Icon blau hervorheben. `typeKey` dient auch als stabiler Listen-Key.
+  const typeKey = typeFilter === "all" ? "all" : [...typeFilter].sort().join(",");
+  const filterChanged = typeKey !== "calendar,task";
+
+  // Mehrfachauswahl: "Alle" ist exklusiv; einzelne Typen sind kombinierbar.
+  // Ein Typ-Tap ausgehend von "Alle" startet eine neue Auswahl; wird der letzte
+  // Typ abgewählt, fällt der Filter auf "Alle" zurück.
+  const selectAll = () => setTypeFilter("all");
+  const toggleType = (id) =>
+    setTypeFilter((prev) => {
+      if (prev === "all") return [id];
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      return next.length === 0 ? "all" : next;
+    });
+  const isTypeSelected = (id) =>
+    id === "all" ? typeFilter === "all" : typeFilter !== "all" && typeFilter.includes(id);
 
   // Typ-Filter: "Alle" immer oben, die übrigen alphabetisch nach übersetztem
   // Label (DE: Aufgaben·Projekte·Termine, EN: Events·Projects·Tasks …).
@@ -340,7 +360,7 @@ export function CommandPanel({
               <div className="command-panel__meta-action-wrap">
                 <button
                   className={`command-panel__list-filter-btn ${
-                    typeFilter !== "all" ? "command-panel__list-filter-btn--active" : ""
+                    filterChanged ? "command-panel__list-filter-btn--active" : ""
                   }`}
                   onClick={() => {
                     setFilterMenuOpen((o) => !o);
@@ -356,15 +376,14 @@ export function CommandPanel({
                       <button
                         key={f.id}
                         className={`command-panel__menu-option ${
-                          typeFilter === f.id ? "command-panel__menu-option--active" : ""
+                          isTypeSelected(f.id) ? "command-panel__menu-option--active" : ""
                         }`}
-                        onClick={() => {
-                          setTypeFilter(f.id);
-                          setFilterMenuOpen(false);
-                        }}
+                        // "Alle" ersetzt die Auswahl; Typen togglen (Menü bleibt
+                        // offen, damit man mehrere kombinieren kann).
+                        onClick={() => (f.id === "all" ? selectAll() : toggleType(f.id))}
                       >
                         <span>{f.label}</span>
-                        {typeFilter === f.id && <Check size={14} strokeWidth={2.4} />}
+                        {isTypeSelected(f.id) && <Check size={14} strokeWidth={2.4} />}
                       </button>
                     ))}
                   </div>
@@ -373,7 +392,7 @@ export function CommandPanel({
             </div>
           </div>
 
-          <div className="command-panel__list" key={subTab + typeFilter}>
+          <div className="command-panel__list" key={subTab + typeKey}>
             {activeEntries.length === 0 ? (
               <div className="command-panel__drawer-empty">
                 {subTab === "today" ? t.emptyToday : t.emptyOverdue}

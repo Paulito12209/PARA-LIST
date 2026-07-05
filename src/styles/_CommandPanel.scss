@@ -652,7 +652,8 @@
     @include floating-btn(40px, 50%);
     position: relative;
     @include glass-border;
-    background: rgba($color-card, 0.6);
+    // Gleiche Fläche wie Schließen/Suche (homogener Footer)
+    background: rgba($color-dim, 0.6);
     color: $color-text;
     cursor: pointer;
     flex-shrink: 0;

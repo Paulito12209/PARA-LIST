@@ -206,6 +206,7 @@ export const SEED = {
   ],
   entries: [
     { id: "e1", type: "task", title: "onboarding! Projekt öffnen", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e2", type: "task", title: "Klicke auf das PARA·LIST-Logo oben links, um die App zu wechseln", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
     { id: "e-para-vid", type: "link", title: "Vorstellung der PARA-Methode", url: "https://www.youtube.com/watch?v=8sdnM-vdqvI", catId: "r5", linkedEntryIds: [], parentId: null },
   ],
   // Papierkorb: gelöschte Einträge & Kategorien. Items werden 30 Tage nach

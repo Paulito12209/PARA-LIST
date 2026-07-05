@@ -86,8 +86,8 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
 
             <div className="action-sheet__list" style={{ marginTop: "8px" }}>
               {favoriteItems.length === 0 ? (
-                <div style={{ padding: "20px 0", textAlign: "center", opacity: 0.5, fontSize: "14px" }}>
-                  Keine Favoriten vorhanden
+                <div className="action-sheet__empty">
+                  {t.noFavorites || "Keine Favoriten vorhanden"}
                 </div>
               ) : (
                 favoriteItems.map((item) => {

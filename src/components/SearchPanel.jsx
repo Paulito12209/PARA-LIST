@@ -340,7 +340,13 @@ export function SearchPanel({
           {/* Alle Gruppen werden einheitlich gerendert für die Scroll-Positions-Erfassung */}
           {groups.map(([label, items]) => (
             <div key={label} className="search-panel__group" data-label={label}>
-              <div className="search-panel__group-label">{label}</div>
+              {/* Wenn die Gruppe oben als Sticky-Header einrastet, blenden wir das Label in der Liste visuell aus (um Doppelungen zu vermeiden), behalten aber den Platz bei (um Flackern beim Scrollen zu verhindern) */}
+              <div
+                className="search-panel__group-label"
+                style={{ visibility: activeLabel === label ? "hidden" : "visible" }}
+              >
+                {label}
+              </div>
               {items.map((item) => (
                 <SearchResultItem
                   key={`${item.kind}-${item.id}`}

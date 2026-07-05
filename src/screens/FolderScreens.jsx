@@ -451,8 +451,8 @@ export function CatDetailScreen({
             style={
               relatedCfg
                 ? {
-                    background: relatedCfg.color + "20",
-                    borderColor: "transparent",
+                    // Körper bleibt weiß (via CSS), nur der Inhalt trägt die
+                    // Verknüpfungsfarbe.
                     color: relatedCfg.color,
                   }
                 : {}
@@ -462,13 +462,9 @@ export function CatDetailScreen({
           </button>
 
           {resCount > 0 && (cat.type === 'project' || cat.type === 'area') && (
-            <div 
+            <div
               className="cat-detail__res-count"
-              style={{ 
-                background: CC.resource.color + "18", 
-                borderColor: CC.resource.color + "45",
-                color: CC.resource.color 
-              }}
+              style={{ color: CC.resource.color }}
             >
               <ResIcon size={12} strokeWidth={2.5} />
               <span>{resCount}</span>

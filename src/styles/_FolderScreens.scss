@@ -608,6 +608,9 @@
   }
 
 
+  // Alle Meta-Pillen teilen denselben Look: deckend-weißer Körper mit weißer
+  // Umrandung; nur der Inhalt (Icon/Text) trägt die jeweilige Farbe. So bleibt
+  // der Hintergrund konstant und man kann in keinem Modus „durchgucken".
   &__date-pill {
     display: inline-flex;
     align-items: center;
@@ -619,23 +622,22 @@
     line-height: 1;
     font-weight: 600;
     font-family: $font-body;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.9);
     color: var(--pill-date-color);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
     transition: all $transition-fast;
     cursor: pointer;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.18);
+      background: #f2f2f7;
     }
 
     &--static {
       cursor: default;
       pointer-events: none;
-      background: rgba($color-calendar, 0.08);
-      border-color: rgba($color-calendar, 0.2);
+      background: #ffffff;
+      border-color: rgba(255, 255, 255, 0.9);
     }
   }
 
@@ -647,7 +649,9 @@
     border-radius: $radius-pill;
     font-size: 11px;
     font-weight: 700;
-    border: 1px solid transparent;
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
   }
 
   &__tag {
@@ -660,12 +664,10 @@
     font-weight: 600;
     border-radius: $radius-pill;
     padding: 0 10px;
-    // Frosted-White-Glas wie die Datums-/Verknüpfungs-Pillen daneben.
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    color: rgba($color-text, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    color: #5858A0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
   }
 
   &__date-input {

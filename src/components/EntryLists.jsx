@@ -1045,7 +1045,9 @@ export function LinkList({ entries, cats, onDelete, CC }) {
           )}
           <div className="media-item__footer-meta">
             {e.url && <div className="media-item__meta"><AutoScrollText>{e.url}</AutoScrollText></div>}
-            <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={false} />
+            {/* Verknüpfungs-Pille bewusst entfernt: Der Link liegt bereits in
+                dieser Seite, die verknüpfte Kategorie muss im Lesezeichen-Feed
+                nicht erneut angedeutet werden. */}
           </div>
         </div>
       </div>

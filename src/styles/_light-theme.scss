@@ -488,36 +488,30 @@
       color: #1a1a24;
     }
 
+    // Deckend-weißer Körper (statt Frosted-Glas), damit die Cover-Farbe nicht
+    // durchscheint. Nur der Inhalt bleibt farbig.
     &__date-pill {
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.85);
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.9);
       color: var(--pill-date-color);
-      backdrop-filter: blur(12px) saturate(160%);
-      -webkit-backdrop-filter: blur(12px) saturate(160%);
-      box-shadow:
-        inset 0 1px 6px rgba(255, 255, 255, 0.7),
-        0 1px 4px rgba(0, 0, 0, 0.05);
-
-      &[style*="color"] {
-        background: rgba(255, 255, 255, 0.45) !important;
-        border-color: rgba(255, 255, 255, 0.85) !important;
-      }
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 
       &:hover {
-        background: rgba(255, 255, 255, 0.7);
+        background: #f2f2f7;
       }
     }
 
+    &__res-count {
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.9);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
     &__tag {
-      // Frosted-White wie die Datums-Pille (statt grauem Kasten).
-      background: rgba(255, 255, 255, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.85);
+      background: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.9);
       color: #5858A0;
-      backdrop-filter: blur(12px) saturate(160%);
-      -webkit-backdrop-filter: blur(12px) saturate(160%);
-      box-shadow:
-        inset 0 1px 6px rgba(255, 255, 255, 0.7),
-        0 1px 4px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
     }
 
     // Avatar-Ringe wie im Startseiten-Cover: reinweißer Rand.

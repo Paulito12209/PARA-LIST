@@ -236,17 +236,31 @@ export function CommandPanel({
               {/* Einheitlich in allen Modi (Startseite, Detailseiten, Voice):
                   Datum als Eyebrow oben, darunter der große Titel/die Frage. */}
               <div className="command-panel__date">{eyebrow || dateStr}</div>
-              <div className={`command-panel__greeting ${headerPage ? "command-panel__greeting--page" : ""}`}>
-                {headerPage
-                  ? headerPage.title
-                  : isVoiceMode
-                  ? t.voiceQuestion
-                  : open
-                  ? searchOpen
-                    ? t.searchTitle
-                    : t.backlog
-                  : (app?.title || title || t.home)}
-              </div>
+              {headerPage && headerPage.onRename ? (
+                // Detailseiten: Titel direkt im Header editierbar. stopPropagation,
+                // damit der Tap aufs Eingabefeld nicht das Backlog aufzieht.
+                <input
+                  className="command-panel__greeting command-panel__greeting--page command-panel__greeting--input"
+                  value={headerPage.title}
+                  onChange={(e) => headerPage.onRename(e.target.value)}
+                  onClick={(e) => e.stopPropagation()}
+                  onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
+                  placeholder="Titel…"
+                  enterKeyHint="done"
+                />
+              ) : (
+                <div className={`command-panel__greeting ${headerPage ? "command-panel__greeting--page" : ""}`}>
+                  {headerPage
+                    ? headerPage.title
+                    : isVoiceMode
+                    ? t.voiceQuestion
+                    : open
+                    ? searchOpen
+                      ? t.searchTitle
+                      : t.backlog
+                    : (app?.title || title || t.home)}
+                </div>
+              )}
             </div>
           </div>
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>

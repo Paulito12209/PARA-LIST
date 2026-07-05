@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Home, ArrowUp } from "lucide-react";
+import { Home } from "lucide-react";
 import { BOOKMARKS } from "../utils";
 
 // Schmale Lesezeichen-Leiste der Detailseiten – sitzt am unteren Rand des
@@ -39,30 +38,15 @@ export function DetailIconBar({
   );
 }
 
-// Unterer Bereich der Detailseiten. Ohne Eingabefeld gibt es KEINEN Dock-
-// Container mehr – nur ein frei schwebender Home-Button unten links (gleiche
-// Glass-Optik wie die Floating-Buttons der aufgeklappten Startseiten-Liste).
-// Nur auf Tabs mit Hinzufügen-Aktion erscheint das Dock mit Home + Eingabe.
-export function DetailDock({
-  t,
-  onHome,
-  showInput = false,
-  placeholder = "",
-  accentColor = "#0B8CE9",
-  onSubmit,
-}) {
-  const [value, setValue] = useState("");
-  const hasText = value.trim().length > 0;
-
-  const submit = () => {
-    const title = value.trim();
-    if (!title) return;
-    onSubmit?.(title);
-    setValue("");
-  };
-
-  if (!showInput) {
-    return (
+// Unterer Bereich der Detailseiten. Es gibt KEIN Eingabefeld/Dock mehr – nur
+// frei schwebende Glass-Buttons: Home unten links (auf allen Lesezeichen) und
+// optional eine Aktion unten rechts (Plus/Verknüpfen, Farbe = Lesezeichen-
+// Akzent). Die Auswahl-Pille (Offen/Erledigt bzw. Ressourcen/Medien) schwebt
+// auf derselben Höhe mittig (eigene Komponente DetailViewSelect).
+export function DetailDock({ t, onHome, action = null }) {
+  const ActionIcon = action?.Icon;
+  return (
+    <>
       <button
         className="home__floating-btn detail-home-fab"
         onClick={onHome}
@@ -70,38 +54,16 @@ export function DetailDock({
       >
         <Home size={20} />
       </button>
-    );
-  }
-
-  return (
-    <div className="command-dock command-dock--detail" style={{ "--dock-accent": accentColor }}>
-      <div className="command-dock__input-row">
+      {action && (
         <button
-          className="command-dock__icon-btn command-dock__list-btn"
-          onClick={onHome}
-          aria-label={t.home || "Startseite"}
+          className="home__floating-btn detail-home-fab detail-action-fab"
+          style={{ color: action.color }}
+          onClick={action.onClick}
+          aria-label={action.label}
         >
-          <Home size={20} />
+          <ActionIcon size={20} strokeWidth={2.4} />
         </button>
-        <input
-          className="command-dock__input"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") submit();
-          }}
-          placeholder={placeholder}
-          enterKeyHint="done"
-        />
-        <button
-          className={`command-dock__icon-btn ${hasText ? "command-dock__send-btn" : "command-dock__voice-btn"}`}
-          onClick={submit}
-          disabled={!hasText}
-          aria-label={t.send || "Senden"}
-        >
-          <ArrowUp size={20} />
-        </button>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

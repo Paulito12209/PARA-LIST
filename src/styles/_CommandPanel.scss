@@ -215,6 +215,22 @@
       @include text-truncate;
       max-width: 78vw;
     }
+
+    // Editierbarer Seitentitel (Detailseiten): Input in identischer Optik –
+    // randlos/transparent, erbt Schrift & Farbe vom Greeting.
+    &--input {
+      display: block;
+      width: 100%;
+      padding: 0;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: inherit;
+
+      &::placeholder {
+        color: rgba($color-text, 0.4);
+      }
+    }
   }
 
   &__info {

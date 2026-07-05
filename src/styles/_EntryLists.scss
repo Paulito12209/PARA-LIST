@@ -1262,6 +1262,37 @@
     }
   }
 
+  // Kopfzeile eines Medien-Items (Icon · Titel/Meta · Löschen) – eigene Zeile,
+  // damit im Feed-Modus die Vorschau als zweite Zeile darunter passt.
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-xs;
+    width: 100%;
+    min-width: 0;
+  }
+
+  // Feed-Modus: Item wird zur Spalte (Kopfzeile + Vorschau darunter).
+  &--feed {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  // Inline-Vorschau (Bild/Video volle Breite, Audio als schmaler Player)
+  &__preview {
+    width: 100%;
+    max-height: 240px;
+    border-radius: $radius-md;
+    object-fit: cover;
+    background: rgba(0, 0, 0, 0.25);
+    display: block;
+
+    &--audio {
+      height: 40px;
+      background: transparent;
+    }
+  }
+
   // --- Spezifische Anpassungen für Links ---
   &--link {
     flex-direction: column;

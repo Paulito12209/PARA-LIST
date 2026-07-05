@@ -435,6 +435,8 @@ export default function App() {
         Icon: CAT_ICONS[type] || Square,
         title: cat.name,
         accentRgb: CAT_HEADER_RGB[type] || "88, 88, 160",
+        // Titel direkt im Header editierbar (Tap darf nicht das Backlog öffnen)
+        onRename: (name) => updateCat(cat.id, { name }),
       };
     }
     if (cur.view === VIEW.ENTRY_DETAIL) {
@@ -444,6 +446,7 @@ export default function App() {
         Icon: ENTRY_HEADER_ICON[entry.type] || FileText,
         title: entry.title,
         accentRgb: ENTRY_HEADER_RGB[entry.type] || "88, 88, 160",
+        onRename: (title) => updateEntry(entry.id, { title }),
       };
     }
     return null;
@@ -1345,7 +1348,20 @@ export default function App() {
               onDeleteTag={deleteGlobalTag}
               onUpdate={(p) => updateCat(cat.id, p)}
               onTogglePin={() => togglePin(cat.id, "cat")}
-              onLinkResource={(resourceId) => updateCat(resourceId, { relatedId: cat.id })}
+              onLinkResource={(resourceId, on = true) =>
+                updateCat(resourceId, { relatedId: on ? cat.id : null })
+              }
+              onAddMediaEntry={(mediaType, file) =>
+                addEntry({
+                  ...VOICE_ENTRY_BASE,
+                  type: "media",
+                  title: file.name,
+                  mediaType,
+                  mediaData: file,
+                  catId: cat.id,
+                  catIds: [cat.id],
+                })
+              }
               onDelete={() => {
                 if (window.confirm(t.confirmDelete(cat.name))) deleteCat(cat.id);
               }}

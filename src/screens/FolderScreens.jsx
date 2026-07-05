@@ -3,14 +3,14 @@ import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown,
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
-import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
+import { TagIcon, ArchiveIcon, BookmarkIcon, GitMergeBranchIcon } from "../components/AppIcons";
 import { DetailsBody } from "../components/DetailsPopup";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { DetailMetaRow, DetailViewSelect } from "../components/TaskSubtabControls";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
-import { ConnSheet, TagSheet } from "../components/PillSheets";
+import { ConnSheet, TagSheet, ResLinkSheet, MediaTypeSheet } from "../components/PillSheets";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
@@ -123,6 +123,8 @@ export function CatDetailScreen({
   deleteEntry,
   onAddEntry,
   onQuickAddEntry,
+  onLinkResource,
+  onAddMediaEntry,
   onOpenCat,
   onOpenEntry,
   tags,
@@ -143,6 +145,10 @@ export function CatDetailScreen({
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
+  // Bottom-Sheets des Aktions-Buttons im Medien-Lesezeichen:
+  // Ressourcen verknüpfen (Sub-Tab "Ressourcen") / Medienart wählen ("Medien").
+  const [showResLinkSheet, setShowResLinkSheet] = useState(false);
+  const [showMediaTypeSheet, setShowMediaTypeSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [coverMode, setCoverMode] = useState(null);
   const [showFcInfo, setShowFcInfo] = useState(false);
@@ -162,6 +168,27 @@ export function CatDetailScreen({
   // Refs für Cover-Upload
   const coverInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+
+  // Medien-Upload über das Plus im Medien-Lesezeichen: das Sheet wählt die
+  // Medienart, danach öffnet der versteckte File-Input mit passendem accept.
+  const mediaInputRef = useRef(null);
+  const pendingMediaType = useRef(null);
+  const handleMediaTypePick = (type) => {
+    setShowMediaTypeSheet(false);
+    pendingMediaType.current = type.id;
+    if (mediaInputRef.current) {
+      mediaInputRef.current.accept = type.accept;
+      mediaInputRef.current.click();
+    }
+  };
+  const handleMediaFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && pendingMediaType.current) {
+      onAddMediaEntry?.(pendingMediaType.current, file);
+    }
+    pendingMediaType.current = null;
+    if (e.target) e.target.value = null;
+  };
 
   // Sub-Tab für das Ressource-Lesezeichen (standardmäßig "resources")
   const [resSubTab, setResSubTab] = useState("resources");
@@ -219,6 +246,10 @@ export function CatDetailScreen({
   const filteredMedia =
     mediaFilter === "all" ? allMediaEntries : allMediaEntries.filter((e) => e.mediaType === mediaFilter);
   const sortedMedia = makeSorter(mediaSort, "title")(filteredMedia);
+  // Lesezeichen (Links) als chronologischer Feed – neueste zuerst.
+  const sortedLinks = [...entries.filter((e) => e.type === "link")].sort(
+    (a, b) => getTs(b) - getTs(a)
+  );
   // Filter-Optionen für Medien (Reihenfolge: Dokumente, Bilder, Videos, Audios).
   const mediaFilterOptions = [
     { id: "all", label: t.filterAll || "Alle" },
@@ -683,11 +714,11 @@ export function CatDetailScreen({
           </div>
         )}
         {bm === "link" &&
-          (entries.filter((e) => e.type === "link").length === 0 ? (
+          (sortedLinks.length === 0 ? (
             <div className="cat-detail__section-empty">{t.noLink}</div>
           ) : (
             <LinkList t={t} CC={CC}
-              entries={entries.filter((e) => e.type === "link")}
+              entries={sortedLinks}
               cats={allCats}
               onDelete={deleteEntry}
             />
@@ -930,13 +961,12 @@ export function CatDetailScreen({
       )}
 
       {/* Aufgaben-Ansicht: Offen/Erledigt-Auswahl als schwebende Frosted-Glass-
-          Pille über dem Dock (Liste bleibt dahinter bis zum Dock sichtbar). */}
+          Pille auf Höhe des Home-Buttons. */}
       {bm === "tasks" && (
         <DetailViewSelect
           t={t}
           value={taskSubTab}
           onChange={setTaskSubTab}
-          dockBar
           options={[
             { id: "open", label: t.open || "Offen", count: openTasks.length },
             { id: "completed", label: t.markDone || "Erledigt", count: doneTasks.length, tone: "done" },
@@ -950,7 +980,6 @@ export function CatDetailScreen({
           t={t}
           value={resSubTab}
           onChange={setResSubTab}
-          dockBar
           options={[
             { id: "resources", label: t.linkedRes, count: sortedResources.length },
             { id: "media", label: t.mediaTab, count: allMediaEntries.length },
@@ -958,23 +987,80 @@ export function CatDetailScreen({
         />
       )}
 
-      {/* Unteres Dock: Home + optionales Eingabefeld (Lesezeichen liegen oben
-          in der DetailIconBar). Eingabefeld nur auf Tabs mit Hinzufügen-
-          Aktion – auf Canvas & Details ausgeblendet. */}
+      {/* Versteckter File-Input für den Medien-Upload (accept wird beim
+          Öffnen vom gewählten Medientyp gesetzt). */}
+      <input
+        ref={mediaInputRef}
+        type="file"
+        style={{ display: "none" }}
+        onChange={handleMediaFileChange}
+      />
+
+      {/* Unten: schwebender Home-Button links (alle Lesezeichen) + Aktions-
+          Button rechts in der Lesezeichen-Farbe. Kein Eingabefeld-Dock mehr.
+          Canvas & Details haben keine Aktion; im Medien-Lesezeichen hängt sie
+          vom Sub-Tab ab: Ressourcen verknüpfen bzw. Medien hochladen. */}
       <DetailDock
         t={t}
         onHome={onHome}
-        showInput={bm !== "canvas" && bm !== "details"}
-        placeholder={t.addPlaceholder(
-          bm === "cal" ? (t.calSing || t.calendar)
-            : bm === "notes" ? (t.noteSing || t.notes)
-            : bm === "media" ? (t.media || "")
-            : bm === "link" ? (t.link || "")
-            : t.task
-        )}
-        accentColor={getFabColor()}
-        onSubmit={(title) => onQuickAddEntry?.(getEntryTypeFromBookmark(), title)}
+        action={(() => {
+          if (bm === "canvas" || bm === "details") return null;
+          if (bm === "media") {
+            return resSubTab === "resources"
+              ? {
+                  Icon: GitMergeBranchIcon,
+                  color: CC.resource.color,
+                  label: t.linkResSheetTitle || "Ressourcen verknüpfen",
+                  onClick: () => setShowResLinkSheet(true),
+                }
+              : {
+                  Icon: Plus,
+                  color: getFabColor(),
+                  label: t.addMediaSheetTitle || "Medien hinzufügen",
+                  onClick: () => setShowMediaTypeSheet(true),
+                };
+          }
+          return {
+            Icon: Plus,
+            color: getFabColor(),
+            label: t.addPlaceholder(
+              bm === "cal" ? (t.calSing || t.calendar)
+                : bm === "notes" ? (t.noteSing || t.notes)
+                : bm === "link" ? (t.link || "")
+                : t.task
+            ),
+            onClick: createEntryFromBookmark,
+          };
+        })()}
       />
+
+      {/* Ressourcen-Verknüpfungs-Sheet: Mehrfachauswahl aller Ressourcen;
+          Bestätigen verknüpft neue und löst abgewählte (relatedId). */}
+      {showResLinkSheet && (
+        <ResLinkSheet
+          t={t}
+          CC={CC}
+          options={allCats.filter((c) => c.type === "resource" && c.id !== cat.id && !c.archived)}
+          linkedIds={linkedResources.map((r) => r.id)}
+          onConfirm={(nextIds) => {
+            const next = new Set(nextIds);
+            const prev = new Set(linkedResources.map((r) => r.id));
+            next.forEach((id) => { if (!prev.has(id)) onLinkResource?.(id, true); });
+            prev.forEach((id) => { if (!next.has(id)) onLinkResource?.(id, false); });
+            setShowResLinkSheet(false);
+          }}
+          onClose={() => setShowResLinkSheet(false)}
+        />
+      )}
+
+      {/* Medienart-Sheet: Dokumente / Bilder / Videos / Audio → Datei-Dialog */}
+      {showMediaTypeSheet && (
+        <MediaTypeSheet
+          t={t}
+          onPick={handleMediaTypePick}
+          onClose={() => setShowMediaTypeSheet(false)}
+        />
+      )}
     </div>
   );
 }

@@ -910,6 +910,49 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onTog
 }
 
 
+// Inline-Vorschau eines Medien-Eintrags (Bild/Video/Audio) aus dem in der
+// Persistenz liegenden Blob. Object-URL wird beim Unmount wieder freigegeben.
+// Dokumente haben keine Inline-Vorschau (öffnen weiterhin per Tap).
+function MediaPreview({ entry }) {
+  const [url, setUrl] = useState(null);
+  useEffect(() => {
+    if (!(entry.mediaData instanceof Blob)) return undefined;
+    const objectUrl = URL.createObjectURL(entry.mediaData);
+    setUrl(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [entry.mediaData]);
+
+  if (!url) return null;
+  if (entry.mediaType === "image") {
+    return <img className="media-item__preview" src={url} alt={entry.title} loading="lazy" />;
+  }
+  if (entry.mediaType === "video") {
+    // stopPropagation: Player-Bedienung darf den Datei-Öffnen-Tap nicht auslösen
+    return (
+      <video
+        className="media-item__preview"
+        src={url}
+        controls
+        playsInline
+        preload="metadata"
+        onClick={(ev) => ev.stopPropagation()}
+      />
+    );
+  }
+  if (entry.mediaType === "audio") {
+    return (
+      <audio
+        className="media-item__preview media-item__preview--audio"
+        src={url}
+        controls
+        preload="metadata"
+        onClick={(ev) => ev.stopPropagation()}
+      />
+    );
+  }
+  return null;
+}
+
 export function MediaList({ entries, cats, onDelete, t, CC }) {
   const getMediaConfig = (mediaType) => {
     switch (mediaType) {
@@ -923,10 +966,12 @@ export function MediaList({ entries, cats, onDelete, t, CC }) {
 
   return entries.map((e) => {
     const { Icon, color, label } = getMediaConfig(e.mediaType);
+    const hasPreview =
+      e.mediaData instanceof Blob && ["image", "video", "audio"].includes(e.mediaType);
     return (
-      <div 
-        key={e.id} 
-        className="media-item"
+      <div
+        key={e.id}
+        className={`media-item${hasPreview ? " media-item--feed" : ""}`}
         style={{ cursor: e.mediaData ? 'pointer' : 'default' }}
         onClick={() => {
           if (e.mediaData) {
@@ -936,23 +981,26 @@ export function MediaList({ entries, cats, onDelete, t, CC }) {
           }
         }}
       >
-        <div className="media-item__icon" style={{ background: color + "22", color: color }}>
-          <Icon size={18} />
+        <div className="media-item__row">
+          <div className="media-item__icon" style={{ background: color + "22", color: color }}>
+            <Icon size={18} />
+          </div>
+          <div className="media-item__body">
+            <div className="media-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
+            <div className="media-item__meta"><AutoScrollText>{label}</AutoScrollText></div>
+            <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={false} />
+          </div>
+          <button
+            className="media-item__delete"
+            onClick={(ev) => {
+              ev.stopPropagation();
+              onDelete(e.id);
+            }}
+          >
+            <Trash2 size={14} color="#5858A0" />
+          </button>
         </div>
-        <div className="media-item__body">
-          <div className="media-item__title"><AutoScrollText>{e.title}</AutoScrollText></div>
-          <div className="media-item__meta"><AutoScrollText>{label}</AutoScrollText></div>
-          <EntryMetaTags entry={e} cats={cats} CC={CC} isHome={false} />
-        </div>
-        <button 
-          className="media-item__delete" 
-          onClick={(ev) => { 
-            ev.stopPropagation(); 
-            onDelete(e.id); 
-          }}
-        >
-          <Trash2 size={14} color="#5858A0" />
-        </button>
+        {hasPreview && <MediaPreview entry={e} />}
       </div>
     );
   });

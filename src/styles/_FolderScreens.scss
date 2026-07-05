@@ -356,6 +356,14 @@
   border-radius: 20px;
 }
 
+// Aktions-Button unten rechts (Gegenstück zum Home-Button): gleiche Glass-
+// Pille, Icon in der Akzentfarbe des aktiven Lesezeichens (inline gesetzt).
+// Plus = Eintrag/Medium hinzufügen, Verknüpfen-Icon = Ressource verknüpfen.
+.home__floating-btn.detail-action-fab {
+  left: auto;
+  right: $spacing-md;
+}
+
 // ── Bottom Navigation (Back + Action) ───────────────────────
 
 .cat-detail {

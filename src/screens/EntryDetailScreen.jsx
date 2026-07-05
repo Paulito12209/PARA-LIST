@@ -866,12 +866,7 @@ export function EntryDetailScreen({
         />
       )}
 
-      <DetailDock
-        t={t}
-        onHome={onHome}
-        showInput={false}
-        accentColor={getFabColor()}
-      />
+      <DetailDock t={t} onHome={onHome} />
     </div>
   );
 }

@@ -318,6 +318,18 @@ export function HomeScreen({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, activeType, tabEntries.length]);
 
+  // Beim Auf-/Zuklappen an den Listenanfang springen. Das Aufklappen wird oft
+  // durch die Scroll-Geste selbst ausgelöst (handleListScroll) – der dabei
+  // entstandene scrollTop bliebe sonst erhalten, wenn der Container auf
+  // position:fixed umspringt: der erste Eintrag hängt abgeschnitten über der
+  // Oberkante und iOS klemmt den Offset fest, wenn der Inhalt kürzer als der
+  // neue Scrollbereich ist (Liste wirkt "eingefroren").
+  useEffect(() => {
+    const container = entryListRef.current;
+    if (container) container.scrollTop = 0;
+    lastScrollTop.current = 0;
+  }, [listExpanded]);
+
   // Hinweis: Früher wurde die Liste bei ≤ 1 Eintrag automatisch zugeklappt.
   // Das ist bewusst entfernt – beim Wechsel zwischen den Listen (Dock-Icons /
   // Links-Rechts-Wischen) bleibt die Liste aufgeklappt, auch wenn die Zielliste

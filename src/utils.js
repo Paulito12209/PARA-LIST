@@ -186,7 +186,7 @@ export const SEED = {
   lang: "de",
   user: { name: "" },
   cats: [
-    { id: "p1", type: "project",  name: "onboarding", date: "2026-04-30", body: "Hier kannst du die Projektbeschreibung anpassen, wie du möchtest.\n\nTipp: Für ein besseres Verständnis der App, geh auf die Büroklammer (Lesezeichen-Icon), wähle das 5. Lesezeichen und öffne die Ressource.", tags: ["App"], relatedId: "a8", archived: false, pinned: true },
+    { id: "p1", type: "project",  name: "Onboarding", date: "2026-04-30", body: "Hier kannst du die Projektbeschreibung anpassen, wie du möchtest.\n\nTipp: Für ein besseres Verständnis der App, geh auf die Büroklammer (5. Lesezeichen), öffne die Ressource und lies die Beschreibung der PARA-Methode.", tags: ["App"], relatedId: "a8", archived: false, pinned: true },
     { id: "p2", type: "project",  name: "Nächsten Monat 4x ins Gym", date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2", archived: false },
     { id: "p3", type: "project",  name: "Aufgeräumte Wohnung", date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a1", type: "area",     name: "Arbeit",            date: null, body: "", tags: [], relatedId: null, archived: false },
@@ -201,11 +201,13 @@ export const SEED = {
     { id: "r2", type: "resource", name: "Filme",             date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "r3", type: "resource", name: "Einkaufsliste",     date: null, body: "", tags: [], relatedId: "a3", archived: false },
     { id: "r4", type: "resource", name: "Wunschliste",       date: null, body: "", tags: [], relatedId: null, archived: false },
-    { id: "r5", type: "resource", name: "PARA-Methode",      date: null, body: "Stöbert rechts durch die 7 Lesezeichen, um mehr Kontext zur PARA-Methode zu entdecken.\n\nHinweis: Schau dir im 6. Lesezeichen das Video von Oliver Münch an, um die PARA-Methode zu verstehen. Denn PARA-LIST ist der beste Begleiter, um diese Methode anzuwenden.", tags: ["Produktivität"], relatedId: "a8", archived: false },
+    // PARA-Methode ist mit dem Onboarding-Projekt verknüpft (relatedId: "p1"),
+    // damit sie dort unter der Büroklammer (verknüpfte Ressourcen) auftaucht.
+    { id: "r5", type: "resource", name: "PARA-Methode",      date: null, body: "Stöbert rechts durch die 7 Lesezeichen, um mehr Kontext zur PARA-Methode zu entdecken.\n\nHinweis: Schau dir im 6. Lesezeichen das Video von Oliver Münch an, um die PARA-Methode zu verstehen. Denn PARA-LIST ist der beste Begleiter, um diese Methode anzuwenden.", tags: ["Produktivität"], relatedId: "p1", archived: false },
     { id: ID_BIRTHDAYS, type: "resource", name: "Geburtstage", date: null, body: "Alle Geburtstage aus dem Kalender.", tags: ["System"], relatedId: null, archived: false },
   ],
   entries: [
-    { id: "e1", type: "task", title: "onboarding! Projekt öffnen", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
+    { id: "e1", type: "task", title: "\"Onboarding\" öffnen", done: false, note: "Das Projekt öffnen und die Projektbeschreibung lesen.", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
     { id: "e2", type: "task", title: "Klicke auf das PARA·LIST-Logo oben links, um die App zu wechseln", done: false, note: "", due: TODAY, catId: "p1", linkedEntryIds: [], parentId: null },
     { id: "e-para-vid", type: "link", title: "Vorstellung der PARA-Methode", url: "https://www.youtube.com/watch?v=8sdnM-vdqvI", catId: "r5", linkedEntryIds: [], parentId: null },
   ],

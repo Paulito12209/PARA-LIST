@@ -252,6 +252,45 @@ function migrateState(state) {
     dirty = true;
   }
 
+  // Onboarding-Seed-Texte nachziehen: bestehende States tragen noch die alten
+  // Formulierungen ("onboarding" klein, falscher Lesezeichen-Hinweis). Es wird
+  // nur ersetzt, wenn der alte Seed-Wert unverändert ist – eigene Anpassungen
+  // des Nutzers bleiben unangetastet. Idempotent, daher kein Versions-Flag.
+  const OLD_ONBOARDING_BODY =
+    "Hier kannst du die Projektbeschreibung anpassen, wie du möchtest.\n\nTipp: Für ein besseres Verständnis der App, geh auf die Büroklammer (Lesezeichen-Icon), wähle das 5. Lesezeichen und öffne die Ressource.";
+  next.cats = next.cats.map((c) => {
+    if (c.id === "p1") {
+      let patched = c;
+      if (patched.name === "onboarding") {
+        dirty = true;
+        patched = { ...patched, name: "Onboarding" };
+      }
+      if (patched.body === OLD_ONBOARDING_BODY) {
+        dirty = true;
+        patched = { ...patched, body: SEED.cats.find((s) => s.id === "p1").body };
+      }
+      return patched;
+    }
+    // PARA-Methode ans Onboarding-Projekt hängen (statt Area "Organisation"),
+    // damit sie dort unter der Büroklammer als verknüpfte Ressource erscheint.
+    if (c.id === "r5" && c.relatedId === "a8") {
+      dirty = true;
+      return { ...c, relatedId: "p1" };
+    }
+    return c;
+  });
+  next.entries = next.entries.map((e) => {
+    if (e.id === "e1" && e.title === "onboarding! Projekt öffnen") {
+      dirty = true;
+      return {
+        ...e,
+        title: "\"Onboarding\" öffnen",
+        note: e.note || "Das Projekt öffnen und die Projektbeschreibung lesen.",
+      };
+    }
+    return e;
+  });
+
   return dirty ? next : state;
 }
 

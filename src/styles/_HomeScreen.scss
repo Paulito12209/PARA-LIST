@@ -936,7 +936,9 @@
   z-index: 10;
   background: #16161F;
   padding: 8px 0 0;
-  animation: listExpand 0.3s ease-out;
+  // Dauer und Easing synchron mit headerSolidFill, damit Liste und Header
+  // gleichzeitig ankommen und kein Cover-Durchblitzer entsteht.
+  animation: listExpand 0.34s cubic-bezier(0.22, 1, 0.36, 1);
   // Loslassen nach einem Pull-down → sanftes Zurückschnappen des Versatzes.
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -949,13 +951,20 @@
   animation: none;
 }
 
+// Liste dehnt sich von ihrer eingeklappten Position nach oben aus.
+// Die clip-path-Animation beschneidet den sichtbaren Bereich schrittweise,
+// sodass der Inhalt von unten „hochfährt" statt zu springen.
 @keyframes listExpand {
-  from {
-    opacity: 0.9;
-    transform: translateY(30%);
+  0% {
+    opacity: 0.92;
+    transform: translateY(40%);
   }
 
-  to {
+  60% {
+    opacity: 1;
+  }
+
+  100% {
     opacity: 1;
     transform: translateY(0);
   }

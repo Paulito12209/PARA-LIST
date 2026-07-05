@@ -41,11 +41,11 @@
     pointer-events: none;
   }
 
-  // Aufgeklappte Startseiten-Liste: Header wird opak in exakt der Farbe der
-  // erweiterten Liste darunter (#16161F) – eine durchgehende Fläche ohne
-  // sichtbare Kante, das Cover scheint nicht mehr durch.
+  // Aufgeklappte Startseiten-Liste: Header-Hintergrund wächst per Gradient-
+  // Animation von unten nach oben. So entsteht kein sichtbares Durchblitzen
+  // der Cover-Farbe zwischen Header und Liste beim Maximieren.
   &--closed#{&}--solid {
-    background: #16161F;
+    animation: headerSolidFill 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   }
 
   &--closed#{&}--solid::before {
@@ -679,4 +679,26 @@
     }
   }
 
+}
+
+// Header-Hintergrund wächst von unten nach oben beim Maximieren der Liste.
+// Gradient startet transparent und füllt sich synchron mit der listExpand-
+// Animation, damit kein farbiges Durchblitzen zwischen Header und Liste entsteht.
+@keyframes headerSolidFill {
+  0% {
+    background: linear-gradient(to top,
+      #16161F 0%,
+      rgba(22, 22, 31, 0) 0%);
+  }
+
+  40% {
+    background: linear-gradient(to top,
+      #16161F 0%,
+      #16161F 60%,
+      rgba(22, 22, 31, 0) 100%);
+  }
+
+  100% {
+    background: #16161F;
+  }
 }

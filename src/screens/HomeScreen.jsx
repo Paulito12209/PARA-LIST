@@ -3,6 +3,7 @@ import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, User
 import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
 import { DockMenuSheet } from "../components/DockMenuSheet";
+import { ProgressOverlay } from "../components/ProgressOverlay";
 import { TrashSheet } from "../components/TrashSheet";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -113,6 +114,8 @@ export function HomeScreen({
   // Dock-3-Punkte-Menü (Bottom-Sheet) und Papierkorb-Ansicht
   const [dockMenuOpen, setDockMenuOpen] = useState(false);
   const [trashOpen, setTrashOpen] = useState(false);
+  // Fortschritts-Overlay (Pokal-Button links im Dock)
+  const [progressOpen, setProgressOpen] = useState(false);
   const ENTRY_TYPES = ["tasks", "notes", "calendar"];
   const isEntryType = ENTRY_TYPES.includes(activeType);
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
@@ -146,11 +149,14 @@ export function HomeScreen({
   const [listExpanded, setListExpanded] = useState(false);
   const lastScrollTop = useRef(0);
 
-  // Beim Aufklappen der Liste wandert der Abschnittstitel in den Header (statt "Startseite")
+  // Beim Aufklappen der Liste wandert der Abschnittstitel in den Header (statt
+  // "Startseite"); das Fortschritts-Overlay setzt stattdessen "Fortschritt".
   useEffect(() => {
-    onHeaderTitleChange?.(listExpanded ? activeLabel : null);
+    onHeaderTitleChange?.(
+      progressOpen ? (t.progress || "Fortschritt") : listExpanded ? activeLabel : null
+    );
     return () => onHeaderTitleChange?.(null);
-  }, [listExpanded, activeLabel, onHeaderTitleChange]);
+  }, [progressOpen, listExpanded, activeLabel, onHeaderTitleChange, t]);
 
   // Cover-Karussell: zeigt die fixierten (pinned) Inhalte – genau 1 pro Liste möglich
   // → mehrere Slides. Kategorien (Projekte/Bereiche/Ressourcen) sowie Einträge
@@ -955,18 +961,42 @@ export function HomeScreen({
         />
       )}
 
-      <CommandDock
-        t={t}
-        activeType={activeType}
-        onSelectType={handleSelectType}
-        onSubmit={onQuickCreate}
-        canToggleList
-        listExpanded={listExpanded}
-        onToggleList={() => setListExpanded((v) => !v)}
-        onHome={() => setListExpanded(false)}
-        onOpenVoice={() => setVoiceOverlayOpen(true)}
-        onMenu={() => setDockMenuOpen(true)}
-      />
+      {progressOpen && (
+        <ProgressOverlay
+          t={t}
+          lang={lang}
+          light={state.theme === "light"}
+          entries={entries}
+          cats={cats}
+          onOpenEntry={(id) => {
+            setProgressOpen(false);
+            onOpenEntry({ id });
+          }}
+          onOpenCat={(id) => {
+            setProgressOpen(false);
+            onOpenCat({ id });
+          }}
+          onClose={() => setProgressOpen(false)}
+        />
+      )}
+
+      {/* Bei offenem Fortschritts-Overlay weicht das Dock dem schwebenden
+          Home-Button des Overlays. */}
+      {!progressOpen && (
+        <CommandDock
+          t={t}
+          activeType={activeType}
+          onSelectType={handleSelectType}
+          onSubmit={onQuickCreate}
+          canToggleList
+          listExpanded={listExpanded}
+          onToggleList={() => setListExpanded((v) => !v)}
+          onHome={() => setListExpanded(false)}
+          onOpenProgress={() => setProgressOpen(true)}
+          onOpenVoice={() => setVoiceOverlayOpen(true)}
+          onMenu={() => setDockMenuOpen(true)}
+        />
+      )}
 
       {dockMenuOpen && (
         <DockMenuSheet

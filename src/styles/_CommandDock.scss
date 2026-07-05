@@ -150,17 +150,16 @@
     }
   }
 
-  // Home-Button (links): nur auf der Startseite "aktiv" gestylt.
-  // Dark Mode: heller Hintergrund + dunkles Icon (im Light Mode umgekehrt).
-  // Im Dark Mode 10% dunkler als reines Weiß (Light Mode geht 10% heller).
-  &__list-btn--active {
-    background: #e6e6e6;
-    border-color: #e6e6e6;
-    color: #1a1a24;
+  // Pokal-Button (links, nur Startseite): weißer Körper + goldene Kontur/Icon
+  // wie der Trophy-Button im Desktop-Rail. Öffnet das Fortschritts-Overlay.
+  &__trophy-btn {
+    background: #ffffff;
+    border-color: rgba(224, 168, 46, 0.45);
+    color: #E0A82E;
 
     &:hover {
-      background: #dcdcdc;
-      color: #1a1a24;
+      background: #fdf8ec;
+      color: #E0A82E;
     }
   }
 

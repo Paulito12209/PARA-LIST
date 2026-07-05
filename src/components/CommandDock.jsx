@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp } from "lucide-react";
+import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp, Trophy } from "lucide-react";
 
 // Audio-/Spracheingabe-Icon: 5 vertikale Wellen-Striche in unterschiedlicher Höhe
 // (ersetzt das Mikrofon-Icon – wirkt wie ein Equalizer / Herzschlag-Wellen)
@@ -45,13 +45,15 @@ const SINGULAR_KEY = {
   calendar: "calSing",
 };
 
-// `leadingAction` steuert nur das Styling des linken Home-Buttons:
-//   "list" (Default, Startseite) → "aktiv" hervorgehoben
-//   "home" (Detailseiten)        → normales Glas
-// Geklickt navigiert er IMMER zur Startseite (onHome).
+// `leadingAction` steuert den linken Button:
+//   "list" (Default, Startseite) → Pokal-Button (Trophy) in den Desktop-Rail-
+//   Farben; öffnet das Fortschritts-Overlay (onOpenProgress), das das Dock
+//   ersetzt und über seinen eigenen Home-Button geschlossen wird.
+//   "home" (Detailseiten)        → normales Glas mit Home-Icon, navigiert
+//   zur Startseite (onHome).
 // `canToggleList`: auf der Startseite klappt ein 2. Tap auf das bereits aktive
 // Typ-Icon die Liste auf/zu (onToggleList).
-export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, leadingAction = "list" }) {
+export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, onOpenProgress, leadingAction = "list" }) {
   const [value, setValue] = useState("");
   const isHomeScreen = leadingAction === "list";
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
@@ -101,13 +103,23 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
       </div>
 
       <div className="command-dock__input-row">
-        <button
-          className={`command-dock__icon-btn command-dock__list-btn ${isHomeScreen ? "command-dock__list-btn--active" : ""}`}
-          onClick={() => onHome?.()}
-          aria-label={t.home || "Startseite"}
-        >
-          <Home size={20} />
-        </button>
+        {isHomeScreen ? (
+          <button
+            className="command-dock__icon-btn command-dock__list-btn command-dock__trophy-btn"
+            onClick={() => onOpenProgress?.()}
+            aria-label={t.progress || "Fortschritt"}
+          >
+            <Trophy size={20} />
+          </button>
+        ) : (
+          <button
+            className="command-dock__icon-btn command-dock__list-btn"
+            onClick={() => onHome?.()}
+            aria-label={t.home || "Startseite"}
+          >
+            <Home size={20} />
+          </button>
+        )}
         <input
           className="command-dock__input"
           value={value}

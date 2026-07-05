@@ -1800,18 +1800,17 @@
       color: var(--dock-accent);
     }
 
-    // Home-Button nur auf der Startseite "aktiv": Light Mode = dunkelgrauer
-    // Hintergrund + weißes Icon (überschreibt das weiße Standard-Icon-Btn).
-    // 10% heller als zuvor (Dark Mode geht entsprechend 10% dunkler).
-    &__list-btn--active {
-      background: #3f3f47;
-      border-color: #3f3f47;
-      color: #ffffff;
+    // Pokal-Button (Startseite): weißer Körper + goldene Kontur/Icon wie im
+    // Desktop-Rail (überschreibt die transluzente Standard-Icon-Pille).
+    &__trophy-btn {
+      background: #ffffff;
+      border-color: rgba(224, 168, 46, 0.45);
+      color: #E0A82E;
       box-shadow: none;
 
       &:hover {
-        background: #35353c;
-        color: #ffffff;
+        background: #fdf8ec;
+        color: #E0A82E;
       }
     }
 

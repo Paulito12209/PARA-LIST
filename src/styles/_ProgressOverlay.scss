@@ -1,0 +1,67 @@
+// ============================================================
+// PARA·LIST – Fortschritts-Overlay (mobil, Pokal-Button im Dock)
+// ============================================================
+@use './variables' as *;
+
+.progress-overlay {
+  // Tokens des Desktop-Rails (Dark-Default), damit die wiederverwendeten
+  // .dsk-rail__*- und .dsk-zigzag-Bausteine hier identisch rendern.
+  // --bg = Farbe der Home-Fläche (#16161F), nahtlos zum soliden Header.
+  --bg: #16161F;
+  --text: #EDEEFF;
+  --text-2: rgba(237, 238, 255, 0.7);
+  --text-3: rgba(237, 238, 255, 0.4);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --cat-project:  #E03E3E;
+  --cat-area:     #D09020;
+  --cat-resource: #30A060;
+  --cat-task:     #0B8CE9;
+  --cat-note:     #FBBF24;
+  --cat-cal:      #0078D4;
+  --easing: cubic-bezier(0.4, 0, 0.2, 1);
+
+  position: absolute;
+  inset: 0;
+  // Über dem Home-Inhalt (Cover/Listen), unter dem Command-Dock (z-index 20)
+  // und dem Command-Panel-Header (z-index 100) – beide bleiben bedienbar.
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+  // Platz für den fixen Header (Logo · Datum/"Fortschritt" · Settings)
+  padding-top: calc(102px + env(safe-area-inset-top, 0px));
+  animation: fade-in 0.2s ease;
+
+  &__top {
+    padding: 8px $spacing-md 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__level-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__scroll {
+    flex: 1;
+    overflow: hidden auto;
+    // Unten nur Platz für den schwebenden Home-Button (40px Pille + Ränder)
+    padding: 4px $spacing-md calc(72px + env(safe-area-inset-bottom, 0px));
+    scrollbar-width: thin;
+  }
+}
+
+// Light Mode: nur die Tokens tauschen (analog .dsk-app--light)
+.app.light-theme .progress-overlay {
+  --bg: #ffffff;
+  --text: #1A1A2E;
+  --text-2: rgba(26, 26, 46, 0.7);
+  --text-3: rgba(26, 26, 46, 0.45);
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.14);
+}

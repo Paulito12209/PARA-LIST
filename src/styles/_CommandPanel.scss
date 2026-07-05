@@ -444,6 +444,34 @@
     display: flex;
   }
 
+  &__search-input-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+  }
+
+  &__search-input {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    padding: 0 $spacing-md;
+    border-radius: 20px;
+    background: rgba($color-dim, 0.6);
+    @include glass-border;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    color: $color-text;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: $font-body;
+    outline: none;
+    transition: all $transition-fast;
+
+    &::placeholder {
+      color: $color-muted;
+    }
+  }
+
   &__view-pill {
     flex: 1;
     min-width: 0;

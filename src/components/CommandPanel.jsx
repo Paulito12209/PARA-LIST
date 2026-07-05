@@ -42,6 +42,7 @@ export function CommandPanel({
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [typeFilter, setTypeFilter] = useState("all");
   const [sort, setSort] = useState({ by: "date", desc: true });
+  const [searchQuery, setSearchQuery] = useState("");
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
@@ -63,6 +64,7 @@ export function CommandPanel({
     if (!open) {
       if (anyMenuOpen) closeMenus();
       if (searchOpen) onCloseSearch?.();
+      setSearchQuery("");
     }
   }
 
@@ -273,6 +275,8 @@ export function CommandPanel({
             onOpenCat?.(c);
           }}
           onClose={onCloseSearch}
+          query={searchQuery}
+          setQuery={setSearchQuery}
         />
       )}
 
@@ -501,57 +505,70 @@ export function CommandPanel({
               </button>
             </div>
 
-            {/* Ansicht Heute/Überfällig – feste Breite, zentrierter Text */}
-            <div className="command-panel__view-select">
-              {viewMenuOpen && (
-                <div className="command-panel__glass-menu command-panel__glass-menu--view">
-                  {[
-                    { id: "today", label: t.todayTabs, count: filteredToday.length },
-                    { id: "overdue", label: t.overdueTabs, count: filteredOverdue.length },
-                  ].map((v) => (
-                    <button
-                      key={v.id}
-                      className={`command-panel__menu-option ${
-                        subTab === v.id ? "command-panel__menu-option--active" : ""
-                      } ${v.id === "overdue" ? "command-panel__menu-option--overdue" : ""}`}
-                      onClick={() => {
-                        setSubTab(v.id);
-                        setViewMenuOpen(false);
-                      }}
-                    >
-                      <span>{v.label}</span>
-                      {v.count > 0 && (
-                        <span
-                          className={`command-panel__menu-count ${
-                            v.id === "overdue" ? "command-panel__menu-count--overdue" : ""
-                          }`}
-                        >
-                          {v.count}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button
-                className="command-panel__view-pill"
-                onClick={() => {
-                  setViewMenuOpen((o) => !o);
-                  setLangMenuOpen(false);
-                  setThemeMenuOpen(false);
-                }}
-                aria-expanded={viewMenuOpen}
-              >
-                <span
-                  className={`command-panel__view-pill-label ${
-                    subTab === "overdue" ? "command-panel__view-pill-label--overdue" : ""
-                  }`}
+            {/* Ansicht Heute/Überfällig (wenn normal) ODER Suchen-Input (wenn Suche offen) */}
+            {searchOpen ? (
+              <div className="command-panel__search-input-wrap">
+                <input
+                  className="command-panel__search-input"
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t.searchPlaceholder || "Suchen..."}
+                  aria-label={t.searchTitle || "Suchen"}
+                />
+              </div>
+            ) : (
+              <div className="command-panel__view-select">
+                {viewMenuOpen && (
+                  <div className="command-panel__glass-menu command-panel__glass-menu--view">
+                    {[
+                      { id: "today", label: t.todayTabs, count: filteredToday.length },
+                      { id: "overdue", label: t.overdueTabs, count: filteredOverdue.length },
+                    ].map((v) => (
+                      <button
+                        key={v.id}
+                        className={`command-panel__menu-option ${
+                          subTab === v.id ? "command-panel__menu-option--active" : ""
+                        } ${v.id === "overdue" ? "command-panel__menu-option--overdue" : ""}`}
+                        onClick={() => {
+                          setSubTab(v.id);
+                          setViewMenuOpen(false);
+                        }}
+                      >
+                        <span>{v.label}</span>
+                        {v.count > 0 && (
+                          <span
+                            className={`command-panel__menu-count ${
+                              v.id === "overdue" ? "command-panel__menu-count--overdue" : ""
+                            }`}
+                          >
+                            {v.count}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button
+                  className="command-panel__view-pill"
+                  onClick={() => {
+                    setViewMenuOpen((o) => !o);
+                    setLangMenuOpen(false);
+                    setThemeMenuOpen(false);
+                  }}
+                  aria-expanded={viewMenuOpen}
                 >
-                  {subTab === "today" ? t.todayTabs : t.overdueTabs}
-                </span>
-                <ChevronsUpDown size={14} strokeWidth={2.2} />
-              </button>
-            </div>
+                  <span
+                    className={`command-panel__view-pill-label ${
+                      subTab === "overdue" ? "command-panel__view-pill-label--overdue" : ""
+                    }`}
+                  >
+                    {subTab === "today" ? t.todayTabs : t.overdueTabs}
+                  </span>
+                  <ChevronsUpDown size={14} strokeWidth={2.2} />
+                </button>
+              </div>
+            )}
 
             {/* Theme (rund) – nur aktiver Modus, Popup mit Hell/Dunkel */}
             <div className="command-panel__footer-select">

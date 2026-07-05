@@ -175,6 +175,16 @@
       color: #8e8eb2;
     }
 
+    &__search-input {
+      background: rgba(255, 255, 255, 0.75);
+      border-color: #e5e5f0;
+      color: #1a1a24;
+
+      &::placeholder {
+        color: #8e8eb2;
+      }
+    }
+
     &__view-pill-label {
       color: #1a1a24;
 

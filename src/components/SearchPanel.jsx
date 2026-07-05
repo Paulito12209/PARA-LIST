@@ -123,14 +123,12 @@ export function SearchPanel({
   onOpenEntry,
   onOpenCat,
   onClose,
+  query,
+  setQuery,
 }) {
-  const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
-  const [kbHeight, setKbHeight] = useState(0);
   const [inputFocused, setInputFocused] = useState(false);
-  const inputRef = useRef(null);
-  const blurTimer = useRef(null);
 
   const filterOptions = [
     { id: "all", label: t.filterAll },
@@ -201,7 +199,6 @@ export function SearchPanel({
   const firstGroup = groups[0];
   const restGroups = groups.slice(1);
   const filterActive = typeFilter !== "all";
-  const showKeyboardBar = inputFocused || kbHeight > 0;
 
   const metaLeftLabel = query.trim()
     ? filtered.length > 0
@@ -209,51 +206,11 @@ export function SearchPanel({
       : ""
     : firstGroup?.[0] || "";
 
-  useEffect(() => {
-    const id = setTimeout(() => inputRef.current?.focus(), 80);
-    return () => clearTimeout(id);
-  }, []);
-
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const onResize = () => {
-      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKbHeight(kb > 80 ? kb : 0);
-    };
-    vv.addEventListener("resize", onResize);
-    vv.addEventListener("scroll", onResize);
-    onResize();
-    return () => {
-      vv.removeEventListener("resize", onResize);
-      vv.removeEventListener("scroll", onResize);
-    };
-  }, []);
-
-  useEffect(() => () => clearTimeout(blurTimer.current), []);
-
   const handleSelect = (item) => {
     setFilterMenuOpen(false);
     if (item.kind === "cat") onOpenCat?.({ id: item.id });
     else onOpenEntry?.({ id: item.id });
   };
-
-  const handleInputFocus = () => {
-    clearTimeout(blurTimer.current);
-    setInputFocused(true);
-  };
-
-  const handleInputBlur = () => {
-    blurTimer.current = setTimeout(() => setInputFocused(false), 120);
-  };
-
-  const collapseKeyboard = () => {
-    clearTimeout(blurTimer.current);
-    inputRef.current?.blur();
-    setInputFocused(false);
-  };
-
-  const refocusInput = () => inputRef.current?.focus();
 
   return (
     <>
@@ -264,14 +221,9 @@ export function SearchPanel({
       <div className="command-panel__drawer search-panel" style={{ touchAction: "pan-y" }}>
         {/* Heute links · Filter rechts – eine Zeile */}
         <div className="command-panel__meta-row search-panel__meta-row">
-          <button
-            type="button"
-            className="search-panel__meta-label"
-            onClick={refocusInput}
-            aria-label={t.searchTitle}
-          >
+          <span className="search-panel__meta-label">
             {metaLeftLabel}
-          </button>
+          </span>
           <div className="command-panel__meta-action-wrap">
             <button
               type="button"
@@ -307,7 +259,7 @@ export function SearchPanel({
           </div>
         </div>
 
-        <div className={`command-panel__list search-panel__list search-panel__list--kb-open`}>
+        <div className="command-panel__list search-panel__list search-panel__list--kb-open">
           {filtered.length === 0 && (
             <div className="search-panel__empty">{t.searchNoResults || "Keine Ergebnisse"}</div>
           )}
@@ -340,33 +292,6 @@ export function SearchPanel({
               ))}
             </div>
           ))}
-        </div>
-
-        {/* Sucheingabe-Dock am unteren Rand des SearchPanels */}
-        <div className="command-dock command-dock--detail search-panel__bottom-dock">
-          <div className="command-dock__input-row">
-            <input
-              ref={inputRef}
-              className="command-dock__input"
-              type="search"
-              enterKeyHint="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onFocus={handleInputFocus}
-              onBlur={handleInputBlur}
-              placeholder={t.searchPlaceholder || "Suchen..."}
-              aria-label={t.searchTitle || "Suchen"}
-            />
-            {/* List-Icon rechts daneben, um zum Backlog zu wechseln */}
-            <button
-              type="button"
-              className="command-dock__icon-btn"
-              onClick={onClose}
-              aria-label={t.backlog || "Backlog"}
-            >
-              <CheckCircle2 size={20} />
-            </button>
-          </div>
         </div>
       </div>
     </>

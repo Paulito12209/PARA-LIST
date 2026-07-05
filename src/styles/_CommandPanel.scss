@@ -287,6 +287,17 @@
     }
   }
 
+  // Sortier- + Filter-Icon rechts in der Metazeile
+  &__meta-actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+  }
+  &__meta-action-wrap {
+    position: relative;
+    display: flex;
+  }
+
   &__list-filter-btn {
     display: flex;
     align-items: center;
@@ -298,18 +309,13 @@
     background: transparent;
     color: $color-muted;
     cursor: pointer;
-    transition: all $transition-fast;
+    transition: color $transition-fast;
 
-    &:hover {
-      color: $color-text;
-      background: $color-hover;
-    }
-
-    // Typ-Filter aktiv (≠ Alle): Icon in Task-Blau hervorheben
+    // Kein Hintergrund-Kreis (auch nicht bei offenem Menü) – nur die Icon-
+    // Farbe signalisiert eine Abweichung von der Norm.
+    // Aktiv (Filter ≠ Alle bzw. Sortierung ≠ Standard): nur das Icon blau.
     &--active {
       color: $color-task;
-      background: rgba($color-task, 0.12);
-      border-color: rgba($color-task, 0.3);
     }
   }
 
@@ -350,6 +356,29 @@
       left: 50%;
       transform: translateX(-50%);
     }
+
+    // Sprache: über dem runden Sprach-Button, linksbündig
+    &--lang {
+      bottom: calc(100% + #{$spacing-sm});
+      left: 0;
+    }
+
+    // Theme: über dem runden Theme-Button, rechtsbündig
+    &--theme {
+      bottom: calc(100% + #{$spacing-sm});
+      right: 0;
+    }
+  }
+
+  // Option mit führendem Icon/Flagge (Sprache, Theme)
+  &__menu-label {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+  &__menu-flag {
+    font-size: 16px;
+    line-height: 1;
   }
 
   &__menu-option {
@@ -404,22 +433,27 @@
     }
   }
 
-  // Ansicht-Pille (Heute/Überfällig) über den Quick-Settings
+  // Ansicht-Pille (Heute/Überfällig): mittleres, dehnbares Element der
+  // Footer-Reihe. Feste Höhe wie die runden Buttons, Text immer zentriert.
   &__view-select {
     position: relative;
+    flex: 1;
+    min-width: 0;
     display: flex;
-    justify-content: center;
-    margin-bottom: $spacing-sm;
   }
 
   &__view-pill {
+    flex: 1;
+    min-width: 0;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
     height: 40px;
     padding: 0 $spacing-md;
     border-radius: 20px;
-    background: rgba($color-card, 0.6);
+    // Gleiche Fläche wie Schließen/Suche/Sprache/Theme (homogener Footer)
+    background: rgba($color-dim, 0.6);
     @include glass-border;
     backdrop-filter: blur(14px) saturate(140%);
     -webkit-backdrop-filter: blur(14px) saturate(140%);
@@ -475,6 +509,8 @@
     flex-direction: column;
   }
 
+  // Einträge blenden mit dem Backlog-Hintergrund (transparent, nur zarter Rand)
+  // – KEINE rötliche Tönung für überfällige Einträge.
   &__drawer-item {
     display: flex;
     align-items: center;
@@ -483,11 +519,7 @@
     border-radius: 24px;
     border: 1px solid $color-border;
     margin-bottom: $spacing-sm;
-    background: $color-card;
-
-    &--overdue {
-      background: rgba($color-notif-red, 0.09);
-    }
+    background: transparent;
   }
 
   // Kleines Typ-Icon (Aufgabe/Kalender) vor dem Eintrag, Farbe per Inline-Style
@@ -558,116 +590,52 @@
     padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
   }
 
-  // Quick-Settings-Leiste (ersetzt den einzelnen Settings-Button)
-  &__quick-settings {
+  // Footer-Reihe: Schließen · Sprache · Ansicht-Pille · Theme · Suche.
+  // Alle Elemente gleich hoch (48px); die Pille in der Mitte dehnt sich.
+  &__footer-row {
     width: 100%;
     padding: 0 $spacing-md;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: $spacing-sm;
     animation: fade-in 0.3s ease;
     z-index: 10;
     box-sizing: border-box;
   }
 
-  &__qs-pill {
-    flex: 1;
+  // Wrapper für Sprach-/Theme-Rundbutton (Popup ankert daran)
+  &__footer-select {
+    position: relative;
+    flex-shrink: 0;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: rgba($color-card, 0.6);
-    @include glass-border;
-    border-radius: 24px;
-    padding: 4px;
-    height: 48px;
   }
 
-  // Einzelner Quick-Settings-Button
-  &__qs-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 20px;
-    border: 1px solid transparent;
-    background: transparent;
-    color: $color-muted;
-    font-size: 16px;
+  // Runder Sprach-/Theme-Button (nur aktiver Wert, öffnet Popup) – 40px hoch
+  // wie alle anderen Footer-Elemente.
+  &__qs-round-btn {
+    @include floating-btn(40px, 50%);
+    position: relative;
+    @include glass-border;
+    background: rgba($color-card, 0.6);
+    color: $color-text;
     cursor: pointer;
-    transition: all $transition-fast;
     flex-shrink: 0;
+    transition: all $transition-fast;
     padding: 0;
-    line-height: 1;
 
-    &--lang {
-      padding: 0 0 0 2px;
-    }
-
-    &--theme {
-      padding: 0;
-    }
-
-    &:hover:not(&--active) {
-      color: $color-text;
+    &:hover {
       background: $color-hover;
     }
-
-    // Farb-Definitionen je Option: der Glow greift die Farben der Flagge bzw.
-    // des Theme-Icons auf (Deutschland = Schwarz-Rot-Gold, England =
-    // Blau-Rot-Weiß, Spanien = Dunkelorange-Gelb, Sonne = Gold-Orange,
-    // Mond = Hellblau auf dunkelbläulichem Glow).
-    &--lang-de {
-      --qs-glow-1: rgba(255, 206, 0, 0.40);
-      --qs-glow-2: rgba(221, 0, 0, 0.22);
-      --qs-glow-3: rgba(0, 0, 0, 0.16);
-    }
-
-    &--lang-en {
-      --qs-glow-1: rgba(255, 255, 255, 0.55);
-      --qs-glow-2: rgba(200, 16, 46, 0.26);
-      --qs-glow-3: rgba(1, 33, 105, 0.32);
-    }
-
-    &--lang-es {
-      --qs-glow-1: rgba(255, 196, 0, 0.42);
-      --qs-glow-2: rgba(198, 84, 0, 0.26);
-      --qs-glow-3: rgba(120, 50, 0, 0.14);
-    }
-
-    &--theme-light {
-      --qs-glow-1: rgba(255, 193, 7, 0.45);
-      --qs-glow-2: rgba(255, 140, 0, 0.20);
-      --qs-glow-3: rgba(255, 120, 0, 0.08);
-      --qs-active-icon: #F59E0B; // goldene Sonne
-    }
-
-    &--theme-dark {
-      --qs-glow-1: rgba(96, 148, 255, 0.30);
-      --qs-glow-2: rgba(37, 64, 175, 0.26);
-      --qs-glow-3: rgba(15, 23, 84, 0.20);
-      --qs-active-icon: #93C5FD; // hellblauer Mond
-    }
-
-    // Aktiver Zustand: runder Glow von innen nach außen (wie das aufgeklappte
-    // Dock-Icon auf der Startseite) statt farbiger Füllung. Die Farben kommen
-    // aus den Varianten-Variablen oben.
-    &--active {
-      background: radial-gradient(circle at center,
-          var(--qs-glow-1, rgba(255, 255, 255, 0.28)) 0%,
-          var(--qs-glow-2, rgba(255, 255, 255, 0.13)) 38%,
-          var(--qs-glow-3, transparent) 60%,
-          transparent 78%);
-      color: var(--qs-active-icon, #{$color-text});
-      border-color: transparent;
-      border-radius: 50%;
-      box-shadow: none;
-    }
+  }
+  &__qs-flag {
+    font-size: 20px;
+    line-height: 1;
   }
 
+  // Suche: abgerundete 48×40-Pille (wie der Dock-Pokal-/Home-Button), nicht rund
   &__qs-settings-btn {
-    @include floating-btn(48px, 50%);
+    @include floating-btn(40px, 20px);
+    width: 48px;
     position: relative;
     @include glass-border;
     background: rgba($color-dim, 0.6);
@@ -693,9 +661,10 @@
     }
   }
 
-  // Rundes Schließ-Icon links neben der Sprach-/Theme-Pille
+  // Schließen: abgerundete 48×40-Pille (wie der Dock-Pokal-/Home-Button)
   &__qs-close-btn {
-    @include floating-btn(48px, 50%);
+    @include floating-btn(40px, 20px);
+    width: 48px;
     position: relative;
     @include glass-border;
     background: rgba($color-dim, 0.6);
@@ -708,15 +677,6 @@
     &:hover {
       background: $color-hover;
     }
-  }
-
-  // Vertikaler Divider zwischen Kategorien
-  &__qs-divider {
-    width: 1px;
-    height: 20px;
-    background: $color-border;
-    flex-shrink: 0;
-    margin: 0 $spacing-2xs;
   }
 
 }

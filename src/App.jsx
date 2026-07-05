@@ -1085,11 +1085,13 @@ export default function App() {
         user={state.user}
         notif={notif}
         entries={state.entries}
+        cats={state.cats}
         open={panelOpen}
         onToggle={() => setPanelOpen((o) => !o)}
         onOpenSettings={() => setSettingsOpen(true)}
         onToggleTask={toggleTask}
         onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+        onOpenCat={(c) => push({ view: VIEW.CAT_DETAIL, catId: c.id })}
         voiceOverlayOpen={voiceOverlayOpen}
         onOpenAppSwitcher={() => setAppSwitcherOpen(true)}
         onBack={handleSmartBack}

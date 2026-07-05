@@ -312,9 +312,9 @@ export function CatDetailScreen({
     bmTouch.current = {
       x: e.touches[0].clientX,
       y: e.touches[0].clientY,
-      // Wisch-Gesten auf Einträgen (Löschen/Erledigen) und in Textfeldern
-      // nicht als Lesezeichen-Wechsel deuten
-      skip: !!e.target.closest?.(".swipe-delete-wrapper, textarea, input"),
+      // Wisch-Gesten auf Einträgen (Löschen/Erledigen) nicht als
+      // Lesezeichen-Wechsel deuten. Textareas (Canvas!) wischen mit.
+      skip: !!e.target.closest?.(".swipe-delete-wrapper"),
     };
   }, []);
   const onBmTouchEnd = useCallback((e) => {

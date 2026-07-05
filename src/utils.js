@@ -186,7 +186,7 @@ export const SEED = {
   lang: "de",
   user: { name: "" },
   cats: [
-    { id: "p1", type: "project",  name: "onboarding", date: "2026-04-30", body: "Hier kannst du die Projektbeschreibung anpassen, wie du möchtest.\n\nTipp: Für ein besseres Verständnis der App, geh auf die Büroklammer (Lesezeichen-Icon), wähle das 5. Lesezeichen und öffne die Ressource.", tags: ["App"], relatedId: "r5", archived: false, pinned: true },
+    { id: "p1", type: "project",  name: "onboarding", date: "2026-04-30", body: "Hier kannst du die Projektbeschreibung anpassen, wie du möchtest.\n\nTipp: Für ein besseres Verständnis der App, geh auf die Büroklammer (Lesezeichen-Icon), wähle das 5. Lesezeichen und öffne die Ressource.", tags: ["App"], relatedId: "a8", archived: false, pinned: true },
     { id: "p2", type: "project",  name: "Nächsten Monat 4x ins Gym", date: "2026-05-15", body: "Woche 1: 2km locker\nWoche 2: 3km Intervalle", tags: ["Sport"], relatedId: "a2", archived: false },
     { id: "p3", type: "project",  name: "Aufgeräumte Wohnung", date: null, body: "", tags: [], relatedId: null, archived: false },
     { id: "a1", type: "area",     name: "Arbeit",            date: null, body: "", tags: [], relatedId: null, archived: false },

@@ -1,0 +1,252 @@
+// ============================================================
+// PARA·LIST – Mobile Search (im Command-Panel)
+// ============================================================
+@use './variables' as *;
+
+.search-panel {
+  &__meta-row {
+    // Gleiche Zeile: links Gruppenlabel, rechts Filter
+    align-items: center;
+  }
+
+  &__meta-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-muted;
+    min-height: 16px;
+    border: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+    font-family: $font-body;
+  }
+
+  &__list {
+    // Keine Trennlinien – nur vertikaler Abstand
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+
+    &--kb-open {
+      padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
+  &__empty {
+    padding: $spacing-xl $spacing-sm;
+    text-align: center;
+    font-size: 14px;
+    color: $color-muted;
+  }
+
+  &__group {
+    margin-top: $spacing-md;
+  }
+
+  &__group-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-muted;
+    padding: $spacing-xs $spacing-2xs $spacing-sm;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    width: 100%;
+    padding: $spacing-sm $spacing-2xs;
+    border: none;
+    border-radius: $radius-md;
+    background: transparent;
+    color: $color-text;
+    cursor: pointer;
+    text-align: left;
+    transition: background $transition-fast;
+
+    &:active {
+      background: rgba($color-card, 0.55);
+    }
+  }
+
+  &__item-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+  }
+
+  &__item-text {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__item-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: $color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__item-location {
+    font-size: 12px;
+    color: $color-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Schwebende Eingabezeile – nur bei aktiver Tastatur (Portal → body)
+  &__kb-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm $spacing-md;
+    padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom, 0px));
+    background: $color-hover;
+    border-top: 1px solid rgba($color-border, 0.5);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    animation: action-sheet-fade-in 0.15s ease-out;
+  }
+
+  &__kb-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid $color-border;
+    background: rgba($color-card, 0.65);
+    color: $color-text;
+    cursor: pointer;
+    padding: 0;
+    transition: background $transition-fast;
+
+    &:active {
+      background: $color-card;
+    }
+  }
+
+  &__kb-input-wrap {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 $spacing-md;
+    border-radius: $radius-pill;
+    background: rgba($color-card, 0.75);
+    border: 1px solid $color-border;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  &__kb-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 15px;
+    outline: none;
+
+    &::placeholder {
+      color: $color-muted;
+    }
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+  }
+
+  &__kb-collapse {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid $color-border;
+    background: rgba($color-card, 0.65);
+    color: $color-text;
+    cursor: pointer;
+    padding: 0;
+    transition: background $transition-fast;
+
+    &:active {
+      background: $color-card;
+    }
+  }
+}
+
+// Light Mode: SCSS-Tokens sind Dark-Werte – explizite Kontraste setzen.
+// `.light-theme` (body + .app) damit auch die per Portal an body
+// gehängte Tastatur-Leiste mitstyled wird.
+.light-theme {
+  .search-panel {
+    &__meta-label,
+    &__group-label {
+      color: #8e8eb2;
+    }
+
+    &__item {
+      color: #1a1a24;
+    }
+
+    &__item-title {
+      color: #1a1a24;
+    }
+
+    &__item-location {
+      color: #8e8eb2;
+    }
+
+    &__empty {
+      color: #5858a0;
+    }
+
+    &__item:active {
+      background: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  .search-panel__kb-bar {
+    background: #f7f7f9;
+    border-top-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  }
+
+  .search-panel__kb-close,
+  .search-panel__kb-collapse {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1a1a24;
+  }
+
+  .search-panel__kb-input-wrap {
+    background: #fff;
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .search-panel__kb-input {
+    color: #1a1a24;
+
+    &::placeholder {
+      color: #8e8eb2;
+    }
+  }
+}

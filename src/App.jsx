@@ -328,6 +328,7 @@ export default function App() {
   // Header-Titel des Archivs: null → Dashboard ("Startseite"); in einer aufgeklappten
   // archivierten Liste → deren Titel (z.B. "Erledigte Aufgaben").
   const [archiveHeaderTitle, setArchiveHeaderTitle] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
@@ -1095,6 +1096,9 @@ export default function App() {
         voiceOverlayOpen={voiceOverlayOpen}
         onOpenAppSwitcher={() => setAppSwitcherOpen(true)}
         onBack={handleSmartBack}
+        searchOpen={searchOpen}
+        onOpenSearch={() => setSearchOpen(true)}
+        onCloseSearch={() => setSearchOpen(false)}
       />
 
       {panelOpen && (

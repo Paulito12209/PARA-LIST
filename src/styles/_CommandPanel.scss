@@ -653,16 +653,6 @@
     }
   }
 
-  // Suche unten rechts (Platzhalter, Suche noch nicht implementiert)
-  &__qs-search-btn:disabled {
-    opacity: 0.45;
-    cursor: default;
-
-    &:hover {
-      background: rgba($color-dim, 0.6);
-    }
-  }
-
   // Schließen: abgerundete 48×40-Pille (wie der Dock-Pokal-/Home-Button)
   &__qs-close-btn {
     @include floating-btn(40px, 20px);

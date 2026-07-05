@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, Circle, MoreHorizontal, ChevronsUpDown, Filter, ArrowDownUp, ChevronUp, ChevronDown } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
+import { SearchPanel } from "./SearchPanel";
 
 const SWIPE_THRESHOLD_PX = 60;
 const HAPTIC_TAP_MS = 10;
@@ -27,6 +28,9 @@ export function CommandPanel({
   onOpenAppSwitcher,
   onBack,
   onOpenPageMenu,
+  onOpenSearch,
+  searchOpen,
+  onCloseSearch,
 }) {
   const [subTab, setSubTab] = useState("today");
   // Footer-Popups (Frosted Glass): Ansicht (Heute/Überfällig), Sprache, Theme.
@@ -56,7 +60,10 @@ export function CommandPanel({
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
     setPrevOpen(open);
-    if (!open && anyMenuOpen) closeMenus();
+    if (!open) {
+      if (anyMenuOpen) closeMenus();
+      if (searchOpen) onCloseSearch?.();
+    }
   }
 
   const handleTouchStart = (e) => {
@@ -208,7 +215,9 @@ export function CommandPanel({
                   : isVoiceMode
                   ? t.voiceQuestion
                   : open
-                  ? t.backlog
+                  ? searchOpen
+                    ? t.searchTitle
+                    : t.backlog
                   : (app?.title || title || t.home)}
               </div>
             </div>
@@ -248,7 +257,26 @@ export function CommandPanel({
         <div className="command-panel__menu-backdrop" onClick={closeMenus} />
       )}
 
-      {open && (
+      {open && searchOpen && (
+        <SearchPanel
+          t={t}
+          entries={entries}
+          cats={cats}
+          onOpenEntry={(e) => {
+            onCloseSearch?.();
+            onToggle();
+            onOpenEntry?.(e);
+          }}
+          onOpenCat={(c) => {
+            onCloseSearch?.();
+            onToggle();
+            onOpenCat?.(c);
+          }}
+          onClose={onCloseSearch}
+        />
+      )}
+
+      {open && !searchOpen && (
         <div className="command-panel__drawer" style={{ touchAction: "pan-y" }}>
           {/* Anzahl links · Sortier- + Typ-Filter-Icon rechts (Space-Between) */}
           <div className="command-panel__meta-row">
@@ -414,7 +442,7 @@ export function CommandPanel({
         </div>
       )}
 
-      {open && (
+      {open && !searchOpen && (
         <div className="command-panel__footer">
           {/* Eine Reihe, alle Elemente gleich hoch: Schließen · Sprache ·
               Heute/Überfällig-Pille · Theme · Suche. Sprache & Theme zeigen nur
@@ -566,12 +594,12 @@ export function CommandPanel({
               </button>
             </div>
 
-            {/* Suche (rund, deaktiviert dargestellt) */}
+            {/* Suche */}
             <button
+              type="button"
               className="command-panel__qs-settings-btn command-panel__qs-search-btn"
-              aria-label={lang === "en" ? "Search" : "Suche"}
-              aria-disabled="true"
-              disabled
+              aria-label={t.searchTitle}
+              onClick={() => onOpenSearch?.()}
             >
               <Search size={18} />
             </button>

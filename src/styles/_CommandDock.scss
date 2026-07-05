@@ -156,12 +156,12 @@
   // Pokal-Button (links, nur Startseite): weißer Körper + goldene Kontur/Icon
   // wie der Trophy-Button im Desktop-Rail. Öffnet das Fortschritts-Overlay.
   &__trophy-btn {
-    background: #ffffff;
+    background: #23232f;
     border-color: rgba(224, 168, 46, 0.45);
     color: #E0A82E;
 
     &:hover {
-      background: #fdf8ec;
+      background: #2c2c3a;
       color: #E0A82E;
     }
   }

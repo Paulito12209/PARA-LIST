@@ -35,12 +35,16 @@
     align-items: center;
     justify-content: space-between;
     gap: $spacing-2xs;
-    // Gleicher Seitenabstand wie die Input-Reihe darunter (Pokal-/Audio-Buttons)
-    padding: 0 4px;
   }
 
   &__type {
     flex: 1;
+
+    // Erster Typ-Button (Projekt): fixe Breite = Pokal-Button darunter (48px),
+    // damit der Projekt-Icon visuell links bündig mit dem Pokal-Icon ist.
+    &:first-child {
+      flex: 0 0 48px;
+    }
     height: 44px;
     border-radius: $radius-md;
     display: flex;
@@ -78,9 +82,10 @@
     }
   }
 
-  // 7. Icon: Menü-Kreis – gleiche Optik wie das List-Icon, öffnet das Menü-Sheet
+  // 7. Icon: Menü-Kreis – fixe Breite = Audio-Button darunter (48px), damit
+  // das Drei-Punkte-Icon visuell rechts bündig mit dem Audio-Icon ist.
   &__menu {
-    flex: 1;
+    flex: 0 0 48px;
     height: 44px;
     display: flex;
     align-items: center;

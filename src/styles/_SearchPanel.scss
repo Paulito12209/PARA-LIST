@@ -43,6 +43,10 @@
 
   &__group {
     margin-top: $spacing-md;
+
+    &:first-child {
+      margin-top: 0;
+    }
   }
 
   &__group-label {

@@ -113,7 +113,7 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
               <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
                 <button
                   type="button"
-                  className="action-sheet__item"
+                  className="action-sheet__item-filled"
                   style={{ width: "48px", height: "48px", padding: 0, justifyContent: "center", flexShrink: 0 }}
                   onClick={() => setView("menu")}
                   aria-label={t.back || "Zurück"}
@@ -122,7 +122,7 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
                 </button>
                 <button
                   type="button"
-                  className="action-sheet__item"
+                  className="action-sheet__item-filled"
                   style={{ flex: 1, justifyContent: "center", height: "48px" }}
                   onClick={handleClose}
                 >

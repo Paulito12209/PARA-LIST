@@ -1506,6 +1506,16 @@
     }
   }
 
+  &__item-filled {
+    @extend .action-sheet__item;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+
+    &:hover, &:active {
+      background: rgba(255, 255, 255, 0.09);
+    }
+  }
+
   &__divider {
     height: 1px;
     background: $color-border;
@@ -1558,6 +1568,15 @@ body.light-theme .action-sheet {
       color: #E0484A;
       svg { color: #E0484A; }
       &:hover, &:active { background: rgba(#E0484A, 0.1); }
+    }
+  }
+
+  .action-sheet__item-filled {
+    background: rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+
+    &:hover, &:active {
+      background: rgba(0, 0, 0, 0.07);
     }
   }
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
 
@@ -14,10 +14,20 @@ import { useSheetSwipeClose } from "./useSheetSwipeClose";
  */
 export function PathInfoSheet({ title, text, onClose }) {
   const [closing, setClosing] = useState(false);
+  const mountedAt = useRef(Date.now());
 
   const handleClose = () => {
     setClosing(true);
     setTimeout(() => onClose?.(), 180);
+  };
+
+  // Auf Mobile feuert nach dem öffnenden Tap ein verzögerter "Ghost-Click" an
+  // derselben Bildschirmstelle. Da der Info-Button oben, das Sheet-Panel aber
+  // unten sitzt, landet dieser Klick auf dem Backdrop und würde das Sheet
+  // sofort wieder schließen. Backdrop-Klicks kurz nach dem Mount ignorieren.
+  const handleBackdropClick = () => {
+    if (Date.now() - mountedAt.current < 350) return;
+    handleClose();
   };
 
   useEffect(() => {
@@ -32,7 +42,7 @@ export function PathInfoSheet({ title, text, onClose }) {
   return createPortal(
     <div
       className={`action-sheet action-sheet--centered-desktop ${closing ? "action-sheet--closing" : ""}`}
-      onClick={handleClose}
+      onClick={handleBackdropClick}
       {...swipe}
     >
       <div

@@ -324,6 +324,18 @@ export function TranslateOverlay({ t, lang = "de", onSave, onClose, onOpenFlashc
               </select>
             </div>
             <div className="tl-kbbar__row">
+              {/* Speichern auch bei offener Tastatur: aktiv, sobald eine
+                  Übersetzung vorliegt (Live-Übersetzung läuft beim Tippen).
+                  save() behält den Fokus → Tastatur bleibt offen. */}
+              <button
+                className="tl-kbbar__save"
+                disabled={status !== "done" || !result}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={save}
+                aria-label={fc.save}
+              >
+                <SaveBookmarkIcon size={20} color="currentColor" />
+              </button>
               {/* Übersetzt wird live beim Tippen – der Button räumt stattdessen
                   die Eingabe ab (Tastatur bleibt offen). */}
               <button

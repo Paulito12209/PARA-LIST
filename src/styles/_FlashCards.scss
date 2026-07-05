@@ -1030,6 +1030,24 @@
 
     &:active { transform: scale(0.96); background: var(--color-hover); }
   }
+
+  // Speichern links neben "Text entfernen": grün wie der große tl-save-Button,
+  // von Anfang an sichtbar, aber deaktiviert bis eine Übersetzung vorliegt.
+  &__save {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-resource);
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.15s ease;
+
+    &:active { transform: scale(0.96); }
+    &:disabled { opacity: 0.4; cursor: default; transform: none; }
+  }
 }
 
 /* ── Nicht-editierbare Flashcard-Ressourcen (Canvas) ───────── */

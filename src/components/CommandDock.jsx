@@ -89,7 +89,7 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
               }}
               title={t[SINGULAR_KEY[d.id]]}
             >
-              <Icon size={24} strokeWidth={isActive ? 2.6 : 2} />
+              <Icon size={20} strokeWidth={isActive ? 2.6 : 2} />
             </button>
           );
         })}

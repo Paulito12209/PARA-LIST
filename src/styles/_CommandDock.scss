@@ -38,9 +38,9 @@
   }
 
   &__type {
-    // Fixe Breite = Icon-Größe (24px). justify-content: space-between im
-    // Container verteilt den Abstand zwischen allen Icons gleichmäßig.
-    flex: 0 0 24px;
+    // Fixe Breite (32px) – etwas breiter als das Icon (24px), damit der
+    // Glow-Effekt bei maximierter Liste nicht abgeschnitten wird.
+    flex: 0 0 32px;
     height: 44px;
     border-radius: $radius-md;
     display: flex;

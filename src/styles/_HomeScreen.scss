@@ -315,11 +315,13 @@
 .home-cover {
   position: relative;
   width: 100%;
-  // Cover exakt so hoch wie die Fensterbreite (quadratisch) – schafft auf
-  // niedrigen Viewports (z.B. iPhone SE im Browser-Tab) unten Platz, damit
-  // die "Aufgaben"-Überschrift + Liste sichtbar bleiben.
-  height: 100vw;
-  max-height: 420px;
+  // Cover ~so hoch wie die Fensterbreite (quadratisch) – schafft auf niedrigen
+  // Viewports unten Platz für die "Aufgaben"-Überschrift + Liste. Untergrenze
+  // 390px: der Cover-Inhalt (Header + Titelblock + Button + Karussell-Dots)
+  // endet – unabhängig von der Breite – bei ~385px ab Cover-Oberkante. Ein
+  // reines 100vw wäre auf schmalen Screens kürzer, sodass die Dots am unteren
+  // overflow-hidden-Rand abgeschnitten würden. Obergrenze 420px.
+  height: clamp(390px, 100vw, 420px);
   flex-shrink: 0;
   padding: 96px 20px 0;
   overflow: hidden;

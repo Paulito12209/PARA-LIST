@@ -1,22 +1,20 @@
 import { useState } from "react";
-import { Home, MoreHorizontal, ArrowUp } from "lucide-react";
+import { Home, ArrowUp } from "lucide-react";
 import { BOOKMARKS } from "../utils";
 
-// Schmale Lesezeichen-Leiste der Detailseiten – sitzt zwischen Header und
-// Canvas-Bereich. Zeigt die Lesezeichen-Icons (Canvas = Kontext-Icon, Aufgaben,
-// Kalender, Medien, Links, Details); das aktive Lesezeichen ist farbig, der
-// Rest ausgegraut. Am Ende das Drei-Punkte-Menü (öffnet die Optionen).
+// Schmale Lesezeichen-Leiste der Detailseiten – sitzt am unteren Rand des
+// Headers. Zeigt die Lesezeichen-Icons (Canvas = Kontext-Icon, Aufgaben,
+// Kalender, Medien, Links und als 7. "Details"); das aktive Lesezeichen ist
+// farbig, der Rest ausgegraut. Das Drei-Punkte-Menü liegt jetzt oben rechts
+// im Command-Panel-Header.
 export function DetailIconBar({
-  t,
   active,
   onSelect,
   iconOverrides,
   iconColors,
-  onOptions,
 }) {
-  // "tags" wird nicht mehr als Lesezeichen geführt; "details" liegt als
-  // Info-Button rechts in der Pillen-Zeile des Headers.
-  const items = BOOKMARKS.filter((bm) => bm.id !== "tags" && bm.id !== "details");
+  // "tags" wird nicht mehr als Lesezeichen geführt.
+  const items = BOOKMARKS.filter((bm) => bm.id !== "tags");
 
   return (
     <div className="detail-iconbar">
@@ -35,10 +33,6 @@ export function DetailIconBar({
           </button>
         );
       })}
-
-      <button className="detail-iconbar__btn detail-iconbar__menu" onClick={onOptions} aria-label={t.settingsBtn || "Menü"}>
-        <MoreHorizontal size={18} />
-      </button>
     </div>
   );
 }

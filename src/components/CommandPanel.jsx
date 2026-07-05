@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar } from "lucide-react";
+import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, MoreHorizontal } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 
@@ -24,6 +24,7 @@ export function CommandPanel({
   voiceOverlayOpen,
   onOpenAppSwitcher,
   onBack,
+  onOpenPageMenu,
 }) {
   const [subTab, setSubTab] = useState("today");
   const touchStartX = useRef(0);
@@ -145,8 +146,21 @@ export function CommandPanel({
             </div>
           </div>
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
-            {/* Einstellungen oben rechts – geschlossen UND geöffnet sichtbar */}
-            {!headerPage && (
+            {/* Einstellungen oben rechts – geschlossen UND geöffnet sichtbar.
+                Auf Detailseiten stattdessen das Drei-Punkte-Menü der Seite
+                (öffnet deren Options-Sheet von unten). */}
+            {headerPage ? (
+              <button
+                className="command-panel__bell command-panel__filter-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenPageMenu?.();
+                }}
+                aria-label={t.settingsBtn || "Menü"}
+              >
+                <MoreHorizontal size={22} />
+              </button>
+            ) : (
               <button
                 className="command-panel__bell command-panel__filter-btn"
                 onClick={(e) => {

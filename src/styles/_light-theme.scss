@@ -1483,6 +1483,22 @@
   .details-popup__value {
     color: #1a1a24;
   }
+}
+
+// Details-Zeilen (gelten auch INLINE im Canvas des "Details"-Lesezeichens,
+// wo kein .details-popup-Wrapper existiert – daher nicht darunter nesten)
+.app.light-theme {
+  .details-popup__row:not(:last-child) {
+    border-bottom-color: #ececf4;
+  }
+
+  .details-popup__label {
+    color: #8e8eb2;
+  }
+
+  .details-popup__value {
+    color: #1a1a24;
+  }
 
   // Kollaboratoren-Zeile: weißer Avatar-Rand + dunkles Icon auf hellem Grund
   .details-popup__avatar {

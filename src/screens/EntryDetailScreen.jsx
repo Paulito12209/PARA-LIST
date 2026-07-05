@@ -6,7 +6,7 @@ import { LinkSheet } from "../components/LinkSheet";
 import { TagSheet } from "../components/PillSheets";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
-import { DetailsPopup } from "../components/DetailsPopup";
+import { DetailsBody } from "../components/DetailsPopup";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
@@ -31,10 +31,10 @@ export function EntryDetailScreen({
   onAddLinkedEntry, onAddSubtask,
   onUnlinkEntry,
   tags, onUpdateTag, onDeleteTag,
+  menuTick = 0,
 }) {
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
-  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
   const [collabOpen, setCollabOpen] = useState(false);
   const collaborators = entry.collaborators || [];
   const [showDate, setShowDate] = useState(false);
@@ -105,9 +105,15 @@ export function EntryDetailScreen({
     setBm(id);
   }, []);
 
-  const openSettingsSheet = useCallback(() => {
+  // Drei-Punkte-Menü oben rechts im Command-Panel-Header: jeder Klick erhöht
+  // `menuTick` in App → Sheet öffnen. Render-Phase-Update mit Vergleichs-
+  // State, damit der beim Mount vorhandene Zählerstand das Sheet nicht
+  // sofort aufreißt (Pattern "adjusting state when props change").
+  const [prevMenuTick, setPrevMenuTick] = useState(menuTick);
+  if (menuTick !== prevMenuTick) {
+    setPrevMenuTick(menuTick);
     setShowSettingsSheet(true);
-  }, []);
+  }
 
   const closeSettingsSheet = useCallback(() => {
     setShowSettingsSheet(false);
@@ -360,16 +366,6 @@ export function EntryDetailScreen({
             </button>
           )}
           </div>
-
-          {/* Details ("i"): öffnet das Metadaten-Popup */}
-          <button
-            className="cat-detail__details-btn"
-            style={{ marginLeft: "auto" }}
-            onClick={(e) => { e.stopPropagation(); setShowDetailsPopup(true); }}
-            aria-label={t.detailsBm || "Details"}
-          >
-            <Info size={16} />
-          </button>
         </div>
 
         {/* Date/Time Popup */}
@@ -402,12 +398,10 @@ export function EntryDetailScreen({
         {/* Schmale Lesezeichen-Leiste: Teil des 160px-Headers – transparent,
             damit dessen Farbverlauf durchscheint. */}
         <DetailIconBar
-          t={t}
           active={bm}
           onSelect={handleBmSelect}
           iconOverrides={iconOverrides}
           iconColors={iconColors}
-          onOptions={openSettingsSheet}
         />
       </div>
 
@@ -659,6 +653,18 @@ export function EntryDetailScreen({
             })()}
           </div>
         )}
+
+        {/* Details-Lesezeichen: Metadaten + Kollaboratoren inline im Canvas
+            (ersetzt das frühere Popup am Info-Button) */}
+        {bm === "details" && (
+          <DetailsBody
+            t={t}
+            item={entry}
+            user={user}
+            collaborators={collaborators}
+            onAddCollaborator={() => setCollabOpen(true)}
+          />
+        )}
       </div>
 
       {/* Settings Bottom Sheet */}
@@ -763,18 +769,6 @@ export function EntryDetailScreen({
             </div>
           </div>
         </div>
-      )}
-
-      {/* Metadaten-Popup (Info-Button in der Pillen-Zeile) */}
-      {showDetailsPopup && (
-        <DetailsPopup
-          t={t}
-          item={entry}
-          user={user}
-          collaborators={collaborators}
-          onAddCollaborator={() => { setShowDetailsPopup(false); setCollabOpen(true); }}
-          onClose={() => setShowDetailsPopup(false)}
-        />
       )}
 
       {/* Verknüpfungs-Sheet (ersetzt das frühere Popup an der Pille) */}

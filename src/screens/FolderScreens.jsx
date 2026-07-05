@@ -4,7 +4,7 @@ import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
-import { DetailsPopup } from "../components/DetailsPopup";
+import { DetailsBody } from "../components/DetailsPopup";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
@@ -132,6 +132,7 @@ export function CatDetailScreen({
   flashcardLang,
   flashcardCards,
   onOpenFlashcards,
+  menuTick = 0,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -141,7 +142,6 @@ export function CatDetailScreen({
   const [showDate, setShowDate] = useState(false);
   const [showConnSelect, setShowConnSelect] = useState(false);
   const [showTagSelect, setShowTagSelect] = useState(false);
-  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
   const [coverMode, setCoverMode] = useState(null);
   const [showFcInfo, setShowFcInfo] = useState(false);
@@ -211,9 +211,15 @@ export function CatDetailScreen({
     setBm(id);
   }, []);
 
-  const openSettingsSheet = useCallback(() => {
+  // Drei-Punkte-Menü oben rechts im Command-Panel-Header: jeder Klick erhöht
+  // `menuTick` in App → Sheet öffnen. Render-Phase-Update mit Vergleichs-
+  // State, damit der beim Mount vorhandene Zählerstand das Sheet nicht
+  // sofort aufreißt (Pattern "adjusting state when props change").
+  const [prevMenuTick, setPrevMenuTick] = useState(menuTick);
+  if (menuTick !== prevMenuTick) {
+    setPrevMenuTick(menuTick);
     setShowSettingsSheet(true);
-  }, []);
+  }
 
   const closeSettingsSheet = useCallback(() => {
     setShowSettingsSheet(false);
@@ -420,15 +426,6 @@ export function CatDetailScreen({
           </div>
 
           <div className="cat-detail__archive-placeholder" style={{ flex: 1 }} />
-
-          {/* Details ("i"): öffnet das Metadaten-Popup */}
-          <button
-            className="cat-detail__details-btn"
-            onClick={(e) => { e.stopPropagation(); setShowDetailsPopup(true); }}
-            aria-label={t.detailsBm || "Details"}
-          >
-            <Info size={16} />
-          </button>
         </div>
         {showDate && (
           <input
@@ -447,12 +444,10 @@ export function CatDetailScreen({
         {/* Schmale Lesezeichen-Leiste: Teil des 160px-Headers – transparent,
             damit dessen Farbverlauf durchscheint. */}
         <DetailIconBar
-          t={t}
           active={bm}
           onSelect={handleBmSelect}
           iconOverrides={{ canvas: CatIcon }}
           iconColors={{ canvas: cfg.color }}
-          onOptions={openSettingsSheet}
         />
       </div>
 
@@ -739,6 +734,18 @@ export function CatDetailScreen({
             })()}
           </div>
         )}
+
+        {/* Details-Lesezeichen: Metadaten + Kollaboratoren inline im Canvas
+            (ersetzt das frühere Popup am Info-Button) */}
+        {bm === "details" && (
+          <DetailsBody
+            t={t}
+            item={cat}
+            user={user}
+            collaborators={collaborators}
+            onAddCollaborator={() => setCollabOpen(true)}
+          />
+        )}
       </div>
 
       {/* Hidden file inputs for cover upload */}
@@ -775,18 +782,6 @@ export function CatDetailScreen({
           onUpdateCat={(_id, patch) => onUpdate(patch)}
           onClose={() => setCollabOpen(false)}
           initialView={collaborators.length === 0 ? "add" : "list"}
-        />
-      )}
-
-      {/* Metadaten-Popup (Info-Button in der Pillen-Zeile) */}
-      {showDetailsPopup && (
-        <DetailsPopup
-          t={t}
-          item={cat}
-          user={user}
-          collaborators={collaborators}
-          onAddCollaborator={() => { setShowDetailsPopup(false); setCollabOpen(true); }}
-          onClose={() => setShowDetailsPopup(false)}
         />
       )}
 

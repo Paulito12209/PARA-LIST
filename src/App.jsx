@@ -320,6 +320,9 @@ export default function App() {
   const [appSwitcherOpen, setAppSwitcherOpen] = useState(false);
   // null = geschlossen; sonst { initialText, toLang } für das Übersetzer-Overlay.
   const [translateConfig, setTranslateConfig] = useState(null);
+  // Drei-Punkte-Menü oben rechts auf Detailseiten: jeder Klick erhöht den
+  // Zähler; die aktive Detailseite reagiert darauf und öffnet ihr Options-Sheet.
+  const [pageMenuTick, setPageMenuTick] = useState(0);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
   // Header-Titel des Archivs: null → Dashboard ("Startseite"); in einer aufgeklappten
@@ -1073,6 +1076,7 @@ export default function App() {
             : null
         }
         page={headerPage}
+        onOpenPageMenu={() => setPageMenuTick((n) => n + 1)}
         app={activeApp}
         lang={lang}
         setLang={(l) => setState((s) => ({ ...s, lang: l }))}
@@ -1308,6 +1312,7 @@ export default function App() {
               onAddWord={(text) =>
                 setTranslateConfig({ initialText: text || "", toLang: fcDeck?.languagePair?.[0] || "Spanisch" })
               }
+              menuTick={pageMenuTick}
             />
           );
         })()}
@@ -1348,6 +1353,7 @@ export default function App() {
               onCreateTag={createGlobalTag}
               onUpdateTag={updateGlobalTag}
               onDeleteTag={deleteGlobalTag}
+              menuTick={pageMenuTick}
             />
           );
         })()}

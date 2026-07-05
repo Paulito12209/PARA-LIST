@@ -1229,7 +1229,8 @@
 
   &__meta {
     font-size: 11px;
-    color: $color-muted;
+    // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
+    color: #8a8a96;
     margin-top: $spacing-2xs;
     overflow: hidden;
     white-space: nowrap;

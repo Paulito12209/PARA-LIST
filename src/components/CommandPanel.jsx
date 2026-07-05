@@ -4,9 +4,33 @@ import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 import { SearchPanel } from "./SearchPanel";
 import { useIsDesktop } from "../hooks/useMediaQuery";
+import { useSpeechRecognition } from "../hooks/useSpeechRecognition";
 
 const SWIPE_THRESHOLD_PX = 60;
 const HAPTIC_TAP_MS = 10;
+
+// Audio-Wellen-Icon (identisch zum Dock-Voice-Button) für die Spracheingabe
+// in der Suchleiste.
+function AudioWaveIcon({ size = 18 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <line x1="3" y1="8" x2="3" y2="16" />
+      <line x1="7.5" y1="4" x2="7.5" y2="20" />
+      <line x1="12" y1="9" x2="12" y2="15" />
+      <line x1="16.5" y1="6" x2="16.5" y2="18" />
+      <line x1="21" y1="7" x2="21" y2="17" />
+    </svg>
+  );
+}
 
 export function CommandPanel({
   title,
@@ -48,6 +72,9 @@ export function CommandPanel({
   const [sort, setSort] = useState({ by: "date", desc: true });
   const [searchQuery, setSearchQuery] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
+  // Spracheingabe für die Suche: One-Shot-Transkription direkt ins Suchfeld.
+  const { isListening: isSearchListening, start: startSearchVoice } =
+    useSpeechRecognition(lang, (text) => setSearchQuery(text));
   const isDesktop = useIsDesktop();
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -502,51 +529,11 @@ export function CommandPanel({
               <X size={18} />
             </button>
 
-            {/* Sprache (rund) – nur aktive Flagge, Popup mit allen Sprachen */}
-            <div className="command-panel__footer-select">
-              {langMenuOpen && (
-                <div className="command-panel__glass-menu command-panel__glass-menu--lang">
-                  {[
-                    { id: "de", label: "Deutsch", flag: "🇩🇪" },
-                    { id: "en", label: "English", flag: "🇬🇧" },
-                    { id: "es", label: "Español", flag: "🇪🇸" },
-                  ].map((l) => (
-                    <button
-                      key={l.id}
-                      className={`command-panel__menu-option ${
-                        lang === l.id ? "command-panel__menu-option--active" : ""
-                      }`}
-                      onClick={() => {
-                        setLang(l.id);
-                        setLangMenuOpen(false);
-                      }}
-                    >
-                      <span className="command-panel__menu-label">
-                        <span className="command-panel__menu-flag">{l.flag}</span>
-                        {l.label}
-                      </span>
-                      {lang === l.id && <Check size={14} strokeWidth={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button
-                className="command-panel__qs-round-btn"
-                onClick={() => {
-                  setLangMenuOpen((o) => !o);
-                  setThemeMenuOpen(false);
-                  setViewMenuOpen(false);
-                }}
-                aria-label={lang === "en" ? "Language" : "Sprache"}
-                aria-expanded={langMenuOpen}
-              >
-                <span className="command-panel__qs-flag">
-                  {lang === "de" ? "🇩🇪" : lang === "en" ? "🇬🇧" : "🇪🇸"}
-                </span>
-              </button>
-            </div>
+            {/* Sprache & Theme sind aus dem Footer entfernt – beides wird jetzt
+                ausschließlich über das Settings-Icon oben rechts eingestellt. */}
 
-            {/* Ansicht Heute/Überfällig (wenn normal) ODER Suchen-Input (wenn Suche offen) */}
+            {/* Ansicht Heute/Überfällig (wenn normal) ODER verlängerte Such-Leiste
+                mit Audio-Button für die Spracheingabe (wenn Suche offen) */}
             {searchOpen ? (
               <div className="command-panel__search-input-wrap">
                 <input
@@ -566,6 +553,21 @@ export function CommandPanel({
                   readOnly={!isDesktop && inputFocused}
                   tabIndex={!isDesktop && inputFocused ? -1 : undefined}
                 />
+                {/* Audio-Button rechts in der Suchleiste: Spracheingabe */}
+                <button
+                  type="button"
+                  className={`command-panel__search-voice-btn${
+                    isSearchListening ? " command-panel__search-voice-btn--active" : ""
+                  }`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startSearchVoice();
+                  }}
+                  aria-label={t.voiceInput || "Spracheingabe"}
+                >
+                  <AudioWaveIcon size={18} />
+                </button>
               </div>
             ) : (
               <div className="command-panel__view-select">
@@ -619,21 +621,6 @@ export function CommandPanel({
                 </button>
               </div>
             )}
-
-             {/* Theme (rund) – toggelt direkt zwischen Light- und Dark-Mode */}
-             <div className="command-panel__footer-select">
-               <button
-                 className="command-panel__qs-round-btn"
-                 onClick={() => {
-                   setTheme(theme === "dark" ? "light" : "dark");
-                   setLangMenuOpen(false);
-                   setViewMenuOpen(false);
-                 }}
-                 aria-label={theme === "dark" ? "Dark Mode" : "Light Mode"}
-               >
-                 {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
-               </button>
-             </div>
 
             {/* Suche / Backlog Umschalter */}
             {searchOpen ? (

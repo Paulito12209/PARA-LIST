@@ -786,7 +786,7 @@
   }
 
   &__section-empty {
-    color: $color-muted;
+    color: #8a8a96;
     font-size: 13px;
     text-align: center;
     padding: $spacing-xl 0;
@@ -1044,7 +1044,8 @@
 .cat-detail__task-count {
   font-size: 12px;
   font-weight: 600;
-  color: $color-muted;
+  // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
+  color: #8a8a96;
 
   &--done {
     color: #10B981;
@@ -1191,6 +1192,8 @@
   border-radius: 20px;
   background: rgba($color-card, 0.6);
   @include glass-border;
+  // Drop-Shadow wie die Backlog-/Such-Pillen und der Home-Button.
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(14px) saturate(140%);
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   color: $color-muted;

@@ -55,7 +55,8 @@
   }
 
   &--open {
-    background: $color-hover;
+    // Dark-Mode-Haupthintergrund wie die Startseite.
+    background: #16161F;
     border-bottom: none;
     border-radius: 0;
     overflow: hidden;
@@ -190,14 +191,9 @@
     @include floating-btn(56px, 50%);
     position: relative;
     @include glass-border;
-    // Opaker Körper (Android-Fallback), iOS bekommt die Glas-Variante.
-    background: $color-dim;
+    // Hintergrund/Rand kommen von __bell (gewinnt per Quelltext-Reihenfolge).
     transition: all $transition-fast;
     color: $color-text;
-
-    @supports (-webkit-touch-callout: none) {
-      background: rgba($color-dim, 0.6);
-    }
   }
 
   &__greeting {
@@ -255,12 +251,15 @@
     @include floating-btn(48px, 50%);
     position: relative;
     @include glass-border;
-    // Opaker Körper (Android-Fallback), iOS bekommt die Glas-Variante.
-    background: $color-dim;
+    // Dunkler Pillen-Körper wie die Footer-Buttons (Audio-Button-Stil) inkl.
+    // Drop-Shadow. Im Light-Mode überschreibt das Theme Fläche + Schatten.
+    background: #23232f;
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     transition: all $transition-fast;
 
     @supports (-webkit-touch-callout: none) {
-      background: rgba($color-dim, 0.6);
+      background: #23232f;
     }
   }
 
@@ -298,7 +297,8 @@
   &__count {
     font-size: 12px;
     font-weight: 600;
-    color: $color-muted;
+    // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
+    color: #8a8a96;
 
     &--overdue {
       color: $color-notif-red;
@@ -325,7 +325,8 @@
     border-radius: 50%;
     border: 1px solid transparent;
     background: transparent;
-    color: $color-muted;
+    // Neutraler Grauton (wie „Heute") statt violettem $color-muted.
+    color: #8a8a96;
     cursor: pointer;
     transition: color $transition-fast;
 
@@ -460,32 +461,70 @@
     display: flex;
   }
 
+  // Verlängerte Such-Leiste = Pill-Container mit Eingabefeld + Audio-Button.
   &__search-input-wrap {
     flex: 1;
     min-width: 0;
     display: flex;
+    align-items: center;
+    gap: 2px;
+    height: 40px;
+    padding: 0 6px 0 $spacing-md;
+    border-radius: 20px;
+    // Deckende Fläche wie der Audio-Button (statt violettem $color-dim).
+    background: #23232f;
+    @include glass-border;
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
   }
 
   &__search-input {
     flex: 1;
     min-width: 0;
-    height: 40px;
-    padding: 0 $spacing-md;
-    border-radius: 20px;
-    // Deckende Fläche (kein durchscheinender Hintergrund): die Einträge
-    // dürfen nicht durchschimmern – auch nicht während des Einblendens.
-    background: $color-dim;
-    @include glass-border;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
     color: $color-text;
     font-size: 14px;
     font-weight: 500;
     font-family: $font-body;
     outline: none;
-    transition: all $transition-fast;
 
     &::placeholder {
       // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
       color: #8a8a96;
+    }
+
+    &::-webkit-search-cancel-button {
+      display: none;
+    }
+  }
+
+  // Audio-Button rechts in der Suchleiste (Spracheingabe).
+  &__search-voice-btn {
+    flex: none;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: #8a8a96;
+    cursor: pointer;
+    transition: color $transition-fast;
+
+    &:hover {
+      color: $color-text;
+    }
+
+    // Aktiv (hört zu): in der Aufgaben-/Akzentfarbe.
+    &--active {
+      color: var(--color-task, #0B8CE9);
     }
   }
 
@@ -499,11 +538,11 @@
     height: 40px;
     padding: 0 $spacing-md;
     border-radius: 20px;
-    // Gleiche Fläche wie Schließen/Suche/Sprache/Theme (homogener Footer)
-    background: rgba($color-dim, 0.6);
+    // Gleiche Fläche wie der Audio-Button (homogener Footer)
+    background: #23232f;
     @include glass-border;
-    backdrop-filter: blur(14px) saturate(140%);
-    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     color: $color-muted;
     font-size: 13px;
     font-weight: 600;
@@ -512,6 +551,7 @@
     transition: all $transition-fast;
 
     &:hover {
+      background: #2c2c3a;
       color: $color-text;
     }
   }
@@ -619,7 +659,7 @@
 
   // Leer-Platzhalter: vertikal im Zentrum der Liste
   &__drawer-empty {
-    color: $color-muted;
+    color: #8a8a96;
     font-size: 13px;
     text-align: center;
     margin: auto;
@@ -669,8 +709,10 @@
     @include floating-btn(40px, 50%);
     position: relative;
     @include glass-border;
-    // Gleiche Fläche wie Schließen/Suche (homogener Footer) – deckend.
-    background: $color-dim;
+    // Gleiche Fläche wie der Audio-Button – deckend.
+    background: #23232f;
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     color: $color-text;
     cursor: pointer;
     flex-shrink: 0;
@@ -678,7 +720,7 @@
     padding: 0;
 
     &:hover {
-      background: $color-hover;
+      background: #2c2c3a;
     }
   }
   &__qs-flag {
@@ -692,7 +734,9 @@
     width: 48px;
     position: relative;
     @include glass-border;
-    background: $color-dim;
+    background: #23232f;
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     color: $color-text;
     cursor: pointer;
     flex-shrink: 0;
@@ -700,7 +744,7 @@
     padding: 0;
 
     &:hover {
-      background: $color-hover;
+      background: #2c2c3a;
       color: $color-text;
     }
   }
@@ -711,7 +755,9 @@
     width: 48px;
     position: relative;
     @include glass-border;
-    background: $color-dim;
+    background: #23232f;
+    border-color: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     color: $color-text;
     cursor: pointer;
     flex-shrink: 0;
@@ -719,7 +765,7 @@
     padding: 0;
 
     &:hover {
-      background: $color-hover;
+      background: #2c2c3a;
     }
   }
 

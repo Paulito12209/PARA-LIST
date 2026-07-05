@@ -507,7 +507,9 @@ export function EntryDetailScreen({
 
             {taskSubTab === "open" && (
               openTasks.length === 0 ? (
-                <div className="cat-detail__section-empty">{t.noTasks}</div>
+                <div className="cat-detail__section-empty">
+                  {entry.type === "task" ? (t.noSubtasks || t.noTasks) : t.noTasks}
+                </div>
               ) : (
                 <TaskList t={t} CC={CC} lang={lang}
                   entries={openTasks}
@@ -866,7 +868,26 @@ export function EntryDetailScreen({
         />
       )}
 
-      <DetailDock t={t} onHome={onHome} />
+      <DetailDock
+        t={t}
+        onHome={onHome}
+        action={
+          bm === "tasks"
+            ? {
+                Icon: Plus,
+                color: getFabColor(),
+                label:
+                  entry.type === "task"
+                    ? (t.subtasks || t.task)
+                    : t.addPlaceholder(t.task),
+                onClick: () =>
+                  entry.type === "task"
+                    ? onAddSubtask?.()
+                    : onAddLinkedEntry?.("task"),
+              }
+            : null
+        }
+      />
     </div>
   );
 }

@@ -71,7 +71,8 @@
     font-weight: 600;
     color: #8a8a96;
     padding: $spacing-xs $spacing-2xs $spacing-sm;
-    background: $color-hover;
+    // Opaker Sticky-Hintergrund = Panel-Hintergrund (Dark-Mode wie Startseite).
+    background: #16161F;
   }
 
   &__item {
@@ -137,7 +138,7 @@
     gap: $spacing-sm;
     padding: $spacing-sm $spacing-md;
     padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom, 0px));
-    background: $color-hover;
+    background: #16161F;
     border-top: 1px solid rgba($color-border, 0.5);
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
     animation: action-sheet-fade-in 0.15s ease-out;
@@ -152,7 +153,7 @@
     flex-shrink: 0;
     border-radius: 50%;
     border: 1px solid $color-border;
-    background: $color-dim;
+    background: #23232f;
     color: $color-text;
     cursor: pointer;
     padding: 0;
@@ -171,7 +172,7 @@
     align-items: center;
     padding: 0 $spacing-md;
     border-radius: $radius-pill;
-    background: $color-dim;
+    background: #23232f;
     border: 1px solid $color-border;
   }
 
@@ -203,7 +204,7 @@
     flex-shrink: 0;
     border-radius: 50%;
     border: 1px solid $color-border;
-    background: $color-dim;
+    background: #23232f;
     color: $color-text;
     cursor: pointer;
     padding: 0;

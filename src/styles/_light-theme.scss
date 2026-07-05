@@ -177,14 +177,27 @@
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
     }
 
-    &__search-input {
+    &__search-input-wrap {
       background: #ffffff;
       border-color: #e5e5f0;
-      color: #1a1a24;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+    }
+
+    &__search-input {
+      background: transparent;
+      color: #1a1a24;
+      box-shadow: none;
 
       &::placeholder {
         color: #8e8eb2;
+      }
+    }
+
+    &__search-voice-btn {
+      color: #8e8eb2;
+
+      &.command-panel__search-voice-btn--active {
+        color: #0B8CE9;
       }
     }
 
@@ -213,6 +226,9 @@
       background: #f7f7f9;
       border-color: #e5e5f0;
       color: #1a1a24;
+      // Light-Mode: nur dunkles Icon, kein Drop-Shadow (überschreibt den
+      // dunklen Schatten aus der Basis).
+      box-shadow: none;
     }
 
     // Logo-Icon links: gleiche Border wie das Settings-Icon im Light Mode
@@ -869,9 +885,10 @@
   }
 
   .cat-detail__view-pill {
-    background: rgba(255, 255, 255, 0.75);
+    background: #ffffff;
     border-color: #e5e5f0;
     color: #8e8eb2;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
   }
 
   .cat-detail__view-pill-label {

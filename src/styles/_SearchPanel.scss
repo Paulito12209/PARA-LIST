@@ -4,9 +4,16 @@
 @use './variables' as *;
 
 .search-panel {
-  &__meta-row {
-    // Gleiche Zeile: links Gruppenlabel, rechts Filter
-    align-items: center;
+  // Bezugsrahmen für den schwebenden Filter-Button.
+  position: relative;
+
+  // Filter-Icon schwebt oben rechts, vertikal zentriert auf dem ersten
+  // (Sticky-)Abschnittstitel. Bleibt fix, während die Liste darunter scrollt.
+  &__filter-float {
+    position: absolute;
+    top: -4px;
+    right: 0;
+    z-index: 20;
   }
 
   &__meta-label {
@@ -17,9 +24,13 @@
     border: none;
     background: transparent;
     padding: 0;
-    cursor: pointer;
     text-align: left;
     font-family: $font-body;
+  }
+
+  // Trefferzahl beim Suchen (erste Zeile der Liste).
+  &__count {
+    padding: $spacing-xs $spacing-2xs $spacing-sm;
   }
 
   &__list {
@@ -50,10 +61,16 @@
   }
 
   &__group-label {
+    // Native Sticky-Header: rastet flüssig an der Listenoberkante ein,
+    // Einträge scrollen sauber darunter durch (opaker Hintergrund).
+    position: sticky;
+    top: 0;
+    z-index: 5;
     font-size: 12px;
     font-weight: 600;
     color: $color-muted;
     padding: $spacing-xs $spacing-2xs $spacing-sm;
+    background: $color-hover;
   }
 
   &__item {
@@ -206,6 +223,12 @@
     &__meta-label,
     &__group-label {
       color: #8e8eb2;
+    }
+
+    // Opaker Hintergrund der Sticky-Titel = heller Panel-Hintergrund,
+    // damit Einträge sauber darunter durchscrollen.
+    &__group-label {
+      background: #f0f0f5;
     }
 
     &__item {

@@ -242,44 +242,18 @@ export function SearchPanel({
     return Array.from(map.entries());
   }, [filtered, t]);
 
-  const [activeLabel, setActiveLabel] = useState("");
-  const firstGroup = groups[0];
   const filterActive = typeFilter !== "all";
 
-  // Initiales Gruppen-Label setzen, sobald Daten geladen sind
-  useEffect(() => {
-    if (firstGroup) {
-      setActiveLabel(firstGroup[0]);
-    }
-  }, [firstGroup]);
-
-  const metaLeftLabel = query.trim()
-    ? filtered.length > 0
-      ? t.entriesCount(filtered.length)
-      : ""
-    : activeLabel;
+  // Beim Suchen zeigt die Meta-Zeile die Trefferzahl. Ohne Suchanfrage bleibt
+  // sie leer – die Abschnittstitel (Heute/Gestern/…) werden als native
+  // Sticky-Labels in der Liste selbst gerendert (kein JS-Scroll-Tracking mehr).
+  const metaLeftLabel =
+    query.trim() && filtered.length > 0 ? t.entriesCount(filtered.length) : "";
 
   const handleSelect = (item) => {
     setFilterMenuOpen(false);
     if (item.kind === "cat") onOpenCat?.({ id: item.id });
     else onOpenEntry?.({ id: item.id });
-  };
-
-  // Erkennt beim Scrollen, welche Gruppe oben im Sichtfeld liegt
-  const handleScroll = (e) => {
-    const container = e.currentTarget;
-    const groupElements = container.querySelectorAll(".search-panel__group");
-    const containerRect = container.getBoundingClientRect();
-    let currentLabel = firstGroup?.[0] || "";
-
-    for (const group of groupElements) {
-      const rect = group.getBoundingClientRect();
-      // Wenn die Gruppe die Oberkante des Containers erreicht oder überschritten hat (mit 12px Toleranz)
-      if (rect.top - containerRect.top <= 12) {
-        currentLabel = group.getAttribute("data-label");
-      }
-    }
-    setActiveLabel(currentLabel);
   };
 
   return (
@@ -289,64 +263,57 @@ export function SearchPanel({
       )}
 
       <div className="command-panel__drawer search-panel" style={{ touchAction: "pan-y" }}>
-        {/* Heute links · Filter rechts – eine Zeile */}
-        <div className="command-panel__meta-row search-panel__meta-row">
-          <span className="search-panel__meta-label">
-            {metaLeftLabel}
-          </span>
-          <div className="command-panel__meta-action-wrap">
-            <button
-              type="button"
-              className={`command-panel__list-filter-btn${
-                filterActive ? " command-panel__list-filter-btn--active" : ""
-              }`}
-              onClick={() => setFilterMenuOpen((o) => !o)}
-              aria-label={t.filterLabel}
-              aria-expanded={filterMenuOpen}
-            >
-              <Filter size={16} strokeWidth={2.2} />
-            </button>
-            {filterMenuOpen && (
-              <div className="command-panel__glass-menu command-panel__glass-menu--filter">
-                {filterOptions.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    className={`command-panel__menu-option${
-                      typeFilter === f.id ? " command-panel__menu-option--active" : ""
-                    }`}
-                    onClick={() => {
-                      setTypeFilter(f.id);
-                      setFilterMenuOpen(false);
-                    }}
-                  >
-                    <span>{f.label}</span>
-                    {typeFilter === f.id && <Check size={14} strokeWidth={2.4} />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Filter-Button – schwebt oben rechts, auf Höhe des ersten
+            Abschnittstitels (der als Sticky-Label in der Liste sitzt). */}
+        <div className="command-panel__meta-action-wrap search-panel__filter-float">
+          <button
+            type="button"
+            className={`command-panel__list-filter-btn${
+              filterActive ? " command-panel__list-filter-btn--active" : ""
+            }`}
+            onClick={() => setFilterMenuOpen((o) => !o)}
+            aria-label={t.filterLabel}
+            aria-expanded={filterMenuOpen}
+          >
+            <Filter size={16} strokeWidth={2.2} />
+          </button>
+          {filterMenuOpen && (
+            <div className="command-panel__glass-menu command-panel__glass-menu--filter">
+              {filterOptions.map((f) => (
+                <button
+                  key={f.id}
+                  type="button"
+                  className={`command-panel__menu-option${
+                    typeFilter === f.id ? " command-panel__menu-option--active" : ""
+                  }`}
+                  onClick={() => {
+                    setTypeFilter(f.id);
+                    setFilterMenuOpen(false);
+                  }}
+                >
+                  <span>{f.label}</span>
+                  {typeFilter === f.id && <Check size={14} strokeWidth={2.4} />}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div
-          className="command-panel__list search-panel__list search-panel__list--kb-open"
-          onScroll={handleScroll}
-        >
+        <div className="command-panel__list search-panel__list search-panel__list--kb-open">
           {filtered.length === 0 && (
             <div className="search-panel__empty">{t.searchNoResults || "Keine Ergebnisse"}</div>
           )}
 
-          {/* Alle Gruppen werden einheitlich gerendert für die Scroll-Positions-Erfassung */}
+          {/* Beim Suchen: Trefferzahl als erste Zeile (links, wie zuvor). */}
+          {metaLeftLabel && (
+            <div className="search-panel__meta-label search-panel__count">{metaLeftLabel}</div>
+          )}
+
+          {/* Native Sticky-Abschnittstitel: rasten flüssig oben ein, ohne
+              JS-Layout-Toggles (kein Springen zwischen den Gruppen). */}
           {groups.map(([label, items]) => (
-            <div key={label} className="search-panel__group" data-label={label}>
-              {/* Wenn die Gruppe oben als Sticky-Header einrastet, blenden wir das Label in der Liste komplett aus (um Doppelungen und Leerraum zu vermeiden) */}
-              <div
-                className="search-panel__group-label"
-                style={{ display: activeLabel === label ? "none" : "block" }}
-              >
-                {label}
-              </div>
+            <div key={label} className="search-panel__group">
+              <div className="search-panel__group-label">{label}</div>
               {items.map((item) => (
                 <SearchResultItem
                   key={`${item.kind}-${item.id}`}

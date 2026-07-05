@@ -927,7 +927,10 @@
 
 .home__list-container--expanded {
   position: fixed;
-  top: var(--command-panel-peek, 80px);
+  // Bis ganz oben – liegt UNTER dem Command-Panel-Header (z-index: 100).
+  // Die Hintergrundfarbe des Containers scheint automatisch durch den
+  // transparenten Header, sodass keine Farbanimation im Header nötig ist.
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
@@ -935,9 +938,8 @@
   margin: 0 auto;
   z-index: 10;
   background: #16161F;
-  padding: 8px 0 0;
-  // Dauer und Easing synchron mit headerSolidFill, damit Liste und Header
-  // gleichzeitig ankommen und kein Cover-Durchblitzer entsteht.
+  // Oben genug Platz für den Header + 8px Abstand zum Listeninhalt
+  padding: calc(var(--command-panel-peek, 80px) + 8px) 0 0;
   animation: listExpand 0.34s cubic-bezier(0.22, 1, 0.36, 1);
   // Loslassen nach einem Pull-down → sanftes Zurückschnappen des Versatzes.
   transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, MoreHorizontal } from "lucide-react";
+import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, MoreHorizontal, ChevronsUpDown, Filter } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 
@@ -27,8 +27,18 @@ export function CommandPanel({
   onOpenPageMenu,
 }) {
   const [subTab, setSubTab] = useState("today");
+  // Ansicht-Auswahl (Heute/Überfällig) als Frosted-Glass-Pille über den
+  // Quick-Settings; Typ-Filter (Alle/Aufgaben/Termine) über das Filter-Icon.
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+  const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+  const [typeFilter, setTypeFilter] = useState("all");
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
+
+  const closeMenus = () => {
+    setViewMenuOpen(false);
+    setFilterMenuOpen(false);
+  };
 
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
@@ -69,7 +79,13 @@ export function CommandPanel({
       return dB - dA;
     });
 
-  const activeEntries = subTab === "today" ? todayEntries : overdueEntries;
+  // Typ-Filter auf beide Ansichten anwenden (steuert Liste + Zähler)
+  const byType = (list) =>
+    typeFilter === "all" ? list : list.filter((e) => e.type === typeFilter);
+  const filteredToday = byType(todayEntries);
+  const filteredOverdue = byType(overdueEntries);
+
+  const activeEntries = subTab === "today" ? filteredToday : filteredOverdue;
 
   const isVoiceMode = voiceOverlayOpen && !open;
 
@@ -175,38 +191,61 @@ export function CommandPanel({
         </div>
       </div>
 
+      {/* Unsichtbarer Backdrop: Tap außerhalb schließt Ansicht-/Filter-Menü */}
+      {open && (viewMenuOpen || filterMenuOpen) && (
+        <div className="command-panel__menu-backdrop" onClick={closeMenus} />
+      )}
+
       {open && (
         <div className="command-panel__drawer" style={{ touchAction: "pan-y" }}>
-          <div className="command-panel__tabs">
-            <button
-              className={`command-panel__tab ${
-                subTab === "today" ? "command-panel__tab--active-today" : ""
+          {/* Anzahl links · Typ-Filter rechts (Space-Between) */}
+          <div className="command-panel__meta-row">
+            <span
+              className={`command-panel__count ${
+                subTab === "overdue" ? "command-panel__count--overdue" : ""
               }`}
-              onClick={() => setSubTab("today")}
             >
-              {t.todayTabs}{" "}
-              {todayEntries.length > 0 && (
-                <span className="command-panel__badge command-panel__badge--today">
-                  {todayEntries.length}
-                </span>
-              )}
-            </button>
+              {t.entriesCount(activeEntries.length)}
+            </span>
             <button
-              className={`command-panel__tab ${
-                subTab === "overdue" ? "command-panel__tab--active-overdue" : ""
+              className={`command-panel__list-filter-btn ${
+                typeFilter !== "all" ? "command-panel__list-filter-btn--active" : ""
               }`}
-              onClick={() => setSubTab("overdue")}
+              onClick={() => {
+                setFilterMenuOpen((o) => !o);
+                setViewMenuOpen(false);
+              }}
+              aria-label={t.filterLabel || "Filter"}
             >
-              {t.overdueTabs}{" "}
-              {overdueEntries.length > 0 && (
-                <span className="command-panel__badge command-panel__badge--overdue">
-                  {overdueEntries.length}
-                </span>
-              )}
+              <Filter size={16} strokeWidth={2.2} />
             </button>
+
+            {filterMenuOpen && (
+              <div className="command-panel__glass-menu command-panel__glass-menu--filter">
+                {[
+                  { id: "all", label: t.filterAll },
+                  { id: "task", label: t.tasks },
+                  { id: "calendar", label: t.events },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    className={`command-panel__menu-option ${
+                      typeFilter === f.id ? "command-panel__menu-option--active" : ""
+                    }`}
+                    onClick={() => {
+                      setTypeFilter(f.id);
+                      setFilterMenuOpen(false);
+                    }}
+                  >
+                    <span>{f.label}</span>
+                    {typeFilter === f.id && <Check size={14} strokeWidth={2.4} />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="command-panel__list" key={subTab}>
+          <div className="command-panel__list" key={subTab + typeFilter}>
             {activeEntries.length === 0 ? (
               <div className="command-panel__drawer-empty">
                 {subTab === "today" ? t.emptyToday : t.emptyOverdue}
@@ -270,6 +309,58 @@ export function CommandPanel({
 
       {open && (
         <div className="command-panel__footer">
+          {/* Ansicht-Auswahl (Heute/Überfällig): Frosted-Glass-Pille mit
+              Chevron; öffnet ein Frosted-Glass-Popup mit beiden Optionen. */}
+          <div className="command-panel__view-select" onClick={(e) => e.stopPropagation()}>
+            {viewMenuOpen && (
+              <div className="command-panel__glass-menu command-panel__glass-menu--view">
+                {[
+                  { id: "today", label: t.todayTabs, count: filteredToday.length },
+                  { id: "overdue", label: t.overdueTabs, count: filteredOverdue.length },
+                ].map((v) => (
+                  <button
+                    key={v.id}
+                    className={`command-panel__menu-option ${
+                      subTab === v.id ? "command-panel__menu-option--active" : ""
+                    } ${v.id === "overdue" ? "command-panel__menu-option--overdue" : ""}`}
+                    onClick={() => {
+                      setSubTab(v.id);
+                      setViewMenuOpen(false);
+                    }}
+                  >
+                    <span>{v.label}</span>
+                    {v.count > 0 && (
+                      <span
+                        className={`command-panel__menu-count ${
+                          v.id === "overdue" ? "command-panel__menu-count--overdue" : ""
+                        }`}
+                      >
+                        {v.count}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              className="command-panel__view-pill"
+              onClick={() => {
+                setViewMenuOpen((o) => !o);
+                setFilterMenuOpen(false);
+              }}
+              aria-expanded={viewMenuOpen}
+            >
+              <span
+                className={`command-panel__view-pill-label ${
+                  subTab === "overdue" ? "command-panel__view-pill-label--overdue" : ""
+                }`}
+              >
+                {subTab === "today" ? t.todayTabs : t.overdueTabs}
+              </span>
+              <ChevronsUpDown size={14} strokeWidth={2.2} />
+            </button>
+          </div>
+
           <div className="command-panel__quick-settings" onClick={(e) => e.stopPropagation()}>
             {/* Rundes Schließ-Icon links neben der Sprach-/Theme-Pille */}
             <button
@@ -324,9 +415,6 @@ export function CommandPanel({
             >
               <Search size={18} />
             </button>
-          </div>
-          <div className="command-panel__handle command-panel__handle--open" onClick={onToggle}>
-            <div className="command-panel__handle-bar" />
           </div>
         </div>
       )}

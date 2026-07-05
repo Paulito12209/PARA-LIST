@@ -115,54 +115,78 @@
       text-shadow: none;
     }
 
-    &__drawer {
-      border-top-color: #e5e5f0;
-    }
-
-    &__tabs {
-      background: #ffffff;
-      border-color: #e5e5f0;
-    }
-
-    &__tab {
+    // Meta-Zeile (Anzahl + Filter-Icon) über der Backlog-Liste
+    &__count {
       color: #8e8eb2;
 
-      // Aktiv: Heute = kräftiger dunkler Text, Überfällig = rote Schrift
-      &--active-today,
-      &--active-overdue {
-        background: transparent;
-        border-color: transparent;
-        box-shadow: none;
-      }
-
-      &--active-today {
-        color: #1a1a24;
-      }
-
-      &--active-overdue {
+      &--overdue {
         color: #F26565;
       }
+    }
 
-      &:hover:not(&--active-today):not(&--active-overdue) {
+    &__list-filter-btn {
+      color: #8e8eb2;
+
+      &:hover {
         color: #1a1a24;
         background: #f0f0f5;
       }
+
+      &--active {
+        color: #0B8CE9;
+        background: rgba(11, 140, 233, 0.10);
+        border-color: rgba(11, 140, 233, 0.28);
+      }
     }
 
-    // Zähler-Kreis: neutral grau mit weißer Zahl
-    &__badge {
+    // Frosted-Glass-Popups (Ansicht-Auswahl + Typ-Filter)
+    &__glass-menu {
+      background: rgba(255, 255, 255, 0.85);
+      border-color: #e5e5f0;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+    }
+
+    &__menu-option {
+      color: #8e8eb2;
+
+      &:hover {
+        color: #1a1a24;
+        background: #f0f0f5;
+      }
+
+      &--active {
+        color: #1a1a24;
+        background: #f0f0f5;
+      }
+
+      &--overdue.command-panel__menu-option--active,
+      &--overdue:hover {
+        color: #F26565;
+      }
+    }
+
+    &__menu-count {
       background: #b4b4c6;
       color: #ffffff;
+
+      &--overdue {
+        background: #F26565;
+      }
     }
 
-    // Hinweis: kein doppeltes `&` – das würde den vollen Light-Theme-Selektor
-    // zweimal expandieren und nie matchen.
-    &__tab--active-today .command-panel__badge--today {
-      background: #0B8CE9;
+    // Ansicht-Pille über den Quick-Settings
+    &__view-pill {
+      background: rgba(255, 255, 255, 0.75);
+      border-color: #e5e5f0;
+      color: #8e8eb2;
     }
 
-    &__tab--active-overdue .command-panel__badge--overdue {
-      background: #F26565;
+    &__view-pill-label {
+      color: #1a1a24;
+
+      &--overdue {
+        color: #F26565;
+      }
     }
 
     &__drawer-item {
@@ -200,11 +224,6 @@
           transparent 76%),
         #f7f7f9;
       box-shadow: 0 0 14px rgba(var(--page-accent-rgb), 0.28);
-    }
-
-    &__handle-bar {
-      background: #3a3a6a;
-      opacity: 0.85;
     }
 
     &__bell-dot {

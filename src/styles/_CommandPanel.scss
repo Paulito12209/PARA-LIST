@@ -256,10 +256,9 @@
     border: 2px solid $color-hover;
   }
 
-  // Pull-down drawer content
+  // Pull-down drawer content (keine Trennlinie mehr unter dem Header)
   &__drawer {
     padding: $spacing-sm $spacing-md $spacing-xs;
-    border-top: 1px solid rgba($color-border, 0.9);
     margin-top: $spacing-sm;
     animation: panel-in 0.2s ease;
     flex: 1;
@@ -268,51 +267,180 @@
     min-height: 0;
   }
 
-  &__tabs {
+  // Meta-Zeile über der Liste: Anzahl links · Filter-Icon rechts
+  &__meta-row {
+    position: relative;
     display: flex;
-    gap: $spacing-xs;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: $spacing-sm;
-    background: $color-card;
-    border-radius: 24px;
-    padding: 4px;
-    height: 48px;
-    border: 1px solid $color-border;
+    padding: 0 $spacing-2xs;
   }
 
-  &__tab {
-    flex: 1;
+  &__count {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-muted;
+
+    &--overdue {
+      color: $color-notif-red;
+    }
+  }
+
+  &__list-filter-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    // Mehr Luft zwischen Icon, Text und Zahl
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    background: transparent;
+    color: $color-muted;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $color-text;
+      background: $color-hover;
+    }
+
+    // Typ-Filter aktiv (≠ Alle): Icon in Task-Blau hervorheben
+    &--active {
+      color: $color-task;
+      background: rgba($color-task, 0.12);
+      border-color: rgba($color-task, 0.3);
+    }
+  }
+
+  // Unsichtbarer Backdrop: schließt die Glass-Menüs bei Tap außerhalb.
+  // Liegt über der Liste (z 5), aber unter Footer (z 10) und Menüs (z 30).
+  &__menu-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+  }
+
+  // Frosted-Glass-Popup (Ansicht-Auswahl + Typ-Filter)
+  &__glass-menu {
+    position: absolute;
+    min-width: 180px;
+    padding: 6px;
+    border-radius: 18px;
+    background: rgba($color-card, 0.75);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid $color-border;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 30;
+    animation: fade-in 0.15s ease;
+
+    // Typ-Filter: unter dem Filter-Icon, rechtsbündig
+    &--filter {
+      top: calc(100% + #{$spacing-xs});
+      right: 0;
+    }
+
+    // Ansicht-Auswahl: über der Pille, zentriert
+    &--view {
+      bottom: calc(100% + #{$spacing-sm});
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  &__menu-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     gap: $spacing-sm;
-    height: 100%;
-    border-radius: 20px;
-    // Textgröße ans 16px-Icon angeglichen (optisch gleich hoch)
-    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
     font-weight: 600;
     font-family: $font-body;
     color: $color-muted;
     background: transparent;
-    border: 1px solid transparent;
-    transition: all $transition-fast;
+    border: none;
     cursor: pointer;
+    transition: all $transition-fast;
+    text-align: left;
 
-    // Ohne Icons (weniger visuelles Rauschen): aktiv = kräftiger Text
-    // (Heute neutral, Überfällig rot), inaktiv = grau. Keine Pillen-Füllung.
-    &--active-today {
-      color: $color-text;
-      font-weight: 700;
-    }
-
-    &--active-overdue {
-      color: $color-notif-red;
-      font-weight: 700;
-    }
-
-    &:hover:not(&--active-today):not(&--active-overdue) {
+    &:hover {
       color: $color-text;
       background: $color-hover;
+    }
+
+    &--active {
+      color: $color-text;
+      background: $color-hover;
+    }
+
+    // Überfällig: aktiv (bzw. Hover) in Rot statt Weiß
+    &--overdue.command-panel__menu-option--active,
+    &--overdue:hover {
+      color: $color-notif-red;
+    }
+  }
+
+  &__menu-count {
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: $radius-pill;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    background: rgba($color-muted, 0.55);
+    color: #ffffff;
+
+    &--overdue {
+      background: $color-notif-red;
+    }
+  }
+
+  // Ansicht-Pille (Heute/Überfällig) über den Quick-Settings
+  &__view-select {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-bottom: $spacing-sm;
+  }
+
+  &__view-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    padding: 0 $spacing-md;
+    border-radius: 20px;
+    background: rgba($color-card, 0.6);
+    @include glass-border;
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    color: $color-muted;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: $font-body;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $color-text;
+    }
+  }
+
+  &__view-pill-label {
+    color: $color-text;
+    font-weight: 700;
+
+    &--overdue {
+      color: $color-notif-red;
     }
   }
 
@@ -336,37 +464,15 @@
     }
   }
 
-  // Zähler: weiße Zahl im grauen Kreis; wird der Tab aktiv, färbt sich der
-  // Kreis in der Tab-Akzentfarbe (Heute = Blau, Überfällig = Rot-Orange).
-  &__badge {
-    font-size: 11px;
-    font-weight: 700;
-    min-width: 20px;
-    height: 20px;
-    border-radius: $radius-pill;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 6px;
-    background: rgba($color-muted, 0.55);
-    color: #ffffff;
-    transition: background $transition-fast;
-  }
-
-  &__tab--active-today &__badge--today {
-    background: $color-task;
-  }
-
-  &__tab--active-overdue &__badge--overdue {
-    background: $color-notif-red;
-  }
-
   &__list {
     flex: 1;
     overflow-y: auto;
     padding-bottom: 12px; // Platz für Quick-Settings-Leiste
     animation: fade-in 0.25s ease-out;
     will-change: opacity, transform;
+    // Flex-Spalte, damit der Leer-Platzhalter vertikal zentriert werden kann
+    display: flex;
+    flex-direction: column;
   }
 
   &__drawer-item {
@@ -432,29 +538,13 @@
     }
   }
 
+  // Leer-Platzhalter: vertikal im Zentrum der Liste
   &__drawer-empty {
     color: $color-muted;
     font-size: 13px;
     text-align: center;
-    padding: $spacing-sm + $spacing-2xs 0 $spacing-xs;
-  }
-
-  // Handle bar (geschlossen: im Header; offen: im Footer)
-  &__handle {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-    z-index: 10;
-
-    &--closed {
-      padding: $spacing-xs 0 0;
-    }
-
-    &--open {
-      padding: 6px 0;
-    }
+    margin: auto;
+    padding: $spacing-xs 0;
   }
 
   &__footer {
@@ -464,15 +554,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-
-  &__handle-bar {
-    width: 34px;
-    height: 4px;
-    border-radius: $spacing-2xs;
-    background: rgba($color-text, 0.35);
-    transition: all $transition-normal;
+    // Ohne Handle-Bar: fester Abstand zum unteren Rand
+    padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
   }
 
   // Quick-Settings-Leiste (ersetzt den einzelnen Settings-Button)

@@ -44,27 +44,33 @@
   // Aufgeklappte Startseiten-Liste: Header-Hintergrund wächst über ein
   // Pseudo-Element von unten nach oben. Die Farbe folgt dem jeweiligen Theme
   // (Dark: #16161F, Light: #ffffff via Override).
+  //
+  // Ablauf:
+  // 1. Liste expandiert von unten nach oben (0–0.34s)
+  // 2. Während der ersten ~0.12s bleibt der Header transparent (Blur-Layer
+  //    ::before sichtbar) – die Liste ist noch nicht am Header angekommen
+  // 3. Ab 0.12s wächst ::after per scaleY von unten nach oben und verdeckt
+  //    den Blur-Layer und die dahinterliegende Cover-Farbe
   &--closed#{&}--solid {
-    // Grundfarbe erst nach Animation-Ende (forwards) → Pseudo übernimmt davor
     background: transparent;
 
     &::after {
       content: '';
       position: absolute;
       inset: 0;
+      // Über dem Blur-Layer (::before z:0), unter dem Inhalt (__header z:1)
       z-index: 0;
       background: #16161F;
       transform-origin: bottom center;
-      animation: headerSolidReveal 0.34s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      // Delay: Header-Füllung startet erst, wenn die Liste den Header-Bereich
+      // erreicht hat. fill-mode: both → während des Delays bleibt scaleY(0).
+      animation: headerSolidReveal 0.22s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
       pointer-events: none;
     }
   }
 
-  // Solid-Header: den normalen Blur-Layer ausblenden, damit die Cover-Farbe
-  // nicht durch den Blur-Effekt durchscheint.
-  &--closed#{&}--solid::before {
-    display: none;
-  }
+  // ::before (Blur-Layer) wird NICHT mehr ausgeblendet – er bleibt während der
+  // Delay-Phase sichtbar und wird erst vom ::after verdeckt.
 
   &--open {
     background: $color-hover;

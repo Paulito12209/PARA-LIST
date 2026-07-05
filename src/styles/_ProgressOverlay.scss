@@ -30,8 +30,9 @@
   flex-direction: column;
   background: var(--bg);
   color: var(--text);
-  // Platz für den fixen Header (Logo · Datum/"Fortschritt" · Settings)
-  padding-top: calc(102px + env(safe-area-inset-top, 0px));
+  // Platz für den fixen Header (Logo · Rang/"Fortschritt" · Settings) –
+  // gleiche Höhe wie die übrigen Seiten.
+  padding-top: calc(88px + env(safe-area-inset-top, 0px));
   animation: fade-in 0.2s ease;
 
   &__top {
@@ -41,10 +42,53 @@
     gap: 12px;
   }
 
+  // Trennlinie unter dem XP-/Rang-Block, vor dem Aktivitäts-Pfad.
+  &__divider {
+    height: 1px;
+    margin: 16px $spacing-md 0;
+    background: var(--border);
+  }
+
   &__level-row {
     display: flex;
     align-items: center;
     gap: 8px;
+  }
+
+  // Nächster-Level-Badge: rechtsbündig gegenüber dem aktuellen Level-Badge,
+  // gleiche Größe wie der Level-1-Kreis (40px via Inline-Style).
+  &__next-badge {
+    margin-left: auto;
+  }
+
+  // Path-Header trägt die (zentrierte) Überschrift plus ein Info-Icon rechts.
+  &__path-header {
+    position: relative;
+  }
+  &__info-btn {
+    position: absolute;
+    right: $spacing-md;
+    top: 50%;
+    transform: translateY(-50%);
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-3);
+    cursor: pointer;
+    transition: color 0.15s var(--easing), border-color 0.15s var(--easing),
+      background 0.15s var(--easing);
+
+    &:hover,
+    &:active {
+      color: var(--text);
+      border-color: var(--border-strong);
+      background: var(--border);
+    }
   }
 
   &__scroll {
@@ -56,6 +100,13 @@
   }
 }
 
+// Info-Sheet des Aktivitäts-Pfads: erbt Typografie von .fc-info, nur zentriert
+// (portaliert an document.body → globale Theme-Tokens).
+.path-info {
+  .fc-info__title { text-align: center; }
+  .fc-info__text { text-align: center; }
+}
+
 // Light Mode: nur die Tokens tauschen (analog .dsk-app--light)
 .app.light-theme .progress-overlay {
   --bg: #ffffff;
@@ -64,4 +115,11 @@
   --text-3: rgba(26, 26, 46, 0.45);
   --border: rgba(0, 0, 0, 0.08);
   --border-strong: rgba(0, 0, 0, 0.14);
+
+  // Der Progress-Track ist im Dark-Default weiß-transparent und damit auf
+  // weißem Grund unsichtbar – im Light Mode den unbefüllten Rest dunkel tönen,
+  // damit der weitere Verlauf der Bar erkennbar bleibt.
+  .dsk-rail__progress-track {
+    background: rgba(0, 0, 0, 0.10);
+  }
 }

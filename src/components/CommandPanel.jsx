@@ -10,6 +10,7 @@ const HAPTIC_TAP_MS = 10;
 
 export function CommandPanel({
   title,
+  eyebrow,
   page,
   app,
   entries,
@@ -234,7 +235,7 @@ export function CommandPanel({
             <div className="command-panel__titles">
               {/* Einheitlich in allen Modi (Startseite, Detailseiten, Voice):
                   Datum als Eyebrow oben, darunter der große Titel/die Frage. */}
-              <div className="command-panel__date">{dateStr}</div>
+              <div className="command-panel__date">{eyebrow || dateStr}</div>
               <div className={`command-panel__greeting ${headerPage ? "command-panel__greeting--page" : ""}`}>
                 {headerPage
                   ? headerPage.title

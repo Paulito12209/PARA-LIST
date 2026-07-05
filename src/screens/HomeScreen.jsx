@@ -4,6 +4,7 @@ import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLis
 import { CommandDock } from "../components/CommandDock";
 import { DockMenuSheet } from "../components/DockMenuSheet";
 import { ProgressOverlay } from "../components/ProgressOverlay";
+import { buildActivityState } from "../desktop/activity";
 import { TrashSheet } from "../components/TrashSheet";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -104,6 +105,7 @@ export function HomeScreen({
   voiceOverlayOpen,
   setVoiceOverlayOpen,
   onHeaderTitleChange,
+  onHeaderEyebrowChange,
 }) {
   const { entries, cats } = state;
   // Aktiver Typ der unteren Eingabeleiste. Seed aus dem persistenten App-`tab`,
@@ -155,8 +157,19 @@ export function HomeScreen({
     onHeaderTitleChange?.(
       progressOpen ? (t.progress || "Fortschritt") : listExpanded ? activeLabel : null
     );
-    return () => onHeaderTitleChange?.(null);
-  }, [progressOpen, listExpanded, activeLabel, onHeaderTitleChange, t]);
+    // Im Fortschritts-Overlay zeigt der Header-Eyebrow den Rang statt des Datums.
+    if (progressOpen) {
+      const { currentLevel } = buildActivityState({ entries, cats, lang });
+      const rankWord = lang === "en" ? "Rank" : lang === "es" ? "Rango" : "Rang";
+      onHeaderEyebrowChange?.(`${rankWord}: ${currentLevel.name}`);
+    } else {
+      onHeaderEyebrowChange?.(null);
+    }
+    return () => {
+      onHeaderTitleChange?.(null);
+      onHeaderEyebrowChange?.(null);
+    };
+  }, [progressOpen, listExpanded, activeLabel, onHeaderTitleChange, onHeaderEyebrowChange, entries, cats, lang, t]);
 
   // Cover-Karussell: zeigt die fixierten (pinned) Inhalte – genau 1 pro Liste möglich
   // → mehrere Slides. Kategorien (Projekte/Bereiche/Ressourcen) sowie Einträge

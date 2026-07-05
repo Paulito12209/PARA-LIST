@@ -1720,6 +1720,13 @@
     font-weight: 700;
     color: var(--text);
   }
+  &__level-title {
+    font-family: $font-heading;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.15;
+  }
 
   &__progress {
     margin-top: 6px;

@@ -325,6 +325,9 @@ export default function App() {
   const [pageMenuTick, setPageMenuTick] = useState(0);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
+  // Header-Eyebrow (Zeile über dem Titel): normal das Datum; im Fortschritts-
+  // Overlay stattdessen "Rang: <Level-Name>".
+  const [homeHeaderEyebrow, setHomeHeaderEyebrow] = useState(null);
   // Header-Titel des Archivs: null → Dashboard ("Startseite"); in einer aufgeklappten
   // archivierten Liste → deren Titel (z.B. "Erledigte Aufgaben").
   const [archiveHeaderTitle, setArchiveHeaderTitle] = useState(null);
@@ -1080,6 +1083,7 @@ export default function App() {
             ? archiveHeaderTitle
             : null
         }
+        eyebrow={cur.view === VIEW.HOME ? homeHeaderEyebrow : null}
         page={headerPage}
         onOpenPageMenu={() => setPageMenuTick((n) => n + 1)}
         app={activeApp}
@@ -1208,6 +1212,7 @@ export default function App() {
             voiceOverlayOpen={voiceOverlayOpen}
             setVoiceOverlayOpen={setVoiceOverlayOpen}
             onHeaderTitleChange={setHomeHeaderTitle}
+            onHeaderEyebrowChange={setHomeHeaderEyebrow}
           />
         )}
 

@@ -1135,11 +1135,18 @@
 // ── Page-Dots unten in der Mitte ──
 
 .home-page-dots {
+  // Nimmt den gesamten Restplatz zwischen "Projekt öffnen"-Button und dem
+  // unteren Cover-Rand ein (→ Listen-Abschnitt darunter) und zentriert die
+  // Dots darin vertikal. So kleben sie auf großen Geräten (Pixel 7, iPhone 15
+  // Pro …) nicht am Button, sondern liegen optisch mittig; auf kleinen (iPhone
+  // SE) schrumpft der Freiraum entsprechend – die Dots bleiben zentriert.
+  flex: 1 1 auto;
+  min-height: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 0;
 
   &__dot {
     // 4px hoch, damit die Dots auch auf niedrigen Viewports (iPhone SE) in

@@ -605,46 +605,20 @@ export function CommandPanel({
               </div>
             )}
 
-            {/* Theme (rund) – nur aktiver Modus, Popup mit Hell/Dunkel */}
-            <div className="command-panel__footer-select">
-              {themeMenuOpen && (
-                <div className="command-panel__glass-menu command-panel__glass-menu--theme">
-                  {[
-                    { id: "light", label: t.lightMode || "Hell", Icon: Sun },
-                    { id: "dark", label: t.darkMode || "Dunkel", Icon: Moon },
-                  ].map((m) => (
-                    <button
-                      key={m.id}
-                      className={`command-panel__menu-option ${
-                        theme === m.id ? "command-panel__menu-option--active" : ""
-                      }`}
-                      onClick={() => {
-                        setTheme(m.id);
-                        setThemeMenuOpen(false);
-                      }}
-                    >
-                      <span className="command-panel__menu-label">
-                        <m.Icon size={15} />
-                        {m.label}
-                      </span>
-                      {theme === m.id && <Check size={14} strokeWidth={2.4} />}
-                    </button>
-                  ))}
-                </div>
-              )}
-              <button
-                className="command-panel__qs-round-btn"
-                onClick={() => {
-                  setThemeMenuOpen((o) => !o);
-                  setLangMenuOpen(false);
-                  setViewMenuOpen(false);
-                }}
-                aria-label={theme === "dark" ? "Dark Mode" : "Light Mode"}
-                aria-expanded={themeMenuOpen}
-              >
-                {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
-              </button>
-            </div>
+             {/* Theme (rund) – toggelt direkt zwischen Light- und Dark-Mode */}
+             <div className="command-panel__footer-select">
+               <button
+                 className="command-panel__qs-round-btn"
+                 onClick={() => {
+                   setTheme(theme === "dark" ? "light" : "dark");
+                   setLangMenuOpen(false);
+                   setViewMenuOpen(false);
+                 }}
+                 aria-label={theme === "dark" ? "Dark Mode" : "Light Mode"}
+               >
+                 {theme === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+               </button>
+             </div>
 
             {/* Suche / Backlog Umschalter */}
             {searchOpen ? (

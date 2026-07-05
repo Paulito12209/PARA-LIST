@@ -488,6 +488,21 @@
       color: #1a1a24;
     }
 
+    // Canvas-Editor (Checklisten) im Light-Mode.
+    .canvas-block__input {
+      color: #1a1a24;
+
+      &.is-checked {
+        color: rgba(#1a1a24, 0.4);
+      }
+    }
+
+    .canvas-check {
+      border-color: rgba(0, 0, 0, 0.28);
+
+      &.is-checked { border-color: #3B82F6; }
+    }
+
     // Deckend-weißer Körper (statt Frosted-Glas), damit die Cover-Farbe nicht
     // durchscheint. Nur der Inhalt bleibt farbig.
     &__date-pill {

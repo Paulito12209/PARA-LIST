@@ -700,6 +700,91 @@
     font-family: $font-body;
   }
 
+  // Canvas-Editor mit Notion-artigen Checklisten.
+  .canvas-editor {
+  width: 100%;
+  flex: 1;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+
+  .canvas-block {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+
+    &__input {
+      flex: 1;
+      width: 100%;
+      min-height: 1.75em;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1.75;
+      color: $color-text;
+      background: transparent;
+      border: none;
+      resize: none;
+      overflow: hidden;
+      font-family: $font-body;
+
+      &::placeholder { color: $color-muted; }
+
+      // Abgehakte Zeile: gedimmt + durchgestrichen.
+      &.is-checked {
+        color: rgba($color-text, 0.45);
+        text-decoration: line-through;
+      }
+    }
+
+    // Checkbox soll optisch auf der ersten Textzeile sitzen.
+    &--check .canvas-block__input,
+    &--radio .canvas-block__input {
+      min-height: 24px;
+    }
+  }
+
+  .canvas-check {
+    flex: none;
+    margin-top: 3px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    color: #fff;
+    background: transparent;
+    border: 1.5px solid rgba($color-text, 0.4);
+    transition: all $transition-fast;
+
+    &--check { border-radius: 5px; }
+    &--radio { border-radius: 50%; }
+
+    &.is-checked {
+      border-color: #3B82F6;
+    }
+
+    // Eckig, abgehakt: blau gefüllt mit weißem Häkchen.
+    &--check.is-checked {
+      background: #3B82F6;
+    }
+
+    // Rund, abgehakt: blauer Ring mit blau gefülltem Innenkreis.
+    &--radio.is-checked {
+      background: transparent;
+
+      &::after {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #3B82F6;
+      }
+    }
+  }
+  }
+
   &__section-empty {
     color: $color-muted;
     font-size: 13px;

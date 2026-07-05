@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus, Pin, PinOff } from 'lucide-react';
+import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus, Pin, PinOff, AlertTriangle } from 'lucide-react';
 import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -12,6 +12,7 @@ import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, L
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { ConnSheet, TagSheet, ResLinkSheet, MediaTypeSheet } from "../components/PillSheets";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
+import { CanvasEditor } from "../components/CanvasEditor";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
   const cfg = CC[type];
@@ -543,7 +544,7 @@ export function CatDetailScreen({
                   onClick={() => setShowFcInfo(true)}
                   aria-label={t.fc?.infoTitle}
                 >
-                  <Info size={16} />
+                  <AlertTriangle size={16} />
                 </button>
                 <span className="fc-table__hint">{t.fc?.pageNotEditable}</span>
               </div>
@@ -579,10 +580,9 @@ export function CatDetailScreen({
               })()}
             </div>
           ) : (
-            <textarea
-              className="cat-detail__textarea"
-              value={cat.body}
-              onChange={(e) => onUpdate({ body: e.target.value })}
+            <CanvasEditor
+              value={cat.body || ""}
+              onChange={(body) => onUpdate({ body })}
               placeholder={t.writeThoughts}
             />
           )

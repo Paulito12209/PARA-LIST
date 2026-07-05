@@ -110,23 +110,21 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
 
               <div className="action-sheet__divider" />
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+              <div className="settings-modal__footer" style={{ marginTop: "12px", padding: 0 }}>
                 <button
                   type="button"
-                  className="action-sheet__item-filled"
-                  style={{ width: "48px", height: "48px", padding: 0, justifyContent: "center", flexShrink: 0 }}
+                  className="settings-modal__footer-back"
                   onClick={() => setView("menu")}
                   aria-label={t.back || "Zurück"}
                 >
-                  <ChevronLeft size={20} />
+                  <ChevronLeft size={20} color="currentColor" />
                 </button>
                 <button
                   type="button"
-                  className="action-sheet__item-filled"
-                  style={{ flex: 1, justifyContent: "center", height: "48px" }}
+                  className="settings-modal__footer-close"
                   onClick={handleClose}
                 >
-                  <span>{t.closeBtn || t.close || "Schließen"}</span>
+                  {t.closeBtn || t.close || "Schließen"}
                 </button>
               </div>
             </div>

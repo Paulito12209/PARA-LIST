@@ -125,10 +125,56 @@ export function SearchPanel({
   onClose,
   query,
   setQuery,
+  inputFocused,
+  setInputFocused,
 }) {
   const [typeFilter, setTypeFilter] = useState("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
-  const [inputFocused, setInputFocused] = useState(false);
+  const [kbHeight, setKbHeight] = useState(0);
+  const inputRef = useRef(null);
+  const blurTimer = useRef(null);
+
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const onResize = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKbHeight(kb > 80 ? kb : 0);
+    };
+    vv.addEventListener("resize", onResize);
+    vv.addEventListener("scroll", onResize);
+    onResize();
+    return () => {
+      vv.removeEventListener("resize", onResize);
+      vv.removeEventListener("scroll", onResize);
+    };
+  }, []);
+
+  useEffect(() => () => clearTimeout(blurTimer.current), []);
+
+  const refocusInput = () => inputRef.current?.focus();
+
+  const handleInputFocus = () => {
+    clearTimeout(blurTimer.current);
+    setInputFocused(true);
+  };
+
+  const handleInputBlur = () => {
+    blurTimer.current = setTimeout(() => setInputFocused(false), 120);
+  };
+
+  const collapseKeyboard = () => {
+    clearTimeout(blurTimer.current);
+    inputRef.current?.blur();
+    setInputFocused(false);
+  };
+
+  // Wenn die Leiste eingeblendet wird, fokussieren wir automatisch das dortige Suchfeld
+  useEffect(() => {
+    if (inputFocused) {
+      inputRef.current?.focus();
+    }
+  }, [inputFocused]);
 
   const filterOptions = [
     { id: "all", label: t.filterAll },
@@ -294,6 +340,53 @@ export function SearchPanel({
           ))}
         </div>
       </div>
+
+      {(inputFocused || kbHeight > 0) &&
+        createPortal(
+          <div
+            className="search-panel__kb-bar"
+            style={{ bottom: kbHeight > 0 ? kbHeight : undefined }}
+          >
+            {/* Schließbutton (links) – schließt das Such-Overlay komplett */}
+            <button
+              type="button"
+              className="search-panel__kb-close"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={onClose}
+              aria-label={t.closeBtn || "Schließen"}
+            >
+              <X size={20} />
+            </button>
+
+            {/* Input-Feld (Mitte) */}
+            <div className="search-panel__kb-input-wrap">
+              <input
+                ref={inputRef}
+                className="search-panel__kb-input"
+                type="search"
+                enterKeyHint="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                placeholder={t.searchPlaceholder || "Suchen..."}
+                aria-label={t.searchTitle || "Suchen"}
+              />
+            </div>
+
+            {/* Zuklappbutton (rechts) – Tastatur zuklappen */}
+            <button
+              type="button"
+              className="search-panel__kb-collapse"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={collapseKeyboard}
+              aria-label={t.fc?.collapseKeyboard || t.closeBtn}
+            >
+              <ChevronDown size={20} />
+            </button>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

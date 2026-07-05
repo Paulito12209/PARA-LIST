@@ -43,6 +43,7 @@ export function CommandPanel({
   const [typeFilter, setTypeFilter] = useState("all");
   const [sort, setSort] = useState({ by: "date", desc: true });
   const [searchQuery, setSearchQuery] = useState("");
+  const [inputFocused, setInputFocused] = useState(false);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
@@ -57,7 +58,7 @@ export function CommandPanel({
 
   // Panel geschlossen (Seitenwechsel / X) → alle offenen Popups zurücksetzen,
   // damit beim erneuten Öffnen kein Menü mehr aufgeklappt ist. Anpassung in der
-  // Render-Phase (Pattern "adjusting state when a prop changes").
+  // Render-Phase (Pattern "adjusting state when a disruption changes").
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
     setPrevOpen(open);
@@ -65,6 +66,7 @@ export function CommandPanel({
       if (anyMenuOpen) closeMenus();
       if (searchOpen) onCloseSearch?.();
       setSearchQuery("");
+      setInputFocused(false);
     }
   }
 
@@ -277,6 +279,8 @@ export function CommandPanel({
           onClose={onCloseSearch}
           query={searchQuery}
           setQuery={setSearchQuery}
+          inputFocused={inputFocused}
+          setInputFocused={setInputFocused}
         />
       )}
 
@@ -446,7 +450,7 @@ export function CommandPanel({
         </div>
       )}
 
-      {open && !searchOpen && (
+      {open && (
         <div className="command-panel__footer">
           {/* Eine Reihe, alle Elemente gleich hoch: Schließen · Sprache ·
               Heute/Überfällig-Pille · Theme · Suche. Sprache & Theme zeigen nur
@@ -513,6 +517,8 @@ export function CommandPanel({
                   type="search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setInputFocused(true)}
+                  onBlur={() => setInputFocused(false)}
                   placeholder={t.searchPlaceholder || "Suchen..."}
                   aria-label={t.searchTitle || "Suchen"}
                 />

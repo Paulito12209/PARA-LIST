@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDownUp, ChevronsUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowDownUp, ChevronsUpDown, ChevronUp, ChevronDown, Filter, Check } from "lucide-react";
 
 // Schließt ein offenes Popup bei Klick/Tap außerhalb des Wrappers.
 function useClickOutside(ref, onClose, active) {
@@ -14,91 +14,139 @@ function useClickOutside(ref, onClose, active) {
 }
 
 /**
- * Sortier-/Zähl-Zeile über der Aufgabenliste (analog zur Backlog-Metazeile):
- * Anzahl links, Sortier-Icon rechts. Das Icon öffnet ein Frosted-Glass-Popup
- * (Erstellungsdatum / Alphabetisch, je mit Auf-/Absteigend-Toggle).
+ * Metazeile über einer Detail-Unterliste (analog zur Backlog-Metazeile):
+ * Anzahl links, rechts optional ein Filter-Icon und immer ein Sortier-Icon.
+ * Beide öffnen ein Frosted-Glass-Popup. Sortierung: Erstellungsdatum /
+ * Alphabetisch (erneut wählen kehrt die Richtung um). Filter: freie Optionen.
  */
-export function TaskSortRow({ t, count, completed, sort, onChangeSort }) {
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-  useClickOutside(wrapRef, () => setOpen(false), open);
+export function DetailMetaRow({
+  t,
+  count,
+  tone,
+  sort,
+  onChangeSort,
+  filterValue,
+  filterOptions,
+  onChangeFilter,
+}) {
+  const [sortOpen, setSortOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
+  const sortRef = useRef(null);
+  const filterRef = useRef(null);
+  useClickOutside(sortRef, () => setSortOpen(false), sortOpen);
+  useClickOutside(filterRef, () => setFilterOpen(false), filterOpen);
 
-  // Gleiches Kriterium erneut wählen → Richtung umkehren; sonst Standard je
-  // Kriterium (Datum: neueste zuerst = desc; Alphabet: A→Z = aufsteigend).
   const pick = (by) =>
     onChangeSort(sort.by === by ? { by, desc: !sort.desc } : { by, desc: by === "date" });
 
+  const hasFilter = Array.isArray(filterOptions) && filterOptions.length > 0;
+  const filterActive = filterValue && filterValue !== "all";
+
   return (
     <div className="cat-detail__task-meta">
-      <span
-        className={`cat-detail__task-count${completed ? " cat-detail__task-count--done" : ""}`}
-      >
+      <span className={`cat-detail__task-count${tone === "done" ? " cat-detail__task-count--done" : ""}`}>
         {t.entriesCount ? t.entriesCount(count) : count}
       </span>
-      <div className="cat-detail__sort-wrap" ref={wrapRef}>
-        <button
-          className={`cat-detail__sort-btn${open ? " cat-detail__sort-btn--active" : ""}`}
-          onClick={() => setOpen((o) => !o)}
-          aria-label={t.sortLabel || "Sortieren"}
-        >
-          <ArrowDownUp size={16} strokeWidth={2.2} />
-        </button>
-        {open && (
-          <div className="cat-detail__glass-menu cat-detail__glass-menu--sort">
-            {[
-              { id: "date", label: t.creationDate || "Erstellungsdatum" },
-              { id: "alpha", label: t.alphabetical || "Alphabetisch" },
-            ].map((o) => (
-              <button
-                key={o.id}
-                className={`cat-detail__menu-option${sort.by === o.id ? " cat-detail__menu-option--active" : ""}`}
-                onClick={() => pick(o.id)}
-              >
-                <span>{o.label}</span>
-                {sort.by === o.id &&
-                  (sort.desc ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
-              </button>
-            ))}
+      <div className="cat-detail__meta-actions">
+        {hasFilter && (
+          <div className="cat-detail__sort-wrap" ref={filterRef}>
+            <button
+              className={`cat-detail__sort-btn${filterActive || filterOpen ? " cat-detail__sort-btn--active" : ""}`}
+              onClick={() => {
+                setFilterOpen((o) => !o);
+                setSortOpen(false);
+              }}
+              aria-label={t.filterLabel || "Filter"}
+            >
+              <Filter size={16} strokeWidth={2.2} />
+            </button>
+            {filterOpen && (
+              <div className="cat-detail__glass-menu cat-detail__glass-menu--sort">
+                {filterOptions.map((o) => (
+                  <button
+                    key={o.id}
+                    className={`cat-detail__menu-option${filterValue === o.id ? " cat-detail__menu-option--active" : ""}`}
+                    onClick={() => {
+                      onChangeFilter(o.id);
+                      setFilterOpen(false);
+                    }}
+                  >
+                    <span>{o.label}</span>
+                    {filterValue === o.id && <Check size={14} strokeWidth={2.4} />}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
+        <div className="cat-detail__sort-wrap" ref={sortRef}>
+          <button
+            className={`cat-detail__sort-btn${sortOpen ? " cat-detail__sort-btn--active" : ""}`}
+            onClick={() => {
+              setSortOpen((o) => !o);
+              setFilterOpen(false);
+            }}
+            aria-label={t.sortLabel || "Sortieren"}
+          >
+            <ArrowDownUp size={16} strokeWidth={2.2} />
+          </button>
+          {sortOpen && (
+            <div className="cat-detail__glass-menu cat-detail__glass-menu--sort">
+              {[
+                { id: "date", label: t.creationDate || "Erstellungsdatum" },
+                { id: "alpha", label: t.alphabetical || "Alphabetisch" },
+              ].map((o) => (
+                <button
+                  key={o.id}
+                  className={`cat-detail__menu-option${sort.by === o.id ? " cat-detail__menu-option--active" : ""}`}
+                  onClick={() => pick(o.id)}
+                >
+                  <span>{o.label}</span>
+                  {sort.by === o.id &&
+                    (sort.desc ? <ChevronDown size={14} /> : <ChevronUp size={14} />)}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
 /**
- * Frosted-Glass-Select-Pille (Offen / Erledigt) über dem Detail-Dock. Zeigt
- * standardmäßig nur den aktiven Wert mit Chevron; Tap öffnet ein Popup mit
- * beiden Optionen (inkl. Zähler-Badges).
+ * Frosted-Glass-Select-Pille über dem Detail-Dock. Zeigt standardmäßig nur den
+ * aktiven Wert mit Chevron; Tap öffnet ein Popup mit allen Optionen (inkl.
+ * Zähler-Badges). Schwebt absolut über der Liste, damit diese im Hintergrund
+ * bis zum Dock sichtbar bleibt. `dockBar` = darüber liegt die volle Dock-Leiste
+ * (Eingabefeld) statt nur der schwebende Home-Button → höherer Abstand.
  */
-export function TaskViewSelect({ t, subTab, onChange, openCount, completedCount }) {
+export function DetailViewSelect({ value, options, onChange, dockBar = false }) {
   const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-  useClickOutside(wrapRef, () => setOpen(false), open);
-  const isDone = subTab === "completed";
+  const ref = useRef(null);
+  useClickOutside(ref, () => setOpen(false), open);
+  const active = options.find((o) => o.id === value) || options[0];
 
   return (
-    <div className="cat-detail__view-select" ref={wrapRef}>
+    <div
+      className={`cat-detail__view-select${dockBar ? " cat-detail__view-select--above-dock" : ""}`}
+      ref={ref}
+    >
       {open && (
         <div className="cat-detail__glass-menu cat-detail__glass-menu--view">
-          {[
-            { id: "open", label: t.open || "Offen", count: openCount },
-            { id: "completed", label: t.markDone || "Erledigt", count: completedCount, done: true },
-          ].map((v) => (
+          {options.map((o) => (
             <button
-              key={v.id}
-              className={`cat-detail__menu-option${subTab === v.id ? " cat-detail__menu-option--active" : ""}${v.done ? " cat-detail__menu-option--done" : ""}`}
+              key={o.id}
+              className={`cat-detail__menu-option${value === o.id ? " cat-detail__menu-option--active" : ""}${o.tone === "done" ? " cat-detail__menu-option--done" : ""}`}
               onClick={() => {
-                onChange(v.id);
+                onChange(o.id);
                 setOpen(false);
               }}
             >
-              <span>{v.label}</span>
-              {v.count > 0 && (
-                <span
-                  className={`cat-detail__menu-count${v.done ? " cat-detail__menu-count--done" : ""}`}
-                >
-                  {v.count}
+              <span>{o.label}</span>
+              {o.count > 0 && (
+                <span className={`cat-detail__menu-count${o.tone === "done" ? " cat-detail__menu-count--done" : ""}`}>
+                  {o.count}
                 </span>
               )}
             </button>
@@ -110,10 +158,8 @@ export function TaskViewSelect({ t, subTab, onChange, openCount, completedCount 
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
       >
-        <span
-          className={`cat-detail__view-pill-label${isDone ? " cat-detail__view-pill-label--done" : ""}`}
-        >
-          {isDone ? t.markDone || "Erledigt" : t.open || "Offen"}
+        <span className={`cat-detail__view-pill-label${active?.tone === "done" ? " cat-detail__view-pill-label--done" : ""}`}>
+          {active?.label}
         </span>
         <ChevronsUpDown size={14} strokeWidth={2.2} />
       </button>

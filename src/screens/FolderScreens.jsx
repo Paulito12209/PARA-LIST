@@ -7,7 +7,7 @@ import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { DetailsBody } from "../components/DetailsPopup";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
-import { TaskSortRow, TaskViewSelect } from "../components/TaskSubtabControls";
+import { DetailMetaRow, DetailViewSelect } from "../components/TaskSubtabControls";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { ConnSheet, TagSheet } from "../components/PillSheets";
@@ -102,8 +102,6 @@ const COVER_COLORS = [
   { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
 ];
 
-const RES_SUB_TAB_ORDER = ["resources", "media"];
-const TASK_SUB_TAB_ORDER = ["open", "completed"];
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 // Reihenfolge der Lesezeichen für den seitlichen Wisch-Wechsel (wie Iconbar)
 const BM_ORDER = BOOKMARKS.filter((b) => b.id !== "tags").map((b) => b.id);
@@ -170,13 +168,14 @@ export function CatDetailScreen({
   const [taskSubTab, setTaskSubTab] = useState("open");
   // Sortierung der Aufgabenliste (Erstellungsdatum neueste zuerst = Default)
   const [taskSort, setTaskSort] = useState({ by: "date", desc: true });
+  // Sortierung + Typ-Filter für das Ressourcen-/Medien-Lesezeichen
+  const [mediaSort, setMediaSort] = useState({ by: "date", desc: true });
+  const [mediaFilter, setMediaFilter] = useState("all");
 
   // Refs für Click-Outside-Erkennung (nur noch Datums-Picker)
   const dateInputRef = useRef(null);
   const datePillRef = useRef(null);
 
-  // Swipe-Refs für Sub-Tab-Wechsel (wiederverwendbar)
-  const subTabTouchX = useRef(0);
 
   const related = allCats.find(c => c.id === cat.relatedId);
   const relatedCfg = related && CC[related.type] ? CC[related.type] : null;
@@ -191,23 +190,43 @@ export function CatDetailScreen({
   const resCount = linkedResources.length;
   const ResIcon = CAT_ICONS.resource;
 
-  // Anzahl der Notizen und Medien für Sub-Tab-Badges
-  const noteCount = entries.filter(e => e.type === "note").length;
-  const mediaCount = entries.filter(e => e.type === "media").length;
+  // createdAt kann Zahl (Einträge: Date.now) oder ISO-String (Kategorien) sein.
+  const getTs = (x) =>
+    typeof x?.createdAt === "number"
+      ? x.createdAt
+      : x?.createdAt
+        ? Date.parse(x.createdAt) || 0
+        : 0;
+  // Generischer Sortierer für eine {by,desc}-Konfiguration; `nameKey` = Feld
+  // für die alphabetische Sortierung (Aufgaben/Medien: title, Ressourcen: name).
+  const makeSorter = (cfg, nameKey) => (list) =>
+    [...list].sort((a, b) => {
+      if (cfg.by === "date") {
+        return cfg.desc ? getTs(b) - getTs(a) : getTs(a) - getTs(b);
+      }
+      const cmp = (a[nameKey] || "").localeCompare(b[nameKey] || "");
+      return cfg.desc ? -cmp : cmp;
+    });
 
   // Aufgaben nach Sub-Tab (offen/erledigt), sortiert nach taskSort.
-  const sortTasks = (list) =>
-    [...list].sort((a, b) => {
-      if (taskSort.by === "date") {
-        const da = a.createdAt || 0;
-        const db = b.createdAt || 0;
-        return taskSort.desc ? db - da : da - db;
-      }
-      const cmp = (a.title || "").localeCompare(b.title || "");
-      return taskSort.desc ? -cmp : cmp;
-    });
+  const sortTasks = makeSorter(taskSort, "title");
   const openTasks = sortTasks(entries.filter((e) => e.type === "task" && !e.done));
   const doneTasks = sortTasks(entries.filter((e) => e.type === "task" && e.done));
+
+  // Ressourcen (Kategorien) + Medien (Einträge) für das Medien-Lesezeichen.
+  const sortedResources = makeSorter(mediaSort, "name")(linkedResources);
+  const allMediaEntries = entries.filter((e) => e.type === "media");
+  const filteredMedia =
+    mediaFilter === "all" ? allMediaEntries : allMediaEntries.filter((e) => e.mediaType === mediaFilter);
+  const sortedMedia = makeSorter(mediaSort, "title")(filteredMedia);
+  // Filter-Optionen für Medien (Reihenfolge: Dokumente, Bilder, Videos, Audios).
+  const mediaFilterOptions = [
+    { id: "all", label: t.filterAll || "Alle" },
+    { id: "document", label: t.documents || "Dokumente" },
+    { id: "image", label: t.images || "Bilder" },
+    { id: "video", label: t.videos || "Videos" },
+    { id: "audio", label: t.audios || "Audios" },
+  ];
 
   // Verknüpfung & Tags öffnen Bottom-Sheets (eigenes Backdrop) – Click-Outside
   // wird nur noch für den Datums-Picker gebraucht.
@@ -298,32 +317,10 @@ export function CatDetailScreen({
     onAddEntry(getEntryTypeFromBookmark());
   }, [getEntryTypeFromBookmark, bm, onAddEntry, onCreateTag]);
 
-  // Swipe-Handler für Sub-Tab-Wechsel (3 Tabs bei Projekt/Bereich/Ressource).
-  // stopPropagation: innerhalb dieser Bereiche wechselt der Wisch die
-  // Sub-Tabs, nicht die Lesezeichen (Body-Handler darunter).
-  const onSubTabTouchStart = useCallback((e) => {
-    e.stopPropagation();
-    subTabTouchX.current = e.touches[0].clientX;
-  }, []);
-  const onSubTabTouchEnd = useCallback((e) => {
-    e.stopPropagation();
-    const dx = e.changedTouches[0].clientX - subTabTouchX.current;
-    if (Math.abs(dx) <= SUB_TAB_SWIPE_THRESHOLD_PX) return;
-
-    const stepInOrder = (order, prev) => {
-      const idx = order.indexOf(prev);
-      // dx > 0 → Swipe rechts → vorheriger Tab; dx < 0 → nächster Tab
-      return dx > 0
-        ? order[Math.max(0, idx - 1)]
-        : order[Math.min(order.length - 1, idx + 1)];
-    };
-
-    if (bm === "media") setResSubTab((prev) => stepInOrder(RES_SUB_TAB_ORDER, prev));
-    else if (bm === "tasks") setTaskSubTab((prev) => stepInOrder(TASK_SUB_TAB_ORDER, prev));
-  }, [bm]);
-
   // Seitliches Wischen (Body + Iconbar): wechselt zwischen den Lesezeichen
-  // der Iconbar – rechts→links = nächstes, links→rechts = vorheriges.
+  // der Iconbar – rechts→links = nächstes, links→rechts = vorheriges. Sub-Tabs
+  // (Offen/Erledigt, Ressourcen/Medien) werden bewusst NICHT per Wisch
+  // gewechselt, sondern ausschließlich über die Auswahl-Pille.
   const bmTouch = useRef({ x: 0, y: 0, skip: false });
   const onBmTouchStart = useCallback((e) => {
     bmTouch.current = {
@@ -564,17 +561,13 @@ export function CatDetailScreen({
           )
         )}
         {bm === "tasks" && (
-          <div
-            onTouchStart={onSubTabTouchStart}
-            onTouchEnd={onSubTabTouchEnd}
-            style={{ flex: 1 }}
-          >
+          <div className="cat-detail__subtab-pane">
             {/* Anzahl links · Sortier-Icon rechts (Auswahl Offen/Erledigt liegt
                 als Pille unten über dem Dock) */}
-            <TaskSortRow
+            <DetailMetaRow
               t={t}
               count={taskSubTab === "completed" ? doneTasks.length : openTasks.length}
-              completed={taskSubTab === "completed"}
+              tone={taskSubTab === "completed" ? "done" : undefined}
               sort={taskSort}
               onChangeSort={setTaskSort}
             />
@@ -632,39 +625,25 @@ export function CatDetailScreen({
         )}
 
         {bm === "media" && (
-          <div
-            onTouchStart={onSubTabTouchStart}
-            onTouchEnd={onSubTabTouchEnd}
-            style={{ flex: 1 }}
-          >
-            {/* Sub-Tab-Leiste: Ressourcen / Notizen / Medien */}
-            <div className="res-sub-tabs">
-              <button
-                className={`res-sub-tabs__btn ${resSubTab === "resources" ? "res-sub-tabs__btn--active-res" : ""}`}
-                onClick={() => setResSubTab("resources")}
-              >
-                <span>{t.linkedRes}</span>
-                {resCount > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--res">{resCount}</span>
-                )}
-              </button>
-              <button
-                className={`res-sub-tabs__btn ${resSubTab === "media" ? "res-sub-tabs__btn--active-media" : ""}`}
-                onClick={() => setResSubTab("media")}
-              >
-                <span>{t.mediaTab}</span>
-                {mediaCount > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--media">{mediaCount}</span>
-                )}
-              </button>
-            </div>
+          <div className="cat-detail__subtab-pane">
+            {/* Anzahl links · (nur Medien:) Filter + Sortier-Icon rechts.
+                Auswahl Ressourcen/Medien liegt als Pille unten über dem Dock. */}
+            <DetailMetaRow
+              t={t}
+              count={resSubTab === "media" ? sortedMedia.length : sortedResources.length}
+              sort={mediaSort}
+              onChangeSort={setMediaSort}
+              filterValue={resSubTab === "media" ? mediaFilter : undefined}
+              filterOptions={resSubTab === "media" ? mediaFilterOptions : undefined}
+              onChangeFilter={setMediaFilter}
+            />
 
             {/* Verknüpfte Ressourcen-Ansicht */}
             {resSubTab === "resources" && (
-              linkedResources.length === 0 ? (
+              sortedResources.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noLinkedRes}</div>
               ) : (
-                linkedResources.map((res) => (
+                sortedResources.map((res) => (
                   <button
                     key={res.id}
                     className="cat-list__item"
@@ -691,11 +670,11 @@ export function CatDetailScreen({
 
             {/* Medien-Ansicht */}
             {resSubTab === "media" && (
-              entries.filter((e) => e.type === "media").length === 0 ? (
+              sortedMedia.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noMedia}</div>
               ) : (
                 <MediaList t={t} CC={CC}
-                  entries={entries.filter((e) => e.type === "media")}
+                  entries={sortedMedia}
                   cats={allCats}
                   onDelete={deleteEntry}
                 />
@@ -950,15 +929,32 @@ export function CatDetailScreen({
         </div>
       )}
 
-      {/* Aufgaben-Ansicht: Offen/Erledigt-Auswahl als Frosted-Glass-Pille über
-          dem Dock (analog zur Backlog-Ansichtsauswahl). */}
+      {/* Aufgaben-Ansicht: Offen/Erledigt-Auswahl als schwebende Frosted-Glass-
+          Pille über dem Dock (Liste bleibt dahinter bis zum Dock sichtbar). */}
       {bm === "tasks" && (
-        <TaskViewSelect
+        <DetailViewSelect
           t={t}
-          subTab={taskSubTab}
+          value={taskSubTab}
           onChange={setTaskSubTab}
-          openCount={openTasks.length}
-          completedCount={doneTasks.length}
+          dockBar
+          options={[
+            { id: "open", label: t.open || "Offen", count: openTasks.length },
+            { id: "completed", label: t.markDone || "Erledigt", count: doneTasks.length, tone: "done" },
+          ]}
+        />
+      )}
+
+      {/* Medien-Lesezeichen: Ressourcen/Medien-Auswahl als schwebende Pille. */}
+      {bm === "media" && (
+        <DetailViewSelect
+          t={t}
+          value={resSubTab}
+          onChange={setResSubTab}
+          dockBar
+          options={[
+            { id: "resources", label: t.linkedRes, count: sortedResources.length },
+            { id: "media", label: t.mediaTab, count: allMediaEntries.length },
+          ]}
         />
       )}
 

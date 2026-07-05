@@ -907,8 +907,19 @@
   // "Offen" behält auch aktiv sein Grau (Tab-Farbe = Grau)
 }
 
-// ── Aufgaben-Subtab-Steuerung (Backlog-Logik in Detailseiten) ──
-// Metazeile über der Aufgabenliste: Anzahl links, Sortier-Icon rechts.
+// ── Subtab-Steuerung (Backlog-Logik in Detailseiten) ──────────
+// Inhalts-Pane einer Unterliste (Aufgaben, Ressourcen/Medien): Flex-Spalte,
+// damit der Leer-Platzhalter vertikal zentriert werden kann. Unten Platz für
+// die schwebende Ansicht-Pille, damit der letzte Eintrag darüber scrollbar ist.
+.cat-detail__subtab-pane {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 60px;
+}
+
+// Metazeile über der Liste: Anzahl links, Filter/Sortier-Icons rechts.
 // Klebt oben unter der Icon-Leiste, wenn die Liste scrollt.
 .cat-detail__task-meta {
   position: sticky;
@@ -921,6 +932,18 @@
   padding: 2px 0 $spacing-sm;
   margin-bottom: $spacing-2xs;
   background: #16161F;
+}
+
+// Leer-Platzhalter innerhalb einer Pane: vertikal zentriert.
+.cat-detail__subtab-pane > .cat-detail__section-empty {
+  margin: auto;
+  padding: 0;
+}
+
+.cat-detail__meta-actions {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2xs;
 }
 
 .cat-detail__task-count {
@@ -1040,14 +1063,28 @@
   }
 }
 
-// Ansicht-Pille (Offen/Erledigt) über dem Detail-Dock
+// Ansicht-Pille (Offen/Erledigt bzw. Ressourcen/Medien): schwebt absolut über
+// der Liste, damit diese im Hintergrund bis zum Dock sichtbar bleibt. Der
+// Wrapper spannt die Breite auf, ist aber klick-durchlässig – nur Pille & Popup
+// fangen Taps ab. `--above-dock`: darüber liegt die volle Dock-Eingabeleiste.
 .cat-detail__view-select {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
   z-index: 21;
-  flex-shrink: 0;
   display: flex;
   justify-content: center;
-  padding: 0 0 $spacing-sm;
+  pointer-events: none;
+
+  &--above-dock {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.cat-detail__view-pill,
+.cat-detail__glass-menu {
+  pointer-events: auto;
 }
 
 .cat-detail__view-pill {

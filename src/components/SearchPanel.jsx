@@ -242,20 +242,44 @@ export function SearchPanel({
     return Array.from(map.entries());
   }, [filtered, t]);
 
+  const [activeLabel, setActiveLabel] = useState("");
   const firstGroup = groups[0];
-  const restGroups = groups.slice(1);
   const filterActive = typeFilter !== "all";
+
+  // Initiales Gruppen-Label setzen, sobald Daten geladen sind
+  useEffect(() => {
+    if (firstGroup) {
+      setActiveLabel(firstGroup[0]);
+    }
+  }, [firstGroup]);
 
   const metaLeftLabel = query.trim()
     ? filtered.length > 0
       ? t.entriesCount(filtered.length)
       : ""
-    : firstGroup?.[0] || "";
+    : activeLabel;
 
   const handleSelect = (item) => {
     setFilterMenuOpen(false);
     if (item.kind === "cat") onOpenCat?.({ id: item.id });
     else onOpenEntry?.({ id: item.id });
+  };
+
+  // Erkennt beim Scrollen, welche Gruppe oben im Sichtfeld liegt
+  const handleScroll = (e) => {
+    const container = e.currentTarget;
+    const groupElements = container.querySelectorAll(".search-panel__group");
+    const containerRect = container.getBoundingClientRect();
+    let currentLabel = firstGroup?.[0] || "";
+
+    for (const group of groupElements) {
+      const rect = group.getBoundingClientRect();
+      // Wenn die Gruppe die Oberkante des Containers erreicht oder überschritten hat (mit 12px Toleranz)
+      if (rect.top - containerRect.top <= 12) {
+        currentLabel = group.getAttribute("data-label");
+      }
+    }
+    setActiveLabel(currentLabel);
   };
 
   return (
@@ -305,27 +329,17 @@ export function SearchPanel({
           </div>
         </div>
 
-        <div className="command-panel__list search-panel__list search-panel__list--kb-open">
+        <div
+          className="command-panel__list search-panel__list search-panel__list--kb-open"
+          onScroll={handleScroll}
+        >
           {filtered.length === 0 && (
             <div className="search-panel__empty">{t.searchNoResults || "Keine Ergebnisse"}</div>
           )}
 
-          {firstGroup && (
-            <>
-              {firstGroup[1].map((item) => (
-                <SearchResultItem
-                  key={`${item.kind}-${item.id}`}
-                  item={item}
-                  cats={cats}
-                  t={t}
-                  onSelect={handleSelect}
-                />
-              ))}
-            </>
-          )}
-
-          {restGroups.map(([label, items]) => (
-            <div key={label} className="search-panel__group">
+          {/* Alle Gruppen werden einheitlich gerendert für die Scroll-Positions-Erfassung */}
+          {groups.map(([label, items]) => (
+            <div key={label} className="search-panel__group" data-label={label}>
               <div className="search-panel__group-label">{label}</div>
               {items.map((item) => (
                 <SearchResultItem

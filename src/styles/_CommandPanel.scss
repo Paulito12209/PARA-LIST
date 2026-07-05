@@ -531,7 +531,7 @@
   &__list {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 12px; // Platz für Quick-Settings-Leiste
+    padding-bottom: 80px; // Ausreichend Platz für die schwebende Footer-Leiste
     animation: fade-in 0.25s ease-out;
     will-change: opacity, transform;
     // Flex-Spalte, damit der Leer-Platzhalter vertikal zentriert werden kann
@@ -611,12 +611,17 @@
 
   &__footer {
     flex-shrink: 0;
-    position: relative;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 10;
     display: flex;
     flex-direction: column;
     align-items: center;
-    // Ohne Handle-Bar: fester Abstand zum unteren Rand
+    background: transparent;
+    // Durchsichtig halten, damit darunterliegende Einträge durchschimmern
+    pointer-events: none;
     padding-bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
   }
 
@@ -631,6 +636,7 @@
     animation: fade-in 0.3s ease;
     z-index: 10;
     box-sizing: border-box;
+    pointer-events: auto; // Buttons wieder klickbar machen
   }
 
   // Wrapper für Sprach-/Theme-Rundbutton (Popup ankert daran)

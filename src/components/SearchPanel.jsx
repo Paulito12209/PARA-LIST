@@ -54,8 +54,7 @@ function getGroupLabel(ts, t) {
 
 function matchesFilter(item, filter) {
   if (filter === "all") return true;
-  if (item.kind === "cat") return item.type === filter;
-  return item.type === filter;
+  return filter.includes(item.type);
 }
 
 function getLocation(item, cats, t) {
@@ -129,8 +128,18 @@ export function SearchPanel({
   setInputFocused,
   lang,
 }) {
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState(["task", "calendar"]);
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
+
+  const selectAll = () => setTypeFilter("all");
+  const toggleType = (id) =>
+    setTypeFilter((prev) => {
+      if (prev === "all") return [id];
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      return next.length === 0 ? "all" : next;
+    });
+  const isTypeSelected = (id) =>
+    id === "all" ? typeFilter === "all" : typeFilter !== "all" && typeFilter.includes(id);
   const [kbHeight, setKbHeight] = useState(0);
   const inputRef = useRef(null);
   const blurTimer = useRef(null);
@@ -243,7 +252,8 @@ export function SearchPanel({
     return Array.from(map.entries());
   }, [filtered, t]);
 
-  const filterActive = typeFilter !== "all";
+  const typeKey = typeFilter === "all" ? "all" : [...typeFilter].sort().join(",");
+  const filterActive = typeKey !== "calendar,task";
 
   // Beim Suchen zeigt die Meta-Zeile die Trefferzahl. Ohne Suchanfrage bleibt
   // sie leer – die Abschnittstitel (Heute/Gestern/…) werden als native
@@ -285,15 +295,12 @@ export function SearchPanel({
                   key={f.id}
                   type="button"
                   className={`command-panel__menu-option${
-                    typeFilter === f.id ? " command-panel__menu-option--active" : ""
+                    isTypeSelected(f.id) ? " command-panel__menu-option--active" : ""
                   }`}
-                  onClick={() => {
-                    setTypeFilter(f.id);
-                    setFilterMenuOpen(false);
-                  }}
+                  onClick={() => (f.id === "all" ? selectAll() : toggleType(f.id))}
                 >
                   <span>{f.label}</span>
-                  {typeFilter === f.id && <Check size={14} strokeWidth={2.4} />}
+                  {isTypeSelected(f.id) && <Check size={14} strokeWidth={2.4} />}
                 </button>
               ))}
             </div>

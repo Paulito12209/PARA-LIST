@@ -27,6 +27,7 @@
     display: flex;
     flex-direction: column;
     gap: 0;
+    padding-bottom: 90px; // Platz für das untere Dock
 
     &--kb-open {
       padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
@@ -102,94 +103,17 @@
     text-overflow: ellipsis;
   }
 
-  // Schwebende Eingabezeile – nur bei aktiver Tastatur (Portal → body)
-  &__kb-bar {
-    position: fixed;
+  // Festes unteres Dock im SearchPanel
+  &__bottom-dock {
+    position: absolute;
     left: 0;
     right: 0;
-    z-index: 1100;
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-    padding: $spacing-sm $spacing-md;
-    padding-bottom: calc(#{$spacing-sm} + env(safe-area-inset-bottom, 0px));
-    background: $color-hover;
-    border-top: 1px solid rgba($color-border, 0.5);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    animation: action-sheet-fade-in 0.15s ease-out;
-  }
-
-  &__kb-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    border: 1px solid $color-border;
-    background: rgba($color-card, 0.65);
-    color: $color-text;
-    cursor: pointer;
-    padding: 0;
-    transition: background $transition-fast;
-
-    &:active {
-      background: $color-card;
-    }
-  }
-
-  &__kb-input-wrap {
-    flex: 1;
-    min-width: 0;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    padding: 0 $spacing-md;
-    border-radius: $radius-pill;
-    background: rgba($color-card, 0.75);
-    border: 1px solid $color-border;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  &__kb-input {
-    flex: 1;
-    min-width: 0;
-    border: none;
-    background: transparent;
-    color: $color-text;
-    font-family: $font-body;
-    font-size: 15px;
-    outline: none;
-
-    &::placeholder {
-      color: $color-muted;
-    }
-
-    &::-webkit-search-cancel-button {
-      display: none;
-    }
-  }
-
-  &__kb-collapse {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    border: 1px solid $color-border;
-    background: rgba($color-card, 0.65);
-    color: $color-text;
-    cursor: pointer;
-    padding: 0;
-    transition: background $transition-fast;
-
-    &:active {
-      background: $color-card;
-    }
+    bottom: 0;
+    z-index: 20;
+    background: #16161f;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.45);
+    padding: $spacing-sm $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -224,29 +148,30 @@
     }
   }
 
-  .search-panel__kb-bar {
-    background: #f7f7f9;
-    border-top-color: rgba(0, 0, 0, 0.08);
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
-  }
+  .search-panel__bottom-dock {
+    background: #ffffff;
+    border-top-color: #e5e5f0;
+    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.05);
 
-  .search-panel__kb-close,
-  .search-panel__kb-collapse {
-    background: #fff;
-    border-color: rgba(0, 0, 0, 0.1);
-    color: #1a1a24;
-  }
+    .command-dock__input-row {
+      background: #ffffff;
+    }
 
-  .search-panel__kb-input-wrap {
-    background: #fff;
-    border-color: rgba(0, 0, 0, 0.1);
-  }
+    .command-dock__input {
+      color: #1a1a24;
+      &::placeholder {
+        color: #8e8eb2;
+      }
+    }
 
-  .search-panel__kb-input {
-    color: #1a1a24;
+    .command-dock__icon-btn {
+      background: #ffffff;
+      border-color: #e5e5f0;
+      color: #5858A0;
 
-    &::placeholder {
-      color: #8e8eb2;
+      &:hover {
+        background: #f0f0f5;
+      }
     }
   }
 }

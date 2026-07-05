@@ -594,15 +594,26 @@ export function CommandPanel({
               </button>
             </div>
 
-            {/* Suche */}
-            <button
-              type="button"
-              className="command-panel__qs-settings-btn command-panel__qs-search-btn"
-              aria-label={t.searchTitle}
-              onClick={() => onOpenSearch?.()}
-            >
-              <Search size={18} />
-            </button>
+            {/* Suche / Backlog Umschalter */}
+            {searchOpen ? (
+              <button
+                type="button"
+                className="command-panel__qs-settings-btn command-panel__qs-search-btn"
+                aria-label={t.backlog || "Backlog"}
+                onClick={() => onCloseSearch?.()}
+              >
+                <CheckCircle2 size={18} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="command-panel__qs-settings-btn command-panel__qs-search-btn"
+                aria-label={t.searchTitle || "Suchen"}
+                onClick={() => onOpenSearch?.()}
+              >
+                <Search size={18} />
+              </button>
+            )}
           </div>
         </div>
       )}

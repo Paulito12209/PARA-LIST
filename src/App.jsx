@@ -926,6 +926,10 @@ export default function App() {
       if (scrollEl === false) return; // textarea not at top
       if (!scrollEl || scrollEl.scrollTop <= 0) {
         setPanelOpen(true);
+        // Wenn man von der Startseite aus nach unten wischt, direkt die Suche als Standard öffnen
+        if (cur.view === VIEW.HOME) {
+          setSearchOpen(true);
+        }
       }
     }
 

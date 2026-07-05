@@ -307,9 +307,9 @@ export function SearchPanel({
           </div>
         </div>
 
-        <div className={`command-panel__list search-panel__list${showKeyboardBar ? " search-panel__list--kb-open" : ""}`}>
+        <div className={`command-panel__list search-panel__list search-panel__list--kb-open`}>
           {filtered.length === 0 && (
-            <div className="search-panel__empty">{t.searchNoResults}</div>
+            <div className="search-panel__empty">{t.searchNoResults || "Keine Ergebnisse"}</div>
           )}
 
           {firstGroup && (
@@ -341,51 +341,34 @@ export function SearchPanel({
             </div>
           ))}
         </div>
-      </div>
 
-      {showKeyboardBar &&
-        createPortal(
-          <div
-            className="search-panel__kb-bar"
-            style={{ bottom: kbHeight > 0 ? kbHeight : undefined }}
-          >
+        {/* Sucheingabe-Dock am unteren Rand des SearchPanels */}
+        <div className="command-dock command-dock--detail search-panel__bottom-dock">
+          <div className="command-dock__input-row">
+            <input
+              ref={inputRef}
+              className="command-dock__input"
+              type="search"
+              enterKeyHint="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              placeholder={t.searchPlaceholder || "Suchen..."}
+              aria-label={t.searchTitle || "Suchen"}
+            />
+            {/* List-Icon rechts daneben, um zum Backlog zu wechseln */}
             <button
               type="button"
-              className="search-panel__kb-close"
-              onMouseDown={(e) => e.preventDefault()}
+              className="command-dock__icon-btn"
               onClick={onClose}
-              aria-label={t.closeBtn}
+              aria-label={t.backlog || "Backlog"}
             >
-              <X size={22} />
+              <CheckCircle2 size={20} />
             </button>
-
-            <div className="search-panel__kb-input-wrap">
-              <input
-                ref={inputRef}
-                className="search-panel__kb-input"
-                type="search"
-                enterKeyHint="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onFocus={handleInputFocus}
-                onBlur={handleInputBlur}
-                placeholder={t.searchPlaceholder}
-                aria-label={t.searchTitle}
-              />
-            </div>
-
-            <button
-              type="button"
-              className="search-panel__kb-collapse"
-              onMouseDown={(e) => e.preventDefault()}
-              onClick={collapseKeyboard}
-              aria-label={t.fc?.collapseKeyboard || t.closeBtn}
-            >
-              <ChevronDown size={22} />
-            </button>
-          </div>,
-          document.body
-        )}
+          </div>
+        </div>
+      </div>
     </>
   );
 }

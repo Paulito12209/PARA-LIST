@@ -97,7 +97,7 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
         {/* 7. Icon: Menü – öffnet das Dock-Bottom-Sheet (u.a. Papierkorb) */}
         <button className="command-dock__menu" onClick={onMenu} aria-label="Menü">
           <span className="command-dock__menu-circle">
-            <MoreHorizontal size={18} />
+            <MoreHorizontal size={16} />
           </span>
         </button>
       </div>

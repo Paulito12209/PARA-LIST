@@ -35,6 +35,8 @@
     align-items: center;
     justify-content: space-between;
     gap: $spacing-2xs;
+    // Gleicher Seitenabstand wie die Input-Reihe darunter (Pokal-/Audio-Buttons)
+    padding: 0 4px;
   }
 
   &__type {
@@ -97,8 +99,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    // Kleiner als vorher (40px), damit das Icon visuell die gleiche Größe
+    // einnimmt wie die 22px Lucide-Icons der übrigen Dock-Buttons.
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     // 5% dunkler als die übrigen Dock-Icons (Light Mode überschreibt analog)
     background: #21212d;

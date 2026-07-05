@@ -128,7 +128,7 @@ export function SearchPanel({
   setInputFocused,
   lang,
 }) {
-  const [typeFilter, setTypeFilter] = useState(["task", "calendar"]);
+  const [typeFilter, setTypeFilter] = useState("all");
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
 
   const selectAll = () => setTypeFilter("all");
@@ -252,8 +252,7 @@ export function SearchPanel({
     return Array.from(map.entries());
   }, [filtered, t]);
 
-  const typeKey = typeFilter === "all" ? "all" : [...typeFilter].sort().join(",");
-  const filterActive = typeKey !== "calendar,task";
+  const filterActive = typeFilter !== "all";
 
   // Beim Suchen zeigt die Meta-Zeile die Trefferzahl. Ohne Suchanfrage bleibt
   // sie leer – die Abschnittstitel (Heute/Gestern/…) werden als native

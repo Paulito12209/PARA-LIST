@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import {
   Trash2, Bookmark, Tag, Image, ListChecks,
   Star, Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Image as ImageIcon, Link as LinkIcon,
+  ChevronLeft,
 } from "lucide-react";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
 
@@ -20,18 +21,12 @@ const FAV_ICON = {
 
 /**
  * Bottom-Sheet für das 3-Punkte-Menü im Input-Dock. Slidet von unten herein
- * (via Portal an <body>). Zeigt oben die Favoriten (gesternte Kategorien und
- * Einträge) und bietet Zugang zum Papierkorb; weitere Listen (Lesezeichen,
- * Tags, Medien, Unteraufgaben) sind als Platzhalter angelegt und deaktiviert.
- *
- * Props:
- *  - cats, entries: zum Ermitteln der Favoriten (starred)
- *  - onOpenCat(cat), onOpenEntry(entry): öffnet das jeweilige Item
- *  - onOpenTrash: öffnet die Papierkorb-Ansicht
- *  - t, onClose
+ * (via Portal an <body>). Bietet Zugriff auf die Favoriten-Ansicht, den Papierkorb
+ * und inaktive Platzhalter.
  */
 export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat, onOpenEntry, t, onClose }) {
   const [closing, setClosing] = useState(false);
+  const [view, setView] = useState("menu"); // "menu" oder "favorites"
 
   const favoriteItems = [
     ...cats
@@ -43,18 +38,29 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
   ];
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") handleClose(); };
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        if (view === "favorites") {
+          setView("menu");
+        } else {
+          handleClose();
+        }
+      }
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [view]);
 
   const handleClose = () => {
     setClosing(true);
     setTimeout(() => onClose?.(), 180);
   };
 
-  const run = (fn) => () => { fn?.(); handleClose(); };
+  const run = (fn) => () => {
+    fn?.();
+    handleClose();
+  };
 
   const swipe = useSheetSwipeClose(handleClose);
 
@@ -71,59 +77,97 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
         aria-modal="true"
       >
         <div className="action-sheet__handle" />
-        <div className="action-sheet__title">{t.menu}</div>
 
-        {favoriteItems.length > 0 && (
-          <div className="action-sheet__list">
-            <div className="action-sheet__subtitle">
-              <Star size={14} />
-              <span>{t.favorites || "Favoriten"}</span>
+        {view === "favorites" ? (
+          <>
+            <div className="action-sheet__header" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 4px" }}>
+              <button
+                type="button"
+                onClick={() => setView("menu")}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "inherit",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "8px 4px",
+                  marginLeft: "-4px"
+                }}
+                aria-label={t.back || "Zurück"}
+              >
+                <ChevronLeft size={22} />
+              </button>
+              <div className="action-sheet__title" style={{ margin: 0 }}>
+                {t.favorites || "Favoriten"}
+              </div>
             </div>
-            {favoriteItems.map((item) => {
-              const isCat = item.kind === "cat";
-              const data = item.data;
-              const Icon = FAV_ICON[data.type] || Circle;
-              const label = isCat ? data.name : data.title;
-              return (
-                <button
-                  key={`${item.kind}-${data.id}`}
-                  className="action-sheet__item"
-                  onClick={run(() => (isCat ? onOpenCat?.(data) : onOpenEntry?.(data)))}
-                >
-                  <Icon size={18} />
-                  <span>{label}</span>
-                </button>
-              );
-            })}
-            <div className="action-sheet__divider" />
-          </div>
+
+            <div className="action-sheet__list" style={{ marginTop: "12px" }}>
+              {favoriteItems.length === 0 ? (
+                <div style={{ padding: "20px 0", textAlign: "center", opacity: 0.5, fontSize: "14px" }}>
+                  Keine Favoriten vorhanden
+                </div>
+              ) : (
+                favoriteItems.map((item) => {
+                  const isCat = item.kind === "cat";
+                  const data = item.data;
+                  const Icon = FAV_ICON[data.type] || Circle;
+                  const label = isCat ? data.name : data.title;
+                  return (
+                    <button
+                      key={`${item.kind}-${data.id}`}
+                      className="action-sheet__item"
+                      onClick={run(() => (isCat ? onOpenCat?.(data) : onOpenEntry?.(data)))}
+                    >
+                      <Icon size={18} />
+                      <span>{label}</span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="action-sheet__title">{t.menu}</div>
+
+            <div className="action-sheet__list">
+              {/* Favoriten Option (öffnet Subview) */}
+              <button className="action-sheet__item" onClick={() => setView("favorites")}>
+                <Star size={18} />
+                <span>{t.favorites || "Favoriten"}</span>
+              </button>
+
+              <div className="action-sheet__divider" />
+
+              <button className="action-sheet__item" onClick={run(onOpenTrash)}>
+                <Trash2 size={18} />
+                <span>{t.trash}</span>
+              </button>
+
+              <div className="action-sheet__divider" />
+
+              <button className="action-sheet__item" disabled>
+                <Bookmark size={18} />
+                <span>{t.bookmarks}</span>
+              </button>
+              <button className="action-sheet__item" disabled>
+                <Tag size={18} />
+                <span>{t.tagsLabel}</span>
+              </button>
+              <button className="action-sheet__item" disabled>
+                <Image size={18} />
+                <span>{t.mediaLabel}</span>
+              </button>
+              <button className="action-sheet__item" disabled>
+                <ListChecks size={18} />
+                <span>{t.subtasks}</span>
+              </button>
+            </div>
+          </>
         )}
-
-        <div className="action-sheet__list">
-          <button className="action-sheet__item" onClick={run(onOpenTrash)}>
-            <Trash2 size={18} />
-            <span>{t.trash}</span>
-          </button>
-
-          <div className="action-sheet__divider" />
-
-          <button className="action-sheet__item" disabled>
-            <Bookmark size={18} />
-            <span>{t.bookmarks}</span>
-          </button>
-          <button className="action-sheet__item" disabled>
-            <Tag size={18} />
-            <span>{t.tagsLabel}</span>
-          </button>
-          <button className="action-sheet__item" disabled>
-            <Image size={18} />
-            <span>{t.mediaLabel}</span>
-          </button>
-          <button className="action-sheet__item" disabled>
-            <ListChecks size={18} />
-            <span>{t.subtasks}</span>
-          </button>
-        </div>
       </div>
     </div>,
     document.body

@@ -80,31 +80,11 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
 
         {view === "favorites" ? (
           <>
-            <div className="action-sheet__header" style={{ display: "flex", alignItems: "center", gap: "8px", padding: "0 4px" }}>
-              <button
-                type="button"
-                onClick={() => setView("menu")}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "inherit",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "8px 4px",
-                  marginLeft: "-4px"
-                }}
-                aria-label={t.back || "Zurück"}
-              >
-                <ChevronLeft size={22} />
-              </button>
-              <div className="action-sheet__title" style={{ margin: 0 }}>
-                {t.favorites || "Favoriten"}
-              </div>
+            <div className="action-sheet__title">
+              {t.favorites || "Favoriten"}
             </div>
 
-            <div className="action-sheet__list" style={{ marginTop: "12px" }}>
+            <div className="action-sheet__list" style={{ marginTop: "8px" }}>
               {favoriteItems.length === 0 ? (
                 <div style={{ padding: "20px 0", textAlign: "center", opacity: 0.5, fontSize: "14px" }}>
                   Keine Favoriten vorhanden
@@ -127,6 +107,28 @@ export function DockMenuSheet({ onOpenTrash, cats = [], entries = [], onOpenCat,
                   );
                 })
               )}
+
+              <div className="action-sheet__divider" />
+
+              <div style={{ display: "flex", gap: "10px", marginTop: "4px" }}>
+                <button
+                  type="button"
+                  className="action-sheet__item"
+                  style={{ width: "48px", height: "48px", padding: 0, justifyContent: "center", flexShrink: 0 }}
+                  onClick={() => setView("menu")}
+                  aria-label={t.back || "Zurück"}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  className="action-sheet__item"
+                  style={{ flex: 1, justifyContent: "center", height: "48px" }}
+                  onClick={handleClose}
+                >
+                  <span>{t.closeBtn || t.close || "Schließen"}</span>
+                </button>
+              </div>
             </div>
           </>
         ) : (

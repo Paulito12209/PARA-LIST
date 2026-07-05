@@ -7,6 +7,7 @@ import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { DetailsBody } from "../components/DetailsPopup";
 import { FlashcardInfoSheet } from "../components/FlashcardInfoSheet";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
+import { TaskSortRow, TaskViewSelect } from "../components/TaskSubtabControls";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { ConnSheet, TagSheet } from "../components/PillSheets";
@@ -167,6 +168,8 @@ export function CatDetailScreen({
   // Sub-Tab für das Ressource-Lesezeichen (standardmäßig "resources")
   const [resSubTab, setResSubTab] = useState("resources");
   const [taskSubTab, setTaskSubTab] = useState("open");
+  // Sortierung der Aufgabenliste (Erstellungsdatum neueste zuerst = Default)
+  const [taskSort, setTaskSort] = useState({ by: "date", desc: true });
 
   // Refs für Click-Outside-Erkennung (nur noch Datums-Picker)
   const dateInputRef = useRef(null);
@@ -191,6 +194,20 @@ export function CatDetailScreen({
   // Anzahl der Notizen und Medien für Sub-Tab-Badges
   const noteCount = entries.filter(e => e.type === "note").length;
   const mediaCount = entries.filter(e => e.type === "media").length;
+
+  // Aufgaben nach Sub-Tab (offen/erledigt), sortiert nach taskSort.
+  const sortTasks = (list) =>
+    [...list].sort((a, b) => {
+      if (taskSort.by === "date") {
+        const da = a.createdAt || 0;
+        const db = b.createdAt || 0;
+        return taskSort.desc ? db - da : da - db;
+      }
+      const cmp = (a.title || "").localeCompare(b.title || "");
+      return taskSort.desc ? -cmp : cmp;
+    });
+  const openTasks = sortTasks(entries.filter((e) => e.type === "task" && !e.done));
+  const doneTasks = sortTasks(entries.filter((e) => e.type === "task" && e.done));
 
   // Verknüpfung & Tags öffnen Bottom-Sheets (eigenes Backdrop) – Click-Outside
   // wird nur noch für den Datums-Picker gebraucht.
@@ -552,35 +569,22 @@ export function CatDetailScreen({
             onTouchEnd={onSubTabTouchEnd}
             style={{ flex: 1 }}
           >
-            {/* Sub-Tab-Leiste: Offen / Erledigt */}
-            <div className="res-sub-tabs">
-              <button
-                className={`res-sub-tabs__btn ${taskSubTab === "open" ? "res-sub-tabs__btn--active-open" : ""}`}
-                onClick={() => setTaskSubTab("open")}
-              >
-                <span>{t.open || "Offen"}</span>
-                {entries.filter((e) => e.type === "task" && !e.done).length > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--open">{entries.filter((e) => e.type === "task" && !e.done).length}</span>
-                )}
-              </button>
-              <button
-                className={`res-sub-tabs__btn ${taskSubTab === "completed" ? "res-sub-tabs__btn--active-completed" : ""}`}
-                onClick={() => setTaskSubTab("completed")}
-              >
-                <span>{t.markDone || "Erledigt"}</span>
-                {entries.filter((e) => e.type === "task" && e.done).length > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--completed">{entries.filter((e) => e.type === "task" && e.done).length}</span>
-                )}
-              </button>
-            </div>
+            {/* Anzahl links · Sortier-Icon rechts (Auswahl Offen/Erledigt liegt
+                als Pille unten über dem Dock) */}
+            <TaskSortRow
+              t={t}
+              count={taskSubTab === "completed" ? doneTasks.length : openTasks.length}
+              completed={taskSubTab === "completed"}
+              sort={taskSort}
+              onChangeSort={setTaskSort}
+            />
 
-            {/* Task-Listen basierend auf Sub-Tab */}
             {taskSubTab === "open" && (
-              entries.filter((e) => e.type === "task" && !e.done).length === 0 ? (
+              openTasks.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noTasks}</div>
               ) : (
                 <TaskList t={t} CC={CC} lang={lang}
-                  entries={entries.filter((e) => e.type === "task" && !e.done)}
+                  entries={openTasks}
                   cats={allCats}
                   onToggle={toggleTask}
                   onDelete={deleteEntry}
@@ -589,11 +593,11 @@ export function CatDetailScreen({
               )
             )}
             {taskSubTab === "completed" && (
-              entries.filter((e) => e.type === "task" && e.done).length === 0 ? (
+              doneTasks.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noCompletedTasks || "Keine erledigten Aufgaben"}</div>
               ) : (
                 <TaskList t={t} CC={CC} lang={lang}
-                  entries={entries.filter((e) => e.type === "task" && e.done)}
+                  entries={doneTasks}
                   cats={allCats}
                   onToggle={toggleTask}
                   onDelete={deleteEntry}
@@ -944,6 +948,18 @@ export function CatDetailScreen({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Aufgaben-Ansicht: Offen/Erledigt-Auswahl als Frosted-Glass-Pille über
+          dem Dock (analog zur Backlog-Ansichtsauswahl). */}
+      {bm === "tasks" && (
+        <TaskViewSelect
+          t={t}
+          subTab={taskSubTab}
+          onChange={setTaskSubTab}
+          openCount={openTasks.length}
+          completedCount={doneTasks.length}
+        />
       )}
 
       {/* Unteres Dock: Home + optionales Eingabefeld (Lesezeichen liegen oben

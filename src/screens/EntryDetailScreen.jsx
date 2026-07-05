@@ -9,6 +9,7 @@ import { TagIcon, ArchiveIcon, BookmarkIcon } from "../components/AppIcons";
 import { DetailsBody } from "../components/DetailsPopup";
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { DetailDock, DetailIconBar } from "../components/DetailDock";
+import { TaskSortRow, TaskViewSelect } from "../components/TaskSubtabControls";
 import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
 
 const COVER_COLORS = [
@@ -44,6 +45,7 @@ export function EntryDetailScreen({
   const [coverMode, setCoverMode] = useState(null);
   const [bm, setBm] = useState("canvas");
   const [taskSubTab, setTaskSubTab] = useState("open");
+  const [taskSort, setTaskSort] = useState({ by: "date", desc: true });
   const [resSubTab, setResSubTab] = useState("resources");
   const [tagSort, setTagSort] = useState({ by: 'date', desc: true });
 
@@ -100,6 +102,20 @@ export function EntryDetailScreen({
 
   // All tasks for tasks tab (subtasks + linked tasks)
   const allTasksForTab = entry.type === "task" ? [...subtasks, ...linkedTasks] : linkedTasks;
+
+  // Aufgaben nach Sub-Tab (offen/erledigt), sortiert nach taskSort.
+  const sortTasks = (list) =>
+    [...list].sort((a, b) => {
+      if (taskSort.by === "date") {
+        const da = a.createdAt || 0;
+        const db = b.createdAt || 0;
+        return taskSort.desc ? db - da : da - db;
+      }
+      const cmp = (a.title || "").localeCompare(b.title || "");
+      return taskSort.desc ? -cmp : cmp;
+    });
+  const openTasks = sortTasks(allTasksForTab.filter((e) => !e.done));
+  const doneTasks = sortTasks(allTasksForTab.filter((e) => e.done));
 
   // Lesezeichen-Auswahl: alle Lesezeichen (inkl. "details") wechseln nur den
   // Inhaltsbereich. Einstellungen liegen jetzt auf dem Zahnrad-Button unten rechts.
@@ -482,34 +498,22 @@ export function EntryDetailScreen({
             onTouchEnd={onSubTabTouchEnd}
             style={{ flex: 1 }}
           >
-            {/* Sub-Tab-Leiste: Offen / Erledigt */}
-            <div className="res-sub-tabs">
-              <button
-                className={`res-sub-tabs__btn ${taskSubTab === "open" ? "res-sub-tabs__btn--active-open" : ""}`}
-                onClick={() => setTaskSubTab("open")}
-              >
-                <span>{t.open || "Offen"}</span>
-                {allTasksForTab.filter((e) => !e.done).length > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--open">{allTasksForTab.filter((e) => !e.done).length}</span>
-                )}
-              </button>
-              <button
-                className={`res-sub-tabs__btn ${taskSubTab === "completed" ? "res-sub-tabs__btn--active-completed" : ""}`}
-                onClick={() => setTaskSubTab("completed")}
-              >
-                <span>{t.markDone || "Erledigt"}</span>
-                {allTasksForTab.filter((e) => e.done).length > 0 && (
-                  <span className="res-sub-tabs__count res-sub-tabs__count--completed">{allTasksForTab.filter((e) => e.done).length}</span>
-                )}
-              </button>
-            </div>
+            {/* Anzahl links · Sortier-Icon rechts (Auswahl Offen/Erledigt liegt
+                als Pille unten über dem Dock) */}
+            <TaskSortRow
+              t={t}
+              count={taskSubTab === "completed" ? doneTasks.length : openTasks.length}
+              completed={taskSubTab === "completed"}
+              sort={taskSort}
+              onChangeSort={setTaskSort}
+            />
 
             {taskSubTab === "open" && (
-              allTasksForTab.filter((e) => !e.done).length === 0 ? (
+              openTasks.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noTasks}</div>
               ) : (
                 <TaskList t={t} CC={CC} lang={lang}
-                  entries={allTasksForTab.filter((e) => !e.done)}
+                  entries={openTasks}
                   cats={allCats}
                   onToggle={toggleTask}
                   onDelete={deleteEntry}
@@ -518,11 +522,11 @@ export function EntryDetailScreen({
               )
             )}
             {taskSubTab === "completed" && (
-              allTasksForTab.filter((e) => e.done).length === 0 ? (
+              doneTasks.length === 0 ? (
                 <div className="cat-detail__section-empty">{t.noCompletedTasks || "Keine erledigten Aufgaben"}</div>
               ) : (
                 <TaskList t={t} CC={CC} lang={lang}
-                  entries={allTasksForTab.filter((e) => e.done)}
+                  entries={doneTasks}
                   cats={allCats}
                   onToggle={toggleTask}
                   onDelete={deleteEntry}
@@ -852,6 +856,18 @@ export function EntryDetailScreen({
 
       {/* Unteres Dock: nur noch Home-Button (Lesezeichen liegen oben in der
           DetailIconBar). Verlinkte Einträge inline hinzufügen kommt später. */}
+      {/* Aufgaben-Ansicht: Offen/Erledigt-Auswahl als Frosted-Glass-Pille über
+          dem Dock (analog zur Backlog-Ansichtsauswahl). */}
+      {bm === "tasks" && (
+        <TaskViewSelect
+          t={t}
+          subTab={taskSubTab}
+          onChange={setTaskSubTab}
+          openCount={openTasks.length}
+          completedCount={doneTasks.length}
+        />
+      )}
+
       <DetailDock
         t={t}
         onHome={onHome}

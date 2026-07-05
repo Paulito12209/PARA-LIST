@@ -875,6 +875,73 @@
     }
   }
 
+  // ── Aufgaben-Subtab-Steuerung (Detailseiten) im Light Mode ──
+  .cat-detail__task-meta {
+    background: #f7f7f9;
+  }
+
+  .cat-detail__task-count {
+    color: #8e8eb2;
+
+    &--done {
+      color: #0a8a5e;
+    }
+  }
+
+  .cat-detail__sort-btn {
+    color: #8e8eb2;
+
+    &:hover,
+    &--active {
+      color: #1a1a24;
+      background: #f0f0f5;
+    }
+  }
+
+  .cat-detail__glass-menu {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: #e5e5f0;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.14);
+  }
+
+  .cat-detail__menu-option {
+    color: #8e8eb2;
+
+    &:hover,
+    &--active {
+      color: #1a1a24;
+      background: #f0f0f5;
+    }
+
+    &--done.cat-detail__menu-option--active,
+    &--done:hover {
+      color: #0a8a5e;
+    }
+  }
+
+  .cat-detail__menu-count {
+    background: #b4b4c6;
+    color: #ffffff;
+
+    &--done {
+      background: #10B981;
+    }
+  }
+
+  .cat-detail__view-pill {
+    background: rgba(255, 255, 255, 0.75);
+    border-color: #e5e5f0;
+    color: #8e8eb2;
+  }
+
+  .cat-detail__view-pill-label {
+    color: #1a1a24;
+
+    &--done {
+      color: #0a8a5e;
+    }
+  }
+
   .modal__media-grid-btn {
     background: #f7f7f9;
     border-color: #e5e5f0;

@@ -172,8 +172,10 @@
     height: 48px;
     border-radius: 50%;
     flex-shrink: 0;
-    background: $color-surface;
-    border: 1px solid $color-border;
+    // Gleicher Körper wie das 3-Punkte-Menü rechts (__bell/__filter-btn).
+    background: #23232f;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
     color: $color-text;
     cursor: pointer;
     transition: transform $transition-fast, filter $transition-fast;

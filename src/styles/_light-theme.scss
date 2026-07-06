@@ -524,30 +524,41 @@
       &.is-checked { border-color: #3B82F6; }
     }
 
-    // Deckend-weißer Körper (statt Frosted-Glas), damit die Cover-Farbe nicht
-    // durchscheint. Nur der Inhalt bleibt farbig.
+    // Durchscheinendes Frosted-Weiß (wie die Startseiten-Pillen). Hintergrund
+    // nicht eingefärbt – nur der Inhalt trägt die Akzentfarbe.
     &__date-pill {
-      background: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.85);
       color: var(--pill-date-color);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      box-shadow: none;
 
       &:hover {
-        background: #f2f2f7;
+        background: rgba(255, 255, 255, 0.7);
+      }
+
+      &--static {
+        background: rgba(255, 255, 255, 0.55);
+        border-color: rgba(255, 255, 255, 0.85);
       }
     }
 
     &__res-count {
-      background: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      box-shadow: none;
     }
 
     &__tag {
-      background: #ffffff;
-      border: 1px solid rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.85);
       color: #5858A0;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      backdrop-filter: blur(12px) saturate(160%);
+      -webkit-backdrop-filter: blur(12px) saturate(160%);
+      box-shadow: none;
     }
 
     // Avatar-Ringe wie im Startseiten-Cover: reinweißer Rand.
@@ -753,11 +764,13 @@
     color: #5858A0;
   }
 
-  // Zurück-Button im Command-Panel (Detailseiten): weiß.
+  // Zurück-Button im Command-Panel (Detailseiten): gleicher heller Körper wie
+  // das 3-Punkte-Menü rechts (__bell), kein Drop-Shadow im Light-Mode.
   .command-panel__back {
-    background: #ffffff;
+    background: #f7f7f9;
     border-color: #e5e5f0;
     color: #5858A0;
+    box-shadow: none;
   }
 
   .category-card {

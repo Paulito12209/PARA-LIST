@@ -608,9 +608,10 @@
   }
 
 
-  // Alle Meta-Pillen teilen denselben Look: deckend-weißer Körper mit weißer
-  // Umrandung; nur der Inhalt (Icon/Text) trägt die jeweilige Farbe. So bleibt
-  // der Hintergrund konstant und man kann in keinem Modus „durchgucken".
+  // Alle Meta-Pillen teilen denselben durchscheinenden Look (wie die
+  // Startseiten-Pillen): der Hintergrund wird NICHT eingefärbt, sondern im
+  // Dark-Mode aus Dunkelgrau, im Light-Mode aus Weiß abgeleitet. Nur der Inhalt
+  // (Icon/Text) trägt die jeweilige Akzentfarbe.
   &__date-pill {
     display: inline-flex;
     align-items: center;
@@ -622,22 +623,23 @@
     line-height: 1;
     font-weight: 600;
     font-family: $font-body;
-    background: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.9);
+    background: rgba(35, 35, 47, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     color: var(--pill-date-color);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     transition: all $transition-fast;
     cursor: pointer;
 
     &:hover {
-      background: #f2f2f7;
+      background: rgba(45, 45, 60, 0.55);
     }
 
     &--static {
       cursor: default;
       pointer-events: none;
-      background: #ffffff;
-      border-color: rgba(255, 255, 255, 0.9);
+      background: rgba(35, 35, 47, 0.5);
+      border-color: rgba(255, 255, 255, 0.14);
     }
   }
 
@@ -649,9 +651,10 @@
     border-radius: $radius-pill;
     font-size: 11px;
     font-weight: 700;
-    background: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+    background: rgba(35, 35, 47, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   &__tag {
@@ -664,10 +667,11 @@
     font-weight: 600;
     border-radius: $radius-pill;
     padding: 0 10px;
-    background: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    color: #5858A0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+    background: rgba(35, 35, 47, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: rgba($color-text, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   &__date-input {
@@ -1065,7 +1069,8 @@
   border-radius: 50%;
   border: 1px solid transparent;
   background: transparent;
-  color: $color-muted;
+  // Neutraler Grauton (wie Startseite) statt violettem $color-muted.
+  color: #8a8a96;
   cursor: pointer;
   transition: all $transition-fast;
 

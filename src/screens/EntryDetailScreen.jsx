@@ -332,8 +332,8 @@ export function EntryDetailScreen({
                     className="cat-detail__date-pill"
                     onClick={(e) => { e.stopPropagation(); setShowConnSelect(true); setShowDate(false); }}
                     style={{
-                      background: CC[selectedCats[0].type].color + "18",
-                      borderColor: "transparent",
+                      // Körper bleibt neutral (via CSS) wie bei Projekten/Ressourcen/
+                      // Arbeitsbereichen – nur der Inhalt trägt die Kategoriefarbe.
                       color: CC[selectedCats[0].type].color,
                     }}
                   >

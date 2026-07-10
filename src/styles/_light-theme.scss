@@ -160,28 +160,37 @@
         color: #1a1a24;
         background: #f0f0f5;
       }
-
-      &--overdue.command-panel__menu-option--active,
-      &--overdue:hover {
-        color: #F26565;
-      }
     }
 
-    &__menu-count {
-      background: #b4b4c6;
-      color: #ffffff;
-
-      &--overdue {
-        background: #F26565;
-      }
-    }
-
-    // Ansicht-Pille: gleiche weiße Fläche wie Schließen/Suche/Sprache/Theme
+    // Ansicht-Pillen: gleiche weiße Fläche wie Schließen/Suche/Sprache/Theme,
+    // aktive Pille schwarz mit weißem Text (wie .home__filter-pill--active).
     &__view-pill {
       background: #ffffff;
       border-color: #e5e5f0;
       color: #8e8eb2;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
+
+      // Farbe im :hover explizit wiederholen – sonst gewinnt die generische
+      // &:hover-Regel aus _CommandPanel.scss (höhere Spezifität als die
+      // einfache --active-Klasse) und der Text wird unsichtbar.
+      &--active {
+        background: #1a1a24;
+        color: #ffffff;
+        border-color: transparent;
+
+        &:hover {
+          background: #1a1a24;
+          color: #ffffff;
+        }
+      }
+
+      &--overdue.command-panel__view-pill--active {
+        color: #F26565;
+
+        &:hover {
+          color: #F26565;
+        }
+      }
     }
 
     &__search-input-wrap {
@@ -205,14 +214,6 @@
 
       &.command-panel__search-voice-btn--active {
         color: #0B8CE9;
-      }
-    }
-
-    &__view-pill-label {
-      color: #1a1a24;
-
-      &--overdue {
-        color: #F26565;
       }
     }
 
@@ -1914,9 +1915,9 @@
       }
     }
 
-    // Audio-/Voice-Button immer in der aktiven Typ-Farbe (überschreibt das neutrale Grau)
+    // Voice-Button: gleiches neutrales Grau wie das Such-Icon.
     &__voice-btn {
-      color: var(--dock-accent);
+      color: #8e8eb2;
     }
 
     // Pokal-Button (Startseite): weißer Körper + goldene Kontur/Icon wie im

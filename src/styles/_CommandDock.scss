@@ -267,9 +267,9 @@
     }
   }
 
-  // Voice-Button greift die Akzentfarbe des aktiven Typs auf
+  // Voice-Button: gleiches neutrales Grau wie das Such-Icon.
   &__voice-btn {
-    color: var(--dock-accent);
+    color: #8a8a96;
   }
 
   // Senden-Button: erscheint sobald Text im Feld steht (gefüllter Akzent-Kreis)

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, Circle, MoreHorizontal, ChevronsUpDown, Filter, ArrowDownUp, ChevronUp, ChevronDown, Trophy } from "lucide-react";
+import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, Circle, MoreHorizontal, Filter, ArrowDownUp, ChevronUp, ChevronDown, Trophy } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 import { SearchPanel } from "./SearchPanel";
@@ -60,9 +60,8 @@ export function CommandPanel({
   onOpenProgress,
 }) {
   const [subTab, setSubTab] = useState("today");
-  // Footer-Popups (Frosted Glass): Ansicht (Heute/Überfällig), Sprache, Theme.
+  // Footer-Popups (Frosted Glass): Sprache, Theme.
   // Metazeile: Typ-Filter (Alle/Aufgaben/Termine) + Sortierung.
-  const [viewMenuOpen, setViewMenuOpen] = useState(false);
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const [sortMenuOpen, setSortMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
@@ -81,13 +80,12 @@ export function CommandPanel({
   const touchStartY = useRef(0);
 
   const closeMenus = () => {
-    setViewMenuOpen(false);
     setFilterMenuOpen(false);
     setSortMenuOpen(false);
     setLangMenuOpen(false);
     setThemeMenuOpen(false);
   };
-  const anyMenuOpen = viewMenuOpen || filterMenuOpen || sortMenuOpen || langMenuOpen || themeMenuOpen;
+  const anyMenuOpen = filterMenuOpen || sortMenuOpen || langMenuOpen || themeMenuOpen;
 
   // Panel geschlossen (Seitenwechsel / X) → alle offenen Popups zurücksetzen,
   // damit beim erneuten Öffnen kein Menü mehr aufgeklappt ist. Anpassung in der
@@ -551,14 +549,39 @@ export function CommandPanel({
               Heute/Überfällig-Pille · Theme · Suche. Sprache & Theme zeigen nur
               den aktiven Wert und öffnen ein Frosted-Glass-Popup nach oben. */}
           <div className="command-panel__footer-row" onClick={(e) => e.stopPropagation()}>
-            {/* Schließen (rund) */}
-            <button
-              className="command-panel__qs-close-btn"
-              onClick={onToggle}
-              aria-label={t.closeBtn || "Schließen"}
-            >
-              <X size={18} />
-            </button>
+            {/* Suche / Backlog Umschalter (äußerer Button links) */}
+            {searchOpen ? (
+              <button
+                type="button"
+                className="command-panel__qs-settings-btn command-panel__qs-search-btn"
+                aria-label={t.backlog || "Backlog"}
+                onClick={() => onCloseSearch?.()}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="1.5"
+                  stroke="currentColor"
+                  style={{ width: "20px", height: "20px" }}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                  />
+                </svg>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="command-panel__qs-settings-btn command-panel__qs-search-btn"
+                aria-label={t.searchTitle || "Suchen"}
+                onClick={() => onOpenSearch?.()}
+              >
+                <Search size={18} />
+              </button>
+            )}
 
             {/* Sprache & Theme sind aus dem Footer entfernt – beides wird jetzt
                 ausschließlich über das Settings-Icon oben rechts eingestellt. */}
@@ -602,90 +625,33 @@ export function CommandPanel({
               </div>
             ) : (
               <div className="command-panel__view-select">
-                {viewMenuOpen && (
-                  <div className="command-panel__glass-menu command-panel__glass-menu--view">
-                    {[
-                      { id: "today", label: t.todayTabs, count: filteredToday.length },
-                      { id: "overdue", label: t.overdueTabs, count: filteredOverdue.length },
-                    ].map((v) => (
-                      <button
-                        key={v.id}
-                        className={`command-panel__menu-option ${
-                          subTab === v.id ? "command-panel__menu-option--active" : ""
-                        } ${v.id === "overdue" ? "command-panel__menu-option--overdue" : ""}`}
-                        onClick={() => {
-                          setSubTab(v.id);
-                          setViewMenuOpen(false);
-                        }}
-                      >
-                        <span>{v.label}</span>
-                        {v.count > 0 && (
-                          <span
-                            className={`command-panel__menu-count ${
-                              v.id === "overdue" ? "command-panel__menu-count--overdue" : ""
-                            }`}
-                          >
-                            {v.count}
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                )}
                 <button
-                  className="command-panel__view-pill"
-                  onClick={() => {
-                    setViewMenuOpen((o) => !o);
-                    setLangMenuOpen(false);
-                    setThemeMenuOpen(false);
-                  }}
-                  aria-expanded={viewMenuOpen}
+                  className={`command-panel__view-pill ${
+                    subTab === "today" ? "command-panel__view-pill--active" : ""
+                  }`}
+                  onClick={() => setSubTab("today")}
                 >
-                  <span
-                    className={`command-panel__view-pill-label ${
-                      subTab === "overdue" ? "command-panel__view-pill-label--overdue" : ""
-                    }`}
-                  >
-                    {subTab === "today" ? t.todayTabs : t.overdueTabs}
-                  </span>
-                  <ChevronsUpDown size={14} strokeWidth={2.2} />
+                  {t.todayTabs}
+                </button>
+                <button
+                  className={`command-panel__view-pill command-panel__view-pill--overdue ${
+                    subTab === "overdue" ? "command-panel__view-pill--active" : ""
+                  }`}
+                  onClick={() => setSubTab("overdue")}
+                >
+                  {t.overdueTabs}
                 </button>
               </div>
             )}
 
-            {/* Suche / Backlog Umschalter */}
-            {searchOpen ? (
-              <button
-                type="button"
-                className="command-panel__qs-settings-btn command-panel__qs-search-btn"
-                aria-label={t.backlog || "Backlog"}
-                onClick={() => onCloseSearch?.()}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  stroke="currentColor"
-                  style={{ width: "20px", height: "20px" }}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-                  />
-                </svg>
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="command-panel__qs-settings-btn command-panel__qs-search-btn"
-                aria-label={t.searchTitle || "Suchen"}
-                onClick={() => onOpenSearch?.()}
-              >
-                <Search size={18} />
-              </button>
-            )}
+            {/* Schließen (rund, äußerer Button rechts) */}
+            <button
+              className="command-panel__qs-close-btn"
+              onClick={onToggle}
+              aria-label={t.closeBtn || "Schließen"}
+            >
+              <X size={18} />
+            </button>
           </div>
         </div>
       )}

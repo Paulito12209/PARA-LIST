@@ -407,13 +407,6 @@
       right: 0;
     }
 
-    // Ansicht-Auswahl: über der Pille, zentriert
-    &--view {
-      bottom: calc(100% + #{$spacing-sm});
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
     // Sprache: über dem runden Sprach-Button, linksbündig
     &--lang {
       bottom: calc(100% + #{$spacing-sm});
@@ -464,39 +457,16 @@
       color: $color-text;
       background: $color-hover;
     }
-
-    // Überfällig: aktiv (bzw. Hover) in Rot statt Weiß
-    &--overdue.command-panel__menu-option--active,
-    &--overdue:hover {
-      color: $color-notif-red;
-    }
   }
 
-  &__menu-count {
-    font-size: 11px;
-    font-weight: 700;
-    min-width: 20px;
-    height: 20px;
-    border-radius: $radius-pill;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 6px;
-    background: rgba($color-muted, 0.55);
-    color: #ffffff;
-
-    &--overdue {
-      background: $color-notif-red;
-    }
-  }
-
-  // Ansicht-Pille (Heute/Überfällig): mittleres, dehnbares Element der
-  // Footer-Reihe. Feste Höhe wie die runden Buttons, Text immer zentriert.
+  // Ansicht-Pillen (Heute/Überfällig): mittleres, dehnbares Element der
+  // Footer-Reihe. Zwei gleich breite Pillen nebeneinander, wie bei der
+  // aufgeklappten Liste (.home__filter-pill).
   &__view-select {
-    position: relative;
     flex: 1;
     min-width: 0;
     display: flex;
+    gap: $spacing-sm;
   }
 
   // Verlängerte Such-Leiste = Pill-Container mit Eingabefeld + Audio-Button.
@@ -581,7 +551,8 @@
     @include glass-border;
     border-color: rgba(255, 255, 255, 0.07);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-    color: $color-muted;
+    // Neutraler Grauton (wie Filter-/Sortier-Icon) statt violettem $color-muted.
+    color: #8a8a96;
     font-size: 13px;
     font-weight: 600;
     font-family: $font-body;
@@ -592,14 +563,30 @@
       background: #2c2c3a;
       color: $color-text;
     }
-  }
 
-  &__view-pill-label {
-    color: $color-text;
-    font-weight: 700;
+    // Aktiv: helle Fläche mit dunklem Text (wie .home__filter-pill--active).
+    // Farbe im :hover explizit wiederholen – sonst gewinnt die generische
+    // &:hover-Regel oben (höhere Spezifität als die einfache --active-Klasse)
+    // und der Text wird auf der hellen Fläche unsichtbar (weiß auf weiß).
+    &--active {
+      background: #EDEEFF;
+      color: #16161F;
+      border-color: transparent;
+      box-shadow: none;
 
-    &--overdue {
+      &:hover {
+        background: #EDEEFF;
+        color: #16161F;
+      }
+    }
+
+    // Überfällig-Pille: aktiv in Rot statt Schwarz (auch im :hover).
+    &--overdue.command-panel__view-pill--active {
       color: $color-notif-red;
+
+      &:hover {
+        color: $color-notif-red;
+      }
     }
   }
 

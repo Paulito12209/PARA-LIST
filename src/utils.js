@@ -243,3 +243,22 @@ export function computeNotif(entries) {
   }
   return { color: NOTIF_VIOL, count };
 }
+
+/* ── Fokus-Management (iOS-Tastatur) ─────────────────────────── */
+// Blurt das aktuell fokussierte Eingabefeld. Auf iOS (Home-Screen-Web-App)
+// blendet das System bei fokussiertem Input immer seine Formular-Assistent-
+// Pille über der Tastatur ein – die verschwindet nur, wenn der Fokus
+// konsequent aufgehoben wird (Navigation, Panel-Gesten, Listenwechsel …).
+export function isEditableElement(el) {
+  return !!el && (
+    el.tagName === "INPUT" ||
+    el.tagName === "TEXTAREA" ||
+    el.tagName === "SELECT" ||
+    el.isContentEditable
+  );
+}
+
+export function blurActiveInput() {
+  const el = document.activeElement;
+  if (isEditableElement(el)) el.blur();
+}

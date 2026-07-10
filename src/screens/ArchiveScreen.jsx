@@ -354,6 +354,8 @@ export function ArchiveScreen({
 
           <CommandDock
             t={t}
+            CC={CC}
+            cats={cats}
             activeType={dockType}
             onSelectType={(type) => setActiveArchiveTab(type)}
             onSubmit={onQuickCreate}

@@ -285,3 +285,240 @@
     }
   }
 }
+// ============================================================
+// Tastatur-Aktionsleiste (Apple-Reminders-Stil) – schwebt über der
+// iOS-Tastatur, während im Dock-Eingabefeld getippt wird. Portal → body.
+// Buttons: Datum · Verknüpfen (App-Glyphe) · Tag · Kamera · Chevron (zu).
+// ============================================================
+.dock-kb-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  background: #16161f;
+  border-top: 1px solid rgba($color-border, 0.5);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  padding: 4px $spacing-md;
+  padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px));
+  animation: action-sheet-fade-in 0.15s ease-out;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+  }
+
+  &__spacer {
+    flex: 1;
+  }
+
+  &__btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+    border: none;
+    border-radius: $radius-pill;
+    background: transparent;
+    color: #c4c4d0;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background $transition-fast, color $transition-fast;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    // Popover dieses Buttons ist offen
+    &--open {
+      background: #23232f;
+      color: #ededf2;
+    }
+
+    // Wert gesetzt (Datum/Verknüpfung/Tag/Foto) → Akzentfarbe des aktiven Typs
+    &--set {
+      color: var(--dock-accent, #0b8ce9);
+    }
+
+    // Verknüpfen-Button: App-Glyphe in Weiß (Dark Mode) bzw. Schwarz (Light).
+    &--brand:not(.dock-kb-bar__btn--set) {
+      color: #ffffff;
+    }
+  }
+
+  &__btn-label {
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  // Foto-Indikator: kleiner Akzent-Punkt an der Kamera
+  &__dot {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--dock-accent, #0b8ce9);
+  }
+
+  &__collapse {
+    color: #ededf2;
+  }
+
+  // ── Popover-Zeile (Datum/Zeit bzw. Tags) – wächst über der Button-Reihe ──
+  &__popover {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-sm 0 6px;
+    border-bottom: 1px solid rgba($color-border, 0.4);
+    margin-bottom: 4px;
+
+    &--tags {
+      flex-wrap: wrap;
+      gap: $spacing-2xs;
+      max-height: 128px;
+      overflow-y: auto;
+    }
+  }
+
+  &__field {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    padding: 0 12px;
+    border-radius: $radius-md;
+    border: 1px solid $color-border;
+    background: #23232f;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 14px;
+    color-scheme: dark;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  &__clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid $color-border;
+    background: #23232f;
+    color: #c4c4d0;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  &__tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: $radius-pill;
+    border: 1px solid $color-border;
+    background: #23232f;
+    color: #c4c4d0;
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &--on {
+      background: var(--dock-accent, #0b8ce9);
+      border-color: transparent;
+      color: #ffffff;
+    }
+  }
+
+  &__tags-empty {
+    font-size: 13px;
+    color: #8a8a96;
+    padding: 2px 0;
+  }
+}
+
+// ── Light Mode: helle Leiste, App-Glyphe in Schwarz ──
+.light-theme {
+  .dock-kb-bar {
+    background: #f7f7f9;
+    border-top-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+
+    &__btn {
+      color: #5b5b6b;
+
+      &:active {
+        background: rgba(0, 0, 0, 0.06);
+      }
+
+      &--open {
+        background: #ffffff;
+        color: #1a1a24;
+      }
+
+      &--set {
+        color: var(--dock-accent, #0b8ce9);
+      }
+
+      &--brand:not(.dock-kb-bar__btn--set) {
+        color: #111111;
+      }
+    }
+
+    &__collapse {
+      color: #1a1a24;
+    }
+
+    &__popover {
+      border-bottom-color: rgba(0, 0, 0, 0.08);
+    }
+
+    &__field {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.1);
+      color: #1a1a24;
+      color-scheme: light;
+    }
+
+    &__clear {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.1);
+      color: #5b5b6b;
+    }
+
+    &__tag-pill {
+      background: #ffffff;
+      border-color: rgba(0, 0, 0, 0.1);
+      color: #5b5b6b;
+
+      &--on {
+        background: var(--dock-accent, #0b8ce9);
+        border-color: transparent;
+        color: #ffffff;
+      }
+    }
+
+    &__tags-empty {
+      color: #8e8eb2;
+    }
+
+    &__dot {
+      background: var(--dock-accent, #0b8ce9);
+    }
+  }
+}

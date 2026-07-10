@@ -9,7 +9,7 @@ import { TrashSheet } from "../components/TrashSheet";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
-import { getNextBirthday, isOld, isToday, fmtDate, fmtRelative, getTaskGroup, getInitials } from "../utils";
+import { getNextBirthday, isOld, isToday, fmtDate, fmtRelative, getTaskGroup, getInitials, blurActiveInput } from "../utils";
 
 const COVER_ACCENT_RGB = {
   project: "224, 62, 62",
@@ -141,6 +141,9 @@ export function HomeScreen({
   const activeLabel = TYPE_LABELS[activeType];
 
   const handleSelectType = (type) => {
+    // Listenwechsel (Tap aufs Dock-Icon ODER horizontales Wischen) beendet
+    // eine laufende Eingabe – Tastatur samt iOS-Assistent-Pille klappt zu.
+    blurActiveInput();
     setActiveType(type);
     if (ENTRY_TYPES.includes(type)) setTab(type);
   };
@@ -285,6 +288,7 @@ export function HomeScreen({
 
     const scrollTop = container.scrollTop;
     if (scrollTop > lastScrollTop.current && activeItemsCount > 1 && !listExpanded) {
+      blurActiveInput();
       setListExpanded(true);
     }
     lastScrollTop.current = scrollTop;
@@ -416,6 +420,7 @@ export function HomeScreen({
       dy >= OVERSCROLL_COLLAPSE_PX &&
       Math.abs(dy) > Math.abs(dx)
     ) {
+      blurActiveInput();
       setListExpanded(false);
       return;
     }
@@ -428,6 +433,7 @@ export function HomeScreen({
       dy <= -EXPAND_SWIPE_PX &&
       Math.abs(dy) > Math.abs(dx)
     ) {
+      blurActiveInput();
       setListExpanded(true);
       return;
     }
@@ -1109,6 +1115,9 @@ export function HomeScreen({
       {!progressOpen && (
         <CommandDock
           t={t}
+          CC={CC}
+          cats={cats}
+          allTags={state.tags || []}
           activeType={activeType}
           onSelectType={handleSelectType}
           onSubmit={onQuickCreate}

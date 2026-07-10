@@ -12,6 +12,8 @@ import {
   SEED_IDS,
   computeNotif,
   CAT_ICONS,
+  blurActiveInput,
+  isEditableElement,
 } from "./utils";
 import { buildPresetDecks, FLASHCARD_PRESETS_VERSION } from "./data/flashcardPresets";
 import { wordsResourceName } from "./lib/translate";
@@ -345,6 +347,23 @@ export default function App() {
     document.body.classList.toggle("light-theme", state.theme === "light");
   }, [state.theme]);
 
+  // iOS-Tastatur/Assistent-Pille: Eingabefelder deaktivieren sich selbst,
+  // sobald irgendwo außerhalb eines Eingabefelds getippt wird (Navigation,
+  // Listen, Sheets, Dock-Icons …). Elemente, die den Fokus bewusst halten
+  // (schwebende Tastatur-Leisten), markieren sich mit [data-keep-focus].
+  useEffect(() => {
+    const onPointerDown = (e) => {
+      if (!isEditableElement(document.activeElement)) return;
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      if (isEditableElement(target)) return;
+      if (target.closest("input, textarea, select, [contenteditable='true'], [contenteditable=''], label, [data-keep-focus]")) return;
+      document.activeElement.blur();
+    };
+    document.addEventListener("pointerdown", onPointerDown, true);
+    return () => document.removeEventListener("pointerdown", onPointerDown, true);
+  }, []);
+
   const [stack, setStack] = useState([{ view: VIEW.HOME }]);
   const [tab, setTab] = useState("tasks");
   const [panelOpen, setPanelOpen] = useState(false);
@@ -382,6 +401,8 @@ export default function App() {
   const TABS = getTABS(t);
 
   const push = (view) => {
+    // Seitenwechsel beendet jede aktive Eingabe (iOS-Tastatur + Pille zu).
+    blurActiveInput();
     // "Zuletzt geöffnet"-Zeitstempel für Cat-Seiten (QuickSwitch ⌘K-Sortierung
     // + Details-Lesezeichen)
     if (view?.view === "catDetail" && view.catId) {
@@ -401,7 +422,17 @@ export default function App() {
     }
     setStack((s) => [...s, view]);
   };
-  const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
+  const pop = () => {
+    blurActiveInput();
+    setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
+  };
+
+  // Command-Panel auf/zu – immer mit Blur, damit z.B. das Dock-Eingabefeld
+  // beim Öffnen des Backlogs (Tap ODER Swipe-Geste) die Tastatur freigibt.
+  const setPanelOpenBlurred = (next) => {
+    blurActiveInput();
+    setPanelOpen(next);
+  };
 
   const getArchiveCount = (archiveTab) => {
     if (["project", "area", "resource"].includes(archiveTab)) {
@@ -538,7 +569,7 @@ export default function App() {
   };
 
   /* ── entity mutations ──────────────────────────────────────── */
-  const addCat = (type, name, date = null) =>
+  const addCat = (type, name, date = null, extras = {}) =>
     setState((s) => ({
       ...s,
       cats: [
@@ -549,7 +580,7 @@ export default function App() {
           name,
           date: date || null,
           body: "",
-          tags: [],
+          tags: extras.tags?.length ? extras.tags : [],
           relatedId: null,
           archived: false,
           collaborators: [],
@@ -593,6 +624,59 @@ export default function App() {
         entries: [...s.entries, { id: newId, createdAt: Date.now(), linkedEntryIds: [], parentId: null, seed: false, ...entry }],
       };
     });
+
+  // Schnell-Erstellung aus dem Dock (Startseite/Archiv): Basis-Eintrag plus
+  // optionale Metadaten aus der Tastatur-Aktionsleiste (Datum/Zeit,
+  // Kategorie-Verknüpfungen, Tags, Foto). Ein Foto wird als eigener,
+  // beidseitig verknüpfter Medien-Eintrag mit denselben Kategorien angelegt.
+  const addQuickEntry = (tabId, title, date, extras = {}) => {
+    const entry = buildVoiceEntry(tabId, title, date);
+    if (extras.time && entry.type !== "note") entry.time = extras.time;
+    if (extras.catIds?.length) {
+      entry.catId = extras.catIds[0];
+      entry.catIds = extras.catIds;
+    }
+    if (extras.tags?.length) entry.tags = extras.tags;
+
+    const photo = extras.photo || null;
+    if (!photo) {
+      addEntry(entry);
+      return;
+    }
+    const newId = uid();
+    const mediaId = uid();
+    setState((s) => ({
+      ...s,
+      entries: [
+        ...s.entries,
+        { id: newId, createdAt: Date.now(), parentId: null, seed: false, ...entry, linkedEntryIds: [mediaId] },
+        {
+          ...VOICE_ENTRY_BASE,
+          id: mediaId,
+          createdAt: Date.now(),
+          parentId: null,
+          seed: false,
+          type: "media",
+          title: photo.name || title,
+          mediaType: "image",
+          mediaData: photo,
+          catId: entry.catId || null,
+          catIds: entry.catIds || [],
+          linkedEntryIds: [newId],
+        },
+      ],
+    }));
+  };
+
+  // Gemeinsamer Quick-Create-Pfad für Dock-Eingabe & Spracheingabe.
+  const quickCreate = (type, title, date, extras) => {
+    setPanelOpen(false);
+    if (type === "project" || type === "area" || type === "resource") {
+      addCat(type, title, date, extras);
+    } else {
+      addQuickEntry(type, title, date, extras);
+    }
+  };
 
   const toggleTask = (id) =>
     setState((s) => {
@@ -975,7 +1059,7 @@ export default function App() {
       // Swipe-down öffnet immer den Backlog (Command-Panel) – auch auf der
       // Startseite. Die Suche öffnet nur noch explizit (Such-Icon im Dock).
       if (!scrollEl || scrollEl.scrollTop <= 0) {
-        setPanelOpen(true);
+        setPanelOpenBlurred(true);
       }
     }
 
@@ -987,7 +1071,7 @@ export default function App() {
       const listScrolledToBottom =
         !listEl || listEl.scrollHeight - listEl.scrollTop - listEl.clientHeight <= 1;
       if (isBackdrop || !inList || listScrolledToBottom) {
-        setPanelOpen(false);
+        setPanelOpenBlurred(false);
       }
     }
   };
@@ -1139,7 +1223,10 @@ export default function App() {
         entries={state.entries}
         cats={state.cats}
         open={panelOpen}
-        onToggle={() => setPanelOpen((o) => !o)}
+        onToggle={() => {
+          blurActiveInput();
+          setPanelOpen((o) => !o);
+        }}
         onOpenSettings={() => setSettingsOpen(true)}
         onToggleTask={toggleTask}
         onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
@@ -1154,7 +1241,7 @@ export default function App() {
       />
 
       {panelOpen && (
-        <div className="command-panel__backdrop" onClick={() => setPanelOpen(false)} />
+        <div className="command-panel__backdrop" onClick={() => setPanelOpenBlurred(false)} />
       )}
 
       {appSwitcherOpen && (
@@ -1224,14 +1311,7 @@ export default function App() {
             onCoverAccentChange={setCoverAccentRgb}
             onOpenCatType={(type) => push({ view: VIEW.CAT_LIST, type })}
             onOpenCat={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
-            onQuickCreate={(type, title, date) => {
-              setPanelOpen(false);
-              if (type === "project" || type === "area" || type === "resource") {
-                addCat(type, title, date);
-              } else {
-                addEntry(buildVoiceEntry(type, title, date));
-              }
-            }}
+            onQuickCreate={quickCreate}
             onAddEntry={(type) => {
               setPanelOpen(false);
               const entryType = type || (tab === "tasks" ? "task" : tab === "notes" ? "note" : "calendar");
@@ -1279,13 +1359,7 @@ export default function App() {
             onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
             onRestoreNote={(id) => updateEntry(id, { archived: false })}
             onOpenCat={(c) => push({ view: VIEW.CAT_DETAIL, catId: c.id })}
-            onQuickCreate={(type, title) => {
-              if (type === "project" || type === "area" || type === "resource") {
-                addCat(type, title);
-              } else {
-                addEntry(buildVoiceEntry(type, title));
-              }
-            }}
+            onQuickCreate={quickCreate}
             onAddVoiceEntry={(type, title, date) => addEntry(buildVoiceEntry(type, title, date))}
             onHome={() => setStack([{ view: VIEW.HOME }])}
             onHeaderTitleChange={setArchiveHeaderTitle}

@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useKeyboardHeight } from "../hooks/useKeyboardHeight";
 import {
   X,
   Filter,
@@ -140,25 +141,9 @@ export function SearchPanel({
     });
   const isTypeSelected = (id) =>
     id === "all" ? typeFilter === "all" : typeFilter !== "all" && typeFilter.includes(id);
-  const [kbHeight, setKbHeight] = useState(0);
+  const kbHeight = useKeyboardHeight();
   const inputRef = useRef(null);
   const blurTimer = useRef(null);
-
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const onResize = () => {
-      const kb = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-      setKbHeight(kb > 80 ? kb : 0);
-    };
-    vv.addEventListener("resize", onResize);
-    vv.addEventListener("scroll", onResize);
-    onResize();
-    return () => {
-      vv.removeEventListener("resize", onResize);
-      vv.removeEventListener("scroll", onResize);
-    };
-  }, []);
 
   useEffect(() => () => clearTimeout(blurTimer.current), []);
 
@@ -339,6 +324,7 @@ export function SearchPanel({
         createPortal(
           <div
             className="search-panel__kb-bar"
+            data-keep-focus="true"
             style={{ bottom: kbHeight > 0 ? kbHeight : undefined }}
           >
             {/* Schließbutton (links) – schließt das Such-Overlay komplett */}

@@ -291,7 +291,7 @@ export function TranslateOverlay({ t, lang = "de", onSave, onClose, onOpenFlashc
         </div>
 
         {kbHeight > 0 && (
-          <div className="tl-kbbar" style={{ bottom: kbHeight }}>
+          <div className="tl-kbbar" data-keep-focus="true" style={{ bottom: kbHeight }}>
             {/* Sprachrichtung auch bei offener Tastatur sichtbar/änderbar */}
             <div className="tl-langbar tl-kbbar__langbar">
               <select

@@ -589,7 +589,7 @@ export function CommandPanel({
             {/* Ansicht Heute/Überfällig (wenn normal) ODER verlängerte Such-Leiste
                 mit Audio-Button für die Spracheingabe (wenn Suche offen) */}
             {searchOpen ? (
-              <div className="command-panel__search-input-wrap">
+              <div className="command-panel__search-input-wrap" data-keep-focus="true">
                 <input
                   className="command-panel__search-input"
                   type="search"

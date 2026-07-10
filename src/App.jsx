@@ -362,6 +362,9 @@ export default function App() {
   // Drei-Punkte-Menü oben rechts auf Detailseiten: jeder Klick erhöht den
   // Zähler; die aktive Detailseite reagiert darauf und öffnet ihr Options-Sheet.
   const [pageMenuTick, setPageMenuTick] = useState(0);
+  // Pokal-Button liegt jetzt im Header (CommandPanel). Der Fortschritts-State
+  // wohnt aber in HomeScreen → per Tick-Zähler von oben antriggern.
+  const [progressTick, setProgressTick] = useState(0);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
   // Header-Eyebrow (Zeile über dem Titel): normal das Datum; im Fortschritts-
@@ -1149,6 +1152,7 @@ export default function App() {
         searchOpen={searchOpen}
         onOpenSearch={() => setSearchOpen(true)}
         onCloseSearch={() => setSearchOpen(false)}
+        onOpenProgress={() => setProgressTick((n) => n + 1)}
       />
 
       {panelOpen && (
@@ -1212,6 +1216,11 @@ export default function App() {
             tab={tab}
             setTab={setTab}
             panelOpen={panelOpen}
+            progressTick={progressTick}
+            onOpenSearch={() => {
+              setPanelOpen(true);
+              setSearchOpen(true);
+            }}
             expandedCat={expandedCat}
             setExpandedCat={setExpandedCat}
             onCoverAccentChange={setCoverAccentRgb}

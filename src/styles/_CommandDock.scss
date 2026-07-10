@@ -19,15 +19,41 @@
   }
   display: flex;
   flex-direction: column;
-  // +4px Abstand zwischen Icon-Reihe und Eingabezeile (8px → 12px)
-  gap: calc(#{$spacing-sm} + #{$spacing-xs});
-  padding: $spacing-sm $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
+  // 8px Abstand zwischen Eingabezeile und Icon-Reihe
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-md calc(10px + env(safe-area-inset-bottom, 0px));
 
-  // Dark Mode: dunkler Boden (Light Mode überschreibt auf Weiß)
-  background: #16161f;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: $radius-xl $radius-xl 0 0;
-  box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.45);
+  // Kein Body/Border oben mehr – der Verlauf liegt in einer eigenen ::before-
+  // Ebene, damit oben (durchsichtig + scharf) → unten (deckend + verschwommen).
+  background: transparent;
+  border-top: none;
+  border-radius: 0;
+  box-shadow: none;
+
+  // Verlaufs- + Progressive-Blur-Ebene HINTER dem Inhalt. Die Maske lässt die
+  // Fläche (inkl. Backdrop-Blur) von oben (0%) nach unten (100%) einblenden.
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    // Dark Mode: dunkler Boden (Light Mode überschreibt auf Weiß)
+    background: #16161f;
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    // Verlauf 0% → 66% (transparent → deckend); ab 67% voll deckend, damit
+    // hinter den Typ-Icons unten keine Listeneinträge mehr durchscheinen.
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 66%, #000 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 66%, #000 100%);
+    pointer-events: none;
+  }
+
+  // Inhalt über der Verlaufsebene.
+  &__types,
+  &__input-row {
+    position: relative;
+    z-index: 1;
+  }
 
   // ── Icon-Reihe (Typ-Auswahl) ──
   &__types {
@@ -38,10 +64,10 @@
   }
 
   &__type {
-    // Fixe Breite (32px) – etwas breiter als das Icon (24px), damit der
+    // 32×32px-Gehäuse – etwas breiter als das Icon (24px), damit der
     // Glow-Effekt bei maximierter Liste nicht abgeschnitten wird.
     flex: 0 0 32px;
-    height: 44px;
+    height: 32px;
     border-radius: $radius-md;
     display: flex;
     align-items: center;
@@ -81,7 +107,7 @@
   // das Drei-Punkte-Icon visuell rechts bündig mit dem Audio-Icon darunter ist.
   &__menu {
     flex: 0 0 24px;
-    height: 44px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -110,14 +136,33 @@
     transition: all $transition-fast;
   }
 
-  // ── Eingabezeile (List-Icon · Input · Voice) ──
+  // ── Eingabezeile (optional Home-Icon · Eingabe-Pille) ──
   &__input-row {
     display: flex;
     align-items: center;
     gap: $spacing-sm;
     padding: 0;
-    background: #16161f;
-    border-radius: $radius-lg;
+    background: transparent;
+  }
+
+  // Eingabe-Pille: Textfeld + Audio-/Senden-Button rechts innen. Wirft einen
+  // gestreuten Box-Shadow in der aktiven Kontext-/Akzentfarbe.
+  &__input-wrap {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: $spacing-2xs;
+    height: 46px;
+    // Rechts 4px = gleicher Abstand wie oben/unten um den 38px-Audio-Button.
+    padding: 0 4px 0 $spacing-md;
+    border-radius: $radius-pill;
+    background: #23232f;
+    // Kein Rand – die Kontur kommt allein vom Akzent-Glow.
+    border: none;
+    box-shadow:
+      0 3px 24px color-mix(in srgb, var(--dock-accent) 42%, transparent),
+      0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   &__input {
@@ -129,11 +174,36 @@
     color: #ededf2;
     font-family: $font-body;
     font-size: 15px;
-    padding: $spacing-sm;
+    padding: 0;
 
     &::placeholder {
       color: #8a8a96;
     }
+  }
+
+  // Mit Such-Icon links schrumpft das linke Padding auf Button-Abstand.
+  &__input-wrap:has(.command-dock__search-btn) {
+    padding-left: 4px;
+  }
+
+  &__search-btn {
+    color: #8a8a96;
+
+    &:hover {
+      color: #ededf2;
+    }
+  }
+
+  // Aktions-Button (Audio/Senden) INNERHALB der Pille – ohne eigenen Körper.
+  &__input-action {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+
+    &:hover { background: transparent; }
   }
 
   &__icon-btn {

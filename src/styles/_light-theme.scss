@@ -17,10 +17,12 @@
   --pill-area-bg: rgba(255, 255, 255, 0.55);
   --pill-resource-bg: rgba(255, 255, 255, 0.55);
 
-  // Date & Overdue Pill (Light Mode)
-  --pill-date-bg: rgba(219, 234, 254, 0.92);
-  --pill-date-color: #2563EB;
-  --pill-date-border: rgba(255, 255, 255, 0.9);
+  // Date & Overdue Pill (Light Mode) – gleiche Farben wie die Datums-Pille im
+  // Startseiten-Cover (dort besser lesbar); gilt damit auch für die
+  // Listeneinträge.
+  --pill-date-bg: rgba(96, 165, 250, 0.12);
+  --pill-date-color: #1D4ED8;
+  --pill-date-border: rgba(96, 165, 250, 0.3);
   --pill-overdue-bg: #FEF2F2;
   --pill-overdue-color: #DC2626;
   --pill-overdue-border: rgba(255, 255, 255, 0.9);
@@ -38,10 +40,15 @@
 
   .task-item__pill--date,
   .task-item__pill--overdue {
-    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    // Blauer bzw. roter Rand wie die Datums-Pille im Startseiten-Cover.
+    border: 1px solid var(--pill-date-border) !important;
     box-shadow:
       inset 0 1px 6px rgba(255, 255, 255, 0.75),
       0 1px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .task-item__pill--overdue {
+    border-color: var(--pill-overdue-border) !important;
   }
 
   .entry-list {
@@ -1405,6 +1412,40 @@
     background: #ffffff;
   }
 
+  // Listen-Filter (aufgeklappt): aktive Pille schwarz mit weißem Text,
+  // inaktive in sekundärem Hellgrau.
+  .home__filter-pill,
+  .home__filter-trash {
+    background: #f0f0f3;
+    color: #8e8eb2;
+    border-color: rgba(0, 0, 0, 0.06);
+  }
+
+  .home__filter-pill--active {
+    background: #1a1a24;
+    color: #ffffff;
+    border-color: transparent;
+  }
+
+  .home__filter-trash--active {
+    background: #1a1a24;
+    color: #F26565;
+    border-color: transparent;
+  }
+
+  .home-trash-item__title {
+    color: #1a1a24;
+  }
+
+  .home-trash-item__restore {
+    border-color: rgba(0, 0, 0, 0.12);
+    color: #8e8eb2;
+
+    &:hover {
+      color: #1a1a24;
+    }
+  }
+
   .split-nav {
     &__dots-bg {
       opacity: 0.12;
@@ -1797,24 +1838,15 @@
 // ── Command Dock + Startseiten-Liste (Light Mode) ──────────────
 .app.light-theme {
   .command-dock {
-    // Milchige Glasfläche. WICHTIG: Die Deckkraft ist bewusst sehr hoch (0.96),
-    // damit die Listeninhalte darunter praktisch nicht durchscheinen – auch auf
-    // Geräten, wo `backdrop-filter` NICHT rendert (z.B. manche Android/Pixel,
-    // die Support melden, den Backdrop-Blur aber nicht zeichnen). Allein die
-    // Deckkraft bestimmt dort das Ergebnis. Der Blur ist nur Frost-Veredelung
-    // obendrauf für Browser, die ihn unterstützen (iOS/Safari).
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(18px) saturate(140%);
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    border-top-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 -10px 36px rgba(0, 0, 0, 0.10);
+    // Fläche + Blur liegen in der ::before-Ebene (0%→100% Weiß-Verlauf).
+    background: transparent;
+    border-top: none;
+    box-shadow: none;
 
-    // iOS-Safari rendert den Backdrop-Blur zuverlässig → dort darf die Fläche
-    // transluzenter (glasiger) sein. `-webkit-touch-callout` ist eine iOS-only-
-    // Eigenschaft und isoliert iOS sauber; Android/Pixel (wo der Blur evtl.
-    // nicht rendert) behalten die hohe, opake Deckkraft von oben.
-    @supports (-webkit-touch-callout: none) {
-      background: rgba(255, 255, 255, 0.6);
+    &::before {
+      // Weißer Verlauf oben (durchsichtig) → unten (deckend), inkl. progressivem
+      // Blur über die Maske aus der Basis.
+      background: #ffffff;
     }
 
     &__type {
@@ -1829,6 +1861,23 @@
     &__input-row {
       // Teil der Frosted-Glass-Fläche → kein eigener Kasten
       background: transparent;
+    }
+
+    // Eingabe-Pille im Light Mode: weißer Körper, kein Rand – nur Akzent-Glow.
+    &__input-wrap {
+      background: #ffffff;
+      border: none;
+      box-shadow:
+        0 3px 24px color-mix(in srgb, var(--dock-accent) 30%, transparent),
+        0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    // Aktions-Button in der Pille bleibt körperlos (nur Icon).
+    &__input-action {
+      background: transparent;
+      border-color: transparent;
+
+      &:hover { background: transparent; }
     }
 
     &__input {
@@ -1920,4 +1969,23 @@
   background: none;
   border: none;
   box-shadow: none;
+}
+
+// Header-Logo (Startseite): nur der Glyph – im Light-Mode weißer
+// Kontrast-Schein statt dunklem Schatten, damit er auf farbigen Covern lesbar
+// bleibt.
+.light-theme .command-panel__logo-btn {
+  background: transparent;
+}
+
+.light-theme .command-panel__logo-btn .brand-logo {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+
+.light-theme .command-panel__logo-btn .brand-logo__svg {
+  filter:
+    drop-shadow(0 1px 4px rgba(255, 255, 255, 0.8))
+    drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
 }

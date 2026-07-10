@@ -763,9 +763,12 @@
     backdrop-filter: blur(8px);
 
     &--date {
-      color: #1D4ED8;
-      background: rgba(96, 165, 250, 0.12);
-      border-color: rgba(96, 165, 250, 0.3);
+      // Gleiches Styling wie die Datums-Pillen der Listeneinträge (Theme-Vars):
+      // Dark-Mode = helles Himmelblau (besser lesbar), Light-Mode = die
+      // bisherigen Cover-Farben – die Vars tragen je Theme den passenden Wert.
+      color: var(--pill-date-color);
+      background: var(--pill-date-bg);
+      border-color: var(--pill-date-border);
     }
 
     &--area {
@@ -1085,17 +1088,146 @@
 // Schwebende Aktions-Buttons (nur im expandierten Zustand):
 // Zuklappen (links) + Archiv (rechts) über dem Input-Dock, Liquid-Glass-Körper.
 // Listeneinträge bleiben darunter durch das Glas sichtbar.
-.home__floating-actions {
+// Zuklapp-Chevron: schlichter Pfeil mittig über der Dock-Eingabezeile
+// (ersetzt die früheren Glas-Buttons unten links/rechts).
+.home__collapse-chevron {
   position: absolute;
-  left: 16px;
-  right: 16px;
-  // 12px über dem Input-Dock (Dock-Höhe ~120px + Safe-Area)
-  bottom: calc(136px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(114px + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
   display: flex;
-  justify-content: space-between;
-  // Liste darunter bleibt scroll-/klickbar; nur die Buttons fangen Klicks ab
-  pointer-events: none;
-  z-index: 15;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #8a8a96;
+  cursor: pointer;
+  transition: color $transition-fast, transform $transition-fast;
+
+  &:active {
+    transform: translateX(-50%) scale(0.9);
+  }
+}
+
+// Filter-Pillen der aufgeklappten Liste: Aktiv · Archiviert · Papierkorb.
+.home__list-filters {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-xs $spacing-md $spacing-sm;
+  flex-shrink: 0;
+}
+
+.home__filter-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 34px;
+  border-radius: $radius-pill;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: $font-body;
+  background: #23232f;
+  color: #8a8a96;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  // Aktiv: im Dark-Mode helle Fläche mit dunklem Text (Light-Mode invertiert
+  // auf Schwarz/Weiß).
+  &--active {
+    background: #EDEEFF;
+    color: #16161F;
+    border-color: transparent;
+  }
+}
+
+// Papierkorb: runder Icon-Button ganz rechts (zeigt gelöschte Einträge des
+// aktiven Kontexts als dritten Filterzustand).
+.home__filter-trash {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: #23232f;
+  color: #8a8a96;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &--active {
+    background: #EDEEFF;
+    color: #E03E3E;
+    border-color: transparent;
+  }
+}
+
+// Papierkorb-Zeilen: Icon · Titel + "vor X Tagen" · Wiederherstellen.
+.home-trash-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm + $spacing-xs;
+  padding: $spacing-sm + 2px $spacing-md;
+
+  &__icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: rgba(242, 101, 101, 0.10);
+    color: #F26565;
+  }
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 15px;
+    font-weight: 500;
+    color: $color-text;
+    @include text-truncate;
+  }
+
+  &__meta {
+    font-size: 12px;
+    color: #8a8a96;
+    margin-top: 2px;
+  }
+
+  &__restore {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #8a8a96;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+      color: $color-text;
+    }
+  }
 }
 
 .home__floating-btn {

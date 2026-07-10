@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp, Trophy } from "lucide-react";
+import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp, Search } from "lucide-react";
 
 // Audio-/Spracheingabe-Icon: 5 vertikale Wellen-Striche in unterschiedlicher Höhe
 // (ersetzt das Mikrofon-Icon – wirkt wie ein Equalizer / Herzschlag-Wellen)
@@ -53,7 +53,7 @@ const SINGULAR_KEY = {
 //   zur Startseite (onHome).
 // `canToggleList`: auf der Startseite klappt ein 2. Tap auf das bereits aktive
 // Typ-Icon die Liste auf/zu (onToggleList).
-export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, onOpenProgress, leadingAction = "list" }) {
+export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, onOpenProgress, onOpenSearch, leadingAction = "list" }) {
   const [value, setValue] = useState("");
   const isHomeScreen = leadingAction === "list";
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
@@ -70,6 +70,52 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
 
   return (
     <div className="command-dock" style={{ "--dock-accent": active.color }}>
+      {/* Eingabezeile ZUERST – die Typ-Icons liegen darunter. */}
+      <div className="command-dock__input-row">
+        {/* Der Pokal-Button ist in den Header gewandert; auf Nicht-Startseiten
+            bleibt der Home-Button als führende Aktion erhalten. */}
+        {!isHomeScreen && (
+          <button
+            className="command-dock__icon-btn command-dock__list-btn"
+            onClick={() => onHome?.()}
+            aria-label={t.home || "Startseite"}
+          >
+            <Home size={20} />
+          </button>
+        )}
+        {/* Eingabeleiste als Pille: Such-Icon links, Textfeld, Audio-/Senden-
+            Button rechts innen. */}
+        <div className="command-dock__input-wrap">
+          {onOpenSearch && (
+            <button
+              className="command-dock__icon-btn command-dock__input-action command-dock__search-btn"
+              onClick={() => onOpenSearch()}
+              aria-label={t.searchTitle || "Suchen"}
+            >
+              <Search size={19} />
+            </button>
+          )}
+          <input
+            className="command-dock__input"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") submit();
+            }}
+            placeholder={placeholder}
+            enterKeyHint="done"
+          />
+          <button
+            className={`command-dock__icon-btn command-dock__input-action ${hasText ? "command-dock__send-btn" : "command-dock__voice-btn"}`}
+            onClick={() => (hasText ? submit() : onOpenVoice(activeType))}
+            aria-label={hasText ? "Senden" : "Spracheingabe"}
+          >
+            {hasText ? <ArrowUp size={20} /> : <AudioWaveIcon size={20} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Typ-Icons UNTER dem Eingabefeld. */}
       <div className="command-dock__types">
         {DOCK_TYPES.map((d) => {
           const Icon = d.Icon;
@@ -99,43 +145,6 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
           <span className="command-dock__menu-circle">
             <MoreHorizontal size={14} />
           </span>
-        </button>
-      </div>
-
-      <div className="command-dock__input-row">
-        {isHomeScreen ? (
-          <button
-            className="command-dock__icon-btn command-dock__list-btn command-dock__trophy-btn"
-            onClick={() => onOpenProgress?.()}
-            aria-label={t.progress || "Fortschritt"}
-          >
-            <Trophy size={20} />
-          </button>
-        ) : (
-          <button
-            className="command-dock__icon-btn command-dock__list-btn"
-            onClick={() => onHome?.()}
-            aria-label={t.home || "Startseite"}
-          >
-            <Home size={20} />
-          </button>
-        )}
-        <input
-          className="command-dock__input"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") submit();
-          }}
-          placeholder={placeholder}
-          enterKeyHint="done"
-        />
-        <button
-          className={`command-dock__icon-btn ${hasText ? "command-dock__send-btn" : "command-dock__voice-btn"}`}
-          onClick={() => (hasText ? submit() : onOpenVoice(activeType))}
-          aria-label={hasText ? "Senden" : "Spracheingabe"}
-        >
-          {hasText ? <ArrowUp size={20} /> : <AudioWaveIcon size={20} />}
         </button>
       </div>
     </div>

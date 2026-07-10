@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, Circle, MoreHorizontal, ChevronsUpDown, Filter, ArrowDownUp, ChevronUp, ChevronDown } from "lucide-react";
+import { Check, Moon, Sun, ChevronLeft, Search, X, CheckCircle2, Calendar, Circle, MoreHorizontal, ChevronsUpDown, Filter, ArrowDownUp, ChevronUp, ChevronDown, Trophy } from "lucide-react";
 import { isOld, isToday, fmtDate, NOTIF_RED } from "../utils";
 import { CustomSettingsIcon, BrandLogo, FlashcardsBadge } from "./AppIcons";
 import { SearchPanel } from "./SearchPanel";
@@ -57,6 +57,7 @@ export function CommandPanel({
   onOpenSearch,
   searchOpen,
   onCloseSearch,
+  onOpenProgress,
 }) {
   const [subTab, setSubTab] = useState("today");
   // Footer-Popups (Frosted Glass): Ansicht (Heute/Überfällig), Sprache, Theme.
@@ -105,6 +106,18 @@ export function CommandPanel({
   const handleTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
+  };
+
+  // Backlog öffnen per Wisch von oben nach unten auf dem Header – auf der
+  // Startseite (Liste minimiert) und auf den Detailseiten. Ersetzt den
+  // früheren Tap auf den Header.
+  const handleHeaderSwipeEnd = (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+    if (dy > SWIPE_THRESHOLD_PX && dy > Math.abs(dx)) {
+      navigator.vibrate?.(HAPTIC_TAP_MS);
+      onToggle();
+    }
   };
 
   const handleTouchEnd = (e) => {
@@ -226,12 +239,14 @@ export function CommandPanel({
     >
       <div
         className="command-panel__header"
-        onClick={!open && !isVoiceMode ? onToggle : undefined}
-        style={!open && !isVoiceMode ? { cursor: "pointer" } : undefined}
+        // Backlog öffnet per Swipe-down (kein Tap mehr): auf der Startseite nur
+        // bei minimierter Liste (kein title), auf Detailseiten immer.
+        onTouchStart={!open && !isVoiceMode && (page || !title) ? handleTouchStart : undefined}
+        onTouchEnd={!open && !isVoiceMode && (page || !title) ? handleHeaderSwipeEnd : undefined}
       >
-        <div className="command-panel__header-row">
+        <div className={`command-panel__header-row${headerPage ? "" : " command-panel__header-row--home"}`}>
           <div className="command-panel__brand">
-            {headerPage ? (
+            {headerPage && (
               // Detailseiten: Zurück-Button oben links (ersetzt das Page-Icon).
               <button
                 type="button"
@@ -241,22 +256,6 @@ export function CommandPanel({
                 aria-label={t.back || "Zurück"}
               >
                 <ChevronLeft size={22} strokeWidth={2.4} />
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="command-panel__logo-btn"
-                aria-label="Tools"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenAppSwitcher?.();
-                }}
-              >
-                {app?.kind === "flashcards" ? (
-                  <FlashcardsBadge size={48} />
-                ) : (
-                  <BrandLogo size={48} />
-                )}
               </button>
             )}
             <div className="command-panel__titles">
@@ -290,7 +289,41 @@ export function CommandPanel({
               )}
             </div>
           </div>
+
+          {/* Logo mittig (nur Startseite/Backlog): kein grauer Körper mehr,
+              sondern ein Gradient-„AI"-Kreis aus Mini-Punkten. */}
+          {!headerPage && (
+            <button
+              type="button"
+              className="command-panel__logo-btn"
+              aria-label="Tools"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenAppSwitcher?.();
+              }}
+            >
+              {app?.kind === "flashcards" ? (
+                <FlashcardsBadge size={40} />
+              ) : (
+                <BrandLogo size={40} />
+              )}
+            </button>
+          )}
+
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
+            {/* Startseite: Pokal-Button (Fortschritt) links neben den Einstellungen. */}
+            {!headerPage && (
+              <button
+                className="command-panel__bell command-panel__filter-btn command-panel__trophy-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenProgress?.();
+                }}
+                aria-label={t.progress || "Fortschritt"}
+              >
+                <Trophy size={20} />
+              </button>
+            )}
             {/* Einstellungen oben rechts – geschlossen UND geöffnet sichtbar.
                 Auf Detailseiten stattdessen das Drei-Punkte-Menü der Seite
                 (öffnet deren Options-Sheet von unten). */}

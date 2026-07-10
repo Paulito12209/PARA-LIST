@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, Minimize2 } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, ChevronDown, Trash2, RotateCcw } from "lucide-react";
 import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
 import { DockMenuSheet } from "../components/DockMenuSheet";
@@ -9,7 +9,7 @@ import { TrashSheet } from "../components/TrashSheet";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
-import { getNextBirthday, isOld, isToday, fmtDate, getTaskGroup, getInitials } from "../utils";
+import { getNextBirthday, isOld, isToday, fmtDate, fmtRelative, getTaskGroup, getInitials } from "../utils";
 
 const COVER_ACCENT_RGB = {
   project: "224, 62, 62",
@@ -99,6 +99,8 @@ export function HomeScreen({
   onOpenArchive,
   onArchiveEntry,
   panelOpen,
+  progressTick,
+  onOpenSearch,
   onCoverAccentChange,
   onUpdateUser,
   onUpdateCat,
@@ -116,8 +118,14 @@ export function HomeScreen({
   // Dock-3-Punkte-Menü (Bottom-Sheet) und Papierkorb-Ansicht
   const [dockMenuOpen, setDockMenuOpen] = useState(false);
   const [trashOpen, setTrashOpen] = useState(false);
-  // Fortschritts-Overlay (Pokal-Button links im Dock)
+  // Fortschritts-Overlay – der Pokal-Button liegt jetzt im Header (CommandPanel)
+  // und triggert das Öffnen über einen Tick-Zähler von oben.
   const [progressOpen, setProgressOpen] = useState(false);
+  const [prevProgressTick, setPrevProgressTick] = useState(progressTick);
+  if (progressTick !== prevProgressTick) {
+    setPrevProgressTick(progressTick);
+    setProgressOpen(true);
+  }
   const ENTRY_TYPES = ["tasks", "notes", "calendar"];
   const isEntryType = ENTRY_TYPES.includes(activeType);
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
@@ -149,7 +157,19 @@ export function HomeScreen({
   const [collabModalOpen, setCollabModalOpen] = useState(false);
   const [collabModalInitialView, setCollabModalInitialView] = useState("list");
   const [listExpanded, setListExpanded] = useState(false);
+  // Listen-Filter (nur aufgeklappt): Aktiv · Archiviert · Papierkorb.
+  // Archiv/Papierkorb sind damit direkt in der Liste erreichbar (kein eigener
+  // Screen-Wechsel nötig); beim Zuklappen wird auf "active" zurückgesetzt.
+  const [listFilter, setListFilter] = useState("active");
   const lastScrollTop = useRef(0);
+
+  // Filter beim Zuklappen bzw. Kontextwechsel (Typ/Tab) zurücksetzen.
+  useEffect(() => {
+    if (!listExpanded) setListFilter("active");
+  }, [listExpanded]);
+  useEffect(() => {
+    setListFilter("active");
+  }, [activeType, tab]);
 
   // Beim Aufklappen der Liste wandert der Abschnittstitel in den Header (statt
   // "Startseite"); das Fortschritts-Overlay setzt stattdessen "Fortschritt".
@@ -687,12 +707,64 @@ export function HomeScreen({
     );
   };
 
+  // Papierkorb-Ansicht (Filter "trash"): gelöschte Einträge/Kategorien des
+  // aktiven Kontexts, neueste zuerst, mit Wiederherstellen-Aktion.
+  const renderTrashList = () => {
+    const ctxType = isEntryType
+      ? { tasks: "task", notes: "note", calendar: "calendar" }[tab]
+      : activeType;
+    const items = (state.trash || [])
+      .filter((it) =>
+        isEntryType
+          ? it.kind === "entry" && it.data.type === ctxType
+          : it.kind === "cat" && it.data.type === ctxType
+      )
+      .sort((a, b) => b.deletedAt - a.deletedAt);
+    if (items.length === 0) {
+      return <div className="entry-list__empty">{t.trashEmpty}</div>;
+    }
+    return items.map((it) => (
+      <div key={it.data.id} className="home-trash-item">
+        <div className="home-trash-item__icon">
+          <Trash2 size={18} />
+        </div>
+        <div className="home-trash-item__text">
+          <div className="home-trash-item__title">{it.data.title || it.data.name}</div>
+          <div className="home-trash-item__meta">{fmtRelative(it.deletedAt, t.locale)}</div>
+        </div>
+        <button
+          className="home-trash-item__restore"
+          onClick={() => onRestoreFromTrash?.(it.data.id)}
+          aria-label={t.restore}
+        >
+          <RotateCcw size={16} />
+        </button>
+      </div>
+    ));
+  };
+
   const renderTabList = () => {
-    if (tabEntries.length === 0) {
+    if (listFilter === "trash") return renderTrashList();
+    // Archiviert-Filter: gleiche Logik wie der Archiv-Screen je Eintragstyp.
+    const listEntries =
+      listFilter === "archived"
+        ? entries.filter((e) => {
+            if (tab === "tasks") return e.type === "task" && (e.done || e.archived);
+            if (tab === "notes") return e.type === "note" && (e.archived || e.done);
+            return e.type === "calendar" && (isOld(e.date) || e.done || e.archived);
+          })
+        : tabEntries;
+    if (listEntries.length === 0) {
       return (
         <div className="entry-list__empty">
-          <div className="entry-list__empty-title">{t.noEntries(tabCfg?.label)}</div>
-          <div className="entry-list__empty-hint" style={{ color: tabColor }}>{t.doubleTapHint}</div>
+          {listFilter === "archived" ? (
+            <div className="entry-list__empty-title">{t.noneArchived}</div>
+          ) : (
+            <>
+              <div className="entry-list__empty-title">{t.noEntries(tabCfg?.label)}</div>
+              <div className="entry-list__empty-hint" style={{ color: tabColor }}>{t.doubleTapHint}</div>
+            </>
+          )}
         </div>
       );
     }
@@ -700,7 +772,7 @@ export function HomeScreen({
     const shared = {
       t,
       CC,
-      entries: tabEntries,
+      entries: listEntries,
       cats,
       grouped: true,
       color: tabColor,
@@ -753,9 +825,16 @@ export function HomeScreen({
   // Eintragstypen → bestehende Listen; PARA-Typen → einfache Kategorien-Liste.
   const renderActiveList = () => {
     if (isEntryType) return renderTabList();
-    const paraCats = cats.filter((c) => c.type === activeType && !c.archived);
+    if (listFilter === "trash") return renderTrashList();
+    const paraCats = cats.filter(
+      (c) => c.type === activeType && (listFilter === "archived" ? c.archived : !c.archived)
+    );
     if (paraCats.length === 0) {
-      return <div className="entry-list__empty">{t.noCats(activeLabel)}</div>;
+      return (
+        <div className="entry-list__empty">
+          {listFilter === "archived" ? t.noneArchived : t.noCats(activeLabel)}
+        </div>
+      );
     }
 
     const renderCatItem = (c) => (
@@ -935,7 +1014,34 @@ export function HomeScreen({
           </div>
         )}
 
-        {activeGroupHeader && isEntryType && (
+        {/* Aufgeklappt: Filter-Pillen zwischen Header und Liste –
+            Aktiv · Archiviert · Papierkorb (kontextbezogen, kein Screen-Wechsel). */}
+        {listExpanded && (
+          <div className="home__list-filters">
+            <button
+              className={`home__filter-pill${listFilter === "active" ? " home__filter-pill--active" : ""}`}
+              onClick={() => setListFilter("active")}
+            >
+              {t.activeFilter || "Aktiv"}
+            </button>
+            <button
+              className={`home__filter-pill${listFilter === "archived" ? " home__filter-pill--active" : ""}`}
+              onClick={() => setListFilter("archived")}
+            >
+              <Archive size={13} strokeWidth={2.2} />
+              {t.archivedLabel || "Archiviert"}
+            </button>
+            <button
+              className={`home__filter-trash${listFilter === "trash" ? " home__filter-trash--active" : ""}`}
+              onClick={() => setListFilter("trash")}
+              aria-label={t.trash}
+            >
+              <Trash2 size={16} strokeWidth={2.2} />
+            </button>
+          </div>
+        )}
+
+        {activeGroupHeader && isEntryType && listFilter === "active" && (
           <div className="task-group-header task-group-header--fixed">
             <span className="task-group-header__left">{activeGroupHeader.left}</span>
             {activeGroupHeader.count && <span className="task-group-header__badge">{activeGroupHeader.count}</span>}
@@ -956,23 +1062,16 @@ export function HomeScreen({
           {renderActiveList()}
         </div>
 
+        {/* Aufgeklappt: schlichter Chevron mittig über der Dock-Eingabezeile
+            zum Zuklappen (ersetzt die früheren Glas-Buttons unten links/rechts). */}
         {listExpanded && (
-          <div className="home__floating-actions">
-            <button
-              className="home__floating-btn"
-              onClick={() => setListExpanded(false)}
-              aria-label={t.closeBtn}
-            >
-              <Minimize2 size={20} />
-            </button>
-            <button
-              className="home__floating-btn"
-              onClick={() => onOpenArchive(activeType)}
-              aria-label={t.archive}
-            >
-              <Archive size={20} />
-            </button>
-          </div>
+          <button
+            className="home__collapse-chevron"
+            onClick={() => setListExpanded(false)}
+            aria-label={t.closeBtn}
+          >
+            <ChevronDown size={26} strokeWidth={2.4} />
+          </button>
         )}
       </div>
 
@@ -1018,6 +1117,7 @@ export function HomeScreen({
           onToggleList={() => setListExpanded((v) => !v)}
           onHome={() => setListExpanded(false)}
           onOpenProgress={() => setProgressOpen(true)}
+          onOpenSearch={onOpenSearch}
           onOpenVoice={() => setVoiceOverlayOpen(true)}
           onMenu={() => setDockMenuOpen(true)}
         />

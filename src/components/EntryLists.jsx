@@ -173,10 +173,10 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
           >
             {e.starred
-              ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+              ? <Star size={26} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
               : e.done
-                ? <CheckCircle2 size={22} color="#0B8CE9" strokeWidth={2.25} />
-                : <Circle size={22} color="#0B8CE9" strokeWidth={2.25} />}
+                ? <CheckCircle2 size={26} color="#0B8CE9" strokeWidth={2.25} />
+                : <Circle size={26} color="#0B8CE9" strokeWidth={2.25} />}
           </button>
         )}
         {e.type === 'note' && (
@@ -185,8 +185,8 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
           >
             {e.starred
-              ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
-              : <FileText size={22} color="#FBBF24" strokeWidth={2.25} />}
+              ? <Star size={26} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+              : <FileText size={26} color="#FBBF24" strokeWidth={2.25} />}
           </button>
         )}
         {e.type === 'calendar' && (
@@ -195,8 +195,8 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             onClick={(ev) => { ev.stopPropagation(); onToggleStar && onToggleStar(e.id); }}
           >
             {e.starred
-              ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
-              : <Calendar size={22} color="#1E3A8A" strokeWidth={2.25} />}
+              ? <Star size={26} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+              : <Calendar size={26} color="#1E3A8A" strokeWidth={2.25} />}
           </button>
         )}
         <div className="task-item__body">
@@ -405,8 +405,8 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
           aria-label={c.starred ? t.unmarkFavorite : t.markFavorite}
         >
           {c.starred
-            ? <Star size={22} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
-            : <Icon size={22} color={color} strokeWidth={2.25} />}
+            ? <Star size={26} fill="#F59E0B" color="#F59E0B" strokeWidth={0} />
+            : <Icon size={26} color={color} strokeWidth={2.25} />}
         </button>
         <div className="task-item__body">
           <div className="task-item__top-row">
@@ -564,8 +564,8 @@ export function TaskList({ entries, cats, onToggle, onToggleStar, onTogglePin, o
               aria-label={e.done ? t.markUndone || "Mark as not done" : t.markDone || "Mark as done"}
             >
               {e.done
-                ? <CheckCircle2 size={22} color="#0B8CE9" strokeWidth={2.25} />
-                : <Circle size={22} color="#0B8CE9" strokeWidth={2.25} />}
+                ? <CheckCircle2 size={26} color="#0B8CE9" strokeWidth={2.25} />
+                : <Circle size={26} color="#0B8CE9" strokeWidth={2.25} />}
             </button>
           )}
           <div className="task-item__body">
@@ -693,7 +693,7 @@ export function NoteList({ entries, cats, onDelete, onToggleStar, onTogglePin, o
         >
           {!isHome && (
             <div className="note-item__type-icon" aria-hidden="true">
-              <FileText size={22} color="#FBBF24" strokeWidth={2.25} />
+              <FileText size={26} color="#FBBF24" strokeWidth={2.25} />
             </div>
           )}
           <div className="note-item__content">
@@ -826,7 +826,7 @@ export function CalList({ entries, cats, onDelete, onToggle, onToggleStar, onTog
           <div className="cal-item__row">
             {!isHome && (
               <div className="cal-item__type-icon" aria-hidden="true">
-                <Calendar size={22} color="#1E3A8A" strokeWidth={2.25} />
+                <Calendar size={26} color="#1E3A8A" strokeWidth={2.25} />
               </div>
             )}
             <div className="cal-item__info">

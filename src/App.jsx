@@ -972,12 +972,10 @@ export default function App() {
       }
       const scrollEl = findScrollContainer(cur.view, e.target);
       if (scrollEl === false) return; // textarea not at top
+      // Swipe-down öffnet immer den Backlog (Command-Panel) – auch auf der
+      // Startseite. Die Suche öffnet nur noch explizit (Such-Icon im Dock).
       if (!scrollEl || scrollEl.scrollTop <= 0) {
         setPanelOpen(true);
-        // Wenn man von der Startseite aus nach unten wischt, direkt die Suche als Standard öffnen
-        if (cur.view === VIEW.HOME) {
-          setSearchOpen(true);
-        }
       }
     }
 

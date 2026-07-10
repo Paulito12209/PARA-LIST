@@ -20,8 +20,8 @@
   display: flex;
   flex-direction: column;
   // 8px Abstand zwischen Eingabezeile und Icon-Reihe
-  gap: $spacing-sm;
-  padding: $spacing-md $spacing-md calc(10px + env(safe-area-inset-bottom, 0px));
+  gap: calc(#{$spacing-sm} + 2px);
+  padding: $spacing-md 12px calc(14px + env(safe-area-inset-bottom, 0px)) 12px;
 
   // Kein Body/Border oben mehr – der Verlauf liegt in einer eigenen ::before-
   // Ebene, damit oben (durchsichtig + scharf) → unten (deckend + verschwommen).
@@ -31,7 +31,8 @@
   box-shadow: none;
 
   // Verlaufs- + Progressive-Blur-Ebene HINTER dem Inhalt. Die Maske lässt die
-  // Fläche (inkl. Backdrop-Blur) von oben (0%) nach unten (100%) einblenden.
+  // Fläche (inkl. Backdrop-Blur) von oben (0%, durchsichtig) bis ganz unten
+  // (100%, voll deckend) durchgehend einblenden – ohne vorzeitiges Plateau.
   &::before {
     content: "";
     position: absolute;
@@ -41,10 +42,24 @@
     background: #16161f;
     backdrop-filter: blur(22px) saturate(140%);
     -webkit-backdrop-filter: blur(22px) saturate(140%);
-    // Verlauf 0% → 66% (transparent → deckend); ab 67% voll deckend, damit
-    // hinter den Typ-Icons unten keine Listeneinträge mehr durchscheinen.
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 66%, #000 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, #000 66%, #000 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, #000 100%);
+    pointer-events: none;
+  }
+
+  // Zweite Blur-Stufe: verdoppelt den Blur zur Unterkante hin (progressiver
+  // Blur oben scharf → unten doppelt verschwommen). Blendet erst ab ~35% ein
+  // und wirkt zusätzlich auf die bereits geblurte ::before-Ebene.
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: transparent;
+    backdrop-filter: blur(44px) saturate(140%);
+    -webkit-backdrop-filter: blur(44px) saturate(140%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 35%, #000 100%);
+    mask-image: linear-gradient(to bottom, transparent 35%, #000 100%);
     pointer-events: none;
   }
 
@@ -60,7 +75,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: $spacing-2xs;
+    gap: calc(#{$spacing-2xs} + 2px);
+    padding-right: 4px;
   }
 
   &__type {
@@ -153,9 +169,9 @@
     display: flex;
     align-items: center;
     gap: $spacing-2xs;
-    height: 46px;
-    // Rechts 4px = gleicher Abstand wie oben/unten um den 38px-Audio-Button.
-    padding: 0 4px 0 $spacing-md;
+    height: 52px;
+    // Rechts 8px = gleicher Abstand wie oben/unten um den 38px-Audio-Button.
+    padding: 0 8px 0 $spacing-md;
     border-radius: $radius-pill;
     background: #23232f;
     // Kein Rand – die Kontur kommt allein vom Akzent-Glow.
@@ -181,31 +197,10 @@
     }
   }
 
-  // Mit Such-Icon links schrumpft das linke Padding auf Button-Abstand.
-  &__input-wrap:has(.command-dock__search-btn) {
-    padding-left: 4px;
-  }
-
-  &__search-btn {
-    color: #8a8a96;
-
-    &:hover {
-      color: #ededf2;
-    }
-  }
-
-  // Aktions-Button (Audio/Senden) INNERHALB der Pille – ohne eigenen Körper.
-  &__input-action {
-    flex: none;
-    width: 38px;
-    height: 38px;
-    background: transparent;
-    border: none;
-    box-shadow: none;
-
-    &:hover { background: transparent; }
-  }
-
+  // Basis-Icon-Button (Pokal-/Home-Pille im Dock). WICHTIG: muss VOR
+  // __input-action/__search-btn stehen – sonst gewinnt seine Pillen-Optik
+  // (Border/Hintergrund/48px-Breite) per Deklarationsreihenfolge gegen die
+  // absichtlich „körperlosen" Buttons innerhalb der Eingabe-Pille.
   &__icon-btn {
     @include floating-btn(40px, 50%);
     // 8px breiter als hoch → liegende Pille (Home- bzw. Voice-/Senden-Button)
@@ -221,6 +216,42 @@
       background: #2c2c3a;
       color: #ffffff;
     }
+  }
+
+  // Aktions-Button (Audio/Senden) INNERHALB der Pille – ohne eigenen Körper.
+  &__input-action {
+    flex: none;
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+
+    &:hover { background: transparent; }
+  }
+
+  // Such-Icon links in der Eingabe-Pille: keine eigene Box/Padding – die Größe
+  // entspricht exakt dem Icon, damit der Flex-Gap den optischen Abstand zum
+  // Placeholder-Text 1:1 bestimmt (12px).
+  &__search-btn {
+    width: auto;
+    height: auto;
+    padding: 0;
+    background: none;
+    border: none;
+    box-shadow: none;
+    color: #8a8a96;
+
+    &:hover {
+      background: none;
+      color: #ededf2;
+    }
+  }
+
+  // Mit Such-Icon links: 12px exakter Abstand zum Placeholder-Text.
+  &__input-wrap:has(.command-dock__search-btn) {
+    padding-left: $spacing-md;
+    gap: 12px;
   }
 
   // Pokal-Button (links, nur Startseite): weißer Körper + goldene Kontur/Icon

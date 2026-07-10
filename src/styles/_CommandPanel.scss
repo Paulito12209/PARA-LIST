@@ -78,7 +78,7 @@
   &__header {
     display: flex;
     flex-direction: column;
-    padding: calc(#{$spacing-md} + env(safe-area-inset-top, 0px)) $spacing-md 0;
+    padding: calc(#{$spacing-md} + env(safe-area-inset-top, 0px)) $spacing-md 0 12px;
   }
 
   &--closed>&__header {
@@ -94,27 +94,17 @@
     align-items: center;
     justify-content: space-between;
     padding-bottom: $spacing-2xs;
-
-    // Startseite/Backlog: Titel links, Logo mittig (absolut), Aktionen rechts.
-    &--home {
-      position: relative;
-    }
   }
 
-  // Logo mittig im Header (immer zentriert, unabhängig von der Titelbreite):
-  // NUR der Glyph – kein Kreis, keine Füllung, kein Ring.
+  // Logo oben links im Header (Startseite/Backlog) – Gegenstück zum
+  // Zurück-Button auf Detailseiten. NUR der Glyph – kein Kreis, keine
+  // Füllung, kein Ring.
   &__logo-btn {
-    // Zentrierung über inset+margin statt transform: das globale
-    // button:active { transform: scale() } würde ein translate(-50%,-50%)
-    // überschreiben und das Logo beim Drücken diagonal wegspringen lassen.
-    position: absolute;
-    inset: 0;
-    margin: auto;
-    width: 48px;
-    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 48px;
+    height: 48px;
     flex-shrink: 0;
     border: none;
     background: transparent;
@@ -139,19 +129,13 @@
     }
   }
 
-  // Startseite: langer Titel läuft nicht unters mittige Logo, sondern wird
-  // mit Ellipsis abgeschnitten.
-  &__header-row--home &__greeting {
-    @include text-truncate;
-    max-width: calc(50vw - 64px);
-  }
-
-  // Linke Gruppe: Logo + Titelblock
+  // Linke Gruppe: Logo/Zurück-Button + Titelblock
   &__brand {
     display: flex;
     align-items: center;
     gap: $spacing-sm + $spacing-2xs;
     min-width: 0;
+    flex: 1;
   }
 
   &__logo {
@@ -257,10 +241,12 @@
     letter-spacing: -0.5px;
     // Kontrast über dem durchsichtigen Cover-Hintergrund
     text-shadow: 0 1px 16px rgba(0, 0, 0, 0.45);
+    // Logo/Zurück-Button links, Aktionen rechts fix – Titel füllt den Rest
+    // und schneidet bei Überlauf mit Ellipsis ab (Startseite wie Detail).
+    @include text-truncate;
+    max-width: 100%;
 
-    // Seitentitel kann lang sein → bei Überlauf abschneiden
     &--page {
-      @include text-truncate;
       max-width: 78vw;
     }
 

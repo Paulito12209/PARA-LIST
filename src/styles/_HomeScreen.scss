@@ -1004,6 +1004,12 @@
 
 .home__list-container--expanded .entry-list {
   padding-bottom: 152px !important;
+  // Weicher Übergang unter den Filter-Pillen: hochgescrollte Einträge blenden
+  // in den oberen ~24px des Scrollbereichs von deckend → durchsichtig aus,
+  // statt hart an der Oberkante abgeschnitten zu werden. Die Maske wirkt auf
+  // den Inhalt selbst und funktioniert dadurch in Dark und Light Mode gleich.
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 24px);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 24px);
 }
 
 // ── List-Section Header: Label · Aufklappen-Toggle · Archiv ──

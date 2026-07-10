@@ -1872,23 +1872,9 @@
         0 1px 4px rgba(0, 0, 0, 0.08);
     }
 
-    // Aktions-Button in der Pille bleibt körperlos (nur Icon).
-    &__input-action {
-      background: transparent;
-      border-color: transparent;
-
-      &:hover { background: transparent; }
-    }
-
-    &__input {
-      color: #1a1a24;
-
-      &::placeholder {
-        color: #8a8a96;
-      }
-    }
-
-    // Icons: transluzente Glas-Pillen mit zartem Rand (passend zur Frosted-Fläche)
+    // Icons: transluzente Glas-Pillen mit zartem Rand (passend zur Frosted-Fläche).
+    // MUSS vor __input-action/__search-btn stehen, sonst gewinnt diese
+    // Pillen-Optik gegen die absichtlich körperlosen Buttons in der Eingabe-Pille.
     &__icon-btn {
       background: rgba(255, 255, 255, 0.5);
       border-color: rgba(0, 0, 0, 0.08);
@@ -1897,6 +1883,34 @@
       &:hover {
         background: rgba(255, 255, 255, 0.78);
         color: #1c1c30;
+      }
+    }
+
+    // Aktions-Button in der Pille bleibt körperlos (nur Icon).
+    &__input-action {
+      background: transparent;
+      border-color: transparent;
+
+      &:hover { background: transparent; }
+    }
+
+    // Such-Icon links: ebenfalls körperlos, keine Glas-Pille.
+    &__search-btn {
+      background: none;
+      border-color: transparent;
+      color: #8e8eb2;
+
+      &:hover {
+        background: none;
+        color: #1c1c30;
+      }
+    }
+
+    &__input {
+      color: #1a1a24;
+
+      &::placeholder {
+        color: #8a8a96;
       }
     }
 

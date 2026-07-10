@@ -246,7 +246,7 @@ export function CommandPanel({
       >
         <div className={`command-panel__header-row${headerPage ? "" : " command-panel__header-row--home"}`}>
           <div className="command-panel__brand">
-            {headerPage && (
+            {headerPage ? (
               // Detailseiten: Zurück-Button oben links (ersetzt das Page-Icon).
               <button
                 type="button"
@@ -256,6 +256,24 @@ export function CommandPanel({
                 aria-label={t.back || "Zurück"}
               >
                 <ChevronLeft size={22} strokeWidth={2.4} />
+              </button>
+            ) : (
+              // Startseite/Backlog: Logo oben links (kein grauer Körper mehr,
+              // sondern ein Gradient-„AI"-Kreis aus Mini-Punkten).
+              <button
+                type="button"
+                className="command-panel__logo-btn"
+                aria-label="Tools"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenAppSwitcher?.();
+                }}
+              >
+                {app?.kind === "flashcards" ? (
+                  <FlashcardsBadge size={40} />
+                ) : (
+                  <BrandLogo size={40} />
+                )}
               </button>
             )}
             <div className="command-panel__titles">
@@ -289,26 +307,6 @@ export function CommandPanel({
               )}
             </div>
           </div>
-
-          {/* Logo mittig (nur Startseite/Backlog): kein grauer Körper mehr,
-              sondern ein Gradient-„AI"-Kreis aus Mini-Punkten. */}
-          {!headerPage && (
-            <button
-              type="button"
-              className="command-panel__logo-btn"
-              aria-label="Tools"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenAppSwitcher?.();
-              }}
-            >
-              {app?.kind === "flashcards" ? (
-                <FlashcardsBadge size={40} />
-              ) : (
-                <BrandLogo size={40} />
-              )}
-            </button>
-          )}
 
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
             {/* Startseite: Pokal-Button (Fortschritt) links neben den Einstellungen. */}

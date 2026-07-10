@@ -1025,6 +1025,12 @@ export default function App() {
 
   const notif = computeNotif(state.entries);
 
+  // Onboarding offen → gesamte App dahinter aus dem Fokus-Baum nehmen.
+  // Sonst zählt iOS das Dock-Eingabefeld (u.a.) als weitere Formularfelder
+  // und blendet seine native „vor/zurück/Fertig"-Leiste über der Tastatur
+  // ein, während man den Namen eintippt.
+  const onboardingOpen = state.user.name === "";
+
   /* ── swipe-back & panel gestures ───────────────────────────── */
   const touchX = useRef(0);
   const touchY = useRef(0);
@@ -1288,7 +1294,7 @@ export default function App() {
           Fokus-Baum – sonst zählt iOS das Dock-Feld als zweites Formularfeld
           und blendet seine native „vor/zurück/Fertig"-Leiste über der Tastatur ein. */}
       <div
-        inert={panelOpen || undefined}
+        inert={panelOpen || onboardingOpen || undefined}
         className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}`}
       >
         {cur.view === VIEW.HOME && (

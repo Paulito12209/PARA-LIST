@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { I18N } from "../i18n";
+import { blurActiveInput } from "../utils";
 
 const STEP_LANGUAGE = 0;
 const STEP_NAME = 1;
@@ -15,7 +16,12 @@ export function OnboardingModal({ onComplete }) {
   const [lang, setLang] = useState("de");
 
   const finish = () => {
-    if (name.trim()) onComplete(lang, name.trim());
+    if (!name.trim()) return;
+    // Namensfeld VOR dem Unmount explizit deaktivieren – sonst bleibt auf
+    // iOS die Tastatur samt Assistent-Leiste am nicht mehr existierenden
+    // Feld "hängen".
+    blurActiveInput();
+    onComplete(lang, name.trim());
   };
 
   return (

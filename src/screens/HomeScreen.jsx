@@ -1115,9 +1115,6 @@ export function HomeScreen({
       {!progressOpen && (
         <CommandDock
           t={t}
-          CC={CC}
-          cats={cats}
-          allTags={state.tags || []}
           activeType={activeType}
           onSelectType={handleSelectType}
           onSubmit={onQuickCreate}

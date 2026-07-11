@@ -5,6 +5,7 @@ import { SwipeToDelete } from "./SwipeToDelete";
 import { AutoScrollText } from "./AutoScrollText";
 import { EntryActionSheet } from "./EntryActionSheet";
 import { LinkSheet } from "./LinkSheet";
+import { CatLinkSheet } from "./CatLinkSheet";
 import { LinkedPillSheet } from "./LinkedPillSheet";
 import { TagIcon, ArchiveIcon, BookmarkIcon, CustomSettingsIcon, GitMergeBranchIcon } from "./AppIcons";
 
@@ -362,8 +363,9 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
 /* ── Home Category Item (PARA-Zeile im Aufgaben-Layout) ──────── */
 const CAT_PILL_ICONS = { project: Circle, area: Triangle, resource: Square };
 
-export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onToggleVerified, onTrash }) {
+export function HomeCatItem({ c, cats = [], t, CC, onOpenCat, onUpdateCat, onTogglePin, onToggleVerified, onTrash }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [linkSheetOpen, setLinkSheetOpen] = useState(false);
   const suppressNextClick = useRef(false);
   const Icon = CAT_PILL_ICONS[c.type] || Circle;
   const color = CC[c.type]?.color || "#E03E3E";
@@ -392,7 +394,7 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
       }
       completeColor={isResource ? "#30A060" : undefined}
       CompleteIcon={isResource ? ShieldCheck : undefined}
-      isActive={menuOpen}
+      isActive={menuOpen || linkSheetOpen}
     >
       <div
         className="task-item task-item--home"
@@ -444,6 +446,18 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
                   <Check size={12} strokeWidth={3} />
                 </span>
               )}
+
+              {/* Verknüpfen – wie bei den Eintrags-Zeilen, rechts neben der
+                  Datumspille. Verbindet die Kategorie über relatedId
+                  (Projekt↔Ressourcen/Bereich, Bereich↔Projekte/Ressourcen,
+                  Ressource↔Projekt/Bereich). */}
+              <button
+                className="task-item__link-btn"
+                onClick={(ev) => { ev.stopPropagation(); setLinkSheetOpen(true); }}
+                aria-label={t.linkSheetTitle}
+              >
+                <GitMergeBranchIcon size={16} strokeWidth={2} />
+              </button>
             </div>
 
             <button
@@ -455,6 +469,17 @@ export function HomeCatItem({ c, t, CC, onOpenCat, onUpdateCat, onTogglePin, onT
           </div>
         </div>
       </div>
+
+      {linkSheetOpen && (
+        <CatLinkSheet
+          cat={c}
+          cats={cats}
+          CC={CC}
+          t={t}
+          onUpdateCat={onUpdateCat}
+          onClose={() => setLinkSheetOpen(false)}
+        />
+      )}
 
       {menuOpen && (
         <EntryActionSheet

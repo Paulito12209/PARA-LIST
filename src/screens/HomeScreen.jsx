@@ -847,6 +847,7 @@ export function HomeScreen({
       <HomeCatItem
         key={c.id}
         c={c}
+        cats={cats}
         t={t}
         CC={CC}
         onOpenCat={onOpenCat}

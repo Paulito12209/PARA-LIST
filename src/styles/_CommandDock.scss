@@ -38,9 +38,10 @@
   border-radius: 0;
   box-shadow: none;
 
-  // Verlaufs- + Progressive-Blur-Ebene HINTER dem Inhalt. Die Maske lässt die
-  // Fläche (inkl. Backdrop-Blur) von oben (0%, durchsichtig) bis ganz unten
-  // (100%, voll deckend) durchgehend einblenden – ohne vorzeitiges Plateau.
+  // Verlaufs- + Progressive-Blur-Ebene HINTER dem Inhalt. Die Maske blendet
+  // die Fläche (inkl. Backdrop-Blur) von oben (durchsichtig) ein und ist ab
+  // ~55% voll deckend – so scheinen Listeneinträge zwischen Eingabezeile und
+  // Icon-Reihe nicht mehr durch.
   &::before {
     content: "";
     position: absolute;
@@ -48,15 +49,15 @@
     z-index: 0;
     // Dark Mode: dunkler Boden (Light Mode überschreibt auf Weiß)
     background: #16161f;
-    backdrop-filter: blur(22px) saturate(140%);
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, #000 100%);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.75) 32%, #000 55%);
+    mask-image: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.75) 32%, #000 55%);
     pointer-events: none;
   }
 
   // Zweite Blur-Stufe: verdoppelt den Blur zur Unterkante hin (progressiver
-  // Blur oben scharf → unten doppelt verschwommen). Blendet erst ab ~35% ein
+  // Blur oben scharf → unten doppelt verschwommen). Blendet ab ~20% ein
   // und wirkt zusätzlich auf die bereits geblurte ::before-Ebene.
   &::after {
     content: "";
@@ -64,10 +65,10 @@
     inset: 0;
     z-index: 0;
     background: transparent;
-    backdrop-filter: blur(44px) saturate(140%);
-    -webkit-backdrop-filter: blur(44px) saturate(140%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 35%, #000 100%);
-    mask-image: linear-gradient(to bottom, transparent 35%, #000 100%);
+    backdrop-filter: blur(56px) saturate(140%);
+    -webkit-backdrop-filter: blur(56px) saturate(140%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 20%, #000 80%);
+    mask-image: linear-gradient(to bottom, transparent 20%, #000 80%);
     pointer-events: none;
   }
 

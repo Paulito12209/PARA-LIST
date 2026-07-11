@@ -59,7 +59,7 @@ export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive
               </div>
               <ChevronLeft
                 size={16}
-                color="#5858A0"
+                color="#8a8a96"
                 style={{ transform: "rotate(180deg)" }}
               />
             </button>
@@ -493,7 +493,7 @@ export function CatDetailScreen({
               );
             })()}
             {(!cat.tags || cat.tags.length === 0) && (
-              <span className="cat-detail__tag" style={{ background: "transparent", border: "1px dashed #5858A066", opacity: 0.8 }}>
+              <span className="cat-detail__tag" style={{ background: "transparent", border: "1px dashed #8a8a9666", opacity: 0.8 }}>
                 {t.addTag || "+ Tag"}
               </span>
             )}
@@ -687,7 +687,7 @@ export function CatDetailScreen({
                     </div>
                     <ChevronLeft
                       size={16}
-                      color="#5858A0"
+                      color="#8a8a96"
                       style={{ transform: "rotate(180deg)" }}
                     />
                   </button>
@@ -926,21 +926,21 @@ export function CatDetailScreen({
                 className="settings-sheet__item"
                 onClick={() => { onUpdate({ starred: !cat.starred }); closeSettingsSheet(); }}
               >
-                <Star size={18} fill={cat.starred ? "#F59E0B" : "none"} color={cat.starred ? "#F59E0B" : "#5858A0"} />
+                <Star size={18} fill={cat.starred ? "#F59E0B" : "none"} color={cat.starred ? "#F59E0B" : "#8a8a96"} />
                 <span>{cat.starred ? t.unmarkFavorite : t.markFavorite}</span>
               </button>
               <button
                 className="settings-sheet__item"
                 onClick={() => { onTogglePin?.(); closeSettingsSheet(); }}
               >
-                {cat.pinned ? <PinOff size={18} color="#5858A0" /> : <Pin size={18} color="#5858A0" />}
+                {cat.pinned ? <PinOff size={18} color="#8a8a96" /> : <Pin size={18} color="#8a8a96" />}
                 <span>{cat.pinned ? t.actionUnpin : t.actionPin}</span>
               </button>
               <button
                 className="settings-sheet__item"
                 onClick={() => { onUpdate({ archived: !cat.archived }); closeSettingsSheet(); }}
               >
-                {cat.archived ? <ArchiveRestore size={18} color="#5858A0" /> : <Archive size={18} color="#5858A0" />}
+                {cat.archived ? <ArchiveRestore size={18} color="#8a8a96" /> : <Archive size={18} color="#8a8a96" />}
                 <span>{cat.archived ? t.restore : t.archive}</span>
               </button>
               <div className="settings-sheet__divider" />

@@ -533,7 +533,7 @@ export function CommandPanel({
                           onToggleTask(e.id);
                         }}
                       >
-                        <Check size={14} color="#5858A0" />
+                        <Check size={14} color="#8a8a96" />
                       </button>
                     )}
                   </div>

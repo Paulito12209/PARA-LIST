@@ -463,7 +463,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #262648;
+    background-color: $color-dim;
     transition: .3s;
     border-radius: 34px;
 
@@ -598,7 +598,7 @@
     }
 
     &--secondary {
-      background: #262648;
+      background: $color-dim;
       color: #fff;
       margin-top: 16px;
     }
@@ -645,7 +645,7 @@
     color: #8a8a96;
 
     &--has-selection {
-      color: #EDEEFF;
+      color: $color-text;
     }
 
     // Chevron 3px nach links, damit er vertikal bündig mit dem Uhr-Icon darüber

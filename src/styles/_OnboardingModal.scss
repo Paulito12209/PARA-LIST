@@ -46,7 +46,7 @@
 
   &__text {
     font-size: 14px;
-    color: #5858A0;
+    color: $color-muted;
     margin-bottom: 24px;
   }
 
@@ -60,9 +60,9 @@
   &__lang-btn {
     padding: 10px 16px;
     border-radius: $radius-md;
-    border: 1.5px solid #262648;
+    border: 1.5px solid $color-border;
     background: transparent;
-    color: #5858A0;
+    color: $color-muted;
     font-size: 13px;
     font-weight: 700;
     transition: all 0.2s;
@@ -76,8 +76,8 @@
 
   &__input {
     width: 100%;
-    background: #1C1C30;
-    border: 2px solid #262648;
+    background: $color-hover;
+    border: 2px solid $color-border;
     border-radius: 16px;
     padding: 16px;
     font-size: 18px;

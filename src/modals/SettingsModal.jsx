@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -7,8 +8,23 @@ import {
   Trash2,
   Image as ImageIcon,
   ExternalLink,
+  Pencil,
+  Palette,
+  Camera,
 } from "lucide-react";
 import { clear } from "idb-keyval";
+
+// Farbpalette für den Avatar-Platzhalter (neutral + PARA-Akzente, kein Lila-Theme)
+const AVATAR_COLORS = [
+  "#E03E3E",
+  "#D09020",
+  "#F59E0B",
+  "#30A060",
+  "#0B8CE9",
+  "#0078D4",
+  "#818CF8",
+  "#8A8A96",
+];
 
 const VIEW_MAIN = "main";
 const VIEW_PROFILE = "profile";
@@ -39,7 +55,6 @@ export function SettingsModal({
   onUpdateUser,
 }) {
   const [view, setView] = useState(VIEW_MAIN);
-  const fileInputRef = useRef(null);
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -87,7 +102,6 @@ export function SettingsModal({
             lang={lang}
             setLang={setLang}
             t={t}
-            fileInputRef={fileInputRef}
             onAvatarChange={handleAvatarChange}
             onUpdateUser={onUpdateUser}
             onOpenProfile={() => setView(VIEW_PROFILE)}
@@ -118,31 +132,30 @@ function MainSettingsView({
   lang,
   setLang,
   t,
-  fileInputRef,
   onAvatarChange,
   onUpdateUser,
   onOpenProfile,
   onOpenFeedback,
   onClose,
 }) {
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+
   return (
     <div className="settings-modal__content">
       <div className="settings-modal__body">
         <div className="profile-row" onClick={onOpenProfile}>
           <div
-            className="profile-row__avatar"
+            className={`profile-row__avatar ${
+              user.avatarColor && !user.avatar ? "profile-row__avatar--colored" : ""
+            }`}
+            style={
+              user.avatarColor && !user.avatar ? { background: user.avatarColor } : undefined
+            }
             onClick={(e) => {
               e.stopPropagation();
-              fileInputRef.current?.click();
+              setPhotoSheetOpen(true);
             }}
           >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={onAvatarChange}
-              accept="image/*"
-              style={{ display: "none" }}
-            />
             {user.avatar ? (
               <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
             ) : user.name ? (
@@ -150,15 +163,16 @@ function MainSettingsView({
             ) : (
               "P"
             )}
-            <div className="profile-row__avatar-overlay">
-              <ImageIcon size={14} color="white" />
+            {/* Stift-Badge signalisiert die Bearbeitbarkeit (v.a. mobil ohne Hover) */}
+            <div className="profile-row__avatar-badge">
+              <Pencil size={12} />
             </div>
           </div>
           <div className="profile-row__info">
             <div className="profile-row__name">{user.name || "User"}</div>
             <div className="profile-row__sub">{t.personalData}</div>
           </div>
-          <ChevronRight size={18} color="#5858A0" className="profile-row__chevron" />
+          <ChevronRight size={18} color="#8a8a96" className="profile-row__chevron" />
         </div>
 
         <div className="settings-section">
@@ -258,7 +272,111 @@ function MainSettingsView({
           {t.closeBtn}
         </button>
       </div>
+
+      {photoSheetOpen && (
+        <AvatarPhotoSheet
+          t={t}
+          user={user}
+          onAvatarChange={onAvatarChange}
+          onPickColor={(hex) => onUpdateUser({ avatarColor: hex, avatar: null })}
+          onResetColor={() => onUpdateUser({ avatarColor: null })}
+          onClose={() => setPhotoSheetOpen(false)}
+        />
+      )}
     </div>
+  );
+}
+
+/**
+ * Bottom-Sheet zum Setzen des Avatar-Bildes – Layout wie das Cover-Sheet
+ * (Farben / Fotos / Kamera). Per Portal an <body>, damit es über dem
+ * Settings-Modal liegt.
+ */
+function AvatarPhotoSheet({ t, user, onAvatarChange, onPickColor, onResetColor, onClose }) {
+  const [colorMode, setColorMode] = useState(false);
+  const photoInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+
+  const handleInput = (e) => {
+    onAvatarChange(e);
+    onClose();
+  };
+
+  return createPortal(
+    <div className="settings-sheet-overlay" onClick={onClose}>
+      <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="settings-sheet__handle" />
+
+        <div className="settings-sheet__bubbles">
+          <button
+            className={`settings-sheet__bubble ${colorMode ? "settings-sheet__bubble--active" : ""}`}
+            onClick={() => setColorMode((v) => !v)}
+          >
+            <Palette size={20} />
+            <span>{t.coverColors}</span>
+          </button>
+          <button
+            className="settings-sheet__bubble"
+            onClick={() => photoInputRef.current?.click()}
+          >
+            <ImageIcon size={20} />
+            <span>{t.coverPhoto}</span>
+          </button>
+          <button
+            className="settings-sheet__bubble"
+            onClick={() => cameraInputRef.current?.click()}
+          >
+            <Camera size={20} />
+            <span>{t.coverCamera}</span>
+          </button>
+        </div>
+
+        {colorMode && (
+          <div className="settings-sheet__color-grid">
+            {AVATAR_COLORS.map((hex) => (
+              <button
+                key={hex}
+                className={`settings-sheet__color-swatch ${
+                  user.avatarColor === hex ? "settings-sheet__color-swatch--active" : ""
+                }`}
+                style={{ background: hex, color: hex }}
+                onClick={() => {
+                  onPickColor(hex);
+                  onClose();
+                }}
+              />
+            ))}
+            <button
+              className={`settings-sheet__color-swatch settings-sheet__color-swatch--default ${
+                !user.avatarColor ? "settings-sheet__color-swatch--active" : ""
+              }`}
+              onClick={() => {
+                onResetColor();
+                onClose();
+              }}
+              title={t.coverDefault}
+            />
+          </div>
+        )}
+
+        <input
+          type="file"
+          ref={photoInputRef}
+          onChange={handleInput}
+          accept="image/*"
+          style={{ display: "none" }}
+        />
+        <input
+          type="file"
+          ref={cameraInputRef}
+          onChange={handleInput}
+          accept="image/*"
+          capture="user"
+          style={{ display: "none" }}
+        />
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -300,7 +418,7 @@ function FeedbackView({ t, onBack, onClose }) {
             <button
               className="modal__submit"
               onClick={() => setFormOpen(true)}
-              style={{ background: "#7C83F7" }}
+              style={{ background: "#0B8CE9" }}
             >
               {t.openFeedbackForm}
             </button>

@@ -125,7 +125,7 @@
 
     // Meta-Zeile (Anzahl + Filter-Icon) über der Backlog-Liste
     &__count {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &--overdue {
         color: #F26565;
@@ -133,7 +133,7 @@
     }
 
     &__list-filter-btn {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       // Kein Hintergrund-Kreis; Abweichung von der Norm nur per blauem Icon.
       &--active {
@@ -149,7 +149,7 @@
     }
 
     &__menu-option {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &:hover {
         color: #1a1a24;
@@ -167,7 +167,7 @@
     &__view-pill {
       background: #ffffff;
       border-color: #e5e5f0;
-      color: #8e8eb2;
+      color: #8a8a96;
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
 
       // Farbe im :hover explizit wiederholen – sonst gewinnt die generische
@@ -205,12 +205,12 @@
       box-shadow: none;
 
       &::placeholder {
-        color: #8e8eb2;
+        color: #8a8a96;
       }
     }
 
     &__search-voice-btn {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &.command-panel__search-voice-btn--active {
         color: #0B8CE9;
@@ -303,7 +303,7 @@
     }
 
     &-add {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &:hover {
         background: #f0f0f5;
@@ -316,7 +316,7 @@
     }
 
     &-remove {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &:hover {
         color: #F26565;
@@ -325,7 +325,7 @@
     }
 
     &-empty {
-      color: #8e8eb2;
+      color: #8a8a96;
     }
   }
 
@@ -334,7 +334,7 @@
     border: none;
 
     &__btn {
-      color: #8e8eb2;
+      color: #8a8a96;
     }
 
     &__btn--active {
@@ -347,7 +347,7 @@
 
     // Light-Mode: Gruppen-Trenner im Home-Modus
     &--home {
-      border-top-color: rgba(#8e8eb2, 0.2);
+      border-top-color: rgba(#8a8a96, 0.2);
 
       .task-group-header__left {
         color: #3a3a6a;
@@ -355,7 +355,7 @@
       }
 
       .task-group-header__right {
-        color: #8e8eb2;
+        color: #8a8a96;
         opacity: 1;
       }
     }
@@ -397,7 +397,7 @@
     // Background inherited from group above
 
     .task-item__note-hint {
-      color: #8e8eb2;
+      color: #8a8a96;
       font-size: 14px;
     }
 
@@ -681,7 +681,7 @@
     &__multi-select-btn {
       background: #f7f7f9;
       border-color: #e5e5f0;
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &--has-selection {
         color: #1a1a24;
@@ -808,7 +808,7 @@
     border-color: #e5e5f0;
 
     &__btn {
-      color: #8e8eb2;
+      color: #8a8a96;
 
       // Alle Sub-Tabs im Backlog-Stil: aktiv = kräftiges Schwarz, keine Pille
       &--active-notes,
@@ -858,7 +858,7 @@
   }
 
   .cat-detail__task-count {
-    color: #8e8eb2;
+    color: #8a8a96;
 
     &--done {
       color: #0a8a5e;
@@ -866,7 +866,7 @@
   }
 
   .cat-detail__sort-btn {
-    color: #8e8eb2;
+    color: #8a8a96;
 
     &:hover,
     &--active {
@@ -882,7 +882,7 @@
   }
 
   .cat-detail__menu-option {
-    color: #8e8eb2;
+    color: #8a8a96;
 
     &:hover,
     &--active {
@@ -908,7 +908,7 @@
   .cat-detail__view-pill {
     background: #ffffff;
     border-color: #e5e5f0;
-    color: #8e8eb2;
+    color: #8a8a96;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
   }
 
@@ -942,7 +942,7 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 
     &::placeholder {
-      color: #8e8eb2;
+      color: #8a8a96;
     }
 
     &:focus {
@@ -995,7 +995,11 @@
   }
 
   &__avatar {
-    box-shadow: 0 4px 12px rgba(124, 131, 247, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  }
+
+  &__avatar-badge {
+    border-color: #ffffff;
   }
 
   &:active {
@@ -1320,14 +1324,14 @@
         color: #1a1a24;
       }
 
-      // Initialen-Variante behält den Brand-Gradient auch im Light Mode
+      // Initialen-Variante: Dunkelgrau-Silber-Verlauf, weiße Schrift
       &--initials {
-        background: linear-gradient(135deg, #7C83F7, #4F46E5);
+        background: linear-gradient(135deg, #2e2e36, #9a9aa6);
         border: none;
         color: #fff;
 
         &:hover {
-          background: linear-gradient(135deg, #8A90F8, #5B52E8);
+          background: linear-gradient(135deg, #383842, #a8a8b4);
           color: #fff;
         }
       }
@@ -1418,7 +1422,7 @@
   .home__filter-pill,
   .home__filter-trash {
     background: #f0f0f3;
-    color: #8e8eb2;
+    color: #8a8a96;
     border-color: rgba(0, 0, 0, 0.06);
   }
 
@@ -1440,7 +1444,7 @@
 
   .home-trash-item__restore {
     border-color: rgba(0, 0, 0, 0.12);
-    color: #8e8eb2;
+    color: #8a8a96;
 
     &:hover {
       color: #1a1a24;
@@ -1575,7 +1579,7 @@
   }
 
   .details-popup__label {
-    color: #8e8eb2;
+    color: #8a8a96;
   }
 
   .details-popup__value {
@@ -1591,7 +1595,7 @@
   }
 
   .details-popup__label {
-    color: #8e8eb2;
+    color: #8a8a96;
   }
 
   .details-popup__value {
@@ -1635,7 +1639,7 @@
   border-bottom-color: #e5e5f0;
 
   .detail-iconbar__btn {
-    color: #8e8eb2;
+    color: #8a8a96;
 
     &:hover:not(.detail-iconbar__btn--active) {
       color: #1a1a24;
@@ -1789,7 +1793,9 @@
 }
 
 // ── Settings Bottom Sheet (Light Mode) ──────────────────────
-.app.light-theme {
+// Scope schließt body.light-theme ein, da der Avatar-Foto-Sheet per Portal
+// an <body> hängt (außerhalb von .app) – analog zum .action-sheet.
+.app.light-theme, body.light-theme {
   .settings-sheet-overlay {
     background: rgba(0, 0, 0, 0.3);
   }
@@ -1822,12 +1828,12 @@
   .settings-sheet__bubble {
     background: #f0f0f5;
     border-color: #e5e5f0;
-    color: #5858A0;
+    color: #6a6a78;
 
     &--active {
-      background: rgba(#7C83F7, 0.1);
-      border-color: rgba(#7C83F7, 0.3);
-      color: #7C83F7;
+      background: rgba(#0B8CE9, 0.1);
+      border-color: rgba(#0B8CE9, 0.3);
+      color: #0B8CE9;
     }
   }
 
@@ -1899,7 +1905,7 @@
     &__search-btn {
       background: none;
       border-color: transparent;
-      color: #8e8eb2;
+      color: #8a8a96;
 
       &:hover {
         background: none;
@@ -1917,7 +1923,7 @@
 
     // Voice-Button: gleiches neutrales Grau wie das Such-Icon.
     &__voice-btn {
-      color: #8e8eb2;
+      color: #8a8a96;
     }
 
     // Pokal-Button (Startseite): weißer Körper + goldene Kontur/Icon wie im
@@ -1959,7 +1965,7 @@
 
   .list-section__expand,
   .list-section__archive {
-    color: #8e8eb2;
+    color: #8a8a96;
 
     &:hover {
       color: #1c1c30;

@@ -1484,7 +1484,7 @@ export default function App() {
         {cur.view === VIEW.ENTRY_DETAIL && (() => {
           const entry = state.entries.find((e) => e.id === cur.entryId);
           if (!entry) {
-            return <NotFoundScreen Icon={FileText} iconColor="#5858A0" onBack={pop} />;
+            return <NotFoundScreen Icon={FileText} iconColor="#8a8a96" onBack={pop} />;
           }
           const cat = state.cats.find((c) => c.id === entry.catId);
           return (

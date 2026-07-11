@@ -11,12 +11,12 @@
   --rail-w-collapsed: 73px;   // 1px Border + 12px + 48px Icon + 12px → je 12px Abstand
   --header-h: 80px;   // 48px Suche/Icon + 2×16px Padding → Inhalt exakt im Padding-Bereich
 
-  --bg: #0A0A14;
-  --bg-cover: #15151F;
-  --bg-card: #161626;
-  --text: #EDEEFF;
-  --text-2: rgba(237, 238, 255, 0.7);
-  --text-3: rgba(237, 238, 255, 0.4);
+  --bg: #0A0A0C;
+  --bg-cover: #151517;
+  --bg-card: #1B1B1E;
+  --text: #EDEEF2;
+  --text-2: rgba(237, 238, 242, 0.7);
+  --text-3: rgba(237, 238, 242, 0.4);
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
 
@@ -2182,8 +2182,8 @@
 }
 .dsk-tweaks {
   width: 260px;
-  background: rgba(15, 15, 28, 0.92);
-  color: #EDEEFF;
+  background: rgba(20, 20, 22, 0.92);
+  color: #EDEEF2;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   backdrop-filter: blur(16px);

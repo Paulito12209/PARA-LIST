@@ -287,7 +287,7 @@ export function ArchiveScreen({
                           </div>
                           <ChevronLeft
                             size={16}
-                            color="#5858A0"
+                            color="#8a8a96"
                             style={{ transform: "rotate(180deg)" }}
                           />
                         </button>

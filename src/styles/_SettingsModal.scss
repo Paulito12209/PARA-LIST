@@ -23,7 +23,7 @@
   align-items: center;
   gap: 8px;
   padding: 0 0 16px;
-  border-bottom: 1px solid #262648;
+  border-bottom: 1px solid $color-border;
 }
 
 .app.light-theme .settings-row {
@@ -46,7 +46,7 @@
 
 .theme-toggle {
   display: flex;
-  background: #1C1C30;
+  background: $color-hover;
   border-radius: 8px;
   padding: 4px;
 }
@@ -72,19 +72,19 @@
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #5858A0;
+  color: $color-muted;
   border: none;
   background: transparent;
   transition: all 0.2s ease;
 
   &:hover {
-    background: #262648;
-    color: #EDEEFF;
+    background: $color-dim;
+    color: $color-text;
   }
 
   &--active {
-    background: #262648;
-    color: #EDEEFF;
+    background: $color-dim;
+    color: $color-text;
   }
 }
 
@@ -113,8 +113,8 @@
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: #1C1C30;
-  border: 1px solid #262648;
+  background: $color-hover;
+  border: 1px solid $color-border;
   border-radius: 16px;
   width: 100%;
   text-align: left;
@@ -123,27 +123,34 @@
 
   &:active {
     transform: scale(0.98);
-    background: #262648;
+    background: $color-dim;
   }
 
   &__avatar {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #7C83F7, #4F46E5);
-    color: white;
+    // Gleiche Farbwelt wie der Avatar-Platzhalter auf der Startseite:
+    // Silber-Grau-Verlauf mit dunkler Schrift (kein Lila).
+    background: linear-gradient(135deg, #eaeaee, #b0b0ba);
+    color: #1a1a24;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     font-weight: 700;
-    box-shadow: 0 4px 12px rgba(124, 131, 247, 0.3);
-    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
     position: relative;
     cursor: pointer;
+    transition: transform 0.2s ease;
 
-    &:hover .profile-row__avatar-overlay {
-      opacity: 1;
+    &:active {
+      transform: scale(0.96);
+    }
+
+    // Wird gesetzt, wenn eine eigene Avatar-Farbe gewählt wurde
+    &--colored {
+      color: #fff;
     }
   }
 
@@ -151,17 +158,25 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
   }
 
-  &__avatar-overlay {
+  // Stift-Badge unten rechts – signalisiert dauerhaft (auch mobil ohne
+  // Hover), dass der Avatar bearbeitbar ist.
+  &__avatar-badge {
     position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    right: -2px;
+    bottom: -2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: $color-task;
+    color: #fff;
+    border: 2px solid $color-hover;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   }
 
   &__info {
@@ -177,7 +192,7 @@
 
   &__sub {
     font-size: 13px;
-    color: #5858A0;
+    color: $color-muted;
     margin-top: 2px;
   }
 
@@ -258,8 +273,8 @@
     flex: 1;
     padding: 13px 16px;
     border-radius: $radius-lg;
-    background: #262648;
-    color: #fff;
+    background: $color-dim;
+    color: $color-text;
     font-size: 15px;
     font-weight: 700;
     font-family: $font-body;
@@ -282,7 +297,7 @@
   &__title {
     font-size: 11px;
     font-weight: 700;
-    color: #5858A0;
+    color: $color-muted;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-left: 0;
@@ -296,8 +311,8 @@
   justify-content: space-between;
   width: 100%;
   padding: 16px;
-  background: #1C1C30;
-  border: 1px solid #262648;
+  background: $color-hover;
+  border: 1px solid $color-border;
   border-radius: $radius-md;
   text-align: left;
   transition: all 0.2s;
@@ -305,7 +320,7 @@
   &__label {
     font-size: 15px;
     font-weight: 500;
-    color: white;
+    color: $color-text;
   }
 
   &--danger {
@@ -372,7 +387,7 @@
   border-radius: $radius-md;
   padding: 12px 14px;
   font-size: 13px;
-  color: #8E8EB2;
+  color: #8a8a96;
   border: 1px solid rgba($color-task, 0.15);
   line-height: 1.4;
   animation: fade-in 0.3s ease;
@@ -392,7 +407,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: #8E8EB2;
+  color: #8a8a96;
   text-decoration: none;
   padding: 4px;
   transition: color 0.2s;

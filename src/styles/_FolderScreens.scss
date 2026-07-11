@@ -1370,9 +1370,9 @@
   transition: all 0.15s;
 
   &--active {
-    background: rgba(#7C83F7, 0.15);
-    border-color: rgba(#7C83F7, 0.4);
-    color: #7C83F7;
+    background: rgba($color-task, 0.15);
+    border-color: rgba($color-task, 0.4);
+    color: $color-task;
   }
 }
 

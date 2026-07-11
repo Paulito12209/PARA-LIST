@@ -385,7 +385,7 @@ export function EntryDetailScreen({
               );
             })()}
             {(!entry.tags || entry.tags.length === 0) && (
-              <span className="cat-detail__tag" style={{ background: "transparent", border: "1px dashed #5858A066", opacity: 0.8 }}>
+              <span className="cat-detail__tag" style={{ background: "transparent", border: "1px dashed #8a8a9666", opacity: 0.8 }}>
                 {t.addTag || "+ Tag"}
               </span>
             )}
@@ -759,21 +759,21 @@ export function EntryDetailScreen({
                 className="settings-sheet__item"
                 onClick={() => { onUpdate({ starred: !entry.starred }); closeSettingsSheet(); }}
               >
-                <Star size={18} fill={entry.starred ? "#F59E0B" : "none"} color={entry.starred ? "#F59E0B" : "#5858A0"} />
+                <Star size={18} fill={entry.starred ? "#F59E0B" : "none"} color={entry.starred ? "#F59E0B" : "#8a8a96"} />
                 <span>{entry.starred ? t.unmarkFavorite : t.markFavorite}</span>
               </button>
               <button
                 className="settings-sheet__item"
                 onClick={() => { onTogglePin?.(); closeSettingsSheet(); }}
               >
-                {entry.pinned ? <PinOff size={18} color="#5858A0" /> : <Pin size={18} color="#5858A0" />}
+                {entry.pinned ? <PinOff size={18} color="#8a8a96" /> : <Pin size={18} color="#8a8a96" />}
                 <span>{entry.pinned ? t.actionUnpin : t.actionPin}</span>
               </button>
               <button
                 className="settings-sheet__item"
                 onClick={() => { onUpdate({ archived: !entry.archived }); closeSettingsSheet(); }}
               >
-                {entry.archived ? <ArchiveRestore size={18} color="#5858A0" /> : <Archive size={18} color="#5858A0" />}
+                {entry.archived ? <ArchiveRestore size={18} color="#8a8a96" /> : <Archive size={18} color="#8a8a96" />}
                 <span>{entry.archived ? t.restore : t.archive}</span>
               </button>
               {entry.type === "calendar" && (
@@ -781,7 +781,7 @@ export function EntryDetailScreen({
                   className="settings-sheet__item"
                   onClick={() => { onUpdate({ isBirthday: !entry.isBirthday }); closeSettingsSheet(); }}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke={entry.isBirthday ? "#F59E0B" : "#5858A0"} style={{ width: 18, height: 18 }}>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke={entry.isBirthday ? "#F59E0B" : "#8a8a96"} style={{ width: 18, height: 18 }}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.871c1.355 0 2.697.056-4.024.166C17.155 8.51 18 9.473 18 10.608v2.513M15 8.25v-1.5m-6 1.5v-1.5m12 9.75-1.5.75a3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0 3.354 3.354 0 0 0-3 0 3.354 3.354 0 0 1-3 0L3 16.5m15-3.379a48.474 48.474 0 0 0-6-.371c-2.032 0-4.034.126-6 .371m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.169c0 .621-.504 1.125-1.125 1.125H4.125A1.125 1.125 0 0 1 3 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 0 1 6 13.12M12.265 3.11a.375.375 0 1 1-.53 0L12 2.845l.265.265Zm-3 0a.375.375 0 1 1-.53 0L9 2.845l.265.265Zm6 0a.375.375 0 1 1-.53 0L15 2.845l.265.265Z" />
                   </svg>
                   <span>{entry.isBirthday ? t.unsetBirthday : t.setBirthday}</span>

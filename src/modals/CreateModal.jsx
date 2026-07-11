@@ -211,7 +211,7 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
                   mediaType === m.id ? "modal__media-grid-btn--active" : ""
                 }`}
                 onClick={() => handleMediaGridClick(m.id)}
-                style={{ color: mediaType === m.id ? m.color : "#5858A0" }}
+                style={{ color: mediaType === m.id ? m.color : "#8a8a96" }}
               >
                 <div className="icon-wrapper" style={{ background: m.color }}>
                   <m.Icon size={18} />
@@ -291,7 +291,7 @@ function CategoryMultiSelect({ cats, catIds, isOpen, onToggleOpen, onToggleCat, 
         <div className="modal__multi-select-list">
           {cats.map((c) => {
             const isSelected = catIds.includes(c.id);
-            const chipColor = CC[c.type]?.color || "#5858A0";
+            const chipColor = CC[c.type]?.color || "#8a8a96";
             const CIcon = CAT_ICONS[c.type];
             return (
               <button

@@ -1022,7 +1022,7 @@ export function MediaList({ entries, cats, onDelete, t, CC }) {
               onDelete(e.id);
             }}
           >
-            <Trash2 size={14} color="#5858A0" />
+            <Trash2 size={14} color="#8a8a96" />
           </button>
         </div>
         {hasPreview && <MediaPreview entry={e} />}
@@ -1052,7 +1052,7 @@ export function LinkList({ entries, cats, onDelete, CC }) {
               onDelete(e.id);
             }}
           >
-            <Trash2 size={14} color="#5858A0" />
+            <Trash2 size={14} color="#8a8a96" />
           </button>
         </div>
         

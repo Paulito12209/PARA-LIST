@@ -526,17 +526,17 @@
       color: rgba(255, 255, 255, 0.8);
     }
 
-    // Initialen statt Platzhalter-Icon: Brand-Gradient wie im Settings-Profil
+    // Initialen statt Platzhalter-Icon: Hellgrau-Silber-Verlauf, dunkle Schrift
     &--initials {
-      background: linear-gradient(135deg, #7C83F7, #4F46E5);
+      background: linear-gradient(135deg, #eaeaee, #b0b0ba);
       border: none;
-      color: #fff;
+      color: #1a1a24;
       font-size: 14px;
       font-weight: 700;
 
       &:hover {
-        background: linear-gradient(135deg, #8A90F8, #5B52E8);
-        color: #fff;
+        background: linear-gradient(135deg, #f0f0f4, #bcbcc6);
+        color: #1a1a24;
       }
     }
   }

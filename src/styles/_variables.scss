@@ -44,17 +44,17 @@ $radius-pill:  999px;
   --radius-pill: #{$radius-pill};
 }
 
-// ── Colors – Surfaces ───────────────────────────────────────
-$color-bg:      #07070F;
-$color-surface: #0F0F1C;
-$color-card:    #161626;
-$color-hover:   #1C1C30;
-$color-border:  #222238;
-$color-dim:     #262648;
+// ── Colors – Surfaces (neutrales Dunkelgrau, kein Blau-Lila-Stich) ──
+$color-bg:      #08080B;
+$color-surface: #141416;
+$color-card:    #1B1B1E;
+$color-hover:   #232326;
+$color-border:  #2B2B30;
+$color-dim:     #2F2F34;
 
 // ── Colors – Typography ─────────────────────────────────────
-$color-text:    #EDEEFF;
-$color-muted:   #5858A0;
+$color-text:    #EDEEF2;
+$color-muted:   #8A8A96;
 
 // ── Colors – Categories (PARA) ──────────────────────────────
 $color-project:     #E03E3E;

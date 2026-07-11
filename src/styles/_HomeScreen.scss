@@ -526,17 +526,17 @@
       color: rgba(255, 255, 255, 0.8);
     }
 
-    // Initialen statt Platzhalter-Icon: Hellgrau-Silber-Verlauf, dunkle Schrift
+    // Initialen statt Platzhalter-Icon: Dunkelgrau-Silber-Verlauf, weiße Schrift
     &--initials {
-      background: linear-gradient(135deg, #eaeaee, #b0b0ba);
+      background: linear-gradient(135deg, #2e2e36, #9a9aa6);
       border: none;
-      color: #1a1a24;
+      color: #fff;
       font-size: 14px;
       font-weight: 700;
 
       &:hover {
-        background: linear-gradient(135deg, #f0f0f4, #bcbcc6);
-        color: #1a1a24;
+        background: linear-gradient(135deg, #383842, #a8a8b4);
+        color: #fff;
       }
     }
   }
@@ -1049,8 +1049,12 @@
   }
 }
 
-.list-section__archive {
+// Archiv + Papierkorb sitzen gemeinsam rechts gegenüber vom Abschnittstitel.
+.list-section__header-actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 // ── Einfache Kategorien-Liste (PARA-Typen auf der Startseite) ──
@@ -1242,6 +1246,17 @@
 
     &:hover {
       color: $color-text;
+    }
+  }
+
+  // Endgültig löschen: gleiche Form wie Wiederherstellen, aber in Rot.
+  &__purge {
+    color: #F26565;
+    border-color: rgba(242, 101, 101, 0.35);
+
+    &:hover {
+      color: #ff7a7a;
+      background: rgba(242, 101, 101, 0.12);
     }
   }
 }

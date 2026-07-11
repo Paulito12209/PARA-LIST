@@ -995,10 +995,20 @@
   }
 
   &__avatar {
+    background: linear-gradient(135deg, #eaeaee, #b0b0ba);
+    color: #1a1a24;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+    &--colored {
+      color: #fff;
+    }
   }
 
   &__avatar-badge {
+    // Spiegelt die Dark-Logik: Rand = hellste Main-Farbe (Weiß), Füllung =
+    // 3. Farbe (Toggle-Ton), schwarzer Stift.
+    background: #E5E5EA;
+    color: #1a1a24;
     border-color: #ffffff;
   }
 
@@ -1324,15 +1334,16 @@
         color: #1a1a24;
       }
 
-      // Initialen-Variante: Dunkelgrau-Silber-Verlauf, weiße Schrift
+      // Initialen-Variante: hell-silberner Verlauf mit dunkler Schrift — analog zum großen Settings-Avatar
       &--initials {
-        background: linear-gradient(135deg, #2e2e36, #9a9aa6);
+        background: linear-gradient(135deg, #eaeaee, #b0b0ba);
         border: none;
-        color: #fff;
+        color: #1a1a24;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 
         &:hover {
-          background: linear-gradient(135deg, #383842, #a8a8b4);
-          color: #fff;
+          background: linear-gradient(135deg, #f0f0f4, #bcbcc6);
+          color: #1a1a24;
         }
       }
     }
@@ -1448,6 +1459,16 @@
 
     &:hover {
       color: #1a1a24;
+    }
+  }
+
+  .home-trash-item__purge {
+    border-color: rgba(224, 62, 62, 0.3);
+    color: #E03E3E;
+
+    &:hover {
+      color: #c53030;
+      background: rgba(224, 62, 62, 0.08);
     }
   }
 
@@ -1839,6 +1860,14 @@
 
   .settings-sheet__color-swatch--active {
     border-color: #1c1c30;
+  }
+
+  .settings-sheet__url-input {
+    background: #f0f0f5;
+    border-color: #e5e5f0;
+    color: #1c1c30;
+
+    &::placeholder { color: #8a8a96; }
   }
 }
 

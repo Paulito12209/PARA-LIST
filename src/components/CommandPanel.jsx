@@ -36,6 +36,7 @@ export function CommandPanel({
   title,
   eyebrow,
   page,
+  hideActions,
   app,
   entries,
   cats = [],
@@ -308,43 +309,49 @@ export function CommandPanel({
           </div>
 
           <div className="command-panel__actions" style={{ display: "flex", gap: "8px" }}>
-            {/* Startseite: Pokal-Button (Fortschritt) links neben den Einstellungen. */}
-            {!headerPage && (
-              <button
-                className="command-panel__bell command-panel__filter-btn command-panel__trophy-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenProgress?.();
-                }}
-                aria-label={t.progress || "Fortschritt"}
-              >
-                <Trophy size={20} />
-              </button>
-            )}
-            {/* Einstellungen oben rechts – geschlossen UND geöffnet sichtbar.
-                Auf Detailseiten stattdessen das Drei-Punkte-Menü der Seite
-                (öffnet deren Options-Sheet von unten). */}
-            {headerPage ? (
-              <button
-                className="command-panel__bell command-panel__filter-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenPageMenu?.();
-                }}
-                aria-label={t.settingsBtn || "Menü"}
-              >
-                <MoreHorizontal size={22} />
-              </button>
-            ) : (
-              <button
-                className="command-panel__bell command-panel__filter-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpenSettings();
-                }}
-              >
-                <CustomSettingsIcon size={22} color="currentColor" />
-              </button>
+            {/* Auf der Einstellungen-Seite entfallen die Header-Aktionen (Pokal +
+                Zahnrad) – man ist ja schon in den Einstellungen. */}
+            {!hideActions && (
+              <>
+                {/* Startseite: Pokal-Button (Fortschritt) links neben den Einstellungen. */}
+                {!headerPage && (
+                  <button
+                    className="command-panel__bell command-panel__filter-btn command-panel__trophy-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenProgress?.();
+                    }}
+                    aria-label={t.progress || "Fortschritt"}
+                  >
+                    <Trophy size={20} />
+                  </button>
+                )}
+                {/* Einstellungen oben rechts – geschlossen UND geöffnet sichtbar.
+                    Auf Detailseiten stattdessen das Drei-Punkte-Menü der Seite
+                    (öffnet deren Options-Sheet von unten). */}
+                {headerPage ? (
+                  <button
+                    className="command-panel__bell command-panel__filter-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenPageMenu?.();
+                    }}
+                    aria-label={t.settingsBtn || "Menü"}
+                  >
+                    <MoreHorizontal size={22} />
+                  </button>
+                ) : (
+                  <button
+                    className="command-panel__bell command-panel__filter-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenSettings();
+                    }}
+                  >
+                    <CustomSettingsIcon size={22} color="currentColor" />
+                  </button>
+                )}
+              </>
             )}
           </div>
         </div>

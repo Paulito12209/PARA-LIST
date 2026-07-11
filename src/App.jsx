@@ -28,7 +28,7 @@ import { ArchiveScreen } from "./screens/ArchiveScreen";
 import { CreateModal } from "./modals/CreateModal";
 import { NewCatModal } from "./modals/NewCatModal";
 import { OnboardingModal } from "./modals/OnboardingModal";
-import { SettingsModal } from "./modals/SettingsModal";
+import { SettingsScreen } from "./modals/SettingsModal";
 import { TaskDoneCelebration, BirthdayCelebration } from "./modals/Celebrations";
 import { useIsDesktop } from "./hooks/useMediaQuery";
 import { DesktopApp } from "./desktop/DesktopApp";
@@ -53,6 +53,7 @@ const VIEW = {
   CAT_DETAIL: "catDetail",
   ENTRY_DETAIL: "entryDetail",
   FLASHCARDS: "flashcards",
+  SETTINGS: "settings",
 };
 
 const DEFAULT_COVER_ACCENT_RGB = "224, 62, 62";
@@ -367,7 +368,8 @@ export default function App() {
   const [stack, setStack] = useState([{ view: VIEW.HOME }]);
   const [tab, setTab] = useState("tasks");
   const [panelOpen, setPanelOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  // Header-Titel der Einstellungen-Seite (Haupt-/Unteransicht) fürs Command-Panel
+  const [settingsHeaderTitle, setSettingsHeaderTitle] = useState(null);
   const [creating, setCreating] = useState(null);
   const [newCatType, setNewCatType] = useState(null);
   const [expandedCat, setExpandedCat] = useState("project");
@@ -1055,6 +1057,9 @@ export default function App() {
     }
 
     if (dy > SWIPE_PANEL_OPEN_PX && Math.abs(dx) < SWIPE_AXIS_TOLERANCE_PX && !panelOpen) {
+      // Auf der Einstellungen-Seite darf Swipe-down NICHT den Backlog öffnen –
+      // hier wird künftig innerhalb der Seite gescrollt.
+      if (cur.view === VIEW.SETTINGS) return;
       // Bei aufgeklappter Home-Liste die Swipe-down-Geste NICHT zum Öffnen des
       // Panels nutzen – das Panel öffnet erst wieder bei zugeklappter Liste.
       if (cur.view === VIEW.HOME && document.querySelector(".home__list-container--expanded")) {
@@ -1093,21 +1098,6 @@ export default function App() {
 
   const renderRootModals = () => (
     <>
-      {settingsOpen && (
-        <SettingsModal
-          t={t}
-          lang={lang}
-          setLang={(l) => setState((s) => ({ ...s, lang: l }))}
-          theme={theme}
-          setTheme={(th) => setState((s) => ({ ...s, theme: th }))}
-          user={state.user}
-          onUpdateUser={(patch) =>
-            setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
-          }
-          onClose={() => setSettingsOpen(false)}
-        />
-      )}
-
       {state.user.name === "" && (
         <OnboardingModal
           onComplete={(l, n) =>
@@ -1188,7 +1178,7 @@ export default function App() {
         addCatModal: (type) => setNewCatType(type),
         addEntryModal: (type) => setCreating({ type, catId: null }),
       },
-      openSettings: () => setSettingsOpen(true),
+      openSettings: () => push({ view: VIEW.SETTINGS }),
       openArchive: (archiveTab) => push({ view: VIEW.ARCHIVE, tab: archiveTab }),
       focusTab: (focusedTab) => setTab(focusedTab),
     };
@@ -1214,10 +1204,13 @@ export default function App() {
             ? homeHeaderTitle
             : cur.view === VIEW.ARCHIVE
             ? archiveHeaderTitle
+            : cur.view === VIEW.SETTINGS
+            ? settingsHeaderTitle || t.settings
             : null
         }
         eyebrow={cur.view === VIEW.HOME ? homeHeaderEyebrow : null}
         page={headerPage}
+        hideActions={cur.view === VIEW.SETTINGS}
         onOpenPageMenu={() => setPageMenuTick((n) => n + 1)}
         app={activeApp}
         lang={lang}
@@ -1233,7 +1226,10 @@ export default function App() {
           blurActiveInput();
           setPanelOpen((o) => !o);
         }}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={() => {
+          setPanelOpen(false);
+          push({ view: VIEW.SETTINGS });
+        }}
         onToggleTask={toggleTask}
         onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
         onOpenCat={(c) => push({ view: VIEW.CAT_DETAIL, catId: c.id })}
@@ -1335,10 +1331,6 @@ export default function App() {
             updateEntry={updateEntry}
             deleteEntry={deleteEntry}
             onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
-            onOpenArchive={(currentTab) => {
-              setPanelOpen(false);
-              push({ view: VIEW.ARCHIVE, tab: currentTab });
-            }}
             onArchiveEntry={(id) => updateEntry(id, { archived: true })}
             onUpdateUser={(patch) =>
               setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
@@ -1369,6 +1361,22 @@ export default function App() {
             onAddVoiceEntry={(type, title, date) => addEntry(buildVoiceEntry(type, title, date))}
             onHome={() => setStack([{ view: VIEW.HOME }])}
             onHeaderTitleChange={setArchiveHeaderTitle}
+          />
+        )}
+
+        {cur.view === VIEW.SETTINGS && (
+          <SettingsScreen
+            t={t}
+            lang={lang}
+            setLang={(l) => setState((s) => ({ ...s, lang: l }))}
+            theme={theme}
+            setTheme={(th) => setState((s) => ({ ...s, theme: th }))}
+            user={state.user}
+            onUpdateUser={(patch) =>
+              setState((s) => ({ ...s, user: { ...s.user, ...patch } }))
+            }
+            onClose={handleSmartBack}
+            onHeaderTitleChange={setSettingsHeaderTitle}
           />
         )}
 

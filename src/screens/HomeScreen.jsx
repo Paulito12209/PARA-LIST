@@ -96,7 +96,6 @@ export function HomeScreen({
   updateEntry,
   deleteEntry,
   onOpenEntry,
-  onOpenArchive,
   onArchiveEntry,
   panelOpen,
   progressTick,
@@ -748,8 +747,17 @@ export function HomeScreen({
           className="home-trash-item__restore"
           onClick={() => onRestoreFromTrash?.(it.data.id)}
           aria-label={t.restore}
+          title={t.restore}
         >
           <RotateCcw size={16} />
+        </button>
+        <button
+          className="home-trash-item__restore home-trash-item__purge"
+          onClick={() => onPurgeTrashItem?.(it.data.id)}
+          aria-label={t.deleteForever}
+          title={t.deleteForever}
+        >
+          <Trash2 size={16} />
         </button>
       </div>
     ));
@@ -1016,14 +1024,30 @@ export function HomeScreen({
                 <ChevronRight size={20} />
               </span>
             </div>
-            {/* Archiv-Zugang – immer gegenüber vom Abschnittstitel */}
-            <button
-              className="list-section__archive"
-              onClick={() => onOpenArchive(activeType)}
-              aria-label={t.archive}
-            >
-              <Archive size={20} />
-            </button>
+            {/* Archiv & Papierkorb – klappen die Liste auf und aktivieren
+                direkt die passende Filter-Pille (kein Screen-Wechsel). */}
+            <div className="list-section__header-actions">
+              <button
+                className="list-section__archive"
+                onClick={() => {
+                  setListFilter("archived");
+                  setListExpanded(true);
+                }}
+                aria-label={t.archive}
+              >
+                <Archive size={20} />
+              </button>
+              <button
+                className="list-section__archive list-section__archive--trash"
+                onClick={() => {
+                  setListFilter("trash");
+                  setListExpanded(true);
+                }}
+                aria-label={t.trash}
+              >
+                <Trash2 size={20} />
+              </button>
+            </div>
           </div>
         )}
 

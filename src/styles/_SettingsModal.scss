@@ -4,6 +4,227 @@
 @use './variables' as *;
 @use './mixins' as *;
 
+// Elevation-System der Einstellungen (Dark Mode): der Main-Hintergrund ist die
+// dunkelste Ebene; je tiefer ein Element verschachtelt ist, desto HELLER wird
+// es. So entsteht eine klare Tiefenhierarchie statt beliebig vieler Grautöne.
+//   L0 $settings-bg      = Haupt-Hintergrund (wie Startseite)          #16161F
+//   L1 $settings-surface = Kacheln/Karten, Schließen-Button, Zurück-FAB,
+//                          aktiver Toggle-Button                        #24242E
+//   L2 $settings-toggle  = Toggle-„Blase" (heller, im Kachel verschachtelt) #2E2E3A
+$settings-bg:      #16161F;
+$settings-surface: #24242E;
+$settings-toggle:  #2E2E3A;
+
+// Light Mode: gleiche Logik, aber gespiegelt – der Main-Hintergrund ist die
+// HELLSTE Ebene (Weiß), verschachtelte Elemente werden je einen Akzent DUNKLER.
+//   L0 $settings-bg-light      = Haupt-Hintergrund (hellste Ebene)   #FFFFFF
+//   L1 $settings-surface-light = Kacheln/Karten, Schließen, Zurück-FAB,
+//                                aktiver Toggle-Button                #F2F2F5
+//   L2 $settings-toggle-light  = Toggle-„Blase" (dunkler, verschachtelt) #E5E5EA
+$settings-bg-light:      #FFFFFF;
+$settings-surface-light: #F2F2F5;
+$settings-toggle-light:  #E5E5EA;
+
+// ============================================================
+// Einstellungen als App-Seite (Header kommt vom CommandPanel)
+// ============================================================
+// Ganze Seite (Header + Body): Dark = Startseiten-Dunkelton statt Schwarz,
+// Light = reines Weiß als hellste Ebene (statt des generischen App-Grau).
+.app:has(.settings-screen):not(.light-theme) {
+  background: $settings-bg;
+}
+.app.light-theme:has(.settings-screen) {
+  background: $settings-bg-light;
+}
+.settings-screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  color: $color-text;
+
+  // Scrollbarer Inhalt
+  &__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 8px 20px 16px;
+  }
+
+  // Abgerundete Listen-Gruppe (Karte)
+  &__group {
+    background: $settings-surface;
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 15px 16px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: $color-text;
+    font-family: $font-body;
+
+    & + & {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+  }
+
+  &__row--tap {
+    cursor: pointer;
+    transition: background 0.15s ease;
+    &:active { background: rgba(255, 255, 255, 0.04); }
+  }
+
+  &__row-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: $color-text;
+  }
+
+  &__row-chevron {
+    color: $color-muted;
+    flex-shrink: 0;
+  }
+
+  &__row--danger {
+    color: #F26565;
+    .settings-screen__row-label { color: #F26565; }
+    svg { color: #F26565; }
+  }
+
+  // Untere Leiste: runder Zurück-Button + Schließen
+  &__footer {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  &__back-fab {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: $settings-surface;
+    color: $color-text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active {
+      transform: scale(0.92);
+      opacity: 0.85;
+    }
+  }
+
+  &__close {
+    flex: 1;
+    padding: 15px 16px;
+    border-radius: $radius-lg;
+    background: $settings-surface;
+    color: $color-text;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: $font-body;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:active {
+      opacity: 0.85;
+      transform: scale(0.98);
+    }
+  }
+
+  // Profil-Karte: gleiche Kartenfarbe wie die Gruppen
+  .profile-row {
+    background: $settings-surface;
+    margin-bottom: 16px;
+  }
+
+  .feedback-form { padding-top: 4px; }
+}
+
+// Namensfeld mit langgezogenem Unterstrich (Material-Stil, wie Sonos „Raumname")
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+  cursor: text;
+
+  &__label {
+    font-size: 13px;
+    font-weight: 500;
+    color: $color-muted;
+    margin-bottom: 6px;
+  }
+
+  &__input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid $color-border;
+    padding: 4px 0 8px;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 20px;
+    font-weight: 500;
+
+    &:focus {
+      outline: none;
+      border-bottom-color: $color-task;
+    }
+    &::placeholder { color: $color-muted; }
+  }
+}
+
+// Light-Mode: Seite = Weiß (hellste Ebene), Kacheln/Buttons eine Ebene dunkler.
+.app.light-theme .settings-screen {
+  color: #1a1a24;
+
+  .settings-screen__group { background: $settings-surface-light; }
+  .settings-screen__row + .settings-screen__row { border-top-color: rgba(0, 0, 0, 0.06); }
+  .settings-screen__row-label { color: #1a1a24; }
+  .settings-screen__row--tap:active { background: rgba(0, 0, 0, 0.04); }
+  .settings-screen__row--danger,
+  .settings-screen__row--danger .settings-screen__row-label { color: #ef4444; }
+
+  .settings-screen__back-fab {
+    background: $settings-surface-light;
+    color: #1a1a24;
+    &:active { background: $settings-toggle-light; }
+  }
+  .settings-screen__close {
+    background: $settings-surface-light;
+    color: #1a1a24;
+  }
+
+  .profile-row { background: $settings-surface-light; }
+}
+
+.app.light-theme .settings-field {
+  &__label { color: #8a8a96; }
+  &__input {
+    color: #1a1a24;
+    border-bottom-color: #e5e5f0;
+    &:focus { border-bottom-color: $color-task; }
+  }
+}
+
 // ── Settings Styling ───────────────────────────────────────
 .settings-section {
   padding: 0 !important;
@@ -46,9 +267,20 @@
 
 .theme-toggle {
   display: flex;
-  background: $color-hover;
+  align-items: stretch;
+  // Feste Höhe: die Reihe wächst nie, egal wie groß der Button-Inhalt rendert.
+  height: 36px;
+  // L2: eine Ebene heller als die Kacheln (verschachtelt = heller im Dark Mode).
+  background: $settings-toggle;
   border-radius: 8px;
   padding: 4px;
+
+  // Sprach-Toggle: nur die Flaggen-Emojis 25% größer (layout-neutral via scale) –
+  // die feste Höhe hält die Reihe stabil.
+  &--flags .theme-toggle__flag {
+    display: inline-block;
+    transform: scale(1.25);
+  }
 }
 
 .settings-modal .settings-row .settings-label {
@@ -64,10 +296,14 @@
 }
 
 .app.light-theme .theme-toggle {
-  background: #f0f0f5;
+  // L2: eine Ebene dunkler als die Kacheln (verschachtelt = dunkler im Light Mode).
+  background: $settings-toggle-light;
 }
 
 .theme-toggle__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 6px 12px;
   border-radius: 6px;
   font-size: 12px;
@@ -77,34 +313,39 @@
   background: transparent;
   transition: all 0.2s ease;
 
-  &:hover {
-    background: $color-dim;
-    color: $color-text;
+  // Nur auf Geräten mit echtem Hover (Maus) – auf Touch würde :hover sonst
+  // beim Antippen "hängen bleiben" und die Aktiv-Farbe überdecken (die
+  // Pseudoklasse ist spezifischer als die reine Klasse `--active`).
+  @media (hover: hover) {
+    &:hover {
+      background: $settings-surface;
+      color: $color-text;
+    }
   }
 
-  &--active {
-    background: $color-dim;
+  // `&.theme-toggle__btn--active` statt nur `&--active`: kombiniert beide
+  // Klassen zu gleicher/höherer Spezifität wie `:hover`, damit die Aktiv-
+  // Farbe konstant die Main-Hintergrundfarbe bleibt und nie zur 2. Farbe
+  // (Hover-Ton) wechselt.
+  &.theme-toggle__btn--active {
+    background: $settings-bg;
     color: $color-text;
   }
 }
 
 .app.light-theme .theme-toggle__btn {
-  &:hover {
-    background: #ffffff;
-    color: #1a1a24;
+  @media (hover: hover) {
+    &:hover {
+      background: $settings-surface-light;
+      color: #1a1a24;
+    }
   }
 
-  &--active {
-    background: #ffffff;
+  &.theme-toggle__btn--active {
+    background: $settings-bg-light;
     color: #1a1a24;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
-}
-
-.app.light-theme .theme-toggle__btn--active {
-  background: #ffffff;
-  color: #1a1a24;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 // Profile Row (Apple Style)
@@ -131,9 +372,9 @@
     height: 60px;
     border-radius: 50%;
     // Gleiche Farbwelt wie der Avatar-Platzhalter auf der Startseite:
-    // Silber-Grau-Verlauf mit dunkler Schrift (kein Lila).
-    background: linear-gradient(135deg, #eaeaee, #b0b0ba);
-    color: #1a1a24;
+    // Dunkelgrau-Silber-Verlauf mit weißer Schrift (kein Lila).
+    background: linear-gradient(135deg, #2e2e36, #9a9aa6);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -170,9 +411,11 @@
     width: 22px;
     height: 22px;
     border-radius: 50%;
-    background: $color-task;
+    // Dark: Füllung = 3. Farbe (Toggle-Ton), Rand = dunkelste Main-Farbe –
+    // der dunkle Rand grenzt den Kreis vom hellen Avatar UND von der Karte ab.
+    background: $settings-toggle;
     color: #fff;
-    border: 2px solid $color-hover;
+    border: 1px solid $settings-bg;
     display: flex;
     align-items: center;
     justify-content: center;

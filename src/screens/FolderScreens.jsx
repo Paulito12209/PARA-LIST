@@ -923,6 +923,40 @@ export function CatDetailScreen({
 
             <div className="settings-sheet__list">
               <button
+                className={`settings-sheet__item ${coverMode === "url" ? "settings-sheet__item--active" : ""}`}
+                onClick={() => setCoverMode(coverMode === "url" ? null : "url")}
+              >
+                <Link2 size={18} color="#8a8a96" />
+                <span>{t.coverUrl}</span>
+              </button>
+              {coverMode === "url" && (
+                <div className="settings-sheet__url-row">
+                  <input
+                    className="settings-sheet__url-input"
+                    type="url"
+                    placeholder="https://..."
+                    autoFocus
+                    defaultValue={cat.coverImage && /^https?:/.test(cat.coverImage) ? cat.coverImage : ""}
+                    onKeyDown={(e) => {
+                      const val = e.target.value.trim();
+                      if (e.key === "Enter" && val) {
+                        onUpdate({ coverImage: val, coverColor: null });
+                        closeSettingsSheet();
+                      }
+                    }}
+                  />
+                  <button
+                    className="settings-sheet__url-apply"
+                    onClick={(e) => {
+                      const val = e.currentTarget.previousElementSibling?.value.trim();
+                      if (val) { onUpdate({ coverImage: val, coverColor: null }); closeSettingsSheet(); }
+                    }}
+                  >
+                    <Check size={18} />
+                  </button>
+                </div>
+              )}
+              <button
                 className="settings-sheet__item"
                 onClick={() => { onUpdate({ starred: !cat.starred }); closeSettingsSheet(); }}
               >

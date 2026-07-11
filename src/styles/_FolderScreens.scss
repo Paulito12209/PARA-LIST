@@ -1287,6 +1287,51 @@
     &--danger {
       color: #F26565;
     }
+
+    &--active {
+      color: $color-task;
+      svg { color: $color-task; }
+    }
+  }
+
+  // Cover-Bild-URL-Eingabe (klappt unter der Listen-Zeile auf)
+  &__url-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px 10px;
+    animation: fade-in 0.15s ease;
+  }
+
+  &__url-input {
+    flex: 1;
+    min-width: 0;
+    background: $color-hover;
+    border: 1px solid $color-border;
+    border-radius: $radius-md - 4px;
+    padding: 10px 12px;
+    color: $color-text;
+    font-family: $font-body;
+    font-size: 14px;
+
+    &::placeholder { color: $color-muted; }
+    &:focus { outline: none; border-color: rgba($color-task, 0.5); }
+  }
+
+  &__url-apply {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-md - 4px;
+    border: none;
+    background: $color-task;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+
+    &:active { transform: scale(0.94); }
   }
 
   &__divider {

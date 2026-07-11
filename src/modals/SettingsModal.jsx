@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   ChevronLeft,
@@ -44,7 +44,14 @@ const LANGUAGES = [
   { code: "es", flag: "🇪🇸" },
 ];
 
-export function SettingsModal({
+/**
+ * Einstellungen als vollwertige App-Seite (im Navigations-Stack). Der große
+ * Titel + das Datum kommen aus dem gemeinsamen App-Header (CommandPanel, mit
+ * Logo oben links – wie die Startseite). Diese Komponente rendert nur den
+ * Seiteninhalt (gruppierte Listen) plus eine untere Leiste mit rundem Zurück-
+ * Button + Schließen.
+ */
+export function SettingsScreen({
   user,
   theme,
   setTheme,
@@ -53,8 +60,23 @@ export function SettingsModal({
   t,
   onClose,
   onUpdateUser,
+  onHeaderTitleChange,
 }) {
   const [view, setView] = useState(VIEW_MAIN);
+  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
+
+  const titleByView = {
+    [VIEW_MAIN]: t.settings,
+    [VIEW_PROFILE]: t.personalData,
+    [VIEW_FEEDBACK]: t.feedback,
+  };
+
+  // Aktuellen (Unter-)Titel an den App-Header melden; beim Verlassen zurücksetzen.
+  useEffect(() => {
+    onHeaderTitleChange?.(titleByView[view]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, t]);
+  useEffect(() => () => onHeaderTitleChange?.(null), []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
@@ -75,25 +97,12 @@ export function SettingsModal({
     window.location.reload();
   };
 
-  const titleByView = {
-    [VIEW_MAIN]: t.settings,
-    [VIEW_PROFILE]: t.personalData,
-    [VIEW_FEEDBACK]: t.feedback,
-  };
+  // Runder Zurück-Button: aus Unteransicht zur Hauptansicht, sonst Seite verlassen.
+  const goBack = () => (view !== VIEW_MAIN ? setView(VIEW_MAIN) : onClose());
 
   return (
-    <div className="modal" onClick={onClose}>
-      <div
-        className={`modal__sheet settings-modal ${view !== VIEW_MAIN ? "settings-modal--sub" : ""}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal__handle" />
-        <div className="modal__header">
-          <div className="modal__header-left" />
-          <h3 className="modal__title">{titleByView[view]}</h3>
-          <div className="modal__header-right" />
-        </div>
-
+    <div className="settings-screen">
+      <div className="settings-screen__body">
         {view === VIEW_MAIN && (
           <MainSettingsView
             user={user}
@@ -102,25 +111,46 @@ export function SettingsModal({
             lang={lang}
             setLang={setLang}
             t={t}
-            onAvatarChange={handleAvatarChange}
-            onUpdateUser={onUpdateUser}
             onOpenProfile={() => setView(VIEW_PROFILE)}
             onOpenFeedback={() => setView(VIEW_FEEDBACK)}
-            onClose={onClose}
+            onEditAvatar={() => setPhotoSheetOpen(true)}
           />
         )}
         {view === VIEW_PROFILE && (
           <ProfileSettingsView
             t={t}
-            onBack={() => setView(VIEW_MAIN)}
-            onClose={onClose}
+            user={user}
+            onUpdateUser={onUpdateUser}
             onDeleteApp={handleDeleteApp}
           />
         )}
-        {view === VIEW_FEEDBACK && (
-          <FeedbackView t={t} onBack={() => setView(VIEW_MAIN)} onClose={onClose} />
-        )}
+        {view === VIEW_FEEDBACK && <FeedbackView t={t} />}
       </div>
+
+      {/* Untere Leiste: runder Zurück-Button + Schließen */}
+      <div className="settings-screen__footer">
+        <button
+          className="settings-screen__back-fab"
+          onClick={goBack}
+          aria-label={t.back || "Zurück"}
+        >
+          <ChevronLeft size={22} />
+        </button>
+        <button className="settings-screen__close" onClick={onClose}>
+          {t.closeBtn}
+        </button>
+      </div>
+
+      {photoSheetOpen && (
+        <AvatarPhotoSheet
+          t={t}
+          user={user}
+          onAvatarChange={handleAvatarChange}
+          onPickColor={(hex) => onUpdateUser({ avatarColor: hex, avatar: null })}
+          onResetColor={() => onUpdateUser({ avatarColor: null })}
+          onClose={() => setPhotoSheetOpen(false)}
+        />
+      )}
     </div>
   );
 }
@@ -132,165 +162,100 @@ function MainSettingsView({
   lang,
   setLang,
   t,
-  onAvatarChange,
-  onUpdateUser,
   onOpenProfile,
   onOpenFeedback,
-  onClose,
+  onEditAvatar,
 }) {
-  const [photoSheetOpen, setPhotoSheetOpen] = useState(false);
-
   return (
-    <div className="settings-modal__content">
-      <div className="settings-modal__body">
-        <div className="profile-row" onClick={onOpenProfile}>
-          <div
-            className={`profile-row__avatar ${
-              user.avatarColor && !user.avatar ? "profile-row__avatar--colored" : ""
-            }`}
-            style={
-              user.avatarColor && !user.avatar ? { background: user.avatarColor } : undefined
-            }
-            onClick={(e) => {
-              e.stopPropagation();
-              setPhotoSheetOpen(true);
-            }}
-          >
-            {user.avatar ? (
-              <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
-            ) : user.name ? (
-              user.name.charAt(0).toUpperCase()
-            ) : (
-              "P"
-            )}
-            {/* Stift-Badge signalisiert die Bearbeitbarkeit (v.a. mobil ohne Hover) */}
-            <div className="profile-row__avatar-badge">
-              <Pencil size={12} />
-            </div>
-          </div>
-          <div className="profile-row__info">
-            <div className="profile-row__name">{user.name || "User"}</div>
-            <div className="profile-row__sub">{t.personalData}</div>
-          </div>
-          <ChevronRight size={18} color="#8a8a96" className="profile-row__chevron" />
-        </div>
-
-        <div className="settings-section">
-          <div className="settings-label">{t.userName}</div>
-          <input
-            className="modal__input"
-            value={user.name}
-            onChange={(e) => onUpdateUser({ name: e.target.value })}
-            placeholder="Name..."
-          />
-        </div>
-
-        <div className="settings-section">
-          <div className="settings-label">
-            {lang === "de" ? "Cover-Bild URL" : "Cover Image URL"}
-          </div>
-          <input
-            className="modal__input"
-            type="url"
-            value={user.bgImage || ""}
-            onChange={(e) => onUpdateUser({ bgImage: e.target.value })}
-            placeholder="https://..."
-          />
-          {user.bgImage && (
-            <img
-              src={user.bgImage}
-              alt="Cover-Vorschau"
-              style={{
-                width: "100%",
-                height: "80px",
-                objectFit: "cover",
-                borderRadius: "8px",
-                marginTop: "8px",
-              }}
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
+    <>
+      {/* Profil-Karte */}
+      <div className="profile-row" onClick={onOpenProfile}>
+        <div
+          className={`profile-row__avatar ${
+            user.avatarColor && !user.avatar ? "profile-row__avatar--colored" : ""
+          }`}
+          style={user.avatarColor && !user.avatar ? { background: user.avatarColor } : undefined}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEditAvatar();
+          }}
+        >
+          {user.avatar ? (
+            <img src={user.avatar} alt="Avatar" className="profile-row__avatar-img" />
+          ) : user.name ? (
+            user.name.charAt(0).toUpperCase()
+          ) : (
+            "P"
           )}
-        </div>
-
-        <div className="settings-section">
-          <div className="settings-row">
-            <span className="settings-label">{t.appearance}</span>
-            <div className="theme-toggle">
-              <button
-                className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
-                onClick={() => setTheme("dark")}
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                <Moon size={14} />
-                {t.dark}
-              </button>
-              <button
-                className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
-                onClick={() => setTheme("light")}
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                <Sun size={14} />
-                {t.light}
-              </button>
-            </div>
+          {/* Stift-Badge signalisiert die Bearbeitbarkeit (v.a. mobil ohne Hover) */}
+          <div className="profile-row__avatar-badge">
+            <Pencil size={12} />
           </div>
         </div>
-
-        <div className="settings-section">
-          <div className="settings-row">
-            <span className="settings-label">{t.language}</span>
-            <div className="theme-toggle">
-              {LANGUAGES.map(({ code, flag }) => (
-                <button
-                  key={code}
-                  className={`theme-toggle__btn ${
-                    lang === code ? "theme-toggle__btn--active" : ""
-                  }`}
-                  onClick={() => setLang(code)}
-                >
-                  {flag}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="profile-row__info">
+          <div className="profile-row__name">{user.name || "User"}</div>
+          <div className="profile-row__sub">{t.personalData}</div>
         </div>
+        <ChevronRight size={20} className="profile-row__chevron" />
+      </div>
 
-        <div className="settings-section">
-          <div className="settings-row">
-            <span className="settings-label">{t.feedback}</span>
-            <button className="feedback-submit-btn" onClick={onOpenFeedback}>
-              {t.submitFeedback}
+      {/* Darstellung: Erscheinungsbild + Sprache */}
+      <div className="settings-screen__group">
+        <div className="settings-screen__row">
+          <span className="settings-screen__row-label">{t.appearance}</span>
+          <div className="theme-toggle">
+            <button
+              className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
+              onClick={() => setTheme("dark")}
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              <Moon size={14} />
+              {t.dark}
+            </button>
+            <button
+              className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
+              onClick={() => setTheme("light")}
+              style={{ display: "flex", alignItems: "center", gap: "6px" }}
+            >
+              <Sun size={14} />
+              {t.light}
             </button>
           </div>
         </div>
+        <div className="settings-screen__row">
+          <span className="settings-screen__row-label">{t.language}</span>
+          <div className="theme-toggle theme-toggle--flags">
+            {LANGUAGES.map(({ code, flag }) => (
+              <button
+                key={code}
+                className={`theme-toggle__btn ${lang === code ? "theme-toggle__btn--active" : ""}`}
+                onClick={() => setLang(code)}
+              >
+                <span className="theme-toggle__flag">{flag}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="settings-modal__footer">
-        <button className="settings-modal__footer-close" onClick={onClose}>
-          {t.closeBtn}
+      {/* Feedback */}
+      <div className="settings-screen__group">
+        <button
+          className="settings-screen__row settings-screen__row--tap"
+          onClick={onOpenFeedback}
+        >
+          <span className="settings-screen__row-label">{t.feedback}</span>
+          <ChevronRight size={20} className="settings-screen__row-chevron" />
         </button>
       </div>
-
-      {photoSheetOpen && (
-        <AvatarPhotoSheet
-          t={t}
-          user={user}
-          onAvatarChange={onAvatarChange}
-          onPickColor={(hex) => onUpdateUser({ avatarColor: hex, avatar: null })}
-          onResetColor={() => onUpdateUser({ avatarColor: null })}
-          onClose={() => setPhotoSheetOpen(false)}
-        />
-      )}
-    </div>
+    </>
   );
 }
 
 /**
  * Bottom-Sheet zum Setzen des Avatar-Bildes – Layout wie das Cover-Sheet
- * (Farben / Fotos / Kamera). Per Portal an <body>, damit es über dem
- * Settings-Modal liegt.
+ * (Farben / Fotos / Kamera). Per Portal an <body>, damit es über der
+ * Einstellungen-Seite liegt.
  */
 function AvatarPhotoSheet({ t, user, onAvatarChange, onPickColor, onResetColor, onClose }) {
   const [colorMode, setColorMode] = useState(false);
@@ -315,17 +280,11 @@ function AvatarPhotoSheet({ t, user, onAvatarChange, onPickColor, onResetColor, 
             <Palette size={20} />
             <span>{t.coverColors}</span>
           </button>
-          <button
-            className="settings-sheet__bubble"
-            onClick={() => photoInputRef.current?.click()}
-          >
+          <button className="settings-sheet__bubble" onClick={() => photoInputRef.current?.click()}>
             <ImageIcon size={20} />
             <span>{t.coverPhoto}</span>
           </button>
-          <button
-            className="settings-sheet__bubble"
-            onClick={() => cameraInputRef.current?.click()}
-          >
+          <button className="settings-sheet__bubble" onClick={() => cameraInputRef.current?.click()}>
             <Camera size={20} />
             <span>{t.coverCamera}</span>
           </button>
@@ -380,81 +339,72 @@ function AvatarPhotoSheet({ t, user, onAvatarChange, onPickColor, onResetColor, 
   );
 }
 
-function ProfileSettingsView({ t, onBack, onClose, onDeleteApp }) {
+function ProfileSettingsView({ t, user, onUpdateUser, onDeleteApp }) {
   return (
-    <div className="settings-modal__content settings-modal__content--sub">
-      <div className="settings-modal__body">
-        <div className="settings-group">
-          <div className="settings-group__title">{t.dataSection}</div>
-          <button className="settings-item settings-item--danger" onClick={onDeleteApp}>
-            <div className="settings-item__label">{t.deleteApp}</div>
-            <Trash2 size={16} />
-          </button>
-        </div>
+    <>
+      {/* Namensfeld mit langgezogenem Unterstrich (Material-Stil) */}
+      <div className="settings-screen__group">
+        <label className="settings-field">
+          <span className="settings-field__label">{t.userName}</span>
+          <input
+            className="settings-field__input"
+            value={user.name}
+            onChange={(e) => onUpdateUser({ name: e.target.value })}
+            placeholder="Name..."
+          />
+        </label>
       </div>
 
-      <div className="settings-modal__footer">
-        <button className="settings-modal__footer-back" onClick={onBack}>
-          <ChevronLeft size={20} color="currentColor" />
-        </button>
-        <button className="settings-modal__footer-close" onClick={onClose}>
-          {t.closeBtn}
+      <div className="settings-screen__group">
+        <button
+          className="settings-screen__row settings-screen__row--tap settings-screen__row--danger"
+          onClick={onDeleteApp}
+        >
+          <span className="settings-screen__row-label">{t.deleteApp}</span>
+          <Trash2 size={18} />
         </button>
       </div>
-    </div>
+    </>
   );
 }
 
-function FeedbackView({ t, onBack, onClose }) {
+function FeedbackView({ t }) {
   const [formOpen, setFormOpen] = useState(false);
 
   return (
-    <div className="settings-modal__content settings-modal__content--sub">
-      <div className="settings-modal__body">
-        <div className="feedback-form">
-          <div className="feedback-callout">{t.feedbackScreenshotHint}</div>
+    <div className="feedback-form">
+      <div className="feedback-callout">{t.feedbackScreenshotHint}</div>
 
-          {!formOpen ? (
-            <button
-              className="modal__submit"
-              onClick={() => setFormOpen(true)}
-              style={{ background: "#0B8CE9" }}
-            >
-              {t.openFeedbackForm}
-            </button>
-          ) : (
-            <>
-              <iframe
-                className="feedback-embed"
-                src={FEEDBACK_FORM_EMBED_URL}
-                width="100%"
-                height="600"
-                frameBorder="0"
-                allowFullScreen
-                title="Feedback"
-              />
-              <a
-                className="feedback-board-link"
-                href={FEEDBACK_FORM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalLink size={14} />
-                {t.feedbackOpenNewTab}
-              </a>
-            </>
-          )}
-        </div>
-      </div>
-
-      <div className="settings-modal__footer">
-        <button className="settings-modal__footer-back" onClick={onBack}>
-          <ChevronLeft size={20} color="currentColor" />
+      {!formOpen ? (
+        <button
+          className="modal__submit"
+          onClick={() => setFormOpen(true)}
+          style={{ background: "#0B8CE9" }}
+        >
+          {t.openFeedbackForm}
         </button>
-        <button className="settings-modal__footer-close" onClick={onClose}>
-          {t.closeBtn}
-        </button>
-      </div>
+      ) : (
+        <>
+          <iframe
+            className="feedback-embed"
+            src={FEEDBACK_FORM_EMBED_URL}
+            width="100%"
+            height="600"
+            frameBorder="0"
+            allowFullScreen
+            title="Feedback"
+          />
+          <a
+            className="feedback-board-link"
+            href={FEEDBACK_FORM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <ExternalLink size={14} />
+            {t.feedbackOpenNewTab}
+          </a>
+        </>
+      )}
     </div>
   );
 }

@@ -243,6 +243,7 @@ export const I18N = {
     coverPhoto: "Fotos",
     coverCamera: "Kamera",
     coverDefault: "Standard",
+    coverUrl: "Cover-Bild URL",
     removeCover: "Cover entfernen",
   },
   en: {
@@ -487,6 +488,7 @@ export const I18N = {
     coverPhoto: "Photos",
     coverCamera: "Camera",
     coverDefault: "Default",
+    coverUrl: "Cover image URL",
     removeCover: "Remove cover",
   },
   es: {
@@ -731,6 +733,7 @@ export const I18N = {
     coverPhoto: "Fotos",
     coverCamera: "Cámara",
     coverDefault: "Predeterminado",
+    coverUrl: "URL de imagen de portada",
     removeCover: "Quitar portada",
   }
 };

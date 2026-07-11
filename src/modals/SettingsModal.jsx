@@ -55,6 +55,8 @@ export function SettingsScreen({
   user,
   theme,
   setTheme,
+  newDesign,
+  setNewDesign,
   lang,
   setLang,
   t,
@@ -108,6 +110,8 @@ export function SettingsScreen({
             user={user}
             theme={theme}
             setTheme={setTheme}
+            newDesign={newDesign}
+            setNewDesign={setNewDesign}
             lang={lang}
             setLang={setLang}
             t={t}
@@ -159,6 +163,8 @@ function MainSettingsView({
   user,
   theme,
   setTheme,
+  newDesign,
+  setNewDesign,
   lang,
   setLang,
   t,
@@ -199,29 +205,19 @@ function MainSettingsView({
         <ChevronRight size={20} className="profile-row__chevron" />
       </div>
 
-      {/* Darstellung: Erscheinungsbild + Sprache */}
+      {/* Feedback – bewusst ganz oben, direkt unter der Profil-Karte */}
       <div className="settings-screen__group">
-        <div className="settings-screen__row">
-          <span className="settings-screen__row-label">{t.appearance}</span>
-          <div className="theme-toggle">
-            <button
-              className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
-              onClick={() => setTheme("dark")}
-              style={{ display: "flex", alignItems: "center", gap: "6px" }}
-            >
-              <Moon size={14} />
-              {t.dark}
-            </button>
-            <button
-              className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
-              onClick={() => setTheme("light")}
-              style={{ display: "flex", alignItems: "center", gap: "6px" }}
-            >
-              <Sun size={14} />
-              {t.light}
-            </button>
-          </div>
-        </div>
+        <button
+          className="settings-screen__row settings-screen__row--tap"
+          onClick={onOpenFeedback}
+        >
+          <span className="settings-screen__row-label">{t.feedback}</span>
+          <ChevronRight size={20} className="settings-screen__row-chevron" />
+        </button>
+      </div>
+
+      {/* Darstellung: Sprache + Erscheinungsbild */}
+      <div className="settings-screen__group">
         <div className="settings-screen__row">
           <span className="settings-screen__row-label">{t.language}</span>
           <div className="theme-toggle theme-toggle--flags">
@@ -236,17 +232,46 @@ function MainSettingsView({
             ))}
           </div>
         </div>
+        <div className="settings-screen__row">
+          <span className="settings-screen__row-label">{t.appearance}</span>
+          <div className="theme-toggle">
+            <button
+              className={`theme-toggle__btn ${theme === "dark" ? "theme-toggle__btn--active" : ""}`}
+              onClick={() => setTheme("dark")}
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <Moon size={14} />
+              {t.dark}
+            </button>
+            <button
+              className={`theme-toggle__btn ${theme === "light" ? "theme-toggle__btn--active" : ""}`}
+              onClick={() => setTheme("light")}
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <Sun size={14} />
+              {t.light}
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Feedback */}
+      {/* Neues Design testen – eigene Kachel mit "Neu"-Badge + Schalter */}
       <div className="settings-screen__group">
-        <button
-          className="settings-screen__row settings-screen__row--tap"
-          onClick={onOpenFeedback}
-        >
-          <span className="settings-screen__row-label">{t.feedback}</span>
-          <ChevronRight size={20} className="settings-screen__row-chevron" />
-        </button>
+        <div className="settings-screen__row">
+          <span className="settings-screen__row-label">
+            {t.newDesign}
+            <span className="settings-screen__badge-new">{t.newBadge}</span>
+          </span>
+          <button
+            className={`design-switch ${newDesign ? "design-switch--on" : ""}`}
+            role="switch"
+            aria-checked={newDesign}
+            aria-label={t.newDesign}
+            onClick={() => setNewDesign(!newDesign)}
+          >
+            <span className="design-switch__knob" />
+          </button>
+        </div>
       </div>
     </>
   );

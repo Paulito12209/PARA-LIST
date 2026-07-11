@@ -347,6 +347,10 @@ export default function App() {
   useEffect(() => {
     document.body.classList.toggle("light-theme", state.theme === "light");
   }, [state.theme]);
+  // Neues-Design-Flag ebenfalls auf <body> spiegeln (für portalte Overlays).
+  useEffect(() => {
+    document.body.classList.toggle("new-design", !!state.newDesign);
+  }, [state.newDesign]);
 
   // iOS-Tastatur/Assistent-Pille: Eingabefelder deaktivieren sich selbst,
   // sobald irgendwo außerhalb eines Eingabefelds getippt wird (Navigation,
@@ -398,6 +402,9 @@ export default function App() {
 
   const theme = state.theme || "light";
   const lang = state.lang || "de";
+  // Opt-in-Flag für das neue Design/Layout (Toggle in den Einstellungen).
+  // Spiegelt sich als Klasse auf dem App-Root, damit Styles darauf reagieren können.
+  const newDesign = !!state.newDesign;
   const t = I18N[lang];
   const CC = getCC(t);
   const TABS = getTABS(t);
@@ -1183,7 +1190,7 @@ export default function App() {
       focusTab: (focusedTab) => setTab(focusedTab),
     };
     return (
-      <div className={`app${theme === "light" ? " light-theme" : ""}`}>
+      <div className={`app${theme === "light" ? " light-theme" : ""}${newDesign ? " new-design" : ""}`}>
         <DesktopApp ctx={desktopCtx} />
         {renderRootModals()}
       </div>
@@ -1192,7 +1199,7 @@ export default function App() {
 
   return (
     <div
-      className={`app ${theme === "light" ? "light-theme" : ""}`}
+      className={`app ${theme === "light" ? "light-theme" : ""}${newDesign ? " new-design" : ""}`}
       style={cur.view === VIEW.HOME ? { "--cover-accent-rgb": coverAccentRgb } : undefined}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
@@ -1371,6 +1378,8 @@ export default function App() {
             setLang={(l) => setState((s) => ({ ...s, lang: l }))}
             theme={theme}
             setTheme={(th) => setState((s) => ({ ...s, theme: th }))}
+            newDesign={newDesign}
+            setNewDesign={(v) => setState((s) => ({ ...s, newDesign: v }))}
             user={state.user}
             onUpdateUser={(patch) =>
               setState((s) => ({ ...s, user: { ...s.user, ...patch } }))

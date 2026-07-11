@@ -320,9 +320,25 @@
   // 390px: der Cover-Inhalt (Header + Titelblock + Button + Karussell-Dots)
   // endet – unabhängig von der Breite – bei ~385px ab Cover-Oberkante. Ein
   // reines 100vw wäre auf schmalen Screens kürzer, sodass die Dots am unteren
-  // overflow-hidden-Rand abgeschnitten würden. Obergrenze 420px.
-  height: clamp(390px, 100vw, 420px);
+  // overflow-hidden-Rand abgeschnitten würden. Obergrenze 400px: hält den
+  // "Öffnen"-Button auch auf breiten Geräten (Pro Max, Tablets) in der mit dem
+  // Daumen gut erreichbaren Zone und begrenzt den Leerraum bis zur ersten
+  // Listen-Überschrift.
+  height: clamp(390px, 100vw, 400px);
   flex-shrink: 0;
+
+  // Neues Design: der obere Bereich (Titel/Beschreibung/Tags statt Badge
+  // + eigener Titelzeile) braucht weniger Höhe. Statt strikt quadratisch
+  // (100vw – auf dem Pro Max 430px, zu viel Leerraum) gilt dieselbe Logik
+  // wie oben mit angepasster Untergrenze: Der Cover-Inhalt (96px Padding +
+  // 145px Titelblock + Button ~64px) endet bei ~305px; 350px Minimum lässt
+  // den Karussell-Dots immer Luft, 400px Maximum deckelt breite Geräte.
+  // Der Restplatz unter "Projekt öffnen" bleibt den Karussell-Dots
+  // vorbehalten (.home-page-dots, flex: 1 1 auto).
+  body.new-design & {
+    height: clamp(350px, 100vw, 400px);
+    aspect-ratio: auto;
+  }
   padding: 96px 20px 0;
   overflow: hidden;
   display: flex;
@@ -424,6 +440,21 @@
         rgba(var(--cover-accent-rgb), 0.10) 100%);
   }
 
+  // Neues Design (Opt-in), Dark Mode: kein Streifenmuster, kein seitliches
+  // Abdunkeln – nur ein glatter Verlauf von der Hauptfarbe (unten) zur
+  // Akzentfarbe des Typs (oben: Projekt=Rot/Bereich=Gelb/Ressource=Grün …).
+  .new-design & {
+    &::before {
+      // Seitlicher Dunkel-Verlauf entfällt – der Farbverlauf soll bis an
+      // den Rand durchlaufen.
+      display: none;
+    }
+
+    &__light-wave {
+      background: linear-gradient(to top, #16161F 0%, rgba(var(--cover-accent-rgb), 0.65) 100%);
+    }
+  }
+
   &__bg-img {
     position: absolute;
     inset: 0;
@@ -446,7 +477,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
     width: 100%;
   }
 
@@ -455,6 +486,42 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+  }
+
+  // Neues Design: Titel, Beschreibung und Tags stecken zusammen in einer
+  // Spalte (leftcol) links, der Avatar sitzt als Geschwister-Element rechts
+  // daneben – beide auf Augenhöhe in der obersten Zeile der Karte.
+  &__toprow {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    margin-top: 16px;
+  }
+
+  &__leftcol {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  &__header-title {
+    min-width: 0;
+    margin: 0;
+    font-family: $font-heading;
+    font-size: 32px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.8px;
+    line-height: 1.15;
   }
 
   &__badge {
@@ -703,6 +770,12 @@
     align-self: center; // mittig unter dem Inhalt
     margin-top: 8px;
     padding: 14px;
+
+    // Neues Design: etwas mehr Abstand zum Inhalt darüber, der Rest bis zum
+    // unteren Cover-Rand geht an die Karussell-Dots (.home-page-dots).
+    body.new-design & {
+      margin-top: 16px;
+    }
     border-radius: $radius-pill; // runde Enden (Pille) statt abgerundeter Ecken
     background: rgba(255, 255, 255, 0.14);
     border: 0.5px solid rgba(255, 255, 255, 0.14); // kaum sichtbar (Apple-Stil)
@@ -786,6 +859,62 @@
       flex-shrink: 0;
       width: 12px;
       height: 12px;
+    }
+  }
+
+  // Neues Design: Typ- und Datums-Tag ohne Pillenform, nur Icon + farbiger
+  // Text – ersetzt den Badge über dem Titel plus die alten Pillen-Tags.
+  &__tags--plain {
+    gap: 14px;
+  }
+
+  &__tag-plain {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+
+    &--type {
+      color: rgb(var(--cover-accent-rgb));
+    }
+
+    &--date {
+      color: var(--pill-date-color);
+    }
+  }
+
+  &__tag-plain-icon {
+    flex-shrink: 0;
+  }
+
+  // Reines Stern-Symbol (kein Ring/Hintergrund) rechts neben den Meta-Tags –
+  // togglet den Favoriten-Status des Covers (gefüllt = favorisiert).
+  &__add-info-btn {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    background: transparent;
+    border: 0;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #fff;
+    }
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    &--active {
+      color: #FBBF24;
     }
   }
 }
@@ -1055,6 +1184,66 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+// ── Neues Design: Abschnitt "Listen" mit Spotify-artigen Kacheln ──
+// 2-spaltiges Grid aus länglichen Kacheln (Favoriten · Aufgaben · Notizen ·
+// Kalender). Icon-Quadrat links (statt Spotify-Cover), Label rechts daneben.
+.home-lists-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 $spacing-md $spacing-md;
+}
+
+.home-list-tile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  height: 40px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: $color-text;
+  font-family: $font-body;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: background $transition-fast;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.14);
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--tile-accent-rgb, 124, 131, 247), 0.18);
+    color: rgb(var(--tile-accent-rgb, 124, 131, 247));
+  }
+
+  // Favoriten-Kachel: Gold-Gelb-Verlauf (passend zum Favoriten-Stern)
+  &__icon--fav {
+    background: linear-gradient(135deg, #d97706, #facc15);
+    color: #fff;
+  }
+
+  &__label {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 10px;
+  }
 }
 
 // ── Einfache Kategorien-Liste (PARA-Typen auf der Startseite) ──

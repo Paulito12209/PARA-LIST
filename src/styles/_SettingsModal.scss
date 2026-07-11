@@ -50,7 +50,9 @@ $settings-toggle-light:  #E5E5EA;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    padding: 8px 20px 16px;
+    // 8er-Raster (Google/Material): Layout-Abstände in 8px-Schritten,
+    // nur Toggles/Schalter dürfen 4er-Schritte nutzen.
+    padding: 8px 16px 16px;
   }
 
   // Abgerundete Listen-Gruppe (Karte)
@@ -65,9 +67,13 @@ $settings-toggle-light:  #E5E5EA;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
     width: 100%;
-    padding: 15px 16px;
+    // Einheitliche Zeilenhöhe auf dem 8er-Raster: JEDE Kachel-Zeile ist 64px
+    // hoch (statt Padding + Inhaltshöhe = zufällige 53–68px). Inhalt wird
+    // vertikal zentriert; min-height statt height, falls ein Label umbricht.
+    min-height: 64px;
+    padding: 0 16px;
     background: transparent;
     border: none;
     text-align: left;
@@ -102,13 +108,29 @@ $settings-toggle-light:  #E5E5EA;
     svg { color: #F26565; }
   }
 
+  // "Neu"-Badge neben dem Label (z.B. Neues-Design-Kachel)
+  &__badge-new {
+    display: inline-block;
+    margin-left: 8px;
+    // Micro-Komponente: wie die Schalter im 4er-Raster
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: $color-task;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    vertical-align: 2px;
+  }
+
   // Untere Leiste: runder Zurück-Button + Schließen
   &__footer {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 20px calc(16px + env(safe-area-inset-bottom, 0px));
+    gap: 16px;
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
   }
 
   &__back-fab {
@@ -133,7 +155,7 @@ $settings-toggle-light:  #E5E5EA;
 
   &__close {
     flex: 1;
-    padding: 15px 16px;
+    padding: 16px;
     border-radius: $radius-lg;
     background: $settings-surface;
     color: $color-text;
@@ -150,27 +172,30 @@ $settings-toggle-light:  #E5E5EA;
     }
   }
 
-  // Profil-Karte: gleiche Kartenfarbe wie die Gruppen
+  // Profil-Karte: gleiche Kartenfarbe wie die Gruppen; Höhe auf dem
+  // 8er-Raster fixiert (96px statt 92px aus 16+60+16), Avatar zentriert.
   .profile-row {
     background: $settings-surface;
     margin-bottom: 16px;
+    min-height: 96px;
+    padding: 0 16px;
   }
 
-  .feedback-form { padding-top: 4px; }
+  .feedback-form { padding-top: 8px; }
 }
 
 // Namensfeld mit langgezogenem Unterstrich (Material-Stil, wie Sonos „Raumname")
 .settings-field {
   display: flex;
   flex-direction: column;
-  padding: 14px 16px 16px;
+  padding: 16px;
   cursor: text;
 
   &__label {
     font-size: 13px;
     font-weight: 500;
     color: $color-muted;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
   }
 
   &__input {
@@ -178,7 +203,7 @@ $settings-toggle-light:  #E5E5EA;
     background: transparent;
     border: none;
     border-bottom: 1px solid $color-border;
-    padding: 4px 0 8px;
+    padding: 0 0 8px;
     color: $color-text;
     font-family: $font-body;
     font-size: 20px;
@@ -283,6 +308,43 @@ $settings-toggle-light:  #E5E5EA;
   }
 }
 
+// iOS-artiger Schalter (Neues-Design-Kachel): aus = L2-Ton wie Toggle-Blase,
+// an = Aufgaben-Blau; der Knopf gleitet nach rechts.
+.design-switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: $settings-toggle;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s ease;
+
+  &__knob {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    transition: transform 0.2s ease;
+  }
+
+  &--on {
+    background: $color-task;
+    .design-switch__knob { transform: translateX(20px); }
+  }
+}
+
+.app.light-theme .design-switch {
+  background: $settings-toggle-light;
+  &--on { background: $color-task; }
+}
+
 .settings-modal .settings-row .settings-label {
   margin-bottom: 0;
 }
@@ -304,7 +366,8 @@ $settings-toggle-light:  #E5E5EA;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 12px;
+  // Schalter-intern: 4er-Raster erlaubt
+  padding: 4px 12px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
@@ -621,14 +684,14 @@ $settings-toggle-light:  #E5E5EA;
 .feedback-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   padding-top: 8px;
 }
 
 .feedback-callout {
   background: rgba($color-task, 0.08);
   border-radius: $radius-md;
-  padding: 12px 14px;
+  padding: 16px;
   font-size: 13px;
   color: #8a8a96;
   border: 1px solid rgba($color-task, 0.15);
@@ -647,12 +710,12 @@ $settings-toggle-light:  #E5E5EA;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   color: #8a8a96;
   text-decoration: none;
-  padding: 4px;
+  padding: 8px;
   transition: color 0.2s;
 
   &:active {

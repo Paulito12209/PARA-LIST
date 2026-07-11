@@ -14,6 +14,7 @@ const NO_OVERFLOW_TOLERANCE_PX = 1;
 export function AutoScrollText({
   children,
   className,
+  as: Tag = "div",
   delayStart = DEFAULT_START_DELAY_MS,
   delayEnd = DEFAULT_END_DELAY_MS,
   speed = DEFAULT_SCROLL_SPEED_MS_PER_PX,
@@ -92,7 +93,7 @@ export function AutoScrollText({
   }, [children, speed, delayStart, delayEnd]);
 
   return (
-    <div
+    <Tag
       ref={containerRef}
       className={className}
       style={{
@@ -113,6 +114,6 @@ export function AutoScrollText({
       >
         {children}
       </div>
-    </div>
+    </Tag>
   );
 }

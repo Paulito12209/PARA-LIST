@@ -984,6 +984,37 @@
   }
 }
 
+// Neues Design (Opt-in) + Light Mode: runde Header-Buttons (Zurück, Pokal,
+// Einstellungen/3-Punkte) bekommen einen transluzenten Liquid-Glass-Körper
+// statt der bisherigen Vollfarbe – siehe Dark-Mode-Basis in _CommandPanel.scss.
+// Muss als eigener Compound-Selektor stehen: .new-design sitzt auf demselben
+// .app-Element wie .light-theme, nicht als Vorfahre davon.
+.app.light-theme.new-design {
+  .command-panel__bell,
+  .command-panel__filter-btn,
+  .command-panel__back {
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(255, 255, 255, 0.7);
+    color: #1a1a24;
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+
+  // Vorschau-Cover (Startseite/Projekt-Karte): kein Streifenmuster, kein
+  // seitliches Aufhellen/Abdunkeln – nur ein glatter Verlauf von Weiß
+  // (unten, Hauptfarbe im Light Mode) zur Akzentfarbe des Typs (oben).
+  .home-cover::before {
+    display: none;
+  }
+
+  .home-cover__light-wave {
+    background: linear-gradient(to top, #ffffff 0%, rgba(var(--cover-accent-rgb), 0.65) 100%);
+  }
+}
+
 
 .app.light-theme .profile-row {
   background: #ffffff;
@@ -1999,6 +2030,17 @@
     &:hover {
       color: #1c1c30;
       background: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  // Neues Design: "Listen"-Kacheln auf hellem Grund
+  .home-list-tile {
+    background: #ffffff;
+    border: 1px solid #e5e5f0;
+    color: #1a1a24;
+
+    &:active {
+      background: #f0f0f5;
     }
   }
 }

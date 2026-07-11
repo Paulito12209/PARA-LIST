@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, ChevronDown, Trash2, RotateCcw } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, ChevronDown, Trash2, RotateCcw, Star } from "lucide-react";
 import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLists";
 import { CommandDock } from "../components/CommandDock";
+import { NewDesignNav } from "../components/NewDesignNav";
 import { DockMenuSheet } from "../components/DockMenuSheet";
 import { ProgressOverlay } from "../components/ProgressOverlay";
 import { buildActivityState } from "../desktop/activity";
@@ -82,6 +83,7 @@ export function HomeScreen({
   tab,
   setTab,
   onOpenCat,
+  onOpenCatType,
   onQuickCreate,
   onAddEntry,
   onAddVoiceEntry,
@@ -136,6 +138,7 @@ export function HomeScreen({
     tasks: t.tasks,
     notes: t.notes,
     calendar: t.calendar,
+    favorites: t.favorites,
   };
   const activeLabel = TYPE_LABELS[activeType];
 
@@ -259,6 +262,14 @@ export function HomeScreen({
   const tabCfg = TABS.find((tCfg) => tCfg.id === tab);
   const tabColor = tabCfg?.color || "#0078D4";
 
+  // Favoriten-Liste (neues Design, Kachel "Favoriten"): alle mit Stern
+  // markierten Kategorien und Einträge, jeweils ohne Archivierte/Erledigte.
+  const favCats = cats.filter((c) => c.starred && !c.archived);
+  const favTasks = entries.filter((e) => e.type === "task" && e.starred && !e.done && !e.archived);
+  const favNotes = entries.filter((e) => e.type === "note" && e.starred && !e.done && !e.archived);
+  const favCals = entries.filter((e) => e.type === "calendar" && e.starred && !e.done && !e.archived);
+  const favCount = favCats.length + favTasks.length + favNotes.length + favCals.length;
+
   // Voice-Overlay erstellt je nach aktivem Typ einen Eintrag (Aufgabe/Notiz/
   // Termin) ODER eine Kategorie (Projekt/Bereich/Ressource). Farbe & Akzent
   // richten sich nach dem aktiven Erstell-Typ.
@@ -270,9 +281,12 @@ export function HomeScreen({
 
   // Ist die aktuell sichtbare Liste leer? Dann darf der Platzhalter nicht
   // wegscrollbar sein (Scrollen wird per CSS gesperrt).
-  const activeItemsCount = isEntryType
-    ? tabEntries.length
-    : cats.filter((c) => c.type === activeType && !c.archived).length;
+  const activeItemsCount =
+    activeType === "favorites"
+      ? favCount
+      : isEntryType
+        ? tabEntries.length
+        : cats.filter((c) => c.type === activeType && !c.archived).length;
   const activeListEmpty = activeItemsCount === 0;
 
   const avatarInputRef = useRef(null);
@@ -451,6 +465,8 @@ export function HomeScreen({
     if (Math.abs(dx) <= SWIPE_THRESHOLD_PX || Math.abs(dy) > Math.abs(dx) || panelOpen) return;
 
     const currentIndex = ALL_LIST_TYPES.indexOf(activeType);
+    // Favoriten sind nicht Teil der Wisch-Reihenfolge (nur über die Kachel).
+    if (currentIndex === -1) return;
     if (dx > 0 && currentIndex > 0) {
       handleSelectType(ALL_LIST_TYPES[currentIndex - 1]);
     } else if (dx < 0 && currentIndex < ALL_LIST_TYPES.length - 1) {
@@ -548,6 +564,9 @@ export function HomeScreen({
   }, [rgbVal, onCoverAccentChange]);
 
   const renderCoverBadge = () => {
+    // Neues Design: der Typ-Tag wandert von hier oben in die Meta-Zeile
+    // unter der Beschreibung (siehe renderCoverCat/renderCoverEntry).
+    if (state.newDesign) return null;
     if (currentCat) {
       const config = COVER_BADGE_LABELS[currentCat.type];
       const Icon = COVER_BADGE_ICONS[currentCat.type];
@@ -617,6 +636,77 @@ export function HomeScreen({
     const SING_KEY = { project: "projectSing", area: "areaSing", resource: "resourceSing" };
     const openText = t.openLabel(t[SING_KEY[cat.type]] || fallbackTypeLabel);
 
+    const TypeIcon = COVER_BADGE_ICONS[cat.type];
+    const tagsBlock = state.newDesign ? (
+      <div className="home-cover__tags home-cover__tags--plain">
+        <span className="home-cover__tag-plain home-cover__tag-plain--type">
+          {TypeIcon && <TypeIcon size={12} className="home-cover__tag-plain-icon" />}
+          {fallbackTypeLabel}
+        </span>
+        <span className="home-cover__tag-plain home-cover__tag-plain--date">
+          <Calendar size={12} className="home-cover__tag-plain-icon" />
+          {cat.date ? fmtDate(cat.date, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
+        </span>
+        <button
+          type="button"
+          className={`home-cover__add-info-btn${cat.starred ? " home-cover__add-info-btn--active" : ""}`}
+          aria-label={cat.starred ? (lang === "de" ? "Favorit entfernen" : "Unmark favorite") : (lang === "de" ? "Als Favorit markieren" : "Mark as favorite")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onUpdateCat(cat.id, { starred: !cat.starred });
+          }}
+        >
+          <Star size={16} strokeWidth={2} fill={cat.starred ? "currentColor" : "none"} />
+        </button>
+      </div>
+    ) : (
+      <div className="home-cover__tags">
+        <span className="home-cover__tag home-cover__tag--date">
+          <Calendar size={12} className="home-cover__tag-icon" />
+          {cat.date ? fmtDate(cat.date, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
+        </span>
+        <span className="home-cover__tag home-cover__tag--area">
+          <Triangle size={12} className="home-cover__tag-icon" />
+          {cat.relatedId ? areaTagLabel : fallbackTypeLabel}
+        </span>
+        {cat.tags && cat.tags.length > 0 && (
+          <span className="home-cover__tag">{cat.tags[0]}</span>
+        )}
+      </div>
+    );
+
+    if (state.newDesign) {
+      return (
+        <div className="home-cover__main" key={`cat-${cat.id}`}>
+          <div className="home-cover__toprow">
+            <div
+              className="home-cover__leftcol"
+              role="button"
+              tabIndex={0}
+              onClick={() => onOpenCat(cat)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onOpenCat(cat);
+                }
+              }}
+            >
+              <AutoScrollText as="h1" className="home-cover__header-title">{cat.name}</AutoScrollText>
+              <p className="home-cover__desc">{cat.desc || cat.body || placeholderDesc}</p>
+              {tagsBlock}
+            </div>
+            {renderAvatarArea()}
+          </div>
+
+          <button type="button" className="home-cover__open-btn" onClick={() => onOpenCat(cat)}>
+            {openText}
+          </button>
+
+          {renderCoverDots()}
+        </div>
+      );
+    }
+
     return (
       <div className="home-cover__main" key={`cat-${cat.id}`}>
         <div
@@ -635,21 +725,7 @@ export function HomeScreen({
             <AutoScrollText className="home-cover__title">{cat.name}</AutoScrollText>
             <p className="home-cover__desc">{cat.desc || cat.body || placeholderDesc}</p>
           </div>
-          <div className="home-cover__meta">
-            <div className="home-cover__tags">
-              <span className="home-cover__tag home-cover__tag--date">
-                <Calendar size={12} className="home-cover__tag-icon" />
-                {cat.date ? fmtDate(cat.date, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
-              </span>
-              <span className="home-cover__tag home-cover__tag--area">
-                <Triangle size={12} className="home-cover__tag-icon" />
-                {cat.relatedId ? areaTagLabel : fallbackTypeLabel}
-              </span>
-              {cat.tags && cat.tags.length > 0 && (
-                <span className="home-cover__tag">{cat.tags[0]}</span>
-              )}
-            </div>
-          </div>
+          <div className="home-cover__meta">{tagsBlock}</div>
         </div>
 
         <button type="button" className="home-cover__open-btn" onClick={() => onOpenCat(cat)}>
@@ -669,6 +745,82 @@ export function HomeScreen({
     const dateVal = entry.due || entry.date || null;
     const linkedCat = entry.catId ? cats.find((c) => c.id === entry.catId) : null;
     const placeholderDesc = lang === "de" ? "Kein weiterer Inhalt." : "No further content.";
+
+    const tagsBlock = state.newDesign ? (
+      <div className="home-cover__tags home-cover__tags--plain">
+        {cfg && (
+          <span className="home-cover__tag-plain home-cover__tag-plain--type">
+            <cfg.Icon size={12} className="home-cover__tag-plain-icon" />
+            {typeLabel}
+          </span>
+        )}
+        <span className="home-cover__tag-plain home-cover__tag-plain--date">
+          <Calendar size={12} className="home-cover__tag-plain-icon" />
+          {dateVal ? fmtDate(dateVal, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
+        </span>
+        <button
+          type="button"
+          className={`home-cover__add-info-btn${entry.starred ? " home-cover__add-info-btn--active" : ""}`}
+          aria-label={entry.starred ? (lang === "de" ? "Favorit entfernen" : "Unmark favorite") : (lang === "de" ? "Als Favorit markieren" : "Mark as favorite")}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleStar(entry.id);
+          }}
+        >
+          <Star size={16} strokeWidth={2} fill={entry.starred ? "currentColor" : "none"} />
+        </button>
+      </div>
+    ) : (
+      <div className="home-cover__tags">
+        <span className="home-cover__tag home-cover__tag--date">
+          <Calendar size={12} className="home-cover__tag-icon" />
+          {dateVal ? fmtDate(dateVal, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
+        </span>
+        {linkedCat && (
+          <span className="home-cover__tag home-cover__tag--area">
+            <Triangle size={12} className="home-cover__tag-icon" />
+            {linkedCat.name}
+          </span>
+        )}
+        {entry.tags && entry.tags.length > 0 && (
+          <span className="home-cover__tag">{entry.tags[0]}</span>
+        )}
+      </div>
+    );
+
+    if (state.newDesign) {
+      return (
+        <div className="home-cover__main" key={`entry-${entry.id}`}>
+          <div className="home-cover__toprow">
+            <div
+              className="home-cover__leftcol"
+              role="button"
+              tabIndex={0}
+              onClick={() => onOpenEntry?.(entry)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onOpenEntry?.(entry);
+                }
+              }}
+            >
+              <AutoScrollText as="h1" className="home-cover__header-title">{entry.title}</AutoScrollText>
+              <p className="home-cover__desc">
+                {entry.note || entry.body || entry.desc || placeholderDesc}
+              </p>
+              {tagsBlock}
+            </div>
+            {renderAvatarArea()}
+          </div>
+
+          <button type="button" className="home-cover__open-btn" onClick={() => onOpenEntry?.(entry)}>
+            {openText}
+          </button>
+
+          {renderCoverDots()}
+        </div>
+      );
+    }
 
     return (
       <div className="home-cover__main" key={`entry-${entry.id}`}>
@@ -690,23 +842,7 @@ export function HomeScreen({
               {entry.note || entry.body || entry.desc || placeholderDesc}
             </p>
           </div>
-          <div className="home-cover__meta">
-            <div className="home-cover__tags">
-              <span className="home-cover__tag home-cover__tag--date">
-                <Calendar size={12} className="home-cover__tag-icon" />
-                {dateVal ? fmtDate(dateVal, t.locale) : lang === "de" ? "Flexibel" : "Flexible"}
-              </span>
-              {linkedCat && (
-                <span className="home-cover__tag home-cover__tag--area">
-                  <Triangle size={12} className="home-cover__tag-icon" />
-                  {linkedCat.name}
-                </span>
-              )}
-              {entry.tags && entry.tags.length > 0 && (
-                <span className="home-cover__tag">{entry.tags[0]}</span>
-              )}
-            </div>
-          </div>
+          <div className="home-cover__meta">{tagsBlock}</div>
         </div>
 
         <button type="button" className="home-cover__open-btn" onClick={() => onOpenEntry?.(entry)}>
@@ -717,6 +853,67 @@ export function HomeScreen({
       </div>
     );
   };
+
+  // Avatar + Kollaboratoren rechts im Cover. Im alten Design Teil der eigenen
+  // Header-Zeile (neben dem Badge), im neuen Design Teil der Content-Zeile
+  // (neben Titel/Beschreibung/Tags).
+  const renderAvatarArea = () => (
+    <div className="home-cover__avatar-area">
+      {state.user.avatar ? (
+        <img
+          src={state.user.avatar}
+          alt="Avatar"
+          className="home-cover__avatar"
+          onClick={() => avatarInputRef.current?.click()}
+        />
+      ) : (
+        <button
+          className="home-cover__avatar-placeholder home-cover__avatar-placeholder--initials"
+          onClick={() => avatarInputRef.current?.click()}
+        >
+          {getInitials(state.user.name)}
+        </button>
+      )}
+      {/* Kollaboratoren gibt es nur bei Kategorien, nicht bei Einträgen */}
+      {currentCat && currentCollabs.length > 0 && (
+        <button
+          className="home-cover__collab-avatar"
+          onClick={() => {
+            setCollabModalInitialView("list");
+            setCollabModalOpen(true);
+          }}
+        >
+          {currentCollabs[0].avatar ? (
+            <img src={currentCollabs[0].avatar} alt={currentCollabs[0].name} />
+          ) : (
+            <span>{currentCollabs[0].name.charAt(0).toUpperCase()}</span>
+          )}
+        </button>
+      )}
+      {currentCat && (
+        <button
+          className="home-cover__collab-btn"
+          onClick={() => {
+            setCollabModalInitialView(currentCollabs.length === 0 ? "add" : "list");
+            setCollabModalOpen(true);
+          }}
+        >
+          {currentCollabs.length >= 2 ? (
+            <span className="home-cover__collab-count">+{currentCollabs.length - 1}</span>
+          ) : (
+            <UserPlus size={14} />
+          )}
+        </button>
+      )}
+      <input
+        type="file"
+        ref={avatarInputRef}
+        onChange={handleAvatarUpload}
+        accept="image/*"
+        style={{ display: "none" }}
+      />
+    </div>
+  );
 
   // Papierkorb-Ansicht (Filter "trash"): gelöschte Einträge/Kategorien des
   // aktiven Kontexts, neueste zuerst, mit Wiederherstellen-Aktion.
@@ -841,9 +1038,78 @@ export function HomeScreen({
     return null;
   };
 
+  const renderCatItem = (c) => (
+    <HomeCatItem
+      key={c.id}
+      c={c}
+      cats={cats}
+      t={t}
+      CC={CC}
+      onOpenCat={onOpenCat}
+      onUpdateCat={onUpdateCat}
+      onTogglePin={(id) => togglePin(id, "cat")}
+      onToggleVerified={toggleVerified}
+      onTrash={trashCat}
+    />
+  );
+
+  // Favoriten-Seite (neues Design): favorisierte Kategorien oben, danach
+  // favorisierte Aufgaben/Notizen/Termine – jeweils ungruppiert in der
+  // Akzentfarbe des Typs.
+  const renderFavoritesList = () => {
+    if (favCount === 0) {
+      return <div className="entry-list__empty">{t.noFavorites}</div>;
+    }
+    const shared = { t, CC, cats, grouped: false, onOpenEntry, isHome: true };
+    return (
+      <>
+        {favCats.map(renderCatItem)}
+        {favTasks.length > 0 && (
+          <TaskList
+            {...shared}
+            entries={favTasks}
+            lang={lang}
+            color="#0B8CE9"
+            onToggle={toggleTask}
+            onToggleStar={toggleStar}
+            onTogglePin={togglePin}
+            onUpdateEntry={updateEntry}
+            onDelete={deleteEntry}
+          />
+        )}
+        {favNotes.length > 0 && (
+          <NoteList
+            {...shared}
+            entries={favNotes}
+            color="#F59E0B"
+            onDelete={deleteEntry}
+            onToggleStar={toggleStar}
+            onTogglePin={togglePin}
+            onUpdateEntry={updateEntry}
+            onArchiveEntry={onArchiveEntry}
+          />
+        )}
+        {favCals.length > 0 && (
+          <CalList
+            {...shared}
+            entries={favCals}
+            lang={lang}
+            color="#0078D4"
+            onDelete={deleteEntry}
+            onToggle={toggleTask}
+            onToggleStar={toggleStar}
+            onTogglePin={togglePin}
+            onUpdateEntry={updateEntry}
+          />
+        )}
+      </>
+    );
+  };
+
   // Inhalt der Liste je nach aktivem Typ:
   // Eintragstypen → bestehende Listen; PARA-Typen → einfache Kategorien-Liste.
   const renderActiveList = () => {
+    if (activeType === "favorites") return renderFavoritesList();
     if (isEntryType) return renderTabList();
     if (listFilter === "trash") return renderTrashList();
     const paraCats = cats.filter(
@@ -856,21 +1122,6 @@ export function HomeScreen({
         </div>
       );
     }
-
-    const renderCatItem = (c) => (
-      <HomeCatItem
-        key={c.id}
-        c={c}
-        cats={cats}
-        t={t}
-        CC={CC}
-        onOpenCat={onOpenCat}
-        onUpdateCat={onUpdateCat}
-        onTogglePin={(id) => togglePin(id, "cat")}
-        onToggleVerified={toggleVerified}
-        onTrash={trashCat}
-      />
-    );
 
     // Fixierte Kategorie wird ganz oben angepinnt (genau eine pro Liste).
     const pinnedCat = paraCats.find((c) => c.pinned);
@@ -929,69 +1180,28 @@ export function HomeScreen({
         )}
         <div className="home-cover__light-wave" />
         <div className="home-cover__content">
-          <div className="home-cover__header">
-            <span className="home-cover__badge">{renderCoverBadge()}</span>
-            <div className="home-cover__avatar-area">
-              {state.user.avatar ? (
-                <img
-                  src={state.user.avatar}
-                  alt="Avatar"
-                  className="home-cover__avatar"
-                  onClick={() => avatarInputRef.current?.click()}
-                />
-              ) : (
-                <button
-                  className="home-cover__avatar-placeholder home-cover__avatar-placeholder--initials"
-                  onClick={() => avatarInputRef.current?.click()}
-                >
-                  {getInitials(state.user.name)}
-                </button>
-              )}
-              {/* Kollaboratoren gibt es nur bei Kategorien, nicht bei Einträgen */}
-              {currentCat && currentCollabs.length > 0 && (
-                <button
-                  className="home-cover__collab-avatar"
-                  onClick={() => {
-                    setCollabModalInitialView("list");
-                    setCollabModalOpen(true);
-                  }}
-                >
-                  {currentCollabs[0].avatar ? (
-                    <img src={currentCollabs[0].avatar} alt={currentCollabs[0].name} />
-                  ) : (
-                    <span>{currentCollabs[0].name.charAt(0).toUpperCase()}</span>
-                  )}
-                </button>
-              )}
-              {currentCat && (
-                <button
-                  className="home-cover__collab-btn"
-                  onClick={() => {
-                    setCollabModalInitialView(currentCollabs.length === 0 ? "add" : "list");
-                    setCollabModalOpen(true);
-                  }}
-                >
-                  {currentCollabs.length >= 2 ? (
-                    <span className="home-cover__collab-count">+{currentCollabs.length - 1}</span>
-                  ) : (
-                    <UserPlus size={14} />
-                  )}
-                </button>
-              )}
-              <input
-                type="file"
-                ref={avatarInputRef}
-                onChange={handleAvatarUpload}
-                accept="image/*"
-                style={{ display: "none" }}
-              />
-            </div>
-          </div>
-          {currentCover
-            ? currentCat
-              ? renderCoverCat(currentCat)
-              : renderCoverEntry(currentEntry)
-            : renderEmptyCover()}
+          {state.newDesign ? (
+            currentCover ? (
+              currentCat ? renderCoverCat(currentCat) : renderCoverEntry(currentEntry)
+            ) : (
+              <div className="home-cover__toprow">
+                {renderEmptyCover()}
+                {renderAvatarArea()}
+              </div>
+            )
+          ) : (
+            <>
+              <div className="home-cover__header">
+                <span className="home-cover__badge">{renderCoverBadge()}</span>
+                {renderAvatarArea()}
+              </div>
+              {currentCover
+                ? currentCat
+                  ? renderCoverCat(currentCat)
+                  : renderCoverEntry(currentEntry)
+                : renderEmptyCover()}
+            </>
+          )}
         </div>
       </div>
 
@@ -999,9 +1209,78 @@ export function HomeScreen({
         className={`home__list-container${listExpanded ? ' home__list-container--expanded' : ''}${pullDownPx > 0 ? ' home__list-container--pulling' : ''}`}
         style={listExpanded && pullDownPx > 0 ? { transform: `translateY(${pullDownPx}px)` } : undefined}
       >
+        {/* Neues Design, eingeklappt: fester Abschnitt "Listen" mit Spotify-
+            artigen Kacheln (Favoriten · Aufgaben · Notizen · Kalender) statt
+            der eingeklappten Einzelliste. Tap auf eine Kachel öffnet die
+            jeweilige Liste als eigene Seite (aufgeklappter Zustand). */}
+        {!listExpanded && state.newDesign && (
+          <>
+            <div className="list-section__header list-section__header--static">
+              <span className="list-section__label">{t.listsTitle}</span>
+            </div>
+            <div className="home-lists-grid">
+              <button
+                type="button"
+                className="home-list-tile"
+                onClick={() => {
+                  handleSelectType("favorites");
+                  setListExpanded(true);
+                }}
+              >
+                <span className="home-list-tile__icon home-list-tile__icon--fav">
+                  <Star size={18} fill="currentColor" strokeWidth={0} />
+                </span>
+                <span className="home-list-tile__label">{t.favorites}</span>
+              </button>
+              <button
+                type="button"
+                className="home-list-tile"
+                style={{ "--tile-accent-rgb": "11, 140, 233" }}
+                onClick={() => {
+                  handleSelectType("tasks");
+                  setListExpanded(true);
+                }}
+              >
+                <span className="home-list-tile__icon">
+                  <CheckCircle2 size={18} />
+                </span>
+                <span className="home-list-tile__label">{t.tasks}</span>
+              </button>
+              <button
+                type="button"
+                className="home-list-tile"
+                style={{ "--tile-accent-rgb": "245, 158, 11" }}
+                onClick={() => {
+                  handleSelectType("notes");
+                  setListExpanded(true);
+                }}
+              >
+                <span className="home-list-tile__icon">
+                  <Pencil size={18} />
+                </span>
+                <span className="home-list-tile__label">{t.notes}</span>
+              </button>
+              <button
+                type="button"
+                className="home-list-tile"
+                style={{ "--tile-accent-rgb": "0, 120, 212" }}
+                onClick={() => {
+                  handleSelectType("calendar");
+                  setListExpanded(true);
+                }}
+              >
+                <span className="home-list-tile__icon">
+                  <Calendar size={18} />
+                </span>
+                <span className="home-list-tile__label">{t.calendar}</span>
+              </button>
+            </div>
+          </>
+        )}
+
         {/* Eingeklappt: Titel · Aufklappen · Archiv im Section-Header.
             Aufgeklappt: Zuklappen + Archiv wandern als schwebende Glas-Buttons nach unten. */}
-        {!listExpanded && (
+        {!listExpanded && !state.newDesign && (
           <div
             className="list-section__header"
             onTouchStart={onHeaderTouchStart}
@@ -1053,7 +1332,7 @@ export function HomeScreen({
 
         {/* Aufgeklappt: Filter-Pillen zwischen Header und Liste –
             Aktiv · Archiviert · Papierkorb (kontextbezogen, kein Screen-Wechsel). */}
-        {listExpanded && (
+        {listExpanded && activeType !== "favorites" && (
           <div className="home__list-filters">
             <button
               className={`home__filter-pill${listFilter === "active" ? " home__filter-pill--active" : ""}`}
@@ -1086,18 +1365,22 @@ export function HomeScreen({
           </div>
         )}
 
-        <div
-          className={`entry-list${activeListEmpty ? " entry-list--locked" : ""}`}
-          onClick={handleDoubleTap}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onTouchCancel={handleTouchCancel}
-          ref={entryListRef}
-          onScroll={handleListScroll}
-        >
-          {renderActiveList()}
-        </div>
+        {/* Neues Design, eingeklappt: das Kachel-Grid ersetzt die Listen-
+            Vorschau komplett – die Entry-Liste erscheint erst aufgeklappt. */}
+        {!(state.newDesign && !listExpanded) && (
+          <div
+            className={`entry-list${activeListEmpty ? " entry-list--locked" : ""}`}
+            onClick={handleDoubleTap}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchCancel}
+            ref={entryListRef}
+            onScroll={handleListScroll}
+          >
+            {renderActiveList()}
+          </div>
+        )}
 
         {/* Aufgeklappt: schlichter Chevron mittig über der Dock-Eingabezeile
             zum Zuklappen (ersetzt die früheren Glas-Buttons unten links/rechts). */}
@@ -1141,9 +1424,22 @@ export function HomeScreen({
         />
       )}
 
+      {/* Neues Design (Settings-Toggle): Spotify-artige Tab-Leiste statt
+          des CommandDocks – Startseite · Suchen · Projekte · Arbeitsbereiche ·
+          Ressourcen mit ausgeschriebenen Labels. */}
+      {!progressOpen && state.newDesign && (
+        <NewDesignNav
+          t={t}
+          active="home"
+          onHome={() => setListExpanded(false)}
+          onOpenSearch={onOpenSearch}
+          onOpenCatType={onOpenCatType}
+        />
+      )}
+
       {/* Bei offenem Fortschritts-Overlay weicht das Dock dem schwebenden
           Home-Button des Overlays. */}
-      {!progressOpen && (
+      {!progressOpen && !state.newDesign && (
         <CommandDock
           t={t}
           activeType={activeType}

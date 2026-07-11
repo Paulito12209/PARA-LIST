@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp, Search } from "lucide-react";
-import { useKeyboardOpen } from "../hooks/useKeyboardHeight";
+import { useKeyboardOpen, useKeyboardHeight } from "../hooks/useKeyboardHeight";
 import { blurActiveInput } from "../utils";
 
 // Audio-/Spracheingabe-Icon: 5 vertikale Wellen-Striche in unterschiedlicher Höhe
@@ -76,6 +76,39 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
   const kbOpen = useKeyboardOpen();
   const typing = inputFocused && kbOpen;
 
+  // iOS Safari: Die Tastatur ÜBERLAGERT das Layout (der Viewport schrumpft
+  // nicht wie auf Android mit interactive-widget=resizes-content). kbHeight
+  // ist dort > 0 und hebt das Dock per `bottom` über die Tastatur; auf
+  // Android bleibt kbHeight 0 (innerHeight schrumpft mit) → kein Effekt.
+  const kbHeight = useKeyboardHeight();
+
+  // Safaris Auto-Panning zurücksetzen: Weil das Dock ursprünglich hinter der
+  // Tastatur liegt, scrollt iOS die ganze Seite hoch, um das fokussierte Feld
+  // freizulegen – Header und maximierte Liste wandern dabei aus dem Bild.
+  // Sobald das Dock über der Tastatur schwebt, ist das Panning unnötig und
+  // wird auf 0 zurückgedreht (auch bei nachträglichen Scroll-Anläufen).
+  useEffect(() => {
+    if (!(typing && kbHeight > 0)) return undefined;
+    const pin = () => window.scrollTo(0, 0);
+    pin();
+    window.addEventListener("scroll", pin);
+    window.visualViewport?.addEventListener("scroll", pin);
+    return () => {
+      window.removeEventListener("scroll", pin);
+      window.visualViewport?.removeEventListener("scroll", pin);
+    };
+  }, [typing, kbHeight]);
+
+  // Tastaturhöhe als CSS-Variable fürs Layout (z.B. Padding der maximierten
+  // Liste, damit die untersten Einträge nicht hinter der Tastatur liegen).
+  useEffect(() => {
+    document.documentElement.style.setProperty(
+      "--kb-inset",
+      kbHeight > 0 ? `${kbHeight}px` : "0px"
+    );
+    return () => document.documentElement.style.setProperty("--kb-inset", "0px");
+  }, [kbHeight]);
+
   const markFocus = () => {
     clearTimeout(blurTimer.current);
     setInputFocused(true);
@@ -103,7 +136,14 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
   };
 
   return (
-    <div className="command-dock" style={{ "--dock-accent": active.color }}>
+    <div
+      className={`command-dock${kbHeight > 0 ? " command-dock--kb" : ""}`}
+      style={{
+        "--dock-accent": active.color,
+        // iOS: direkt auf der Tastatur-Oberkante aufsetzen
+        bottom: kbHeight > 0 ? kbHeight : undefined,
+      }}
+    >
       {/* Eingabezeile ZUERST – die Typ-Icons liegen darunter. */}
       <div className="command-dock__input-row">
         {/* Der Pokal-Button ist in den Header gewandert; auf Nicht-Startseiten

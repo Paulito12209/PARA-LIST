@@ -17,6 +17,14 @@
     position: relative;
     z-index: auto;
   }
+
+  // iOS: Tastatur überlagert das Layout – das Dock wird per Inline-`bottom`
+  // (Tastaturhöhe) über die Tastatur gehoben. Der Safe-Area-Puffer für den
+  // Home-Indikator liegt dann unter der Tastatur und entfällt; die
+  // Eingabezeile sitzt direkt auf der Tastatur-Oberkante.
+  &--kb {
+    padding-bottom: 10px;
+  }
   display: flex;
   flex-direction: column;
   // 8px Abstand zwischen Eingabezeile und Icon-Reihe

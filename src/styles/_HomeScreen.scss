@@ -983,8 +983,9 @@
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  // Platz unten für die fixierte Command-Dock-Leiste
-  padding: 0 0 152px !important;
+  // Platz unten für die fixierte Command-Dock-Leiste; --kb-inset hebt den
+  // Puffer zusätzlich um die iOS-Tastaturhöhe an (Dock schwebt dann darüber).
+  padding: 0 0 calc(152px + var(--kb-inset, 0px)) !important;
   // margin-top: 12px;
   overflow-y: auto;
   flex: 1;
@@ -1003,7 +1004,7 @@
 }
 
 .home__list-container--expanded .entry-list {
-  padding-bottom: 152px !important;
+  padding-bottom: calc(152px + var(--kb-inset, 0px)) !important;
   // Weicher Übergang unter den Filter-Pillen: hochgescrollte Einträge blenden
   // in den oberen ~24px des Scrollbereichs von deckend → durchsichtig aus,
   // statt hart an der Oberkante abgeschnitten zu werden. Die Maske wirkt auf

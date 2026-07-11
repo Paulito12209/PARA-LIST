@@ -110,6 +110,9 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
             }}
             placeholder={placeholder}
             enterKeyHint="done"
+            // Kein Formularfeld im Autofill-Sinn: verhindert die Android-
+            // Autofill-Chips (Passwörter/Karten/Adresse) über der Tastatur.
+            autoComplete="off"
           />
           <button
             className={`command-dock__icon-btn command-dock__input-action ${hasText ? "command-dock__send-btn" : "command-dock__voice-btn"}`}

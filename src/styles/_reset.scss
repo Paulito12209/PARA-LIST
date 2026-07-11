@@ -11,6 +11,16 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+// Prozentkette bis zur App: Höhen folgen damit dem Layout-Viewport (ICB).
+// Wichtig für Android (interactive-widget=resizes-content): beim Öffnen der
+// Tastatur schrumpft der ICB → App samt unterem Dock bleibt sichtbar.
+// Viewport-Units (dvh) reagieren NICHT zuverlässig auf die Tastatur.
+html,
+body,
+#root {
+  height: 100%;
+}
+
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

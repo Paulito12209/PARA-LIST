@@ -10,7 +10,9 @@
   // fixed 420px column. The desktop layout (>=920px) renders the separate
   // .dsk-app, so this only affects the mobile/tablet view.
   max-width: 100%;
-  height: 100dvh;
+  // 100% statt 100dvh: folgt via html/body/#root-Kette dem ICB, damit die
+  // App auf Android beim Öffnen der Tastatur mitschrumpft (Dock sichtbar).
+  height: 100%;
   margin: 0 auto;
   background: $color-bg;
   display: flex;

@@ -60,9 +60,9 @@
     border-bottom: none;
     border-radius: 0;
     overflow: hidden;
-    // Volle Höhe: die Startseite darunter bleibt komplett verdeckt.
-    height: 100vh;
-    height: 100dvh;
+    // Volle Höhe (100% der .app): die Startseite darunter bleibt komplett
+    // verdeckt; schrumpft auf Android mit dem Layout-Viewport (Tastatur).
+    height: 100%;
     display: flex;
     flex-direction: column;
   }

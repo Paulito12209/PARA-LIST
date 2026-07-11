@@ -119,6 +119,7 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
         <input
           className="modal__input modal__input--title"
           autoFocus
+          autoComplete="off"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={t.titlePlaceholder}

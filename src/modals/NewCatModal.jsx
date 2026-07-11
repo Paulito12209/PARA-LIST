@@ -22,6 +22,7 @@ export function NewCatModal({ type, onSave, onClose, t, CC }) {
         <input
           className="modal__input modal__input--title"
           autoFocus
+          autoComplete="off"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder={t.namePlaceholder(cfg.sing)}

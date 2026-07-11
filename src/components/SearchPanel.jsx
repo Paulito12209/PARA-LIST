@@ -345,6 +345,7 @@ export function SearchPanel({
                 className="search-panel__kb-input"
                 type="search"
                 enterKeyHint="search"
+                autoComplete="off"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={handleInputFocus}

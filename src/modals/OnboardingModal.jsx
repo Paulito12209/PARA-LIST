@@ -60,6 +60,9 @@ export function OnboardingModal({ onComplete }) {
               onChange={(e) => setName(e.target.value)}
               placeholder="Name..."
               onKeyDown={(e) => e.key === "Enter" && finish()}
+              // Spitzname, kein Kontaktfeld: unterdrückt Kontakt-/Adress-
+              // Autofill-Leisten (iOS "Kontakt ausfüllen", Android-Chips).
+              autoComplete="off"
             />
             <button
               className={`onboarding__next ${!name.trim() ? "onboarding__next--disabled" : ""}`}

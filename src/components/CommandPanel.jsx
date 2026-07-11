@@ -283,6 +283,7 @@ export function CommandPanel({
                 // damit der Tap aufs Eingabefeld nicht das Backlog aufzieht.
                 <input
                   className="command-panel__greeting command-panel__greeting--page command-panel__greeting--input"
+                  autoComplete="off"
                   value={headerPage.title}
                   onChange={(e) => headerPage.onRename(e.target.value)}
                   onClick={(e) => e.stopPropagation()}
@@ -593,6 +594,7 @@ export function CommandPanel({
                 <input
                   className="command-panel__search-input"
                   type="search"
+                  autoComplete="off"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setInputFocused(true)}

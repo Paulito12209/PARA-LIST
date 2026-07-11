@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp, Search } from "lucide-react";
+import { useKeyboardOpen } from "../hooks/useKeyboardHeight";
 import { blurActiveInput } from "../utils";
 
 // Audio-/Spracheingabe-Icon: 5 vertikale Wellen-Striche in unterschiedlicher Höhe
@@ -54,13 +55,11 @@ const SINGULAR_KEY = {
 //   zur Startseite (onHome).
 // `canToggleList`: auf der Startseite klappt ein 2. Tap auf das bereits aktive
 // Typ-Icon die Liste auf/zu (onToggleList).
-// `onInputFocusChange(focused)`: informiert die Seite über aktive Eingabe –
-// die Startseite maximiert damit die Liste im Hintergrund.
+// `onInputFocusChange(typing)`: informiert die Seite über eine aktive
+// Tipp-Session (Eingabefeld fokussiert UND Tastatur sichtbar) – die
+// Startseite maximiert damit die Liste im Hintergrund.
 export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, onOpenProgress, onOpenSearch, onInputFocusChange, leadingAction = "list" }) {
   const [value, setValue] = useState("");
-  // Tastatur offen (Eingabefeld fokussiert)? Dann weicht die Typ-Icon-Reihe –
-  // über der Tastatur bleibt nur die Eingabezeile sichtbar. Kurzer Timeout
-  // überbrückt Fokus-Wechsel (z.B. Tap auf den Senden-Button).
   const [inputFocused, setInputFocused] = useState(false);
   const blurTimer = useRef(null);
   const isHomeScreen = leadingAction === "list";
@@ -69,20 +68,32 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
 
   const hasText = value.trim().length > 0;
 
+  // Tipp-Session = Feld fokussiert UND Tastatur sichtbar. Nur dann weicht die
+  // Typ-Icon-Reihe (über der Tastatur bleibt allein die Eingabezeile).
+  // Fokus allein reicht nicht: der Android-System-Chevron schließt die
+  // Tastatur, OHNE das Feld zu bluren – der Dock muss dann wieder komplett
+  // (inkl. Icon-Reihe) dastehen.
+  const kbOpen = useKeyboardOpen();
+  const typing = inputFocused && kbOpen;
+
   const markFocus = () => {
     clearTimeout(blurTimer.current);
-    if (!inputFocused) {
-      setInputFocused(true);
-      onInputFocusChange?.(true);
-    }
+    setInputFocused(true);
   };
   const markBlur = () => {
-    blurTimer.current = setTimeout(() => {
-      setInputFocused(false);
-      onInputFocusChange?.(false);
-    }, 120);
+    // Kurzer Timeout überbrückt Fokus-Wechsel (z.B. Tap auf Senden-Button).
+    blurTimer.current = setTimeout(() => setInputFocused(false), 120);
   };
   useEffect(() => () => clearTimeout(blurTimer.current), []);
+
+  // Tipp-Session-Wechsel an die Seite melden (nur echte Übergänge).
+  const prevTyping = useRef(false);
+  useEffect(() => {
+    if (typing !== prevTyping.current) {
+      prevTyping.current = typing;
+      onInputFocusChange?.(typing);
+    }
+  }, [typing, onInputFocusChange]);
 
   const submit = () => {
     const title = value.trim();
@@ -163,9 +174,9 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
         </div>
       </div>
 
-      {/* Typ-Icons UNTER dem Eingabefeld. Bei offener Tastatur ausgeblendet –
+      {/* Typ-Icons UNTER dem Eingabefeld. Bei sichtbarer Tastatur ausgeblendet –
           über der Tastatur bleibt nur die Eingabezeile sichtbar. */}
-      <div className={`command-dock__types${inputFocused ? " command-dock__types--hidden" : ""}`}>
+      <div className={`command-dock__types${typing ? " command-dock__types--hidden" : ""}`}>
         {DOCK_TYPES.map((d) => {
           const Icon = d.Icon;
           const isActive = d.id === activeType;

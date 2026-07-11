@@ -160,6 +160,9 @@ export function HomeScreen({
   const [collabModalOpen, setCollabModalOpen] = useState(false);
   const [collabModalInitialView, setCollabModalInitialView] = useState("list");
   const [listExpanded, setListExpanded] = useState(false);
+  // Wurde die Liste nur wegen einer Tipp-Session im Dock maximiert?
+  // Dann klappt sie beim Zuklappen der Tastatur wieder zu (Startseite).
+  const expandedByTypingRef = useRef(false);
   // Listen-Filter (nur aufgeklappt): Aktiv · Archiviert · Papierkorb.
   // Archiv/Papierkorb sind damit direkt in der Liste erreichbar (kein eigener
   // Screen-Wechsel nötig); beim Zuklappen wird auf "active" zurückgesetzt.
@@ -1123,12 +1126,22 @@ export function HomeScreen({
           listExpanded={listExpanded}
           onToggleList={() => setListExpanded((v) => !v)}
           onHome={() => setListExpanded(false)}
-          // Tippen im Dock-Eingabefeld: Liste im Hintergrund maximieren
-          // (Titel wandert in den Header), damit man beim Erfassen die
-          // vorhandenen Einträge sieht. Beim Zuklappen der Tastatur bleibt
-          // die Liste offen (Zuklappen wie gewohnt über Chevron/Pull-down).
-          onInputFocusChange={(focused) => {
-            if (focused) setListExpanded(true);
+          // Tipp-Session im Dock (Feld fokussiert + Tastatur sichtbar):
+          // Liste im Hintergrund maximieren, damit man beim Erfassen die
+          // vorhandenen Einträge sieht. Der URSPRUNG entscheidet, was nach
+          // dem Zuklappen der Tastatur passiert: War die Liste vorher zu
+          // (Startseite), klappt sie wieder zu; hatte der Nutzer sie selbst
+          // aufgeklappt, bleibt sie offen.
+          onInputFocusChange={(typing) => {
+            if (typing) {
+              if (!listExpanded) {
+                expandedByTypingRef.current = true;
+                setListExpanded(true);
+              }
+            } else {
+              if (expandedByTypingRef.current) setListExpanded(false);
+              expandedByTypingRef.current = false;
+            }
           }}
           onOpenProgress={() => setProgressOpen(true)}
           onOpenSearch={onOpenSearch}

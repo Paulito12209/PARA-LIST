@@ -1103,6 +1103,15 @@
   transform: translateX(-50%);
   bottom: calc(114px + env(safe-area-inset-bottom, 0px));
   z-index: 30;
+
+  // Tipp-Session (Tastatur offen, Icon-Reihe ausgeblendet): Chevron direkt
+  // über die allein sichtbare Eingabezeile rücken. --kb-inset hebt ihn auf
+  // iOS zusätzlich über die überlagernde Tastatur; die Safe-Area entfällt
+  // dort (der Home-Indikator liegt unter der Tastatur). 84px ≈ Dock-Padding
+  // + Eingabezeile (52px) + wenig Luft.
+  &--typing {
+    bottom: calc(84px + var(--kb-inset, 0px));
+  }
   display: flex;
   align-items: center;
   justify-content: center;

@@ -163,6 +163,9 @@ export function HomeScreen({
   // Wurde die Liste nur wegen einer Tipp-Session im Dock maximiert?
   // Dann klappt sie beim Zuklappen der Tastatur wieder zu (Startseite).
   const expandedByTypingRef = useRef(false);
+  // Läuft gerade eine Tipp-Session (Dock-Feld fokussiert + Tastatur sichtbar)?
+  // Der Zuklapp-Chevron rückt dann direkt über die Eingabezeile.
+  const [dockTyping, setDockTyping] = useState(false);
   // Listen-Filter (nur aufgeklappt): Aktiv · Archiviert · Papierkorb.
   // Archiv/Papierkorb sind damit direkt in der Liste erreichbar (kein eigener
   // Screen-Wechsel nötig); beim Zuklappen wird auf "active" zurückgesetzt.
@@ -1076,7 +1079,7 @@ export function HomeScreen({
             zum Zuklappen (ersetzt die früheren Glas-Buttons unten links/rechts). */}
         {listExpanded && (
           <button
-            className="home__collapse-chevron"
+            className={`home__collapse-chevron${dockTyping ? " home__collapse-chevron--typing" : ""}`}
             onClick={() => setListExpanded(false)}
             aria-label={t.closeBtn}
           >
@@ -1133,6 +1136,7 @@ export function HomeScreen({
           // (Startseite), klappt sie wieder zu; hatte der Nutzer sie selbst
           // aufgeklappt, bleibt sie offen.
           onInputFocusChange={(typing) => {
+            setDockTyping(typing);
             if (typing) {
               if (!listExpanded) {
                 expandedByTypingRef.current = true;

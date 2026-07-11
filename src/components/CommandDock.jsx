@@ -99,8 +99,8 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
     };
   }, [typing, kbHeight]);
 
-  // Tastaturhöhe als CSS-Variable fürs Layout (z.B. Padding der maximierten
-  // Liste, damit die untersten Einträge nicht hinter der Tastatur liegen).
+  // Tastaturhöhe als CSS-Variable fürs Layout: --kb-inset hebt z.B. das
+  // Listen-Padding und den Zuklapp-Chevron über die iOS-Tastatur.
   useEffect(() => {
     document.documentElement.style.setProperty(
       "--kb-inset",

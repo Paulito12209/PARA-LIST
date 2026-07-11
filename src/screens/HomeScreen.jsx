@@ -1123,6 +1123,13 @@ export function HomeScreen({
           listExpanded={listExpanded}
           onToggleList={() => setListExpanded((v) => !v)}
           onHome={() => setListExpanded(false)}
+          // Tippen im Dock-Eingabefeld: Liste im Hintergrund maximieren
+          // (Titel wandert in den Header), damit man beim Erfassen die
+          // vorhandenen Einträge sieht. Beim Zuklappen der Tastatur bleibt
+          // die Liste offen (Zuklappen wie gewohnt über Chevron/Pull-down).
+          onInputFocusChange={(focused) => {
+            if (focused) setListExpanded(true);
+          }}
           onOpenProgress={() => setProgressOpen(true)}
           onOpenSearch={onOpenSearch}
           onOpenVoice={() => setVoiceOverlayOpen(true)}

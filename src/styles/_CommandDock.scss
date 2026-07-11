@@ -77,6 +77,12 @@
     justify-content: space-between;
     gap: calc(#{$spacing-2xs} + 2px);
     padding-right: 4px;
+
+    // Tastatur offen (Dock-Eingabefeld fokussiert): Icon-Reihe weicht,
+    // über der Tastatur bleibt nur die Eingabezeile.
+    &--hidden {
+      display: none;
+    }
   }
 
   &__type {
@@ -191,6 +197,15 @@
     font-family: $font-body;
     font-size: 15px;
     padding: 0;
+    // type="search" (Autofill-Unterdrückung auf Android) ohne Such-Optik:
+    // kein natives Styling, kein ×-Löschknopf.
+    -webkit-appearance: none;
+    appearance: none;
+
+    &::-webkit-search-cancel-button,
+    &::-webkit-search-decoration {
+      display: none;
+    }
 
     &::placeholder {
       color: #8a8a96;

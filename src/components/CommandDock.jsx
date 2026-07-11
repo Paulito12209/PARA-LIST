@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Home, MoreHorizontal, ArrowUp, Search } from "lucide-react";
 import { blurActiveInput } from "../utils";
 
@@ -54,13 +54,35 @@ const SINGULAR_KEY = {
 //   zur Startseite (onHome).
 // `canToggleList`: auf der Startseite klappt ein 2. Tap auf das bereits aktive
 // Typ-Icon die Liste auf/zu (onToggleList).
-export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, onOpenProgress, onOpenSearch, leadingAction = "list" }) {
+// `onInputFocusChange(focused)`: informiert die Seite über aktive Eingabe –
+// die Startseite maximiert damit die Liste im Hintergrund.
+export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleList, canToggleList = false, listExpanded = false, onOpenVoice, onMenu, onHome, onOpenProgress, onOpenSearch, onInputFocusChange, leadingAction = "list" }) {
   const [value, setValue] = useState("");
+  // Tastatur offen (Eingabefeld fokussiert)? Dann weicht die Typ-Icon-Reihe –
+  // über der Tastatur bleibt nur die Eingabezeile sichtbar. Kurzer Timeout
+  // überbrückt Fokus-Wechsel (z.B. Tap auf den Senden-Button).
+  const [inputFocused, setInputFocused] = useState(false);
+  const blurTimer = useRef(null);
   const isHomeScreen = leadingAction === "list";
   const active = DOCK_TYPES.find((d) => d.id === activeType) || DOCK_TYPES[3];
   const placeholder = t.addPlaceholder(t[SINGULAR_KEY[activeType]] || "");
 
   const hasText = value.trim().length > 0;
+
+  const markFocus = () => {
+    clearTimeout(blurTimer.current);
+    if (!inputFocused) {
+      setInputFocused(true);
+      onInputFocusChange?.(true);
+    }
+  };
+  const markBlur = () => {
+    blurTimer.current = setTimeout(() => {
+      setInputFocused(false);
+      onInputFocusChange?.(false);
+    }, 120);
+  };
+  useEffect(() => () => clearTimeout(blurTimer.current), []);
 
   const submit = () => {
     const title = value.trim();
@@ -103,15 +125,21 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
           )}
           <input
             className="command-dock__input"
+            // type="search": Suchfelder stuft Chrome als NICHT autofillbar
+            // ein – zusammen mit autocomplete="off" verschwinden die Android-
+            // Autofill-Chips (Passwörter/Karten/Adresse) über der Tastatur.
+            // autocomplete="off" allein reicht dort nicht.
+            type="search"
+            name="quick-add-title"
             value={value}
             onChange={(e) => setValue(e.target.value)}
+            onFocus={markFocus}
+            onBlur={markBlur}
             onKeyDown={(e) => {
               if (e.key === "Enter") submit();
             }}
             placeholder={placeholder}
             enterKeyHint="done"
-            // Kein Formularfeld im Autofill-Sinn: verhindert die Android-
-            // Autofill-Chips (Passwörter/Karten/Adresse) über der Tastatur.
             autoComplete="off"
           />
           <button
@@ -135,8 +163,9 @@ export function CommandDock({ t, activeType, onSelectType, onSubmit, onToggleLis
         </div>
       </div>
 
-      {/* Typ-Icons UNTER dem Eingabefeld. */}
-      <div className="command-dock__types">
+      {/* Typ-Icons UNTER dem Eingabefeld. Bei offener Tastatur ausgeblendet –
+          über der Tastatur bleibt nur die Eingabezeile sichtbar. */}
+      <div className={`command-dock__types${inputFocused ? " command-dock__types--hidden" : ""}`}>
         {DOCK_TYPES.map((d) => {
           const Icon = d.Icon;
           const isActive = d.id === activeType;

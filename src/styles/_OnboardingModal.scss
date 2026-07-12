@@ -1,113 +1,481 @@
 // ============================================================
 // PARA·LIST – Onboarding Modal
+// Sonos-Stil: Icon-Kachel oben, Titel/Text zentriert, CTA unten.
+// Farbwelt: Smaragd-Grün des Logos (Dark & Light Mode).
 // ============================================================
 @use './variables' as *;
 @use './mixins' as *;
+
+// ── Smaragd-Palette (Logo) ──────────────────────────────────
+$emerald:        #10B981;
+$emerald-light:  #34D399;
+$emerald-deep:   #059669;
+$emerald-glow:   rgba(52, 211, 153, 0.35);
+$onb-dark-bg:    #060D0B;
+$onb-dark-card:  #0C1512;
+$onb-light-bg:   #F7FAF9;
 
 // ── Onboarding ──────────────────────────────────────────────
 .onboarding {
   position: absolute;
   inset: 0;
   z-index: 1000;
-  background: #0f0f20;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(16, 185, 129, 0.16), transparent 60%),
+    $onb-dark-bg;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  padding: 32px;
-  text-align: center;
   animation: fade-in 0.4s ease;
 
-  &__content {
-    max-width: 320px;
-    width: 100%;
+  // ── Splash Screen ─────────────────────────────────────────
+  &--splash {
+    align-items: center;
+    background:
+      radial-gradient(90% 50% at 50% 42%, rgba(16, 185, 129, 0.22), transparent 65%),
+      $onb-dark-bg;
   }
 
-  &__logo {
-    font-family: inherit;
-    font-size: 32px;
+  &__splash-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-md;
+    animation: onb-splash-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  &__splash-logo {
+    width: 104px;
+    height: 104px;
+    border-radius: 26px;
+    filter: drop-shadow(0 0 36px $emerald-glow);
+  }
+
+  &__splash-wordmark {
+    margin-top: $spacing-sm;
+    font-size: 26px;
     font-weight: 800;
-    margin-bottom: 48px;
-    background: linear-gradient(135deg, #7C83F7, #4F46E5);
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, $emerald-light, $emerald 55%, $emerald-deep);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  &__step {
-    animation: slide-up 0.3s ease;
+  &__splash-tagline {
+    font-size: 14px;
+    color: rgba(237, 238, 242, 0.55);
+    max-width: 260px;
+    text-align: center;
+    line-height: 1.5;
   }
 
+  // ── Card (ein Screen) ─────────────────────────────────────
+  &__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 420px;
+    padding: calc($spacing-md + env(safe-area-inset-top, 0px)) $spacing-lg
+      calc($spacing-lg + env(safe-area-inset-bottom, 0px));
+    animation: slide-up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  // ── Topbar: Back + Fortschritts-Punkte ────────────────────
+  &__topbar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-2xl;
+  }
+
+  &__back {
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-pill;
+    border: none;
+    background: rgba(255, 255, 255, 0.06);
+    color: $color-text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    &--ghost {
+      background: transparent;
+      pointer-events: none;
+    }
+  }
+
+  &__dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: $radius-pill;
+    background: rgba(255, 255, 255, 0.16);
+    transition: all 0.3s ease;
+
+    &--active {
+      width: 24px;
+      background: linear-gradient(90deg, $emerald-light, $emerald);
+    }
+
+    &--done {
+      background: rgba(16, 185, 129, 0.55);
+    }
+  }
+
+  // ── Icon-Kachel (Sonos-Header) ────────────────────────────
+  &__icon-tile {
+    width: 84px;
+    height: 84px;
+    border-radius: $radius-lg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(145deg, $emerald-light, $emerald 55%, $emerald-deep);
+    box-shadow:
+      0 16px 40px rgba(16, 185, 129, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    margin-bottom: $spacing-lg;
+
+    svg {
+      width: 38px;
+      height: 38px;
+    }
+  }
+
+  // ── Typografie ────────────────────────────────────────────
   &__title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 12px;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    margin-bottom: $spacing-sm;
     color: #fff;
   }
 
   &__text {
-    font-size: 14px;
-    color: $color-muted;
-    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: rgba(237, 238, 242, 0.6);
+    margin-bottom: $spacing-xl;
+    max-width: 300px;
   }
 
-  &__langs {
+  // ── Sprach-Liste (Zeilen mit Häkchen) ─────────────────────
+  &__list {
+    width: 100%;
     display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin-bottom: 32px;
+    flex-direction: column;
+    gap: $spacing-sm;
   }
 
-  &__lang-btn {
-    padding: 10px 16px;
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    width: 100%;
+    padding: 14px $spacing-md;
     border-radius: $radius-md;
-    border: 1.5px solid $color-border;
-    background: transparent;
-    color: $color-muted;
-    font-size: 13px;
-    font-weight: 700;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    background: $onb-dark-card;
+    color: $color-text;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: left;
     transition: all 0.2s;
 
+    &-flag {
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    &-label {
+      flex: 1;
+    }
+
+    &-check {
+      width: 22px;
+      height: 22px;
+      border-radius: $radius-pill;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      background: transparent;
+      opacity: 0;
+      transform: scale(0.6);
+      transition: all 0.2s;
+
+      svg {
+        width: 12px;
+        height: 12px;
+      }
+    }
+
     &--active {
-      border-color: #7C83F7;
-      background: rgba(124, 131, 247, 0.1);
-      color: #7C83F7;
+      border-color: $emerald;
+      background: rgba(16, 185, 129, 0.1);
+
+      .onboarding__row-check {
+        opacity: 1;
+        transform: scale(1);
+        background: linear-gradient(135deg, $emerald-light, $emerald-deep);
+      }
     }
   }
 
+  // ── Name-Eingabe ──────────────────────────────────────────
   &__input {
     width: 100%;
-    background: $color-hover;
-    border: 2px solid $color-border;
-    border-radius: 16px;
+    background: $onb-dark-card;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: $radius-md;
     padding: 16px;
     font-size: 18px;
     color: #fff;
     text-align: center;
-    margin-bottom: 24px;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
 
     &:focus {
-      border-color: #7C83F7;
+      border-color: $emerald;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
       outline: none;
     }
+  }
+
+  // ── Theme-Auswahl (Dark / Light Preview-Karten) ───────────
+  &__themes {
+    width: 100%;
+    display: flex;
+    gap: $spacing-md;
+  }
+
+  &__theme-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    padding: $spacing-sm;
+    border-radius: $radius-md;
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    background: $onb-dark-card;
+    transition: all 0.2s;
+
+    &--active {
+      border-color: $emerald;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15);
+    }
+  }
+
+  &__theme-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+    padding: 14px;
+    border-radius: calc($radius-md - 6px);
+    min-height: 96px;
+
+    &--dark {
+      background: #101014;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+
+      .onboarding__preview-bar {
+        background: rgba(255, 255, 255, 0.14);
+      }
+    }
+
+    &--light {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+
+      .onboarding__preview-bar {
+        background: rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+
+  &__preview-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: $radius-pill;
+    background: linear-gradient(135deg, $emerald-light, $emerald-deep);
+    margin-bottom: 2px;
+  }
+
+  &__preview-bar {
+    height: 7px;
+    width: 85%;
+    border-radius: $radius-pill;
+
+    &--accent {
+      background: linear-gradient(90deg, $emerald-light, $emerald) !important;
+      width: 60%;
+    }
+
+    &--short {
+      width: 40%;
+    }
+  }
+
+  &__theme-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-text;
+    padding-bottom: 4px;
+  }
+
+  // ── Einstellungs-Hinweis (letzter Screen) ─────────────────
+  &__hint {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: 12px $spacing-md;
+    border-radius: $radius-pill;
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: $emerald-light;
+    font-size: 13px;
+    font-weight: 700;
+
+    &-icon {
+      display: flex;
+
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+
+  // ── Footer / CTA ──────────────────────────────────────────
+  &__footer {
+    width: 100%;
+    margin-top: auto;
+    padding-top: $spacing-lg;
   }
 
   &__next {
     width: 100%;
     padding: 16px;
-    border-radius: 16px;
-    background: #7C83F7;
+    border-radius: $radius-md;
+    background: linear-gradient(135deg, $emerald-light, $emerald 55%, $emerald-deep);
     color: #fff;
     font-weight: 700;
     font-size: 15px;
     border: none;
-    box-shadow: 0 8px 20px rgba(124, 131, 247, 0.3);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
     transition: all 0.2s;
 
+    &:active {
+      transform: scale(0.98);
+    }
+
     &--disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       pointer-events: none;
     }
+  }
+}
+
+@keyframes onb-splash-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+// ── Light Mode ──────────────────────────────────────────────
+// Splash bleibt bewusst dunkel (Logo-Look) – alle anderen Screens hell.
+.app.light-theme .onboarding:not(.onboarding--splash) {
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(16, 185, 129, 0.12), transparent 60%),
+    $onb-light-bg;
+
+  .onboarding__back {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1a1a24;
+
+    &--ghost {
+      background: transparent;
+    }
+  }
+
+  .onboarding__dot {
+    background: rgba(0, 0, 0, 0.12);
+
+    &--active {
+      background: linear-gradient(90deg, $emerald-light, $emerald);
+    }
+
+    &--done {
+      background: rgba(16, 185, 129, 0.55);
+    }
+  }
+
+  .onboarding__title {
+    color: #10201A;
+  }
+
+  .onboarding__text {
+    color: rgba(16, 32, 26, 0.6);
+  }
+
+  .onboarding__row {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #10201A;
+    box-shadow: 0 2px 8px rgba(6, 24, 18, 0.04);
+
+    &--active {
+      border-color: $emerald;
+      background: rgba(16, 185, 129, 0.08);
+    }
+  }
+
+  .onboarding__input {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #10201A;
+  }
+
+  .onboarding__theme-card {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(6, 24, 18, 0.04);
+
+    &--active {
+      border-color: $emerald;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.12);
+    }
+  }
+
+  .onboarding__theme-label {
+    color: #10201A;
+  }
+
+  .onboarding__hint {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: $emerald-deep;
   }
 }
 

@@ -83,6 +83,23 @@ export const SaveBookmarkIcon = ({ size = 24, color = "currentColor", strokeWidt
   </svg>
 );
 
+// Aktiv-Icon: Ring mit ausgefülltem Kreis in der Mitte (Filter-Pille "Aktiv").
+export const ActiveDotIcon = ({ size = 24, color = "currentColor", strokeWidth = 2.2, className = "" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    className={className}
+  >
+    <circle cx="12" cy="12" r="9" />
+    <circle cx="12" cy="12" r="4.2" fill={color} stroke="none" />
+  </svg>
+);
+
 // Verknüpfen-Icon (Git-Verzweigung): drei Knoten – oben links, oben rechts,
 // unten links. Gerade „Spine"-Linie verbindet die linken Knoten; der rechte
 // Knoten mündet mit einer Kurve mittig in die Spine.

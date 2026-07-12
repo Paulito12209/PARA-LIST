@@ -28,6 +28,7 @@ export function DetailMetaRow({
   filterValue,
   filterOptions,
   onChangeFilter,
+  hideCount = false,
 }) {
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -44,9 +45,11 @@ export function DetailMetaRow({
 
   return (
     <div className="cat-detail__task-meta">
-      <span className={`cat-detail__task-count${tone === "done" ? " cat-detail__task-count--done" : ""}`}>
-        {t.entriesCount ? t.entriesCount(count) : count}
-      </span>
+      {!hideCount && (
+        <span className={`cat-detail__task-count${tone === "done" ? " cat-detail__task-count--done" : ""}`}>
+          {t.entriesCount ? t.entriesCount(count) : count}
+        </span>
+      )}
       <div className="cat-detail__meta-actions">
         {hasFilter && (
           <div className="cat-detail__sort-wrap" ref={filterRef}>

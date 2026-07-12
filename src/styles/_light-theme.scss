@@ -1173,23 +1173,7 @@
 }
 
 
-.app.light-theme .onboarding {
-  background: #ffffff;
-
-  &__title {
-    color: #1a1a24;
-  }
-
-  &__input {
-    background: #f0f0f5;
-    border-color: #e5e5f0;
-    color: #1a1a24;
-  }
-
-  &__lang-btn {
-    border-color: #e5e5f0;
-  }
-}
+// Onboarding-Light-Styles leben jetzt direkt in _OnboardingModal.scss
 
 // Light-Theme Anpassungen fuer das Archiv-Dashboard
 .app.light-theme {

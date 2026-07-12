@@ -178,6 +178,18 @@ export const CAT_ICONS = {
   resource: Square,
 };
 
+// Cover-Farbpalette der Kategorie-Seiten (Design-Anpassung im Options-Sheet).
+// Zentral hier, damit Detailseite UND Listen-Kebab dieselbe Auswahl zeigen.
+export const COVER_COLORS = [
+  { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
+  { hex: "#D09020", rgb: "208, 144, 32",  label: "area" },
+  { hex: "#F59E0B", rgb: "245, 158, 11",  label: "note" },
+  { hex: "#0078D4", rgb: "0, 120, 212",   label: "calendar" },
+  { hex: "#0B8CE9", rgb: "11, 140, 233",  label: "task" },
+  { hex: "#E03E3E", rgb: "224, 62, 62",   label: "project" },
+  { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
+];
+
 export const ID_BIRTHDAYS = "res-birthdays";
 
 /* ── Seed data ───────────────────────────────────────────────── */

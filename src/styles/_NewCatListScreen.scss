@@ -1,0 +1,305 @@
+// ============================================================
+// PARA·LIST – Neue Listenansicht (Spotify-Stil, neues Design)
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+// Die Seite bringt ihren eigenen Hero-Header mit – kein Command-Panel-Peek.
+.main-content--newlist {
+  padding-top: 0;
+}
+
+.new-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  animation: slide-in-right $transition-normal;
+
+  // ── Hero: Kontext-Verlauf (Typfarbe) läuft nach unten in den App-
+  // Hintergrund aus, wie der Playlist-Header bei Spotify. ─────────
+  &__hero {
+    flex-shrink: 0;
+    padding: calc(#{$spacing-md} + env(safe-area-inset-top, 0px)) $spacing-md $spacing-md;
+    background: linear-gradient(
+      to bottom,
+      rgba(var(--nl-accent-rgb), 0.5) 0%,
+      rgba(var(--nl-accent-rgb), 0.28) 55%,
+      rgba(var(--nl-accent-rgb), 0) 100%
+    );
+  }
+
+  &__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $spacing-lg;
+  }
+
+  // Liquid-Glass-Kreis für Zurück (links) und Einstellungen (rechts)
+  &__glass-btn {
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(20, 20, 26, 0.35);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    color: $color-text;
+    cursor: pointer;
+    transition: transform $transition-fast, opacity $transition-fast;
+
+    &:active {
+      transform: scale(0.92);
+      opacity: 0.8;
+    }
+  }
+
+  // Großer Seitentitel im Verlauf (Spotify-Playlist-Titel)
+  &__title {
+    font-family: $font-heading;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    color: $color-text;
+  }
+
+  // Anzahl-Untertitel unter dem großen Titel (z.B. "7 Arbeitsbereiche")
+  &__subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-muted;
+  }
+
+  // ── Filter-Pillen: Aktiv · Archiviert · Papierkorb (links gruppiert) ·
+  // Sortieren/Filter (rechts, reine Icons) – getrennt via Space-between.
+  // Dark: aktive Pille im Grauton (NICHT weiß), inaktive dunkler grau.
+  &__pills {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 $spacing-md $spacing-sm;
+  }
+
+  &__pills-group {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+
+  // Sortieren/Filter (DetailMetaRow, wiederverwendet): sticky/Hintergrund aus
+  // dem Detailseiten-Kontext hier zurücksetzen, nur die Icon-Buttons bleiben.
+  .cat-detail__task-meta {
+    position: static;
+    background: transparent;
+    padding: 0;
+    margin-bottom: 0;
+  }
+
+  &__pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 $spacing-md;
+    border-radius: $radius-pill;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: $font-body;
+    background: #1E1E24;
+    color: $color-muted;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &--active {
+      background: #3E3E48;
+      color: $color-text;
+      border-color: transparent;
+    }
+
+    // Papierkorb: runder Icon-Button, direkt an Archiviert anschließend
+    &--trash {
+      width: 34px;
+      padding: 0;
+      border-radius: 50%;
+    }
+
+    &--trash#{&}--active {
+      color: #F26565;
+    }
+  }
+
+  // ── Zeilenliste ─────────────────────────────────────────────────
+  &__body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: $spacing-xs $spacing-sm calc(160px + env(safe-area-inset-bottom, 0px));
+  }
+
+  &__empty {
+    text-align: center;
+    padding: $spacing-3xl 0;
+    color: $color-muted;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-xs;
+    padding: $spacing-sm $spacing-sm;
+    border-radius: $radius-md;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  // Cover-Kachel: Bild oder getönte Typfarben-Fläche mit Icon
+  &__row-cover {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-sm;
+    object-fit: cover;
+
+    &--tile {
+      @include flex-center;
+    }
+  }
+
+  &__row-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  &__row-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  // 2. Zeile: Datums-Tag ("Terminiert zum …" ohne Wort, nur Kalender-Icon +
+  // Datum) und Verknüpfen-Icon
+  &__row-meta {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+  }
+
+  &__row-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0B8CE9;
+    white-space: nowrap;
+  }
+
+  // Typ-Icon des verknüpften Elements (z.B. gelbes Dreieck = Arbeitsbereich)
+  &__row-linked {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  // Verknüpfen-Button: immer grau, nur das App-Mini-Logo, steht immer zuletzt
+  &__row-link {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 2px 4px;
+    background: transparent;
+    border: none;
+    color: $color-muted;
+    cursor: pointer;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+
+  &__row-kebab {
+    flex-shrink: 0;
+    @include flex-center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: none;
+    color: $color-muted;
+    cursor: pointer;
+
+    &:active {
+      opacity: 0.6;
+    }
+  }
+}
+
+// ── Light Theme ──────────────────────────────────────────────────
+// Pillen mit invertierten Farbtoken (aktiv dunkel auf hell), Glas-Buttons
+// als helles Glas, Verlauf läuft in die helle Fläche aus.
+.app.light-theme .new-list {
+  &__glass-btn {
+    background: rgba(255, 255, 255, 0.5);
+    border-color: rgba(0, 0, 0, 0.08);
+    color: #1a1a24;
+  }
+
+  &__title {
+    color: #1a1a24;
+  }
+
+  &__subtitle {
+    color: #8a8a96;
+  }
+
+  &__pill {
+    background: #f0f0f3;
+    color: #8a8a96;
+    border-color: rgba(0, 0, 0, 0.06);
+
+    &--active {
+      background: #1a1a24;
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    &--trash#{&}--active {
+      color: #F26565;
+    }
+  }
+
+  &__row {
+    &:active {
+      background: rgba(26, 26, 36, 0.05);
+    }
+  }
+
+  &__row-title {
+    color: #1a1a24;
+  }
+
+  // Sortieren/Filter-Icons: Hintergrund der wiederverwendeten DetailMetaRow
+  // muss hier transparent bleiben (überstimmt die Light-Theme-Regel aus
+  // _FolderScreens.scss, die sonst höhere Spezifität hätte).
+  &__pills .cat-detail__task-meta {
+    background: transparent;
+  }
+}

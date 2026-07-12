@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus, Pin, PinOff, AlertTriangle } from 'lucide-react';
-import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
+import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, COVER_COLORS } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon, GitMergeBranchIcon } from "../components/AppIcons";
@@ -11,7 +11,7 @@ import { DetailMetaRow, DetailViewSelect } from "../components/TaskSubtabControl
 import { EntryMetaTags, HomeEntryItem, TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { ConnSheet, TagSheet, ResLinkSheet, MediaTypeSheet } from "../components/PillSheets";
-import { useSheetSwipeClose } from "../components/useSheetSwipeClose";
+import { CatOptionsSheet } from "../components/CatOptionsSheet";
 import { CanvasEditor } from "../components/CanvasEditor";
 
 export function CatListScreen({ type, cats, onOpen, onAdd, onBack, onOpenArchive, t, CC }) {
@@ -93,16 +93,6 @@ const CAT_ACCENT_RGB = {
   resource: "48, 160, 96",
 };
 
-const COVER_COLORS = [
-  { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
-  { hex: "#D09020", rgb: "208, 144, 32",  label: "area" },
-  { hex: "#F59E0B", rgb: "245, 158, 11",  label: "note" },
-  { hex: "#0078D4", rgb: "0, 120, 212",   label: "calendar" },
-  { hex: "#0B8CE9", rgb: "11, 140, 233",  label: "task" },
-  { hex: "#E03E3E", rgb: "224, 62, 62",   label: "project" },
-  { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
-];
-
 const SUB_TAB_SWIPE_THRESHOLD_PX = 60;
 // Reihenfolge der Lesezeichen für den seitlichen Wisch-Wechsel (wie Iconbar)
 const BM_ORDER = BOOKMARKS.filter((b) => b.id !== "tags").map((b) => b.id);
@@ -151,7 +141,6 @@ export function CatDetailScreen({
   const [showResLinkSheet, setShowResLinkSheet] = useState(false);
   const [showMediaTypeSheet, setShowMediaTypeSheet] = useState(false);
   const [showSettingsSheet, setShowSettingsSheet] = useState(false);
-  const [coverMode, setCoverMode] = useState(null);
   const [showFcInfo, setShowFcInfo] = useState(false);
   const [collabOpen, setCollabOpen] = useState(false);
   const collaborators = cat.collaborators || [];
@@ -165,10 +154,6 @@ export function CatDetailScreen({
     ? COVER_COLORS.find(c => c.hex === cat.coverColor)?.rgb || CAT_ACCENT_RGB[safeType] || "88, 88, 160"
     : CAT_ACCENT_RGB[safeType] || "88, 88, 160";
   const hasCoverImg = !!cat.coverImage;
-
-  // Refs für Cover-Upload
-  const coverInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
 
   // Medien-Upload über das Plus im Medien-Lesezeichen: das Sheet wählt die
   // Medienart, danach öffnet der versteckte File-Input mit passendem accept.
@@ -290,25 +275,6 @@ export function CatDetailScreen({
     setPrevMenuTick(menuTick);
     setShowSettingsSheet(true);
   }
-
-  const closeSettingsSheet = useCallback(() => {
-    setShowSettingsSheet(false);
-    setCoverMode(null);
-  }, []);
-
-  // Wisch-nach-unten zum Schließen des Settings-Sheets
-  const settingsSwipe = useSheetSwipeClose(closeSettingsSheet);
-
-  const handleCoverUpload = useCallback((e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      onUpdate({ coverImage: reader.result });
-      closeSettingsSheet();
-    };
-    reader.readAsDataURL(file);
-  }, [onUpdate, closeSettingsSheet]);
 
   // Mapping: Bookmark → Entry-Typ (inkl. Sub-Tab bei Ressource)
   const getEntryTypeFromBookmark = useCallback(() => {
@@ -798,24 +764,6 @@ export function CatDetailScreen({
         )}
       </div>
 
-      {/* Hidden file inputs for cover upload */}
-      <input
-        ref={coverInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={handleCoverUpload}
-      />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        style={{ display: "none" }}
-        onChange={handleCoverUpload}
-      />
-
-      {/* Settings Bottom Sheet */}
       {showFcInfo && (
         <FlashcardInfoSheet
           t={t}
@@ -864,130 +812,17 @@ export function CatDetailScreen({
         />
       )}
 
+      {/* Options-Sheet der Seite (Drei-Punkte im Header): Cover-Design +
+          Favorit/Anpinnen/Archivieren/Löschen – geteilte Komponente. */}
       {showSettingsSheet && (
-        <div className="settings-sheet-overlay" onClick={closeSettingsSheet} {...settingsSwipe}>
-          <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
-            <div className="settings-sheet__handle" />
-
-            {/* Cover Picker Bubbles */}
-            <div className="settings-sheet__bubbles">
-              <button
-                className={`settings-sheet__bubble ${coverMode === "colors" ? "settings-sheet__bubble--active" : ""}`}
-                onClick={() => setCoverMode(coverMode === "colors" ? null : "colors")}
-              >
-                <Palette size={20} />
-                <span>{t.coverColors}</span>
-              </button>
-              <button
-                className={`settings-sheet__bubble ${coverMode === "photo" ? "settings-sheet__bubble--active" : ""}`}
-                onClick={() => { setCoverMode("photo"); coverInputRef.current?.click(); }}
-              >
-                <ImageIcon size={20} />
-                <span>{t.coverPhoto}</span>
-              </button>
-              <button
-                className={`settings-sheet__bubble ${coverMode === "camera" ? "settings-sheet__bubble--active" : ""}`}
-                onClick={() => { setCoverMode("camera"); cameraInputRef.current?.click(); }}
-              >
-                <Camera size={20} />
-                <span>{t.coverCamera}</span>
-              </button>
-            </div>
-
-            {/* Color Grid (visible when coverMode === "colors") */}
-            {coverMode === "colors" && (
-              <div className="settings-sheet__color-grid">
-                {COVER_COLORS.map((c) => (
-                  <button
-                    key={c.hex}
-                    className={`settings-sheet__color-swatch ${cat.coverColor === c.hex ? "settings-sheet__color-swatch--active" : ""}`}
-                    style={{ background: c.hex, color: c.hex }}
-                    onClick={() => {
-                      onUpdate({ coverColor: c.hex, coverImage: null });
-                      closeSettingsSheet();
-                    }}
-                  />
-                ))}
-                <button
-                  className={`settings-sheet__color-swatch settings-sheet__color-swatch--default ${!cat.coverColor && !cat.coverImage ? "settings-sheet__color-swatch--active" : ""}`}
-                  onClick={() => {
-                    onUpdate({ coverColor: null, coverImage: null });
-                    closeSettingsSheet();
-                  }}
-                  title={t.coverDefault}
-                />
-              </div>
-            )}
-
-            <div className="settings-sheet__divider" />
-
-            <div className="settings-sheet__list">
-              <button
-                className={`settings-sheet__item ${coverMode === "url" ? "settings-sheet__item--active" : ""}`}
-                onClick={() => setCoverMode(coverMode === "url" ? null : "url")}
-              >
-                <Link2 size={18} color="#8a8a96" />
-                <span>{t.coverUrl}</span>
-              </button>
-              {coverMode === "url" && (
-                <div className="settings-sheet__url-row">
-                  <input
-                    className="settings-sheet__url-input"
-                    type="url"
-                    placeholder="https://..."
-                    autoFocus
-                    defaultValue={cat.coverImage && /^https?:/.test(cat.coverImage) ? cat.coverImage : ""}
-                    onKeyDown={(e) => {
-                      const val = e.target.value.trim();
-                      if (e.key === "Enter" && val) {
-                        onUpdate({ coverImage: val, coverColor: null });
-                        closeSettingsSheet();
-                      }
-                    }}
-                  />
-                  <button
-                    className="settings-sheet__url-apply"
-                    onClick={(e) => {
-                      const val = e.currentTarget.previousElementSibling?.value.trim();
-                      if (val) { onUpdate({ coverImage: val, coverColor: null }); closeSettingsSheet(); }
-                    }}
-                  >
-                    <Check size={18} />
-                  </button>
-                </div>
-              )}
-              <button
-                className="settings-sheet__item"
-                onClick={() => { onUpdate({ starred: !cat.starred }); closeSettingsSheet(); }}
-              >
-                <Star size={18} fill={cat.starred ? "#F59E0B" : "none"} color={cat.starred ? "#F59E0B" : "#8a8a96"} />
-                <span>{cat.starred ? t.unmarkFavorite : t.markFavorite}</span>
-              </button>
-              <button
-                className="settings-sheet__item"
-                onClick={() => { onTogglePin?.(); closeSettingsSheet(); }}
-              >
-                {cat.pinned ? <PinOff size={18} color="#8a8a96" /> : <Pin size={18} color="#8a8a96" />}
-                <span>{cat.pinned ? t.actionUnpin : t.actionPin}</span>
-              </button>
-              <button
-                className="settings-sheet__item"
-                onClick={() => { onUpdate({ archived: !cat.archived }); closeSettingsSheet(); }}
-              >
-                {cat.archived ? <ArchiveRestore size={18} color="#8a8a96" /> : <Archive size={18} color="#8a8a96" />}
-                <span>{cat.archived ? t.restore : t.archive}</span>
-              </button>
-              <div className="settings-sheet__divider" />
-              <button
-                className="settings-sheet__item settings-sheet__item--danger"
-                onClick={() => { onDelete(); closeSettingsSheet(); }}
-              >
-                <Trash2 size={18} color="#F26565" />
-                <span>{t.delete}</span>
-              </button>
-            </div>
-          </div>
-        </div>
+        <CatOptionsSheet
+          t={t}
+          cat={cat}
+          onUpdate={onUpdate}
+          onTogglePin={onTogglePin}
+          onDelete={onDelete}
+          onClose={() => setShowSettingsSheet(false)}
+        />
       )}
 
       {/* Aufgaben-Ansicht: Offen/Erledigt-Auswahl als schwebende Frosted-Glass-

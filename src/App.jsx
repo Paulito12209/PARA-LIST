@@ -19,6 +19,7 @@ import { buildPresetDecks, FLASHCARD_PRESETS_VERSION } from "./data/flashcardPre
 import { wordsResourceName } from "./lib/translate";
 import { TranslateOverlay } from "./components/TranslateOverlay";
 import { CatListScreen, CatDetailScreen } from "./screens/FolderScreens";
+import { NewCatListScreen } from "./screens/NewCatListScreen";
 import { EntryDetailScreen } from "./screens/EntryDetailScreen";
 import { CommandPanel } from "./components/CommandPanel";
 import { AppSwitcherSheet } from "./components/AppSwitcherSheet";
@@ -1110,8 +1111,9 @@ export default function App() {
   if (!isLoaded) {
     return (
       <div className="loading">
-        <div className="loading__spinner" />
+        <img className="loading__logo" src="/paralist_logo.png" alt="PARA·LIST" />
         <div className="loading__text">PARA·LIST</div>
+        <div className="loading__spinner" />
       </div>
     );
   }
@@ -1120,8 +1122,10 @@ export default function App() {
     <>
       {state.user.name === "" && (
         <OnboardingModal
-          onComplete={(l, n) =>
-            setState((s) => ({ ...s, lang: l, user: { ...s.user, name: n } }))
+          theme={theme}
+          onPreviewTheme={(th) => setState((s) => ({ ...s, theme: th }))}
+          onComplete={(l, n, th) =>
+            setState((s) => ({ ...s, lang: l, theme: th, user: { ...s.user, name: n } }))
           }
         />
       )}
@@ -1217,6 +1221,10 @@ export default function App() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
+      {/* Neue Spotify-Liste bringt ihren eigenen Header (Glas-Buttons im
+          Kontext-Verlauf) mit – der Command-Panel-Header entfällt dort und
+          erscheint nur, wenn das Panel (Suche/Backlog) geöffnet wird. */}
+      {(panelOpen || !(newDesign && cur.view === VIEW.CAT_LIST)) && (
       <CommandPanel
         t={t}
         title={
@@ -1261,6 +1269,7 @@ export default function App() {
         onCloseSearch={() => setSearchOpen(false)}
         onOpenProgress={() => setProgressTick((n) => n + 1)}
       />
+      )}
 
       {panelOpen && (
         <div className="command-panel__backdrop" onClick={() => setPanelOpenBlurred(false)} />
@@ -1311,7 +1320,7 @@ export default function App() {
           und blendet seine native „vor/zurück/Fertig"-Leiste über der Tastatur ein. */}
       <div
         inert={panelOpen || onboardingOpen || undefined}
-        className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}`}
+        className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}${newDesign && cur.view === VIEW.CAT_LIST ? " main-content--newlist" : ""}`}
       >
         {cur.view === VIEW.HOME && (
           <HomeScreen
@@ -1411,16 +1420,49 @@ export default function App() {
         )}
 
         {cur.view === VIEW.CAT_LIST && (
-          <CatListScreen
-            t={t}
-            CC={CC}
-            type={cur.type}
-            cats={state.cats.filter((c) => c.type === cur.type && !c.archived)}
-            onOpen={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
-            onAdd={() => setNewCatType(cur.type)}
-            onBack={pop}
-            onOpenArchive={(type) => push({ view: VIEW.ARCHIVE, tab: type })}
-          />
+          newDesign ? (
+            // Neues Design: Spotify-artige Liste mit Kontext-Verlauf, Glas-
+            // Buttons, Filter-Pillen und der NewDesignNav unten (deren Plus
+            // erstellt eine neue Seite in dieser Liste).
+            <NewCatListScreen
+              t={t}
+              CC={CC}
+              lang={lang}
+              type={cur.type}
+              allCats={state.cats}
+              trash={state.trash || []}
+              onOpen={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
+              onAdd={() => setNewCatType(cur.type)}
+              onBack={pop}
+              onHome={() => setStack([{ view: VIEW.HOME }])}
+              onOpenSettings={() => push({ view: VIEW.SETTINGS })}
+              onOpenSearch={() => {
+                setPanelOpen(true);
+                setSearchOpen(true);
+              }}
+              // Tab-Wechsel in der Nav ersetzt die aktuelle Liste statt zu stapeln.
+              onOpenCatType={(type) =>
+                setStack((s) => [...s.slice(0, -1), { view: VIEW.CAT_LIST, type }])
+              }
+              onUpdateCat={updateCat}
+              onTogglePin={(id) => togglePin(id, "cat")}
+              onDeleteCat={trashCat}
+              onRestoreFromTrash={restoreFromTrash}
+              onPurgeTrashItem={purgeTrashItem}
+              onQuickCreate={quickCreate}
+            />
+          ) : (
+            <CatListScreen
+              t={t}
+              CC={CC}
+              type={cur.type}
+              cats={state.cats.filter((c) => c.type === cur.type && !c.archived)}
+              onOpen={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
+              onAdd={() => setNewCatType(cur.type)}
+              onBack={pop}
+              onOpenArchive={(type) => push({ view: VIEW.ARCHIVE, tab: type })}
+            />
+          )
         )}
 
         {cur.view === VIEW.CAT_DETAIL && (() => {

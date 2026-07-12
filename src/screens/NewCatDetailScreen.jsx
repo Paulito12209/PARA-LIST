@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ChevronLeft, Plus, Square } from "lucide-react";
-import { BOOKMARKS, CAT_ICONS, COVER_COLORS } from "../utils";
-import { CustomSettingsIcon, DartTargetIcon } from "../components/AppIcons";
-import { NewDesignNav } from "../components/NewDesignNav";
+import { Calendar, ChevronLeft, Circle, Paperclip, Pencil, Plus, Square } from "lucide-react";
+import { BOOKMARKS, CAT_ICONS, COVER_COLORS, fmtDate } from "../utils";
+import { CustomSettingsIcon, DartTargetIcon, GitMergeBranchIcon } from "../components/AppIcons";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
 import { MediaTypeSheet } from "../components/PillSheets";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { DetailsBody } from "../components/DetailsPopup";
-import { TaskList, NoteList, CalList, MediaList, LinkList } from "../components/EntryLists";
+import { LinkList } from "../components/EntryLists";
 
 // Akzent (RGB) des Covers – Typfarbe der Seite (Projekt rot usw.).
 const TYPE_ACCENT_RGB = {
@@ -21,9 +20,6 @@ const TYPE_ACCENT_RGB = {
 const GRAIN_URI =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")";
 
-// Erst ab diesem Abstand unter der Icon-Leiste gilt eine Karte beim
-// Scroll-Spy als "aktiv" (ihre Oberkante hat die Leiste fast erreicht).
-const SPY_OFFSET_PX = 140;
 // Eingeklappte Seiteninhalt-Karte: mehr Text als diese Höhe → Fade +
 // "Kompletten Inhalt anzeigen"-Button.
 const CANVAS_CLIP_PX = 224;
@@ -51,10 +47,97 @@ function AutoGrowTextarea({ value, onChange, placeholder, onOverflow }) {
   );
 }
 
-// Spotify-artige Detailseite einer Kategorie (neues Design): großes Cover in
-// der Typfarbe (Grain-Verlauf, Emblem-Icon, Titel unten versetzt), darunter
-// die mitscrollende Icon-Leiste (aktives Icon größer + Label) und der Inhalt
-// als Karten-Feed. Scrollen wechselt das aktive Icon automatisch.
+// Icon + Farbe der Eintragszeilen (führende Kachel)
+const ENTRY_TILE = {
+  task: { Icon: Circle, color: "#0B8CE9" },
+  note: { Icon: Pencil, color: "#F59E0B" },
+  calendar: { Icon: Calendar, color: "#0078D4" },
+  media: { Icon: Paperclip, color: "#10B981" },
+};
+
+// Eintragszeile im Look der Listen-Zeilen (NewCatListScreen): Kachel · Titel
+// (Ellipsis, ohne Lauftext) · Meta-Zeile mit blauem Datum + Typ-Icon der
+// verknüpften Seite (nur das Icon) · rechts das Verknüpfen-Mini-Logo.
+function DetailEntryRow({ t, CC, entry, allCats, onToggle, onOpen }) {
+  const tile = ENTRY_TILE[entry.type] || ENTRY_TILE.note;
+  const TileIcon = tile.Icon;
+
+  // Datum: Aufgabe = Fälligkeit, Termin = Datum, sonst Erstellungsdatum.
+  const dateStr =
+    entry.type === "task" ? entry.due
+    : entry.type === "calendar" ? entry.date
+    : entry.createdAt ? new Date(entry.createdAt).toISOString().split("T")[0]
+    : null;
+
+  // Verknüpfte Seite: nur deren Typ-Icon in Typfarbe (kein Name).
+  const linkedCatId = entry.catIds?.[0] || entry.catId;
+  const linkedCat = linkedCatId ? allCats.find((c) => c.id === linkedCatId) : null;
+  const linkedCfg = linkedCat && CC[linkedCat.type] ? CC[linkedCat.type] : null;
+  const LinkedIcon = linkedCat ? CAT_ICONS[linkedCat.type] || Square : null;
+
+  return (
+    <div
+      className="new-detail__row"
+      role="button"
+      tabIndex={0}
+      onClick={() => onOpen?.(entry)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen?.(entry);
+        }
+      }}
+    >
+      {entry.type === "task" ? (
+        <button
+          className="new-detail__row-tile new-detail__row-tile--toggle"
+          style={{ background: tile.color + "1F", color: tile.color }}
+          onClick={(e) => { e.stopPropagation(); onToggle?.(entry.id); }}
+          aria-label={t.markDone || "Erledigt"}
+        >
+          <TileIcon size={22} strokeWidth={2.2} />
+        </button>
+      ) : (
+        <span
+          className="new-detail__row-tile"
+          style={{ background: tile.color + "1F", color: tile.color }}
+        >
+          <TileIcon size={20} strokeWidth={2} />
+        </span>
+      )}
+
+      <div className="new-detail__row-info">
+        <div className="new-detail__row-title">{entry.title}</div>
+        <div className="new-detail__row-meta">
+          {dateStr && (
+            <span className="new-detail__row-date">
+              <Calendar size={12} strokeWidth={2.4} />
+              {fmtDate(dateStr, t.locale)}
+            </span>
+          )}
+          {linkedCfg && LinkedIcon && (
+            <span className="new-detail__row-cat" style={{ color: linkedCfg.color }}>
+              <LinkedIcon size={12} strokeWidth={2.4} />
+            </span>
+          )}
+        </div>
+      </div>
+
+      <button
+        className="new-detail__row-link"
+        onClick={(e) => { e.stopPropagation(); onOpen?.(entry); }}
+        aria-label={t.linkAction || "Verknüpfen"}
+      >
+        <GitMergeBranchIcon size={14} strokeWidth={2.2} />
+      </button>
+    </div>
+  );
+}
+
+// Spotify-artige Detailseite einer Kategorie (neues Design): fixe Topbar
+// (Zurück · Typ-Label · Einstellungen, immer sichtbar), Cover mit Emblem,
+// darunter pinnen Titel + Icon-Leiste (N26-Stil mit durchgehender Linie)
+// beim Scrollen fest; der Inhalt ist ein Karten-Feed. Keine Bottom-Nav.
 export function NewCatDetailScreen({
   t,
   CC,
@@ -66,9 +149,6 @@ export function NewCatDetailScreen({
   onTogglePin,
   onDelete,
   onBack,
-  onHome,
-  onOpenSearch,
-  onOpenCatType,
   toggleTask,
   deleteEntry,
   onAddEntry,
@@ -84,6 +164,7 @@ export function NewCatDetailScreen({
     : TYPE_ACCENT_RGB[safeType] || "88, 88, 160";
 
   const [active, setActive] = useState("canvas");
+  const [pinned, setPinned] = useState(false);
   const [canvasExpanded, setCanvasExpanded] = useState(false);
   const [canvasOverflows, setCanvasOverflows] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -91,6 +172,8 @@ export function NewCatDetailScreen({
   const [collabOpen, setCollabOpen] = useState(false);
 
   const scrollRef = useRef(null);
+  const topbarRef = useRef(null);
+  const stickyRef = useRef(null);
   const barRef = useRef(null);
   const sectionRefs = useRef({});
   const tileRefs = useRef({});
@@ -98,8 +181,8 @@ export function NewCatDetailScreen({
   // der Smooth-Scroll noch läuft.
   const spyLockUntil = useRef(0);
 
-  // Medien-Upload wie auf der alten Detailseite: Sheet wählt die Medienart,
-  // dann öffnet der versteckte File-Input mit passendem accept.
+  // Medien-Upload: Sheet wählt die Medienart, dann öffnet der versteckte
+  // File-Input mit passendem accept.
   const mediaInputRef = useRef(null);
   const pendingMediaType = useRef(null);
   const handleMediaTypePick = (type) => {
@@ -151,12 +234,22 @@ export function NewCatDetailScreen({
       : null,
   }));
 
-  // Scroll-Spy: letzte Karte, deren Oberkante die Icon-Leiste erreicht hat.
+  // Höhe des fixierten Kopfes (Topbar + gepinnter Titel/Leiste) – Grundlage
+  // für Scroll-Spy-Schwelle und Sprungziel beim Icon-Tap.
+  const headerOffset = () =>
+    (topbarRef.current?.offsetHeight || 56) + (stickyRef.current?.offsetHeight || 150);
+
+  // Scroll-Spy + Pinned-Erkennung (Topbar/Titelblock bekommen festen Grund).
   const handleScroll = useCallback(() => {
-    if (Date.now() < spyLockUntil.current) return;
     const scroller = scrollRef.current;
     if (!scroller) return;
-    const top = scroller.scrollTop + SPY_OFFSET_PX;
+    const stickyEl = stickyRef.current;
+    const topbarH = topbarRef.current?.offsetHeight || 56;
+    if (stickyEl) {
+      setPinned(scroller.scrollTop >= stickyEl.offsetTop - topbarH - 1);
+    }
+    if (Date.now() < spyLockUntil.current) return;
+    const top = scroller.scrollTop + headerOffset() + 56;
     let cur = "canvas";
     for (const s of SECTIONS) {
       const el = sectionRefs.current[s.id];
@@ -182,17 +275,7 @@ export function NewCatDetailScreen({
     if (!el || !scroller) return;
     spyLockUntil.current = Date.now() + 600;
     setActive(id);
-    scroller.scrollTo({ top: Math.max(0, el.offsetTop - SPY_OFFSET_PX + 48), behavior: "smooth" });
-  };
-
-  // Plus in der Nav: erstellt einen Eintrag des aktiven Bereichs.
-  const addForActive = () => {
-    if (active === "media") {
-      setShowMediaTypeSheet(true);
-      return;
-    }
-    const map = { canvas: "note", tasks: "task", notes: "note", cal: "calendar", link: "link", details: "note" };
-    onAddEntry(map[active] || "note");
+    scroller.scrollTo({ top: Math.max(0, el.offsetTop - headerOffset() - 8), behavior: "smooth" });
   };
 
   const emptyText = {
@@ -204,30 +287,31 @@ export function NewCatDetailScreen({
   };
 
   return (
-    <div className="new-detail" style={{ "--nd-accent-rgb": accentRgb }}>
+    <div
+      className={`new-detail${pinned ? " new-detail--pinned" : ""}`}
+      style={{ "--nd-accent-rgb": accentRgb }}
+    >
+      {/* Fixe Topbar – immer sichtbar: Zurück links, Typ-Label mittig,
+          Einstellungen rechts (16px Abstand zum oberen Rand). */}
+      <div className="new-detail__topbar" ref={topbarRef}>
+        <button className="new-detail__glass-btn" onClick={onBack} aria-label={t.back || "Zurück"}>
+          <ChevronLeft size={22} strokeWidth={2.2} />
+        </button>
+        <span className="new-detail__type-label">{cfg.sing || cfg.label}</span>
+        <button
+          className="new-detail__glass-btn"
+          onClick={() => setShowOptions(true)}
+          aria-label={t.settingsBtn || "Einstellungen"}
+        >
+          <CustomSettingsIcon size={20} color="currentColor" />
+        </button>
+      </div>
+
       <div className="new-detail__scroll" ref={scrollRef} onScroll={handleScroll}>
-        {/* Cover: Typfarbe mit Grain-Verlauf, Glas-Buttons, Typ-Label mittig,
-            Emblem in der Mitte, Titel unten versetzt. */}
+        {/* Cover: Typfarbe mit Grain-Verlauf + Emblem – scrollt komplett weg. */}
         <div className="new-detail__cover">
           {cat.coverImage && <img className="new-detail__cover-img" src={cat.coverImage} alt="" />}
           <div className="new-detail__grain" style={{ backgroundImage: GRAIN_URI }} />
-
-          <div className="new-detail__topbar">
-            <button className="new-detail__glass-btn" onClick={onBack} aria-label={t.back || "Zurück"}>
-              <ChevronLeft size={22} strokeWidth={2.2} />
-            </button>
-            <span className="new-detail__type-label">{cfg.sing || cfg.label}</span>
-            <button
-              className="new-detail__glass-btn"
-              onClick={() => setShowOptions(true)}
-              aria-label={t.settingsBtn || "Einstellungen"}
-            >
-              <CustomSettingsIcon size={20} color="currentColor" />
-            </button>
-          </div>
-
-          {/* Emblem: Projekte = Dart/Zielscheibe, sonst das Typ-Icon –
-              entfällt bei eigenem Cover-Bild. */}
           {!cat.coverImage && (
             <div className="new-detail__emblem">
               {safeType === "project" ? (
@@ -237,7 +321,11 @@ export function NewCatDetailScreen({
               )}
             </div>
           )}
+        </div>
 
+        {/* Pinnt unter der Topbar fest: Titel + Icon-Leiste mit durchgehender
+            Linie (N26-Stil). Nur das Cover darüber scrollt aus dem Bild. */}
+        <div className="new-detail__sticky" ref={stickyRef}>
           <input
             className="new-detail__title"
             value={cat.name}
@@ -245,11 +333,6 @@ export function NewCatDetailScreen({
             placeholder={t.titlePlaceholder || "Titel…"}
             onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
           />
-        </div>
-
-        {/* Icon-Leiste: klebt beim Scrollen oben; das Cover läuft dahinter in
-            den dunklen Hintergrund aus (transparent → dunkel als Layer). */}
-        <div className="new-detail__barwrap">
           <div className="new-detail__iconbar" ref={barRef}>
             {SECTIONS.map(({ id, Icon, color, label }) => {
               const isActive = id === active;
@@ -277,14 +360,13 @@ export function NewCatDetailScreen({
 
         {/* Karten-Feed */}
         <div className="new-detail__feed">
-          {/* Seiteninhalt: Akzent-Karte (wie Spotifys Lyrics-Vorschau) –
-              eingeklappt nur ein Ausschnitt, Button zeigt alles. */}
+          {/* Seiteninhalt: Akzent-Karte – Label steht bereits unter dem
+              aktiven Icon, daher keine Kopfzeile in der Karte. */}
           <section
             className="new-detail__section"
             ref={(el) => { sectionRefs.current.canvas = el; }}
           >
             <div className="new-detail__card new-detail__card--canvas">
-              <div className="new-detail__card-eyebrow">{t.pageContent}</div>
               <div
                 className={`new-detail__canvas-clip${canvasExpanded || !canvasOverflows ? " new-detail__canvas-clip--open" : ""}`}
               >
@@ -306,19 +388,16 @@ export function NewCatDetailScreen({
             </div>
           </section>
 
-          {/* Übrige Bereiche als dunkle Karten mit Kopfzeile (Icon · Label ·
-              Anzahl · Plus) und den bestehenden Listen-Komponenten. */}
+          {/* Übrige Bereiche: Kopf ohne Icon (steht schon in der Leiste),
+              Eintragszeilen bündig im Listen-Look. */}
           {SECTIONS.filter((s) => s.id !== "canvas" && s.id !== "details").map((s) => (
             <section
               key={s.id}
               className="new-detail__section"
               ref={(el) => { sectionRefs.current[s.id] = el; }}
             >
-              <div className="new-detail__card">
+              <div className={`new-detail__card${s.id !== "link" ? " new-detail__card--flush" : ""}`}>
                 <div className="new-detail__card-head">
-                  <span className="new-detail__card-icon" style={{ background: s.color + "24", color: s.color }}>
-                    <s.Icon size={16} color={s.color} />
-                  </span>
                   <span className="new-detail__card-title">{s.label}</span>
                   {s.count > 0 && <span className="new-detail__card-count">{s.count}</span>}
                   <button
@@ -335,35 +414,41 @@ export function NewCatDetailScreen({
                 {s.id === "tasks" && (openTasks.length === 0 ? (
                   <div className="new-detail__card-empty">{emptyText.tasks}</div>
                 ) : (
-                  <TaskList t={t} CC={CC} entries={openTasks} cats={allCats} onToggle={toggleTask} onDelete={deleteEntry} onOpenEntry={onOpenEntry} />
+                  openTasks.map((e) => (
+                    <DetailEntryRow key={e.id} t={t} CC={CC} entry={e} allCats={allCats} onToggle={toggleTask} onOpen={onOpenEntry} />
+                  ))
                 ))}
 
                 {s.id === "notes" && (notes.length === 0 ? (
                   <div className="new-detail__card-empty">{emptyText.notes}</div>
                 ) : (
-                  <NoteList t={t} CC={CC} entries={notes} cats={allCats} onDelete={deleteEntry} onOpenEntry={onOpenEntry} />
+                  notes.map((e) => (
+                    <DetailEntryRow key={e.id} t={t} CC={CC} entry={e} allCats={allCats} onOpen={onOpenEntry} />
+                  ))
                 ))}
 
                 {s.id === "cal" && (cals.length === 0 ? (
                   <div className="new-detail__card-empty">{emptyText.cal}</div>
                 ) : (
-                  <CalList t={t} CC={CC} entries={cals} cats={allCats} onDelete={deleteEntry} onOpenEntry={onOpenEntry} />
+                  cals.map((e) => (
+                    <DetailEntryRow key={e.id} t={t} CC={CC} entry={e} allCats={allCats} onOpen={onOpenEntry} />
+                  ))
                 ))}
 
                 {s.id === "media" && (
                   <>
                     {linkedResources.map((res) => (
                       <button key={res.id} className="new-detail__res-row" onClick={() => onOpenCat?.(res)}>
-                        <span className="new-detail__card-icon" style={{ background: CC.resource.color + "24", color: CC.resource.color }}>
-                          <Square size={14} color={CC.resource.color} />
+                        <span className="new-detail__row-tile" style={{ background: CC.resource.color + "1F", color: CC.resource.color }}>
+                          <Square size={18} color={CC.resource.color} />
                         </span>
                         <span className="new-detail__res-name">{res.name}</span>
                         <ChevronLeft size={14} style={{ transform: "rotate(180deg)" }} />
                       </button>
                     ))}
-                    {media.length > 0 && (
-                      <MediaList t={t} CC={CC} entries={media} cats={allCats} onDelete={deleteEntry} />
-                    )}
+                    {media.map((e) => (
+                      <DetailEntryRow key={e.id} t={t} CC={CC} entry={e} allCats={allCats} onOpen={onOpenEntry} />
+                    ))}
                     {linkedResources.length === 0 && media.length === 0 && (
                       <div className="new-detail__card-empty">{emptyText.media}</div>
                     )}
@@ -396,17 +481,6 @@ export function NewCatDetailScreen({
           </section>
         </div>
       </div>
-
-      {/* Untere Navigationsleiste bleibt sichtbar; Plus erstellt einen
-          Eintrag des gerade aktiven Bereichs. */}
-      <NewDesignNav
-        t={t}
-        active={safeType}
-        onHome={onHome}
-        onOpenSearch={onOpenSearch}
-        onOpenCatType={onOpenCatType}
-        onAdd={addForActive}
-      />
 
       {/* Options-Sheet (Settings-Glas-Button): Cover-Design + Favorit/
           Anpinnen/Archivieren/Löschen – geteilt mit der Liste. */}

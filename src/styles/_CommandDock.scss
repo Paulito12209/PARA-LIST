@@ -554,20 +554,31 @@
 // Projekte · Arbeitsbereiche · Ressourcen – Labels ausgeschrieben.
 // ============================================================
 .new-nav {
-  position: absolute;
+  // fixed statt absolute: die Startseite scrollt im neuen Design als Ganzes
+  // (body.new-design .home), die Leiste bleibt unten am Viewport stehen.
+  position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 20;
+  // Gemeinsamer Container für "Zuletzt geöffnet"-Leiste + Tab-Reihe:
+  // ein durchgehender Verlauf von transparent (oben) zur voll deckenden
+  // Hauptfarbe (unten) liegt hinter BEIDEN Elementen.
   display: flex;
-  align-items: stretch;
-  padding: 8px 8px calc(8px + env(safe-area-inset-bottom, 0px));
-  // Spotify-Fade: unten deckend, läuft nach oben transparent aus
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 8px calc(8px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(
-    to top,
-    rgba(10, 10, 16, 0.96) 55%,
-    rgba(10, 10, 16, 0)
+    to bottom,
+    rgba(22, 22, 31, 0) 0%,
+    rgba(22, 22, 31, 0.82) 38%,
+    #16161f 100%
   );
+
+  &__tabs {
+    display: flex;
+    align-items: stretch;
+  }
 
   &__tab {
     // Exakte Fünftel (User-Entscheidung): die Icons sitzen gleichmäßig
@@ -605,13 +616,77 @@
     font-weight: 600;
     letter-spacing: 0.01em;
   }
+
+  // ── "Zuletzt geöffnet"-Leiste (Spotify-Mini-Player-Pendant) ──
+  // Erste Zeile des gemeinsamen Nav-Containers: abgerundete Glas-Karte im
+  // Fade-Bereich des Verlaufs; Tap öffnet die Detailseite des Elements.
+  &__now {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(44, 44, 56, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    color: $color-text;
+    text-align: left;
+    cursor: pointer;
+
+    &:active {
+      opacity: 0.8;
+    }
+  }
+
+  // Getönte Icon-Box wie bei den Listeneinträgen (task-item__type-icon--cat):
+  // Hintergrund + Icon folgen der Akzentfarbe des jeweiligen Typs
+  // (--now-icon-tint, per Inline-Style gesetzt), statt einer neutralen Fläche.
+  &__now-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--now-icon-tint, #{$color-text}) 16%, transparent);
+    color: var(--now-icon-tint, #{$color-text});
+  }
+
+  &__now-copy {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  &__now-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  &__now-date {
+    font-size: 11px;
+    font-weight: 500;
+    color: $color-muted;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .app.light-theme .new-nav {
+  // Gleiches Muster wie Dark: transparent oben → volle Deckkraft der
+  // Light-Hauptfarbe unten (App-Hintergrund #f7f7f9).
   background: linear-gradient(
-    to top,
-    rgba(255, 255, 255, 0.96) 55%,
-    rgba(255, 255, 255, 0)
+    to bottom,
+    rgba(247, 247, 249, 0) 0%,
+    rgba(247, 247, 249, 0.82) 38%,
+    #f7f7f9 100%
   );
 
   .new-nav__tab {
@@ -620,5 +695,20 @@
     &--active {
       color: #1a1a24;
     }
+  }
+
+  .new-nav__now {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 8px 24px rgba(26, 26, 36, 0.14);
+    color: #1a1a24;
+  }
+
+  .new-nav__now-icon {
+    background: color-mix(in srgb, var(--now-icon-tint, #1a1a24) 14%, transparent);
+    color: var(--now-icon-tint, #1a1a24);
+  }
+
+  .new-nav__now-date {
+    color: #8a8a96;
   }
 }

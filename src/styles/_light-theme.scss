@@ -1011,7 +1011,28 @@
   }
 
   .home-cover__light-wave {
-    background: linear-gradient(to top, #ffffff 0%, rgba(var(--cover-accent-rgb), 0.65) 100%);
+    height: 375px;
+    background: linear-gradient(to top, #ffffff 0%, rgb(var(--cover-accent-rgb)) 100%);
+  }
+
+  // Header beim Ganzseiten-Scroll voll lesbar halten (Pendant zur Dark-Regel
+  // in _CommandPanel.scss): kopiert den Light-Cover-Verlauf (Akzent 65% über
+  // Weiß → Weiß über 375px, identisch zur .home-cover__light-wave oben) über
+  // die VOLLE Header-Höhe – keine Fade-Zone, durch die Text durchscheint.
+  // Wie die Dark-Regel: 375px-Verlaufsebene, die mit der Scrollposition
+  // (--home-scroll-y) nach oben wandert, damit der Header immer den aktuell
+  // darunterliegenden Verlaufs-Ausschnitt zeigt.
+  .command-panel--closed:not(.command-panel--solid)::before {
+    // 24px-Fade-out-Streifen unter der Header-Unterkante (siehe Dark-Regel).
+    inset: 0 0 -24px;
+    background-image:
+      linear-gradient(to bottom, rgb(var(--cover-accent-rgb)) 0, #ffffff 375px),
+      linear-gradient(#ffffff, #ffffff);
+    background-size: 100% 375px, 100% 100%;
+    background-repeat: no-repeat;
+    background-position: 0 calc(0px - var(--home-scroll-y, 0px)), 0 0;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent 100%);
   }
 }
 
@@ -1405,13 +1426,33 @@
       color: #3a3a6a;
     }
 
-    &__title {
+    &__title,
+    &__header-title {
       color: #1c1c30;
     }
 
     &__desc {
       color: #3a3a6a;
       opacity: 0.85;
+    }
+
+    // Stern-Toggle (Favorit) im "toprow"-Header des neuen Designs: dezentes
+    // Dunkelgrau statt kaum sichtbarem Weiß, aktiv = gedämpftes Gold (analog
+    // zum Favoriten-Icon der Listen-Kacheln).
+    &__add-info-btn {
+      color: rgba(28, 28, 48, 0.35);
+
+      &:hover {
+        color: rgba(28, 28, 48, 0.55);
+      }
+
+      &--active {
+        color: #B45309;
+
+        &:hover {
+          color: #B45309;
+        }
+      }
     }
 
     &__textlink {
@@ -2033,14 +2074,60 @@
     }
   }
 
-  // Neues Design: "Listen"-Kacheln auf hellem Grund
+  // Neues Design: "Listen"-Kacheln auf hellem Grund – gleiche Verlaufslogik
+  // wie im Dark Mode (Akzentfarbe rechts → Icon liegt in der neutralen
+  // Fläche links), nur dass hier ins Weiß statt ins Schwarze ausgeblendet
+  // wird.
   .home-list-tile {
-    background: #ffffff;
-    border: 1px solid #e5e5f0;
+    // Kein Rand mehr – Kontrast zum weißen Hintergrund kommt allein aus dem
+    // hellgrauen Verlaufsende auf der Icon-Seite (statt Weiß-auf-Weiß).
+    background: linear-gradient(to left,
+      rgba(var(--tile-accent-rgb, 124, 131, 247), 0.22) 0%,
+      #F5F5F8 62%);
+    border: none;
     color: #1a1a24;
 
     &:active {
-      background: #f0f0f5;
+      background: linear-gradient(to left,
+        rgba(var(--tile-accent-rgb, 124, 131, 247), 0.22) 0%,
+        #EDEDF2 62%);
+    }
+
+    &__icon {
+      background: transparent;
+    }
+
+    &:has(.home-list-tile__icon--fav) {
+      background: linear-gradient(to left,
+        rgba(217, 119, 6, 0.18) 0%,
+        #F5F5F8 62%);
+
+      &:active {
+        background: linear-gradient(to left,
+          rgba(217, 119, 6, 0.18) 0%,
+          #EDEDF2 62%);
+      }
+    }
+
+    &__icon--fav {
+      background: transparent;
+      color: #B45309;
+    }
+
+    &:has(.home-list-tile__icon--calendar) {
+      background: linear-gradient(to left,
+        color-mix(in srgb, var(--pill-date-color) 22%, transparent) 0%,
+        #F5F5F8 62%);
+
+      &:active {
+        background: linear-gradient(to left,
+          color-mix(in srgb, var(--pill-date-color) 22%, transparent) 0%,
+          #EDEDF2 62%);
+      }
+    }
+
+    &__icon--calendar {
+      background: transparent;
     }
   }
 }

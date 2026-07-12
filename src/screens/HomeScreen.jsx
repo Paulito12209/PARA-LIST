@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, ChevronDown, Trash2, RotateCcw, Star } from "lucide-react";
-import { TaskList, NoteList, CalList, HomeCatItem } from "../components/EntryLists";
+import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, ChevronLeft, ChevronDown, Trash2, RotateCcw, Star } from "lucide-react";
+import { TaskList, NoteList, CalList, LinkList, HomeCatItem } from "../components/EntryLists";
+import { BookmarkIcon, TagIcon } from "../components/AppIcons";
 import { CommandDock } from "../components/CommandDock";
 import { NewDesignNav } from "../components/NewDesignNav";
 import { DockMenuSheet } from "../components/DockMenuSheet";
@@ -131,6 +132,25 @@ export function HomeScreen({
   const isEntryType = ENTRY_TYPES.includes(activeType);
   const [activeGroupHeader, setActiveGroupHeader] = useState(null);
 
+  // Neues Design: Der Header (CommandPanel) kopiert den Cover-Verlauf und
+  // muss beim Ganzseiten-Scroll immer den Ausschnitt zeigen, der aktuell
+  // unter ihm liegt. Dafür wird die Scrollposition von .home als CSS-Variable
+  // auf den App-Root gespiegelt – der Header verschiebt damit seine
+  // Verlaufskopie (background-position in _CommandPanel.scss).
+  const homeScrollRef = useRef(null);
+  useEffect(() => {
+    const el = homeScrollRef.current;
+    if (!el || !state.newDesign) return;
+    const app = el.closest(".app");
+    const sync = () => app?.style.setProperty("--home-scroll-y", `${el.scrollTop}px`);
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", sync);
+      app?.style.setProperty("--home-scroll-y", "0px");
+    };
+  }, [state.newDesign]);
+
   const TYPE_LABELS = {
     project: t.projects,
     area: t.areas,
@@ -139,6 +159,8 @@ export function HomeScreen({
     notes: t.notes,
     calendar: t.calendar,
     favorites: t.favorites,
+    links: t.bookmarks,
+    tags: t.tagsLabel,
   };
   const activeLabel = TYPE_LABELS[activeType];
 
@@ -172,6 +194,8 @@ export function HomeScreen({
   // Archiv/Papierkorb sind damit direkt in der Liste erreichbar (kein eigener
   // Screen-Wechsel nötig); beim Zuklappen wird auf "active" zurückgesetzt.
   const [listFilter, setListFilter] = useState("active");
+  // Ausgewählter Tag im Drilldown der Tags-Kachel (null = flache Tag-Liste).
+  const [selectedTag, setSelectedTag] = useState(null);
   const lastScrollTop = useRef(0);
 
   // Filter beim Zuklappen bzw. Kontextwechsel (Typ/Tab) zurücksetzen.
@@ -180,6 +204,7 @@ export function HomeScreen({
   }, [listExpanded]);
   useEffect(() => {
     setListFilter("active");
+    if (activeType !== "tags") setSelectedTag(null);
   }, [activeType, tab]);
 
   // Beim Aufklappen der Liste wandert der Abschnittstitel in den Header (statt
@@ -279,14 +304,32 @@ export function HomeScreen({
   // kein Datum (ihre Pille zeigt später das Entstehungsdatum).
   const voiceSupportsDate = isEntryType || activeType === "project";
 
+  // Lesezeichen-Kachel: alle Link-Einträge app-weit, neueste zuerst.
+  const sortedLinks = entries
+    .filter((e) => e.type === "link")
+    .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+  // Tags-Kachel: alle vergebenen Tag-Namen (globale Registry + freie
+  // Eintrags-Tags, die evtl. noch nicht in state.tags registriert sind).
+  const allTagNames = Array.from(
+    new Set([
+      ...(state.tags || []).map((tg) => tg.name),
+      ...entries.flatMap((e) => e.tags || []),
+    ])
+  ).sort((a, b) => a.localeCompare(b));
+
   // Ist die aktuell sichtbare Liste leer? Dann darf der Platzhalter nicht
   // wegscrollbar sein (Scrollen wird per CSS gesperrt).
   const activeItemsCount =
     activeType === "favorites"
       ? favCount
-      : isEntryType
-        ? tabEntries.length
-        : cats.filter((c) => c.type === activeType && !c.archived).length;
+      : activeType === "links"
+        ? sortedLinks.length
+        : activeType === "tags"
+          ? allTagNames.length
+          : isEntryType
+            ? tabEntries.length
+            : cats.filter((c) => c.type === activeType && !c.archived).length;
   const activeListEmpty = activeItemsCount === 0;
 
   const avatarInputRef = useRef(null);
@@ -1106,10 +1149,99 @@ export function HomeScreen({
     );
   };
 
+  // Lesezeichen-Seite (neues Design): alle Link-Einträge app-weit, unabhängig
+  // von der Kategorie, in der sie liegen – neueste zuerst.
+  const renderLinksList = () => {
+    if (sortedLinks.length === 0) {
+      return <div className="entry-list__empty">{t.noLink}</div>;
+    }
+    return <LinkList entries={sortedLinks} cats={cats} onDelete={deleteEntry} CC={CC} />;
+  };
+
+  // Tags-Seite (neues Design): ohne Auswahl eine flache, alphabetische Liste
+  // aller Tags mit Trefferzahl; mit Auswahl die gefilterten aktiven Einträge
+  // (Aufgaben/Notizen/Termine/Lesezeichen), die diesen Tag tragen.
+  const renderTagsList = () => {
+    if (selectedTag) {
+      const hasTag = (e) => (e.tags || []).includes(selectedTag);
+      const taggedTasks = entries.filter((e) => e.type === "task" && !e.archived && !e.done && hasTag(e));
+      const taggedNotes = entries.filter((e) => e.type === "note" && !e.archived && !e.done && hasTag(e));
+      const taggedCals = entries.filter((e) => e.type === "calendar" && !e.archived && !e.done && hasTag(e));
+      const taggedLinks = entries.filter((e) => e.type === "link" && hasTag(e));
+      if (taggedTasks.length + taggedNotes.length + taggedCals.length + taggedLinks.length === 0) {
+        return <div className="entry-list__empty">{t.noTags}</div>;
+      }
+      const shared = { t, CC, cats, grouped: false, onOpenEntry, isHome: true };
+      return (
+        <>
+          {taggedTasks.length > 0 && (
+            <TaskList
+              {...shared}
+              entries={taggedTasks}
+              lang={lang}
+              color="#0B8CE9"
+              onToggle={toggleTask}
+              onToggleStar={toggleStar}
+              onTogglePin={togglePin}
+              onUpdateEntry={updateEntry}
+              onDelete={deleteEntry}
+            />
+          )}
+          {taggedNotes.length > 0 && (
+            <NoteList
+              {...shared}
+              entries={taggedNotes}
+              color="#F59E0B"
+              onDelete={deleteEntry}
+              onToggleStar={toggleStar}
+              onTogglePin={togglePin}
+              onUpdateEntry={updateEntry}
+              onArchiveEntry={onArchiveEntry}
+            />
+          )}
+          {taggedCals.length > 0 && (
+            <CalList
+              {...shared}
+              entries={taggedCals}
+              lang={lang}
+              color="#0078D4"
+              onDelete={deleteEntry}
+              onToggle={toggleTask}
+              onToggleStar={toggleStar}
+              onTogglePin={togglePin}
+              onUpdateEntry={updateEntry}
+            />
+          )}
+          {taggedLinks.length > 0 && (
+            <LinkList entries={taggedLinks} cats={cats} onDelete={deleteEntry} CC={CC} />
+          )}
+        </>
+      );
+    }
+    if (allTagNames.length === 0) {
+      return <div className="entry-list__empty">{t.noTags}</div>;
+    }
+    const countForTag = (name) =>
+      entries.filter((e) => (e.tags || []).includes(name) && !e.archived && (e.type === "link" || !e.done)).length;
+    return allTagNames.map((name) => (
+      <div key={name} className="media-item" style={{ cursor: "pointer" }} onClick={() => setSelectedTag(name)}>
+        <div className="media-item__icon" style={{ background: "#EC489922", color: "#EC4899" }}>
+          <TagIcon size={18} />
+        </div>
+        <div className="media-item__body">
+          <div className="media-item__title">{name}</div>
+          <div className="media-item__meta">{t.entriesCount(countForTag(name))}</div>
+        </div>
+      </div>
+    ));
+  };
+
   // Inhalt der Liste je nach aktivem Typ:
   // Eintragstypen → bestehende Listen; PARA-Typen → einfache Kategorien-Liste.
   const renderActiveList = () => {
     if (activeType === "favorites") return renderFavoritesList();
+    if (activeType === "links") return renderLinksList();
+    if (activeType === "tags") return renderTagsList();
     if (isEntryType) return renderTabList();
     if (listFilter === "trash") return renderTrashList();
     const paraCats = cats.filter(
@@ -1164,8 +1296,55 @@ export function HomeScreen({
     );
   };
 
+  // "Zuletzt geöffnet"-Leiste des neuen Designs (Pendant zum Spotify-Mini-
+  // Player über der Tab-Bar): jüngstes lastOpenedAt über Einträge UND
+  // Kategorien. Terminierte Elemente (Aufgabe due, Kalender/Cat date) zeigen
+  // ihr Termindatum, alle anderen (Arbeitsbereiche, Notizen, …) das
+  // Erstellungsdatum.
+  const nowItem = (() => {
+    if (!state.newDesign) return null;
+    let best = null;
+    let bestKind = null;
+    for (const c of cats) {
+      if (!c.archived && c.lastOpenedAt && (!best || c.lastOpenedAt > best.lastOpenedAt)) {
+        best = c;
+        bestKind = "cat";
+      }
+    }
+    for (const e of entries) {
+      if (!e.archived && e.lastOpenedAt && (!best || e.lastOpenedAt > best.lastOpenedAt)) {
+        best = e;
+        bestKind = "entry";
+      }
+    }
+    if (!best) return null;
+    const isCat = bestKind === "cat";
+    const terminDate = isCat ? best.date : best.type === "task" ? best.due : best.type === "calendar" ? best.date : null;
+    const dateStr = terminDate
+      ? fmtDate(terminDate, t.locale)
+      : best.createdAt
+        ? new Date(best.createdAt).toLocaleDateString(t.locale, { day: "numeric", month: "short" })
+        : "";
+    const prefix = terminDate
+      ? lang === "de" ? "Terminiert" : "Due"
+      : lang === "de" ? "Erstellt" : "Created";
+    // Icon-Tint wie bei den Listeneinträgen (task-item__type-icon--cat):
+    // Projekt/Bereich/Ressource nutzen ihre Kategoriefarbe, restliche
+    // Eintragstypen dieselben Akzente wie ihr Dock-Icon (ENTRY_ACCENT_RGB).
+    const accentColor = isCat
+      ? (CC[best.type]?.color || "#7C7C82")
+      : (ENTRY_ACCENT_RGB[best.type] ? `rgb(${ENTRY_ACCENT_RGB[best.type]})` : "#7C7C82");
+    return {
+      type: best.type,
+      title: isCat ? best.name : best.title,
+      dateLabel: dateStr ? `${prefix} · ${dateStr}` : prefix,
+      accentColor,
+      onOpen: () => (isCat ? onOpenCat?.(best) : onOpenEntry?.(best)),
+    };
+  })();
+
   return (
-    <div className={`home home--${tab}`}>
+    <div className={`home home--${tab}`} ref={homeScrollRef}>
       <div
         className={`home-cover ${currentCoverImage ? "home-cover--has-cover-img" : ""}`}
         style={{ "--cover-accent-rgb": rgbVal }}
@@ -1235,20 +1414,6 @@ export function HomeScreen({
               <button
                 type="button"
                 className="home-list-tile"
-                style={{ "--tile-accent-rgb": "11, 140, 233" }}
-                onClick={() => {
-                  handleSelectType("tasks");
-                  setListExpanded(true);
-                }}
-              >
-                <span className="home-list-tile__icon">
-                  <CheckCircle2 size={18} />
-                </span>
-                <span className="home-list-tile__label">{t.tasks}</span>
-              </button>
-              <button
-                type="button"
-                className="home-list-tile"
                 style={{ "--tile-accent-rgb": "245, 158, 11" }}
                 onClick={() => {
                   handleSelectType("notes");
@@ -1263,16 +1428,57 @@ export function HomeScreen({
               <button
                 type="button"
                 className="home-list-tile"
-                style={{ "--tile-accent-rgb": "0, 120, 212" }}
                 onClick={() => {
                   handleSelectType("calendar");
                   setListExpanded(true);
                 }}
               >
-                <span className="home-list-tile__icon">
+                <span className="home-list-tile__icon home-list-tile__icon--calendar">
                   <Calendar size={18} />
                 </span>
                 <span className="home-list-tile__label">{t.calendar}</span>
+              </button>
+              <button
+                type="button"
+                className="home-list-tile"
+                style={{ "--tile-accent-rgb": "11, 140, 233" }}
+                onClick={() => {
+                  handleSelectType("tasks");
+                  setListExpanded(true);
+                }}
+              >
+                <span className="home-list-tile__icon">
+                  <CheckCircle2 size={18} />
+                </span>
+                <span className="home-list-tile__label">{t.tasks}</span>
+              </button>
+              <button
+                type="button"
+                className="home-list-tile"
+                style={{ "--tile-accent-rgb": "124, 58, 237" }}
+                onClick={() => {
+                  handleSelectType("links");
+                  setListExpanded(true);
+                }}
+              >
+                <span className="home-list-tile__icon">
+                  <BookmarkIcon size={18} />
+                </span>
+                <span className="home-list-tile__label">{t.bookmarks}</span>
+              </button>
+              <button
+                type="button"
+                className="home-list-tile"
+                style={{ "--tile-accent-rgb": "236, 72, 153" }}
+                onClick={() => {
+                  handleSelectType("tags");
+                  setListExpanded(true);
+                }}
+              >
+                <span className="home-list-tile__icon">
+                  <TagIcon size={18} />
+                </span>
+                <span className="home-list-tile__label">{t.tagsLabel}</span>
               </button>
             </div>
           </>
@@ -1332,7 +1538,7 @@ export function HomeScreen({
 
         {/* Aufgeklappt: Filter-Pillen zwischen Header und Liste –
             Aktiv · Archiviert · Papierkorb (kontextbezogen, kein Screen-Wechsel). */}
-        {listExpanded && activeType !== "favorites" && (
+        {listExpanded && activeType !== "favorites" && activeType !== "links" && activeType !== "tags" && (
           <div className="home__list-filters">
             <button
               className={`home__filter-pill${listFilter === "active" ? " home__filter-pill--active" : ""}`}
@@ -1362,6 +1568,20 @@ export function HomeScreen({
             <span className="task-group-header__left">{activeGroupHeader.left}</span>
             {activeGroupHeader.count && <span className="task-group-header__badge">{activeGroupHeader.count}</span>}
             <span className="task-group-header__right">{activeGroupHeader.right}</span>
+          </div>
+        )}
+
+        {activeType === "tags" && selectedTag && (
+          <div className="task-group-header task-group-header--fixed">
+            <span
+              className="task-group-header__left"
+              style={{ cursor: "pointer" }}
+              onClick={() => setSelectedTag(null)}
+            >
+              <ChevronLeft size={14} style={{ marginRight: 4 }} />
+              {t.tagsLabel}
+            </span>
+            <span className="task-group-header__right">{selectedTag}</span>
           </div>
         )}
 
@@ -1434,6 +1654,7 @@ export function HomeScreen({
           onHome={() => setListExpanded(false)}
           onOpenSearch={onOpenSearch}
           onOpenCatType={onOpenCatType}
+          nowItem={nowItem}
         />
       )}
 

@@ -451,7 +451,8 @@
     }
 
     &__light-wave {
-      background: linear-gradient(to top, #16161F 0%, rgba(var(--cover-accent-rgb), 0.65) 100%);
+      height: 375px;
+      background: linear-gradient(to top, #16161F 0%, rgb(var(--cover-accent-rgb)) 100%);
     }
   }
 
@@ -497,6 +498,7 @@
     justify-content: space-between;
     gap: 12px;
     width: 100%;
+    height: 144px;
     margin-top: 16px;
   }
 
@@ -774,7 +776,7 @@
     // Neues Design: etwas mehr Abstand zum Inhalt darüber, der Rest bis zum
     // unteren Cover-Rand geht an die Karussell-Dots (.home-page-dots).
     body.new-design & {
-      margin-top: 16px;
+      margin-top: 24px;
     }
     border-radius: $radius-pill; // runde Enden (Pille) statt abgerundeter Ecken
     background: rgba(255, 255, 255, 0.14);
@@ -913,8 +915,14 @@
       flex-shrink: 0;
     }
 
+    // Höhere Spezifität als :hover nötig, sonst gewinnt der Hover-Grauton
+    // nach dem Antippen auf iOS (dort bleibt :hover nach dem Tap aktiv).
     &--active {
       color: #FBBF24;
+
+      &:hover {
+        color: #FBBF24;
+      }
     }
   }
 }
@@ -1061,6 +1069,30 @@
   padding: 0;
 }
 
+// Neues Design: die KOMPLETTE Startseite (Cover + "Listen"-Kacheln) scrollt
+// als Ganzes – wie bei Spotify –, damit auf kleinen Viewports auch die
+// unteren Kachelreihen erreichbar sind. Die Tab-Bar samt "Zuletzt geöffnet"-
+// Leiste ist dafür fixed (siehe .new-nav) und scrollt nicht mit.
+body.new-design .home {
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+}
+
+// Cover behält seine Höhe und wird beim Überlauf nicht zusammengestaucht.
+body.new-design .home-cover {
+  flex-shrink: 0;
+}
+
+// Padding unten = Tab-Bar (~73px) + NowBar (48px + Abstand) + Luft.
+// min-height: auto hebt das min-height: 0 der Basisregel auf: der Container
+// darf nicht unter seine Inhaltshöhe gequetscht werden, sonst gäbe es auf
+// kleinen Viewports nichts zu scrollen.
+body.new-design .home__list-container:not(.home__list-container--expanded) {
+  flex-shrink: 0;
+  min-height: auto;
+  padding-bottom: calc(144px + env(safe-area-inset-bottom, 0px));
+}
+
 .home__list-container--expanded {
   position: fixed;
   // Bis ganz oben – liegt UNTER dem Command-Panel-Header (z-index: 100).
@@ -1201,10 +1233,17 @@
   align-items: center;
   gap: 10px;
   padding: 0;
-  height: 40px;
+  height: 48px;
   border: none;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
+  // Akzentfarbe sitzt jetzt als Verlauf rechts in der Zeile und blendet nach
+  // links (Richtung Icon) ins Dunkle über – das Icon liegt dadurch allein im
+  // schwarzen Bereich statt in einer eigenen Farbkachel.
+  background:
+    linear-gradient(to left,
+      rgba(var(--tile-accent-rgb, 124, 131, 247), 0.30) 0%,
+      rgba(22, 22, 31, 0) 62%),
+    rgba(255, 255, 255, 0.08);
   color: $color-text;
   font-family: $font-body;
   text-align: left;
@@ -1214,25 +1253,69 @@
   transition: background $transition-fast;
 
   &:active {
-    background: rgba(255, 255, 255, 0.14);
+    background:
+      linear-gradient(to left,
+        rgba(var(--tile-accent-rgb, 124, 131, 247), 0.30) 0%,
+        rgba(22, 22, 31, 0) 62%),
+      rgba(255, 255, 255, 0.14);
   }
 
   &__icon {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(var(--tile-accent-rgb, 124, 131, 247), 0.18);
+    background: transparent;
     color: rgb(var(--tile-accent-rgb, 124, 131, 247));
   }
 
-  // Favoriten-Kachel: Gold-Gelb-Verlauf (passend zum Favoriten-Stern)
+  // Favoriten-Kachel: dezenter Gold-Verlauf über die ganze Zeile statt
+  // knalligem Icon-Hintergrund – der Stern bleibt gelb im schwarzen Bereich.
+  &:has(&__icon--fav) {
+    background:
+      linear-gradient(to left,
+        rgba(250, 204, 21, 0.22) 0%,
+        rgba(22, 22, 31, 0) 62%),
+      rgba(255, 255, 255, 0.08);
+
+    &:active {
+      background:
+        linear-gradient(to left,
+          rgba(250, 204, 21, 0.22) 0%,
+          rgba(22, 22, 31, 0) 62%),
+        rgba(255, 255, 255, 0.14);
+    }
+  }
+
   &__icon--fav {
-    background: linear-gradient(135deg, #d97706, #facc15);
-    color: #fff;
+    background: transparent;
+    color: #FBBF24;
+  }
+
+  // Kalender-Kachel: gleiche Akzentfarbe wie .home-cover__tag-plain--date
+  // (Datums-Tag im Cover), statt eines statischen --tile-accent-rgb-Werts.
+  &:has(&__icon--calendar) {
+    background:
+      linear-gradient(to left,
+        color-mix(in srgb, var(--pill-date-color) 30%, transparent) 0%,
+        rgba(22, 22, 31, 0) 62%),
+      rgba(255, 255, 255, 0.08);
+
+    &:active {
+      background:
+        linear-gradient(to left,
+          color-mix(in srgb, var(--pill-date-color) 30%, transparent) 0%,
+          rgba(22, 22, 31, 0) 62%),
+        rgba(255, 255, 255, 0.14);
+    }
+  }
+
+  &__icon--calendar {
+    background: transparent;
+    color: var(--pill-date-color);
   }
 
   &__label {

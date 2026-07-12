@@ -54,6 +54,41 @@
     display: none;
   }
 
+  // Neues Design: Die Startseite scrollt als Ganzes – der Header muss dabei
+  // voll lesbar bleiben statt vom durchscrollenden Content überlagert zu
+  // werden. Der Hintergrund KOPIERT den Cover-Verlauf über die VOLLE
+  // Header-Höhe (Akzent 65% über der Dunkelbasis → Dunkelbasis über 375px,
+  // identisch zu .home-cover__light-wave im neuen Design): ungescrollt ist
+  // der Header dadurch pixelgenau unsichtbar ins Cover integriert, gescrollt
+  // verschwindet der Content vollständig dahinter (harte Klippkante wie beim
+  // Spotify-Header – dank der Verlaufskopie unsichtbar, solange darunter nur
+  // der Cover-Verlauf liegt). Zwei Ebenen wie im Cover selbst (Akzent-Verlauf
+  // ÜBER der Dunkelbasis), damit das Alpha-Compositing identisch ausfällt.
+  // Auf Seiten ohne Cover-Akzent (--cover-accent-rgb ungesetzt) ist die
+  // background-Deklaration ungültig und es bleibt beim transparenten
+  // Basis-Header.
+  // Der Verlauf ist eine explizit 375px hohe Ebene, die per
+  // background-position um die aktuelle Scrolldistanz (--home-scroll-y,
+  // gesetzt von HomeScreen) nach oben geschoben wird – der Header zeigt so
+  // IMMER exakt den Verlaufs-Ausschnitt, der gerade unter ihm liegt. Ist der
+  // Verlauf ganz hochgescrollt, bleibt die Dunkelbasis (= Seitenhintergrund).
+  .app.new-design &--closed:not(#{&}--solid)::before {
+    // 24px über die Header-Unterkante hinaus verlängert: dieser Streifen
+    // läuft per Maske zu transparent aus und lässt hochgescrollten Content
+    // weich unter dem Header ausfaden statt hart abzuschneiden. Ungescrollt
+    // ist er unsichtbar (Verlaufskopie == Cover dahinter).
+    inset: 0 0 -24px;
+    background-image:
+      linear-gradient(to bottom, rgb(var(--cover-accent-rgb)) 0, #16161f 375px),
+      linear-gradient(#16161f, #16161f);
+    background-size: 100% 375px, 100% 100%;
+    background-repeat: no-repeat;
+    background-position: 0 calc(0px - var(--home-scroll-y, 0px)), 0 0;
+    // Voll deckend bis zur Header-Unterkante, nur die 24px darunter faden aus.
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 24px), transparent 100%);
+  }
+
   &--open {
     // Dark-Mode-Haupthintergrund wie die Startseite.
     background: #16161F;

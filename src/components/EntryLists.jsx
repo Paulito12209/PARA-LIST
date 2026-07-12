@@ -1037,7 +1037,12 @@ export function LinkList({ entries, cats, onDelete, CC }) {
     const ytId = getYouTubeVideoId(e.url);
     const embedUrl = ytId ? `https://www.youtube.com/embed/${ytId}` : null;
     return (
-      <div key={e.id} className="media-item media-item--link">
+      <div
+        key={e.id}
+        className="media-item media-item--link"
+        style={{ cursor: e.url ? "pointer" : "default" }}
+        onClick={() => { if (e.url) window.open(e.url, "_blank"); }}
+      >
         <div className="media-item__header-row">
           <div className="media-item__title-box">
              <div className="media-item__icon-mini" style={{ color: "#7C3AED" }}>
@@ -1058,7 +1063,7 @@ export function LinkList({ entries, cats, onDelete, CC }) {
         
         <div className="media-item__content">
           {embedUrl && (
-            <div className="link-item__preview">
+            <div className="link-item__preview" onClick={(ev) => ev.stopPropagation()}>
               <iframe
                 title={`YouTube preview ${e.title}`}
                 src={embedUrl}

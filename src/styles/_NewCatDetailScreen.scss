@@ -1,0 +1,422 @@
+// ============================================================
+// PARA·LIST – Neue Detailseite (Spotify-Stil, neues Design)
+// ============================================================
+@use './variables' as *;
+@use './mixins' as *;
+
+.new-detail {
+  height: 100%;
+  position: relative;
+  animation: slide-in-right $transition-normal;
+  background: $color-bg;
+
+  // Ein Scroll-Container für Cover + Icon-Leiste + Karten-Feed: das Cover
+  // scrollt weg, die Icon-Leiste bleibt (sticky) oben stehen.
+  &__scroll {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+
+  // ── Cover: Typfarbe mit Grain-Verlauf, Emblem, Titel unten ──────
+  &__cover {
+    position: relative;
+    min-height: calc(300px + env(safe-area-inset-top, 0px));
+    display: flex;
+    flex-direction: column;
+    padding: calc(#{$spacing-sm} + env(safe-area-inset-top, 0px)) $spacing-md 0;
+    overflow: hidden;
+    // Rotverlauf (bzw. Typfarbe): oben leicht aufgehellt, unten abgedunkelt.
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 38%, rgba(0, 0, 0, 0.28) 100%),
+      rgb(var(--nd-accent-rgb));
+  }
+
+  &__cover-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  // Körniger Film ("grained") über dem Farbverlauf
+  &__grain {
+    position: absolute;
+    inset: 0;
+    background-repeat: repeat;
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+
+  &__topbar {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  // Typ-Label mittig oben ("Projekt" / "Arbeitsbereich" / "Ressource")
+  &__type-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  // Liquid-Glass-Kreis (Zurück links, Einstellungen rechts)
+  &__glass-btn {
+    @include flex-center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(20, 20, 26, 0.28);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    color: #fff;
+    cursor: pointer;
+    transition: transform $transition-fast, opacity $transition-fast;
+
+    &:active {
+      transform: scale(0.92);
+      opacity: 0.8;
+    }
+  }
+
+  // Emblem mittig: Dart-Zielscheibe (Projekt) bzw. Typ-Icon – dezent in
+  // einem dunkleren Ton der Cover-Farbe.
+  &__emblem {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    @include flex-center;
+    color: rgba(0, 0, 0, 0.32);
+    filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.12));
+  }
+
+  // Titel unten im Cover, leicht versetzt (Spotify-Playlist-Titel)
+  &__title {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    margin-top: auto;
+    padding: $spacing-sm 0 $spacing-xs;
+    background: transparent;
+    border: none;
+    font-family: $font-heading;
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.8px;
+    color: #fff;
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  // ── Icon-Leiste: Cover-Farbe läuft dahinter über einen transparent→dunkel
+  // Layer in den Hintergrund aus. Sticky mit negativem Top: Beim Fest-
+  // kleben ragt nur die (fast) dunkle Zone ins Bild – kein harter Schnitt.
+  &__barwrap {
+    position: sticky;
+    top: -28px;
+    z-index: 10;
+    margin-top: calc(-1 * #{$spacing-sm});
+    padding: 36px $spacing-sm 6px;
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(8, 8, 11, 0) 0%,
+        rgba(8, 8, 11, 0.72) 34%,
+        rgba(8, 8, 11, 0.96) 62%,
+        $color-bg 100%
+      ),
+      // Gleiche Abdunkelung wie die Cover-Unterkante (28 % Schwarz über der
+      // Akzentfarbe) – sonst entsteht eine harte helle Farbkante am Übergang.
+      linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+      rgb(var(--nd-accent-rgb));
+  }
+
+  // Automatisch (per JS) horizontal scrollende Leiste – Overflow versteckt,
+  // kein manueller Scrollbalken.
+  &__iconbar {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-sm + $spacing-xs;
+    overflow-x: hidden;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__tile {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  // Getönte Kachel wie in der Vorlage: aktive Kachel größer als die übrigen
+  &__tile-icon {
+    @include flex-center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    transition: width 0.25s ease, height 0.25s ease, border-radius 0.25s ease;
+  }
+
+  &__tile--active &__tile-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+  }
+
+  // Label nur unter dem aktiven Icon (ohne Chevron)
+  &__tile-label {
+    min-height: 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: $color-text;
+    white-space: nowrap;
+  }
+
+  // ── Karten-Feed ─────────────────────────────────────────────────
+  // WICHTIG: kein position:relative – die Sections messen ihr offsetTop
+  // relativ zum Scroll-Container (Scroll-Spy der Icon-Leiste).
+  &__feed {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    padding: $spacing-sm $spacing-md calc(200px + env(safe-area-inset-bottom, 0px));
+  }
+
+  &__section {
+    scroll-margin-top: 120px;
+  }
+
+  &__card {
+    background: $color-card;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    padding: $spacing-md;
+  }
+
+  &__card-head {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+    margin-bottom: $spacing-sm + $spacing-xs;
+  }
+
+  &__card-icon {
+    @include flex-center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  &__card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: $color-text;
+  }
+
+  &__card-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: $color-muted;
+    background: $color-hover;
+    border-radius: $radius-pill;
+    padding: 2px 8px;
+  }
+
+  &__card-add {
+    @include flex-center;
+    margin-left: auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: $color-hover;
+    border: 1px solid $color-border;
+    color: $color-muted;
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  &__card-empty {
+    color: $color-muted;
+    font-size: 13px;
+    padding: $spacing-sm 0;
+  }
+
+  // ── Seiteninhalt-Karte: Akzentfläche wie Spotifys Lyrics-Vorschau ──
+  &__card--canvas {
+    background: rgb(var(--nd-accent-rgb));
+    border-color: transparent;
+  }
+
+  &__card-eyebrow {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: $spacing-sm;
+  }
+
+  // Eingeklappt: fester Ausschnitt mit Fade unten; --open zeigt alles.
+  &__canvas-clip {
+    max-height: 224px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 70%, transparent 100%);
+
+    &--open {
+      max-height: none;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+  }
+
+  // Auto-wachsendes Textfeld: mindestens Platz für ein paar Sätze mehr
+  &__canvas-input {
+    display: block;
+    width: 100%;
+    min-height: 112px;
+    background: transparent;
+    border: none;
+    resize: none;
+    font-family: $font-body;
+    font-size: 16px;
+    line-height: 1.55;
+    font-weight: 600;
+    color: #fff;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    &:focus {
+      outline: none;
+    }
+  }
+
+  // "Kompletten Inhalt anzeigen" – weiße Pille wie in der Vorlage
+  &__canvas-toggle {
+    margin-top: $spacing-sm + $spacing-xs;
+    padding: 8px 14px;
+    border-radius: $radius-pill;
+    border: none;
+    background: #fff;
+    color: #16161F;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: $font-body;
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
+  // Verknüpfte Ressourcen in der Medien-Karte
+  &__res-row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-2xs;
+    width: 100%;
+    padding: $spacing-sm 0;
+    background: transparent;
+    border: none;
+    color: $color-muted;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  &__res-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    color: $color-text;
+  }
+}
+
+// ── Light Theme ──────────────────────────────────────────────────
+// Cover bleibt in der Typfarbe; die Icon-Leiste läuft in die helle
+// Fläche aus, Karten werden hell.
+.app.light-theme .new-detail {
+  background: #f7f7f9;
+
+  &__barwrap {
+    background:
+      linear-gradient(
+        to bottom,
+        rgba(247, 247, 249, 0) 0%,
+        rgba(247, 247, 249, 0.72) 34%,
+        rgba(247, 247, 249, 0.96) 62%,
+        #f7f7f9 100%
+      ),
+      linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+      rgb(var(--nd-accent-rgb));
+  }
+
+  &__tile-label {
+    color: #1a1a24;
+  }
+
+  &__card {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.07);
+  }
+
+  // Akzent-Karte (Seiteninhalt) bleibt farbig mit weißem Text – die helle
+  // Karten-Regel darüber hätte sonst höhere Spezifität als die Dark-Basis.
+  &__card--canvas {
+    background: rgb(var(--nd-accent-rgb));
+    border-color: transparent;
+  }
+
+  &__card-title {
+    color: #1a1a24;
+  }
+
+  &__card-count {
+    background: #f0f0f3;
+    color: #8a8a96;
+  }
+
+  &__card-add {
+    background: #f0f0f3;
+    border-color: rgba(0, 0, 0, 0.07);
+    color: #8a8a96;
+  }
+
+  &__res-name {
+    color: #1a1a24;
+  }
+
+  // Akzent-Karte (Seiteninhalt) bleibt farbig mit weißem Text – wie Dark.
+}

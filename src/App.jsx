@@ -20,6 +20,7 @@ import { wordsResourceName } from "./lib/translate";
 import { TranslateOverlay } from "./components/TranslateOverlay";
 import { CatListScreen, CatDetailScreen } from "./screens/FolderScreens";
 import { NewCatListScreen } from "./screens/NewCatListScreen";
+import { NewCatDetailScreen } from "./screens/NewCatDetailScreen";
 import { EntryDetailScreen } from "./screens/EntryDetailScreen";
 import { CommandPanel } from "./components/CommandPanel";
 import { AppSwitcherSheet } from "./components/AppSwitcherSheet";
@@ -508,6 +509,15 @@ export default function App() {
     }
     return null;
   })();
+
+  // Neue Vollbild-Screens des neuen Designs (Spotify-Liste + -Detailseite):
+  // bringen ihren eigenen Header mit – Command-Panel-Header + Peek entfallen.
+  // Flashcard-Ressourcen behalten die alte Detailseite (samt Panel-Header).
+  const newDesignFullScreen =
+    newDesign &&
+    (cur.view === VIEW.CAT_LIST ||
+      (cur.view === VIEW.CAT_DETAIL &&
+        !(state.flashcardDecks || []).some((d) => d.catId === cur.catId)));
 
   // Aktive App/Tool für Header + App-Switcher (Flashcards bekommt eigenes
   // Logo & Titel statt Logo + "Startseite").
@@ -1221,10 +1231,11 @@ export default function App() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Neue Spotify-Liste bringt ihren eigenen Header (Glas-Buttons im
-          Kontext-Verlauf) mit – der Command-Panel-Header entfällt dort und
-          erscheint nur, wenn das Panel (Suche/Backlog) geöffnet wird. */}
-      {(panelOpen || !(newDesign && cur.view === VIEW.CAT_LIST)) && (
+      {/* Neue Spotify-Screens (Liste + Detailseite) bringen ihren eigenen
+          Header (Glas-Buttons im Kontext-Verlauf/Cover) mit – der Command-
+          Panel-Header entfällt dort und erscheint nur, wenn das Panel
+          (Suche/Backlog) geöffnet wird. */}
+      {(panelOpen || !newDesignFullScreen) && (
       <CommandPanel
         t={t}
         title={
@@ -1320,7 +1331,7 @@ export default function App() {
           und blendet seine native „vor/zurück/Fertig"-Leiste über der Tastatur ein. */}
       <div
         inert={panelOpen || onboardingOpen || undefined}
-        className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}${newDesign && cur.view === VIEW.CAT_LIST ? " main-content--newlist" : ""}`}
+        className={`main-content ${cur.view === VIEW.HOME ? `main-content--${tab}` : ""}${newDesignFullScreen ? " main-content--newlist" : ""}`}
       >
         {cur.view === VIEW.HOME && (
           <HomeScreen
@@ -1497,6 +1508,51 @@ export default function App() {
               }
               return e;
             });
+
+          // Neues Design: Spotify-artige Detailseite (Cover + Icon-Leiste +
+          // Karten-Feed). Flashcard-Ressourcen behalten die alte Seite, da
+          // deren Canvas die Vokabel-Tabelle + Info-Sheet zeigt.
+          if (newDesign && !fcDeck) {
+            return (
+              <NewCatDetailScreen
+                key={cat.id}
+                t={t}
+                CC={CC}
+                cat={cat}
+                user={state.user}
+                allCats={state.cats}
+                entries={inclusiveEntries}
+                onUpdate={(p) => updateCat(cat.id, p)}
+                onTogglePin={() => togglePin(cat.id, "cat")}
+                onDelete={() => {
+                  if (window.confirm(t.confirmDelete(cat.name))) deleteCat(cat.id);
+                }}
+                onBack={handleSmartBack}
+                onHome={() => setStack([{ view: VIEW.HOME }])}
+                onOpenSearch={() => {
+                  setPanelOpen(true);
+                  setSearchOpen(true);
+                }}
+                onOpenCatType={(type) => push({ view: VIEW.CAT_LIST, type })}
+                toggleTask={toggleTask}
+                deleteEntry={deleteEntry}
+                onAddEntry={(type) => setCreating({ type, catId: cat.id })}
+                onAddMediaEntry={(mediaType, file) =>
+                  addEntry({
+                    ...VOICE_ENTRY_BASE,
+                    type: "media",
+                    title: file.name,
+                    mediaType,
+                    mediaData: file,
+                    catId: cat.id,
+                    catIds: [cat.id],
+                  })
+                }
+                onOpenCat={(resCat) => push({ view: VIEW.CAT_DETAIL, catId: resCat.id })}
+                onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+              />
+            );
+          }
 
           return (
             <CatDetailScreen

@@ -124,6 +124,31 @@ export const GitMergeBranchIcon = ({ size = 24, color = "currentColor", strokeWi
   </svg>
 );
 
+// Dart-/Zielscheiben-Icon: Emblem der Projekt-Cover im neuen Design –
+// Zielscheibe mit Pfeil (Dart), der schräg ins Zentrum trifft.
+export const DartTargetIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.6, className = "" }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    {/* Zielscheibe: äußerer + mittlerer Ring, Mitte gefüllt */}
+    <path d="M20.9 10.6a9 9 0 1 1-7.5-7.5" />
+    <path d="M16.8 10.1a5 5 0 1 1-2.9-2.9" />
+    <circle cx="12" cy="12" r="1.4" fill={color} stroke="none" />
+    {/* Pfeil (Dart): Schaft von oben rechts ins Zentrum + Befiederung */}
+    <path d="M12 12 21 3" />
+    <path d="M17.2 3.2 21 3l-.2 3.8" />
+  </svg>
+);
+
 export const TagIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.5 }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} fill="none" viewBox="0 0 24 24" strokeWidth={strokeWidth} stroke={color} className="lucide lucide-tag">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />

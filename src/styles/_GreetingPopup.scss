@@ -1,0 +1,367 @@
+// ─────────────────────────────────────────────────────────────
+// Begrüßungs-Popup (GreetingPopup.jsx) – Spotify-Media-Card-Stil:
+// startet direkt an der Oberkante, füllt ~3/4 des Bildschirms und
+// slidet von oben rein. Hintergrund: Projekt-Akzent mit 90% Deckkraft.
+// ─────────────────────────────────────────────────────────────
+
+.greet {
+  position: fixed;
+  inset: 0;
+  z-index: 1000; // über Header (100) & Dock – wie das Onboarding-Modal
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.greet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  animation: greet-fade-in 0.35s ease both;
+}
+
+.greet__card {
+  --greet-accent-rgb: 224, 62, 62;
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  height: 75dvh;
+  display: flex;
+  flex-direction: column;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 24px 24px;
+  border-radius: 0 0 32px 32px;
+  // 90% Deckkraft: heller Akzent oben → dunkler Verlauf unten (wie die
+  // pink-rote Spotify-Card), dahinter Glas-Blur auf den App-Inhalt.
+  background: linear-gradient(
+    182deg,
+    rgba(var(--greet-accent-rgb), 0.9) 0%,
+    rgba(148, 26, 38, 0.9) 62%,
+    rgba(84, 14, 26, 0.9) 100%
+  );
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  color: #fff;
+  animation: greet-slide-in 0.5s cubic-bezier(0.32, 0.72, 0.28, 1) both;
+}
+
+.greet--closing {
+  .greet__backdrop { animation: greet-fade-out 0.3s ease both; }
+  .greet__card { animation: greet-slide-out 0.36s cubic-bezier(0.5, 0, 0.75, 0.4) both; }
+}
+
+/* ── Kopf: KI-Gesicht oben links (Spotify-Logo-Position), Name mittig ── */
+
+.greet__face {
+  position: absolute;
+  top: calc(18px + env(safe-area-inset-top, 0px));
+  left: 20px;
+  width: 44px;
+  height: 44px;
+}
+
+// Rosa Kreis (heller Ton des Card-Akzents, wie das Spotify-Logo auf der
+// pinken Media-Card) mit dunkelroten Gesichts-Formen darin.
+.greet__face-bg { fill: rgba(255, 255, 255, 0.42); }
+
+.greet__face-dot { fill: rgb(146, 32, 36); }
+
+.greet__face-line {
+  fill: none;
+  stroke: rgb(146, 32, 36);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.greet__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.greet__hello {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.greet__name {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.greet__spacer { flex: 1; }
+
+/* ── Fokus-Projekt (Titelzeile der Spotify-Card) ───────────────── */
+
+.greet__lead {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 10px;
+}
+
+.greet__main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.greet__project {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.greet__project-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.greet__project-name {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+// "Zuletzt"-Zeile wie in der NowBar der Startseite (Termin-/Erstelldatum)
+.greet__project-date {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.greet__project-chevron {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+// "Öffnen" an der Stelle des Spotify-Pause-Buttons
+.greet__open {
+  flex-shrink: 0;
+  padding: 16px 22px;
+  border: none;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.94);
+  color: rgb(148, 26, 38);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+
+  &:active { transform: scale(0.95); }
+}
+
+/* ── Empfehlung: erste offene Aufgabe des Projekts ─────────────── */
+
+.greet__task-block {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+
+  .greet__lead { margin-bottom: 8px; }
+}
+
+// Aufgaben-Card im Stil der Listen-Kacheln der Startseite (home-list-tile):
+// kein horizontales Padding – das 48px-Icon-Feld übernimmt den Einzug links,
+// der Task-Akzent verläuft von rechts in die transluzente Zeile.
+.greet__task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background:
+    linear-gradient(to left,
+      rgba(11, 140, 233, 0.3) 0%,
+      rgba(22, 22, 31, 0) 62%),
+    rgba(255, 255, 255, 0.1);
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s ease;
+
+  &:active {
+    background:
+      linear-gradient(to left,
+        rgba(11, 140, 233, 0.3) 0%,
+        rgba(22, 22, 31, 0) 62%),
+      rgba(255, 255, 255, 0.16);
+  }
+}
+
+.greet__task-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: rgb(80, 170, 240);
+}
+
+.greet__task-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.greet__task-name {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.greet__task-date {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.greet__task-chevron {
+  flex-shrink: 0;
+  margin-right: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.greet__xp-hint {
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/* ── Fußzeile: Häkchen + Aufgaben-Statusleiste + Pokal ─────────── */
+
+.greet__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.greet__check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: rgb(148, 26, 38);
+}
+
+// Statusleiste der verknüpften Aufgaben: jede Lücke trennt eine Aufgabe,
+// erledigte Segmente sind gefüllt, offene bleiben abgedunkelt.
+.greet__taskline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.greet__seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.greet__seg--done { background: #fff; }
+
+// Pokal-Button → Fortschritts-Seite
+.greet__trophy {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  margin-right: -8px;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+
+  &:active { background: rgba(255, 255, 255, 0.14); }
+}
+
+/* ── "Verstanden" – schließt den Dialog ────────────────────────── */
+
+// Vollbreites dunkelrotes Band am unteren Card-Rand (wie in der Skizze):
+// per Negativ-Margins aus dem Card-Padding ausbrechen, von einer dezenten
+// Linie abgetrennt und mit den unteren Card-Ecken abgerundet.
+.greet__done {
+  width: calc(100% + 48px);
+  margin: 20px -24px -24px;
+  padding: 20px 16px 24px;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0 0 32px 32px;
+  background: rgba(0, 0, 0, 0.26);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:active { background: rgba(0, 0, 0, 0.38); }
+}
+
+/* ── Animationen ───────────────────────────────────────────────── */
+
+@keyframes greet-slide-in {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes greet-slide-out {
+  from { transform: translateY(0); }
+  to { transform: translateY(-104%); }
+}
+
+@keyframes greet-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes greet-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

@@ -993,8 +993,8 @@
   .command-panel__bell,
   .command-panel__filter-btn,
   .command-panel__back {
-    background: rgba(255, 255, 255, 0.55);
-    border-color: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
     color: #1a1a24;
     backdrop-filter: blur(18px) saturate(180%);
     -webkit-backdrop-filter: blur(18px) saturate(180%);
@@ -1012,7 +1012,9 @@
 
   .home-cover__light-wave {
     height: 375px;
-    background: linear-gradient(to top, #ffffff 0%, rgb(var(--cover-accent-rgb)) 100%);
+    // Akzentfarbe am oberen Rand mit Weiß aufgehellt (statt 100% gesättigt),
+    // damit Eyebrow/Titel-Text darüber genug Kontrast behalten.
+    background: linear-gradient(to top, #ffffff 0%, color-mix(in srgb, rgb(var(--cover-accent-rgb)) 72%, #fff) 100%);
   }
 
   // Header beim Ganzseiten-Scroll voll lesbar halten (Pendant zur Dark-Regel
@@ -1026,7 +1028,7 @@
     // 24px-Fade-out-Streifen unter der Header-Unterkante (siehe Dark-Regel).
     inset: 0 0 -24px;
     background-image:
-      linear-gradient(to bottom, rgb(var(--cover-accent-rgb)) 0, #ffffff 375px),
+      linear-gradient(to bottom, color-mix(in srgb, rgb(var(--cover-accent-rgb)) 72%, #fff) 0, #ffffff 375px),
       linear-gradient(#ffffff, #ffffff);
     background-size: 100% 375px, 100% 100%;
     background-repeat: no-repeat;
@@ -1413,7 +1415,7 @@
 
     &__collab-btn {
       background: rgba(0, 0, 0, 0.05);
-      border-color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.5);
       color: #3a3a6a;
 
       &:hover {
@@ -1437,8 +1439,8 @@
     }
 
     // Stern-Toggle (Favorit) im "toprow"-Header des neuen Designs: dezentes
-    // Dunkelgrau statt kaum sichtbarem Weiß, aktiv = gedämpftes Gold (analog
-    // zum Favoriten-Icon der Listen-Kacheln).
+    // Dunkelgrau statt kaum sichtbarem Weiß, aktiv = kräftiges Gold (identisch
+    // zum Favoriten-Icon der Listen-Kacheln und dem Stern in EntryLists.jsx).
     &__add-info-btn {
       color: rgba(28, 28, 48, 0.35);
 
@@ -1447,10 +1449,10 @@
       }
 
       &--active {
-        color: #B45309;
+        color: #F59E0B;
 
         &:hover {
-          color: #B45309;
+          color: #F59E0B;
         }
       }
     }
@@ -2099,19 +2101,19 @@
 
     &:has(.home-list-tile__icon--fav) {
       background: linear-gradient(to left,
-        rgba(217, 119, 6, 0.18) 0%,
+        rgba(245, 158, 11, 0.18) 0%,
         #F5F5F8 62%);
 
       &:active {
         background: linear-gradient(to left,
-          rgba(217, 119, 6, 0.18) 0%,
+          rgba(245, 158, 11, 0.18) 0%,
           #EDEDF2 62%);
       }
     }
 
     &__icon--fav {
       background: transparent;
-      color: #B45309;
+      color: #F59E0B;
     }
 
     &:has(.home-list-tile__icon--calendar) {
@@ -2128,6 +2130,46 @@
 
     &__icon--calendar {
       background: transparent;
+    }
+  }
+
+  // „Entdecke die Apps": der Kartentitel steht auf hellem Grund und braucht
+  // dunklen Text (das dunkle $color-text aus dem Dark Mode wäre hier
+  // unsichtbar).
+  .home-app-card {
+    color: #1a1a24;
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    // Cover im Light Mode: identische RADIAL-Verlaufslogik wie im Dark Mode
+    // (Akzentfarbe oben links, radial auslaufend), nur dass der äußere Rand
+    // Richtung WEISS statt ins Dunkle läuft. Eine feine Hairline hält die
+    // (außen fast weiße) Kartenkante gegen den weißen Seitenhintergrund sichtbar.
+    &__cover {
+      background:
+        radial-gradient(120% 120% at 25% 15%,
+          rgb(var(--app-accent-rgb, 124, 131, 247)) 0%,
+          color-mix(in srgb, rgb(var(--app-accent-rgb, 124, 131, 247)) 55%, #fff) 55%,
+          color-mix(in srgb, rgb(var(--app-accent-rgb, 124, 131, 247)) 6%, #fff) 100%);
+      box-shadow:
+        0 6px 18px rgba(var(--app-accent-rgb, 124, 131, 247), 0.22),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+    }
+
+    // „Bald verfügbar"-Cover: gleiche radiale Logik in neutralem Grau –
+    // grau oben links, radial nach außen ins Weiße.
+    &--soon .home-app-card__cover {
+      background:
+        radial-gradient(120% 120% at 25% 15%,
+          #9a9cab 0%,
+          #c3c5cf 55%,
+          #f2f2f5 100%);
+      box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.12),
+        inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+      filter: none;
     }
   }
 }

@@ -1,5 +1,28 @@
-import { Home, Search, Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Link2, Image } from "lucide-react";
+import { Home, Search, Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Link2, Image, Plus } from "lucide-react";
 import { AutoScrollText } from "./AutoScrollText";
+
+// Audio-/Spracheingabe-Icon (Equalizer-Wellen) – identisch zum CommandDock,
+// damit der Voice-Button im neuen Design dasselbe Symbol trägt.
+function AudioWaveIcon({ size = 20 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      aria-hidden="true"
+    >
+      <line x1="3"    y1="8"  x2="3"    y2="16" />
+      <line x1="7.5"  y1="4"  x2="7.5"  y2="20" />
+      <line x1="12"   y1="9"  x2="12"   y2="15" />
+      <line x1="16.5" y1="6"  x2="16.5" y2="18" />
+      <line x1="21"   y1="7"  x2="21"   y2="17" />
+    </svg>
+  );
+}
 
 // Untere Navigationsleiste des NEUEN Designs (hinter dem "Neues Design
 // testen"-Toggle in den Einstellungen). Spotify-Stil: 5 feste Ziele mit
@@ -25,10 +48,12 @@ const NOW_ICONS = {
   media: Image,
 };
 
-// Schwebende Leiste über der Tab-Bar – zeigt das zuletzt geöffnete Element
-// (Eintrag oder Kategorie) mit Titel + Termin- bzw. Erstellungsdatum, wie der
-// Mini-Player bei Spotify. Tap öffnet die zugehörige Detailseite.
-function NowBar({ item }) {
+// Vorschau-Kachel links neben den Aktions-Buttons – zeigt das aktuell im Cover
+// stehende Element (Eintrag oder Kategorie), sobald dessen "Öffnen"-Button beim
+// Hochscrollen aus dem Sichtbereich gewandert ist, wie der Mini-Player bei
+// Spotify. Tap öffnet die zugehörige Detailseite. Ohne Element bleibt die
+// linke Seite leer (die Aktions-Buttons rutschen an den rechten Rand).
+function NowPreview({ item }) {
   if (!item) return null;
   const Icon = NOW_ICONS[item.type] || Circle;
   return (
@@ -44,7 +69,7 @@ function NowBar({ item }) {
   );
 }
 
-export function NewDesignNav({ t, active = "home", onHome, onOpenSearch, onOpenCatType, nowItem }) {
+export function NewDesignNav({ t, active = "home", onHome, onOpenSearch, onOpenCatType, onAdd, onOpenVoice, nowItem }) {
   const handlers = {
     home: onHome,
     search: onOpenSearch,
@@ -55,7 +80,30 @@ export function NewDesignNav({ t, active = "home", onHome, onOpenSearch, onOpenC
 
   return (
     <nav className="new-nav">
-      <NowBar item={nowItem} />
+      {/* Obere Zeile: links die (optionale) Vorschau-Kachel des Covers, rechts
+          die Aktions-Pille mit Erstellen (+) und Spracheingabe. */}
+      <div className="new-nav__now-row">
+        <NowPreview item={nowItem} />
+        <div className="new-nav__actions">
+          <button
+            type="button"
+            className="new-nav__action"
+            onClick={onAdd}
+            aria-label={t.add || "Erstellen"}
+          >
+            <Plus size={22} strokeWidth={2.4} />
+          </button>
+          <span className="new-nav__action-divider" aria-hidden="true" />
+          <button
+            type="button"
+            className="new-nav__action"
+            onClick={onOpenVoice}
+            aria-label={t.voiceInput || "Spracheingabe"}
+          >
+            <AudioWaveIcon size={20} />
+          </button>
+        </div>
+      </div>
       <div className="new-nav__tabs">
         {NAV_ITEMS.map(({ id, Icon, labelKey }) => {
           const isActive = id === active;

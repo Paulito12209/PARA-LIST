@@ -28,6 +28,7 @@ import { ArchiveScreen } from "./screens/ArchiveScreen";
 import { CreateModal } from "./modals/CreateModal";
 import { NewCatModal } from "./modals/NewCatModal";
 import { OnboardingModal } from "./modals/OnboardingModal";
+import { GreetingPopup } from "./modals/GreetingPopup";
 import { SettingsScreen } from "./modals/SettingsModal";
 import { TaskDoneCelebration, BirthdayCelebration } from "./modals/Celebrations";
 import { useIsDesktop } from "./hooks/useMediaQuery";
@@ -390,6 +391,18 @@ export default function App() {
   // Pokal-Button liegt jetzt im Header (CommandPanel). Der Fortschritts-State
   // wohnt aber in HomeScreen → per Tick-Zähler von oben antriggern.
   const [progressTick, setProgressTick] = useState(0);
+  // Begrüßungs-Popup beim App-Start (Spotify-Card-Stil): zeigt sich einmal
+  // pro App-Start, sobald der State geladen und ein Name gesetzt ist – damit
+  // auch direkt nach abgeschlossenem Onboarding.
+  const [greetOpen, setGreetOpen] = useState(false);
+  const greetShownRef = useRef(false);
+  const hasUserName = !!state.user?.name;
+  useEffect(() => {
+    if (isLoaded && hasUserName && !greetShownRef.current) {
+      greetShownRef.current = true;
+      setGreetOpen(true);
+    }
+  }, [isLoaded, hasUserName]);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
   // Header-Eyebrow (Zeile über dem Titel): normal das Datum; im Fortschritts-
@@ -1315,6 +1328,14 @@ export default function App() {
               setPanelOpen(true);
               setSearchOpen(true);
             }}
+            onOpenTranslator={() => {
+              setPanelOpen(false);
+              setTranslateConfig({ initialText: "", toLang: "Spanisch" });
+            }}
+            onOpenFlashcards={() => {
+              setPanelOpen(false);
+              push({ view: VIEW.FLASHCARDS });
+            }}
             expandedCat={expandedCat}
             setExpandedCat={setExpandedCat}
             onCoverAccentChange={setCoverAccentRgb}
@@ -1564,6 +1585,18 @@ export default function App() {
       </div>
 
       {renderRootModals()}
+
+      {greetOpen && !onboardingOpen && (
+        <GreetingPopup
+          t={t}
+          lang={lang}
+          state={state}
+          onOpenCat={(c) => push({ view: VIEW.CAT_DETAIL, catId: c.id })}
+          onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+          onOpenProgress={() => setProgressTick((n) => n + 1)}
+          onClose={() => setGreetOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -1329,6 +1329,126 @@ body.new-design .home__list-container:not(.home__list-container--expanded) {
   }
 }
 
+// ── „Entdecke die Apps" – horizontal scrollbare App-Cover ──────
+// Spotify-„Deine Shows"-Prinzip: die begleitenden Tools als Cover-Karten in
+// einem horizontalen Overflow. Die letzte Karte (ParaWorld) ragt am rechten
+// Rand angeschnitten herein und ist als „bald verfügbar" ausgegraut.
+.home-apps__header {
+  // Etwas Abstand zum darüberliegenden Kachel-Grid der Listen.
+  margin-top: 6px;
+}
+
+.home-apps {
+  display: flex;
+  gap: 14px;
+  padding: 2px $spacing-md $spacing-md;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  // Ohne scroll-padding richtet `scroll-snap-align: start` die erste Karte an
+  // der Container-Kante aus und verschluckt so das linke Padding beim Snap –
+  // hier wird der Snap-Anker um das Padding nach innen versetzt, damit links
+  // immer der gewünschte Abstand sichtbar bleibt.
+  scroll-padding-left: $spacing-md;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.home-app-card {
+  flex: 0 0 auto;
+  width: 148px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $color-text;
+  font-family: $font-body;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &__cover {
+    position: relative;
+    width: 148px;
+    height: 148px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #fff;
+    // Farbiger Verlauf pro App (Akzent aus --app-accent-rgb) mit dunklem Sockel.
+    background:
+      radial-gradient(120% 120% at 25% 15%,
+        rgba(var(--app-accent-rgb, 124, 131, 247), 0.85) 0%,
+        rgba(var(--app-accent-rgb, 124, 131, 247), 0.35) 55%,
+        rgba(18, 18, 26, 0.9) 100%);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__desc {
+    font-size: 12px;
+    font-weight: 500;
+    color: $color-muted;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &:active .home-app-card__cover {
+    transform: scale(0.97);
+    transition: transform $transition-fast;
+  }
+
+  // „Bald verfügbar" – ausgegraut, nicht klickbar.
+  &--soon {
+    cursor: default;
+
+    .home-app-card__cover {
+      filter: grayscale(0.9) brightness(0.55);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .home-app-card__title,
+    .home-app-card__desc {
+      opacity: 0.55;
+    }
+  }
+
+  &__soon-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: $radius-pill;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+    filter: none;
+  }
+}
+
 // ── Einfache Kategorien-Liste (PARA-Typen auf der Startseite) ──
 .home-cat-list {
   display: flex;

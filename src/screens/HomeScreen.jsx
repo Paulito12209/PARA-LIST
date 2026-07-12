@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
-import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, ChevronLeft, ChevronDown, Trash2, RotateCcw, Star } from "lucide-react";
+import { Circle, Triangle, Square, Archive, Calendar, CheckCircle2, Pencil, UserPlus, ChevronRight, ChevronLeft, ChevronDown, Trash2, RotateCcw, Star, Languages, Layers, Gamepad2, Lock } from "lucide-react";
 import { TaskList, NoteList, CalList, LinkList, HomeCatItem } from "../components/EntryLists";
 import { BookmarkIcon, TagIcon } from "../components/AppIcons";
 import { CommandDock } from "../components/CommandDock";
@@ -103,6 +103,8 @@ export function HomeScreen({
   panelOpen,
   progressTick,
   onOpenSearch,
+  onOpenTranslator,
+  onOpenFlashcards,
   onCoverAccentChange,
   onUpdateUser,
   onUpdateCat,
@@ -142,7 +144,18 @@ export function HomeScreen({
     const el = homeScrollRef.current;
     if (!el || !state.newDesign) return;
     const app = el.closest(".app");
-    const sync = () => app?.style.setProperty("--home-scroll-y", `${el.scrollTop}px`);
+    const sync = () => {
+      app?.style.setProperty("--home-scroll-y", `${el.scrollTop}px`);
+      // Cover-"Öffnen"-Button vollständig über den oberen Sichtrand gescrollt?
+      const btn = el.querySelector(".home-cover__open-btn");
+      const away = btn
+        ? btn.getBoundingClientRect().bottom < el.getBoundingClientRect().top
+        : false;
+      if (away !== coverScrolledAwayRef.current) {
+        coverScrolledAwayRef.current = away;
+        setCoverScrolledAway(away);
+      }
+    };
     sync();
     el.addEventListener("scroll", sync, { passive: true });
     return () => {
@@ -197,6 +210,11 @@ export function HomeScreen({
   // Ausgewählter Tag im Drilldown der Tags-Kachel (null = flache Tag-Liste).
   const [selectedTag, setSelectedTag] = useState(null);
   const lastScrollTop = useRef(0);
+  // Ist der "Öffnen"-Button des Covers beim Hochscrollen aus dem Sichtbereich
+  // gewandert? Dann erscheint das Cover-Element als Vorschau-Kachel links neben
+  // den Aktions-Buttons der neuen Nav-Leiste (Spotify-Mini-Player-Prinzip).
+  const [coverScrolledAway, setCoverScrolledAway] = useState(false);
+  const coverScrolledAwayRef = useRef(false);
 
   // Filter beim Zuklappen bzw. Kontextwechsel (Typ/Tab) zurücksetzen.
   useEffect(() => {
@@ -1296,13 +1314,18 @@ export function HomeScreen({
     );
   };
 
-  // "Zuletzt geöffnet"-Leiste des neuen Designs (Pendant zum Spotify-Mini-
-  // Player über der Tab-Bar): jüngstes lastOpenedAt über Einträge UND
-  // Kategorien. Terminierte Elemente (Aufgabe due, Kalender/Cat date) zeigen
-  // ihr Termindatum, alle anderen (Arbeitsbereiche, Notizen, …) das
-  // Erstellungsdatum.
+  // Vorschau-Kachel des neuen Designs (Pendant zum Spotify-Mini-Player über der
+  // Tab-Bar). Sie zeigt primär das ZULETZT GEÖFFNETE Element (Eintrag ODER
+  // Kategorie, per lastOpenedAt) – so erscheint z.B. eine gerade geöffnete
+  // Aufgabe nach der Rückkehr zur Startseite hier als Mini-Kachel. Bevor
+  // überhaupt etwas geöffnet wurde (frisches Profil), bleibt die Zeile leer.
+  // Als Zusatz-Trigger dient das Cover: wandert dessen "Öffnen"-Button beim
+  // Hochscrollen aus dem Sichtbereich, wird ersatzweise das Cover-Element
+  // gezeigt. Terminierte Elemente (Aufgabe due, Kalender/Cat date) zeigen ihr
+  // Termindatum, alle anderen (Arbeitsbereiche, Notizen, …) das Erstellungsdatum.
   const nowItem = (() => {
     if (!state.newDesign) return null;
+    // 1) Zuletzt geöffnetes Element über Kategorien UND Einträge bestimmen.
     let best = null;
     let bestKind = null;
     for (const c of cats) {
@@ -1316,6 +1339,12 @@ export function HomeScreen({
         best = e;
         bestKind = "entry";
       }
+    }
+    // 2) Fallback: nichts geöffnet, aber der Cover-"Öffnen"-Button ist beim
+    //    Scrollen aus dem Blick gewandert → das Cover-Element anzeigen.
+    if (!best && coverScrolledAway && currentCover) {
+      best = currentCover.data;
+      bestKind = currentCover.kind;
     }
     if (!best) return null;
     const isCat = bestKind === "cat";
@@ -1480,6 +1509,54 @@ export function HomeScreen({
                 </span>
                 <span className="home-list-tile__label">{t.tagsLabel}</span>
               </button>
+            </div>
+
+            {/* Spotify-„Deine Shows"-Prinzip: horizontal scrollbare App-Cover
+                für die begleitenden Tools (Übersetzer, Flashcards) sowie eine
+                ausgegraute Vorschau auf das kommende ParaWorld. */}
+            <div className="list-section__header list-section__header--static home-apps__header">
+              <span className="list-section__label">{t.appsTitle}</span>
+            </div>
+            <div className="home-apps">
+              <button
+                type="button"
+                className="home-app-card"
+                style={{ "--app-accent-rgb": "11, 140, 233" }}
+                onClick={() => onOpenTranslator?.()}
+              >
+                <span className="home-app-card__cover">
+                  <Languages size={34} strokeWidth={1.8} />
+                </span>
+                <span className="home-app-card__title">{t.apps.translator.title}</span>
+                <span className="home-app-card__desc">{t.apps.translator.desc}</span>
+              </button>
+              <button
+                type="button"
+                className="home-app-card"
+                style={{ "--app-accent-rgb": "245, 158, 11" }}
+                onClick={() => onOpenFlashcards?.()}
+              >
+                <span className="home-app-card__cover">
+                  <Layers size={34} strokeWidth={1.8} />
+                </span>
+                <span className="home-app-card__title">{t.apps.flashcards.title}</span>
+                <span className="home-app-card__desc">{t.apps.flashcards.desc}</span>
+              </button>
+              <div
+                className="home-app-card home-app-card--soon"
+                style={{ "--app-accent-rgb": "124, 58, 237" }}
+                aria-disabled="true"
+              >
+                <span className="home-app-card__cover">
+                  <Gamepad2 size={34} strokeWidth={1.8} />
+                  <span className="home-app-card__soon-badge">
+                    <Lock size={11} strokeWidth={2.4} />
+                    {t.comingSoon}
+                  </span>
+                </span>
+                <span className="home-app-card__title">{t.apps.paraworld.title}</span>
+                <span className="home-app-card__desc">{t.apps.paraworld.desc}</span>
+              </div>
             </div>
           </>
         )}
@@ -1654,6 +1731,8 @@ export function HomeScreen({
           onHome={() => setListExpanded(false)}
           onOpenSearch={onOpenSearch}
           onOpenCatType={onOpenCatType}
+          onAdd={() => onAddEntry()}
+          onOpenVoice={() => setVoiceOverlayOpen(true)}
           nowItem={nowItem}
         />
       )}

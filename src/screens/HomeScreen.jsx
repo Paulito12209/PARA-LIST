@@ -1363,11 +1363,29 @@ export function HomeScreen({
     const accentColor = isCat
       ? (CC[best.type]?.color || "#7C7C82")
       : (ENTRY_ACCENT_RGB[best.type] ? `rgb(${ENTRY_ACCENT_RGB[best.type]})` : "#7C7C82");
+    // Fortschritts-Linie unten in der Pille: bei Projekten die verknüpften
+    // Aufgaben, bei Aufgaben die Unteraufgaben. Nur wenn welche existieren –
+    // Arbeitsbereiche/Ressourcen zeigen (noch) keinen Fortschritt.
+    let progress = null;
+    if (isCat && best.type === "project") {
+      const linkedTasks = entries.filter(
+        (e) => e.type === "task" && (e.catIds || []).includes(best.id)
+      );
+      if (linkedTasks.length > 0) {
+        progress = { done: linkedTasks.filter((tk) => tk.done).length, total: linkedTasks.length };
+      }
+    } else if (!isCat && best.type === "task") {
+      const subtasks = entries.filter((e) => e.parentId === best.id);
+      if (subtasks.length > 0) {
+        progress = { done: subtasks.filter((sub) => sub.done).length, total: subtasks.length };
+      }
+    }
     return {
       type: best.type,
       title: isCat ? best.name : best.title,
       dateLabel: dateStr ? `${prefix} · ${dateStr}` : prefix,
       accentColor,
+      progress,
       onOpen: () => (isCat ? onOpenCat?.(best) : onOpenEntry?.(best)),
     };
   })();

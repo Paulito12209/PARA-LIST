@@ -126,7 +126,7 @@ export const GitMergeBranchIcon = ({ size = 24, color = "currentColor", strokeWi
 
 // Dart-/Zielscheiben-Icon: Emblem der Projekt-Cover im neuen Design –
 // Zielscheibe mit Pfeil (Dart), der schräg ins Zentrum trifft.
-export const DartTargetIcon = ({ size = 24, color = "currentColor", strokeWidth = 1.6, className = "" }) => (
+export const DartTargetIcon = ({ size = 24, color = "currentColor", strokeWidth = 2, className = "" }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={size}
@@ -139,13 +139,15 @@ export const DartTargetIcon = ({ size = 24, color = "currentColor", strokeWidth 
     strokeLinejoin="round"
     className={className}
   >
-    {/* Zielscheibe: äußerer + mittlerer Ring, Mitte gefüllt */}
-    <path d="M20.9 10.6a9 9 0 1 1-7.5-7.5" />
-    <path d="M16.8 10.1a5 5 0 1 1-2.9-2.9" />
+    {/* Zielscheibe: äußerer + mittlerer Ring – jeweils oben rechts offen,
+        wo der Dart eintritt. Mitte als gefüllter Punkt. */}
+    <path d="M20.9 12a9 9 0 1 1-8.9-9" />
+    <path d="M16.5 12a4.5 4.5 0 1 1-4.5-4.5" />
     <circle cx="12" cy="12" r="1.4" fill={color} stroke="none" />
-    {/* Pfeil (Dart): Schaft von oben rechts ins Zentrum + Befiederung */}
-    <path d="M12 12 21 3" />
-    <path d="M17.2 3.2 21 3l-.2 3.8" />
+    {/* Dart: Schaft vom Zentrum nach oben rechts, außen ein solides
+        Flight (Feder) mit V-Kerbe am hinteren Ende. */}
+    <path d="M12 12 17 7" />
+    <path d="M16.8 7.2 21.7 4.9 19.2 4.8 19.1 2.3Z" fill={color} />
   </svg>
 );
 

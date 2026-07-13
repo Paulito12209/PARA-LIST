@@ -1529,11 +1529,6 @@ export default function App() {
                 }}
                 onBack={handleSmartBack}
                 onHome={() => setStack([{ view: VIEW.HOME }])}
-                onOpenSearch={() => {
-                  setPanelOpen(true);
-                  setSearchOpen(true);
-                }}
-                onOpenCatType={(type) => push({ view: VIEW.CAT_LIST, type })}
                 toggleTask={toggleTask}
                 deleteEntry={deleteEntry}
                 onAddEntry={(type) => setCreating({ type, catId: cat.id })}

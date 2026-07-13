@@ -680,11 +680,12 @@
   // Erste Zeile des gemeinsamen Nav-Containers: abgerundete Glas-Karte im
   // Fade-Bereich des Verlaufs; Tap öffnet die Detailseite des Elements.
   &__now {
+    position: relative;
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     padding: 8px 12px 8px 8px;
     height: 48px;
     border: none;
@@ -696,10 +697,38 @@
     color: $color-text;
     text-align: left;
     cursor: pointer;
+    overflow: hidden;
 
     &:active {
       opacity: 0.8;
     }
+  }
+
+  // Pfeil ganz rechts (zeigt an, dass die Pille tappbar ist) – .now-copy
+  // trägt flex:1 und schiebt ihn dadurch automatisch an den rechten Rand.
+  &__now-chevron {
+    flex-shrink: 0;
+    color: $color-muted;
+  }
+
+  // Fortschritts-Linie am unteren Rand der Pille: bei Projekten die
+  // verknüpften Aufgaben, bei Aufgaben die Unteraufgaben (nur wenn welche
+  // existieren – siehe HomeScreen.jsx `progress`-Berechnung).
+  &__now-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.16);
+  }
+
+  &__now-progress-fill {
+    display: block;
+    height: 100%;
+    background: #ffffff;
+    border-radius: 0 2px 2px 0;
+    transition: width 0.2s ease;
   }
 
   // Getönte Icon-Box wie bei den Listeneinträgen (task-item__type-icon--cat):
@@ -790,6 +819,18 @@
 
   .new-nav__now-date {
     color: #8a8a96;
+  }
+
+  .new-nav__now-chevron {
+    color: #8a8a96;
+  }
+
+  .new-nav__now-progress {
+    background: rgba(26, 26, 36, 0.1);
+  }
+
+  .new-nav__now-progress-fill {
+    background: #1a1a24;
   }
 }
 

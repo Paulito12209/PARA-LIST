@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Calendar, ChevronLeft, Circle, Paperclip, Pencil, Plus, Square } from "lucide-react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Calendar, ChevronLeft, Circle, Home, MoreHorizontal, Paperclip, Pencil, Plus, Square } from "lucide-react";
 import { BOOKMARKS, CAT_ICONS, COVER_COLORS, fmtDate } from "../utils";
-import { CustomSettingsIcon, DartTargetIcon, GitMergeBranchIcon } from "../components/AppIcons";
+import { DartTargetIcon, GitMergeBranchIcon, CustomSettingsIcon } from "../components/AppIcons";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
 import { MediaTypeSheet } from "../components/PillSheets";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
@@ -149,6 +149,7 @@ export function NewCatDetailScreen({
   onTogglePin,
   onDelete,
   onBack,
+  onHome,
   toggleTask,
   deleteEntry,
   onAddEntry,
@@ -165,6 +166,10 @@ export function NewCatDetailScreen({
 
   const [active, setActive] = useState("canvas");
   const [pinned, setPinned] = useState(false);
+  // Höhe der Farbverlaufs-Fläche (Akzent → Schwarz) hinter Cover + Titel +
+  // Icon-Leiste, gemessen bis zur Trennlinie – so verläuft das Rot vom oberen
+  // Rand durchgehend linear bis zur Linie (ein Hintergrund statt zweier).
+  const [coverBgH, setCoverBgH] = useState(0);
   const [canvasExpanded, setCanvasExpanded] = useState(false);
   const [canvasOverflows, setCanvasOverflows] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -269,6 +274,21 @@ export function NewCatDetailScreen({
     }
   }, [active]);
 
+  // Höhe der Verlaufsfläche bis zur Trennlinie messen: Sticky-Position im
+  // Scroller + Leisten-Position im Sticky + Linien-Offset in der Leiste
+  // (8px Padding + 44px Icon + 8px Abstand = 60px, s. SCSS __iconbar::after).
+  useLayoutEffect(() => {
+    const measure = () => {
+      const st = stickyRef.current;
+      const bar = barRef.current;
+      if (!st || !bar) return;
+      setCoverBgH(st.offsetTop + bar.offsetTop + 60);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [cat.name]);
+
   const scrollToSection = (id) => {
     const el = sectionRefs.current[id];
     const scroller = scrollRef.current;
@@ -301,17 +321,29 @@ export function NewCatDetailScreen({
         <button
           className="new-detail__glass-btn"
           onClick={() => setShowOptions(true)}
-          aria-label={t.settingsBtn || "Einstellungen"}
+          aria-label={t.menu || t.settingsBtn || "Menü"}
         >
-          <CustomSettingsIcon size={20} color="currentColor" />
+          <MoreHorizontal size={22} strokeWidth={2.2} />
         </button>
       </div>
 
       <div className="new-detail__scroll" ref={scrollRef} onScroll={handleScroll}>
-        {/* Cover: Typfarbe mit Grain-Verlauf + Emblem – scrollt komplett weg. */}
+        {/* Durchgehender Hintergrund-Verlauf (Akzent oben → Schwarz an der
+            Trennlinie), scrollt als absolute Fläche mit. Liegt hinter Cover
+            und Titel/Leiste, damit das Rot linear vom Rand bis zur Linie
+            ausläuft – nicht erst im Titel-Container. */}
+        <div className="new-detail__cover-bg" style={{ height: coverBgH }}>
+          {/* Grain über der GESAMTEN Verlaufsfläche (bis zur Trennlinie) –
+              läge er nur überm Cover, entstünde an dessen Unterkante ein
+              sichtbarer Helligkeits-Cut im Verlauf. */}
+          <div className="new-detail__grain" style={{ backgroundImage: GRAIN_URI }} />
+        </div>
+        {/* Cover: Emblem bzw. Bild – scrollt komplett weg. */}
         <div className="new-detail__cover">
           {cat.coverImage && <img className="new-detail__cover-img" src={cat.coverImage} alt="" />}
-          <div className="new-detail__grain" style={{ backgroundImage: GRAIN_URI }} />
+          {cat.coverImage && (
+            <div className="new-detail__grain" style={{ backgroundImage: GRAIN_URI }} />
+          )}
           {!cat.coverImage && (
             <div className="new-detail__emblem">
               {safeType === "project" ? (
@@ -346,7 +378,18 @@ export function NewCatDetailScreen({
                 >
                   <span
                     className="new-detail__tile-icon"
-                    style={{ background: color + "24", color }}
+                    style={
+                      isActive
+                        ? {
+                            // Getönte Fläche über opakem, dunklem Grund: das
+                            // größere aktive Icon überdeckt die Trennlinie
+                            // vollständig (kein Durchscheinen der Linie).
+                            backgroundColor: "#08080B",
+                            backgroundImage: `linear-gradient(${color}24, ${color}24)`,
+                            color,
+                          }
+                        : { background: color + "24", color }
+                    }
                   >
                     <Icon size={isActive ? 26 : 20} color={color} />
                   </span>
@@ -481,6 +524,15 @@ export function NewCatDetailScreen({
           </section>
         </div>
       </div>
+
+      {/* Schwebende Home-Pille mittig am unteren Rand – zurück zur Startseite. */}
+      <button
+        className="new-detail__home"
+        onClick={onHome}
+        aria-label={t.home || "Startseite"}
+      >
+        <Home size={20} strokeWidth={2.2} />
+      </button>
 
       {/* Options-Sheet (Settings-Glas-Button): Cover-Design + Favorit/
           Anpinnen/Archivieren/Löschen – geteilt mit der Liste. */}

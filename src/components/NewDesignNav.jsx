@@ -1,4 +1,4 @@
-import { Home, Search, Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Link2, Image, Plus } from "lucide-react";
+import { Home, Search, Circle, Triangle, Square, CheckCircle2, Pencil, Calendar, Link2, Image, Plus, ChevronRight } from "lucide-react";
 import { AutoScrollText } from "./AutoScrollText";
 
 // Audio-/Spracheingabe-Icon (Equalizer-Wellen) – identisch zum CommandDock,
@@ -56,6 +56,7 @@ const NOW_ICONS = {
 function NowPreview({ item }) {
   if (!item) return null;
   const Icon = NOW_ICONS[item.type] || Circle;
+  const pct = item.progress ? Math.round((item.progress.done / item.progress.total) * 100) : null;
   return (
     <button type="button" className="new-nav__now" onClick={item.onOpen}>
       <span className="new-nav__now-icon" style={{ "--now-icon-tint": item.accentColor }}>
@@ -65,6 +66,12 @@ function NowPreview({ item }) {
         <AutoScrollText className="new-nav__now-title">{item.title}</AutoScrollText>
         <span className="new-nav__now-date">{item.dateLabel}</span>
       </span>
+      <ChevronRight size={16} strokeWidth={2.4} className="new-nav__now-chevron" />
+      {pct !== null && (
+        <span className="new-nav__now-progress">
+          <span className="new-nav__now-progress-fill" style={{ width: `${pct}%` }} />
+        </span>
+      )}
     </button>
   );
 }

@@ -14,7 +14,10 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  animation: slide-in-right $transition-normal;
+  // Bewusst KEINE Mount-Animation: Die Liste ist ein Tab-Ziel der unteren
+  // Nav (kein Push). Ein transform auf diesem Container würde außerdem die
+  // fixed positionierte .new-nav mitschieben, sodass die Leiste beim
+  // Tab-Wechsel sichtbar von rechts hereinrutscht statt stehen zu bleiben.
 
   // ── Hero: Kontext-Verlauf (Typfarbe) läuft nach unten in den App-
   // Hintergrund aus, wie der Playlist-Header bei Spotify. ─────────

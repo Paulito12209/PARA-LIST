@@ -5,67 +5,52 @@
 @use './mixins' as *;
 
 .new-detail {
+  // Höhe der fixen Topbar (16px Rand + 40px Buttons + 8px Puffer) – Bezugs-
+  // punkt für das Pinnen von Titel + Icon-Leiste darunter.
+  --nd-topbar-h: calc(64px + env(safe-area-inset-top, 0px));
+
   height: 100%;
   position: relative;
-  animation: slide-in-right $transition-normal;
+  // Öffnet wie ein Dialog von unten nach oben (Sheet-Optik) statt von rechts.
+  animation: slide-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
   background: $color-bg;
 
-  // Ein Scroll-Container für Cover + Icon-Leiste + Karten-Feed: das Cover
-  // scrollt weg, die Icon-Leiste bleibt (sticky) oben stehen.
-  &__scroll {
-    height: 100%;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    position: relative;
-  }
-
-  // ── Cover: Typfarbe mit Grain-Verlauf, Emblem, Titel unten ──────
-  &__cover {
-    position: relative;
-    min-height: calc(300px + env(safe-area-inset-top, 0px));
-    display: flex;
-    flex-direction: column;
-    padding: calc(#{$spacing-sm} + env(safe-area-inset-top, 0px)) $spacing-md 0;
-    overflow: hidden;
-    // Rotverlauf (bzw. Typfarbe): oben leicht aufgehellt, unten abgedunkelt.
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 38%, rgba(0, 0, 0, 0.28) 100%),
-      rgb(var(--nd-accent-rgb));
-  }
-
-  &__cover-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  // Körniger Film ("grained") über dem Farbverlauf
-  &__grain {
-    position: absolute;
-    inset: 0;
-    background-repeat: repeat;
-    opacity: 0.35;
-    mix-blend-mode: overlay;
-    pointer-events: none;
-  }
-
+  // ── Fixe Topbar: Zurück · Typ-Label · Einstellungen – immer sichtbar.
+  // 16px Abstand der Buttons zum oberen Rand (plus Safe-Area).
   &__topbar {
-    position: relative;
-    z-index: 2;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    height: var(--nd-topbar-h);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    padding: calc(#{$spacing-md} + env(safe-area-inset-top, 0px)) $spacing-md 0;
+    transition: background-color 0.2s ease;
+  }
+
+  // Sobald Titel + Leiste gepinnt sind, bekommt die Topbar festen Grund,
+  // damit der durchscrollende Inhalt dahinter verschwindet.
+  &--pinned &__topbar {
+    background: $color-bg;
   }
 
   // Typ-Label mittig oben ("Projekt" / "Arbeitsbereich" / "Ressource")
   &__type-label {
+    align-self: center;
+    margin-top: calc(#{$spacing-md} + env(safe-area-inset-top, 0px) - 6px);
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.06em;
     color: rgba(255, 255, 255, 0.92);
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+  }
+
+  &--pinned &__type-label {
+    color: $color-text;
+    text-shadow: none;
   }
 
   // Liquid-Glass-Kreis (Zurück links, Einstellungen rechts)
@@ -88,24 +73,125 @@
     }
   }
 
-  // Emblem mittig: Dart-Zielscheibe (Projekt) bzw. Typ-Icon – dezent in
-  // einem dunkleren Ton der Cover-Farbe.
+  // ── Schwebende Home-Pille: mittig am unteren Rand, oval, nur Home-Icon.
+  // Milchig-dunkles Glas (wie das Home-Dock), schwebt über dem Inhalt. ──
+  &__home {
+    position: absolute;
+    left: 50%;
+    bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+    z-index: 30;
+    @include flex-center;
+    width: 64px;
+    height: 44px;
+    border-radius: $radius-pill;
+    color: #fff;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(22, 22, 40, 0.92);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    box-shadow:
+      0 8px 28px rgba(0, 0, 0, 0.42),
+      inset 0 1px 1px rgba(255, 255, 255, 0.18);
+    transition: transform $transition-fast, background $transition-fast;
+
+    &:active {
+      transform: translateX(-50%) scale(0.94);
+      background: rgba(40, 40, 64, 0.92);
+    }
+
+    // Nur iOS (Blur rendert zuverlässig): echte transluzente Glas-Optik.
+    @supports (-webkit-touch-callout: none) {
+      background: rgba(22, 22, 40, 0.55);
+    }
+  }
+
+  &__scroll {
+    height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+
+  // ── Durchgehende Verlaufsfläche (Akzent → Schwarz) hinter Cover + Titel +
+  // Leiste. Höhe wird per JS bis zur Trennlinie gesetzt; scrollt als absolute
+  // Fläche mit dem Inhalt. Oben 100 % Akzentfarbe, linear bis Schwarz an der
+  // Linie – ein einziger Hintergrund statt zweier gestückelter Verläufe.
+  &__cover-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgb(var(--nd-accent-rgb)) 0%, #000 100%);
+  }
+
+  // ── Cover: Grain-Verlauf + Emblem – scrollt komplett weg. Hintergrund liegt
+  // in &__cover-bg dahinter; das Cover selbst ist transparent. ──
+  &__cover {
+    position: relative;
+    z-index: 1;
+    min-height: calc(240px + env(safe-area-inset-top, 0px));
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--nd-topbar-h);
+    overflow: hidden;
+  }
+
+  &__cover-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  // Körniger Film ("grained") über dem Farbverlauf
+  &__grain {
+    position: absolute;
+    inset: 0;
+    background-repeat: repeat;
+    opacity: 0.35;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+
+  // Emblem mittig: Dart-Zielscheibe (Projekt) bzw. Typ-Icon – dezent über
+  // der Cover-Farbe. Dark Theme: hellgrau; Light Theme: dunkelgrau
+  // (Override unten im Light-Theme-Block).
   &__emblem {
     position: relative;
     z-index: 1;
     flex: 1;
     @include flex-center;
-    color: rgba(0, 0, 0, 0.32);
+    color: rgba(255, 255, 255, 0.38);
     filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.12));
   }
 
-  // Titel unten im Cover, leicht versetzt (Spotify-Playlist-Titel)
+  // ── Gepinnter Block: Titel + Icon-Leiste kleben unter der Topbar fest;
+  // das Cover läuft dahinter über einen transparent→dunkel-Layer aus.
+  &__sticky {
+    position: sticky;
+    top: var(--nd-topbar-h);
+    z-index: 10;
+    padding-top: $spacing-sm;
+    // Transparent: der durchgehende Verlauf liegt in &__cover-bg dahinter.
+    // Erst beim Pinnen bekommt der Block festen Grund (s. &--pinned).
+    background: transparent;
+  }
+
+  // Gepinnt: fester dunkler Grund statt des Verlaufs (die transparente Zone
+  // würde sonst den durchscrollenden Inhalt zeigen).
+  &--pinned &__sticky {
+    background: $color-bg;
+  }
+
+  // Titel oberhalb der Icon-Leiste (Spotify-Playlist-Titel), editierbar
   &__title {
-    position: relative;
-    z-index: 2;
     width: 100%;
-    margin-top: auto;
-    padding: $spacing-sm 0 $spacing-xs;
+    padding: 0 $spacing-md $spacing-xs;
     background: transparent;
     border: none;
     font-family: $font-heading;
@@ -124,44 +210,41 @@
     }
   }
 
-  // ── Icon-Leiste: Cover-Farbe läuft dahinter über einen transparent→dunkel
-  // Layer in den Hintergrund aus. Sticky mit negativem Top: Beim Fest-
-  // kleben ragt nur die (fast) dunkle Zone ins Bild – kein harter Schnitt.
-  &__barwrap {
-    position: sticky;
-    top: -28px;
-    z-index: 10;
-    margin-top: calc(-1 * #{$spacing-sm});
-    padding: 36px $spacing-sm 6px;
-    background:
-      linear-gradient(
-        to bottom,
-        rgba(8, 8, 11, 0) 0%,
-        rgba(8, 8, 11, 0.72) 34%,
-        rgba(8, 8, 11, 0.96) 62%,
-        $color-bg 100%
-      ),
-      // Gleiche Abdunkelung wie die Cover-Unterkante (28 % Schwarz über der
-      // Akzentfarbe) – sonst entsteht eine harte helle Farbkante am Übergang.
-      linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
-      rgb(var(--nd-accent-rgb));
-  }
-
   // Automatisch (per JS) horizontal scrollende Leiste – Overflow versteckt,
   // kein manueller Scrollbalken.
   &__iconbar {
+    position: relative;
     display: flex;
     align-items: flex-start;
     gap: $spacing-sm + $spacing-xs;
+    padding: $spacing-sm $spacing-md $spacing-xs;
     overflow-x: hidden;
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
       display: none;
     }
+
+    // Trennlinie 8px unter der Unterkante der kleinen (nicht-aktiven) Icons –
+    // nur das größere aktive Icon ragt darüber hinaus und überlappt die Linie
+    // (N26-Stil). Der Bereich UNTER der Linie blendet weich zu Transparenz aus
+    // (kein harter dunkler Block mehr) – Label bleibt oben drüber lesbar.
+    &::after {
+      content: '';
+      position: absolute;
+      top: calc(#{$spacing-sm} + 44px + #{$spacing-sm});
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(to bottom, $color-bg 0%, rgba($color-bg, 0) 100%);
+      border-top: 1px solid $color-border;
+      z-index: 0;
+    }
   }
 
   &__tile {
+    position: relative;
+    z-index: 1;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -204,11 +287,7 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-md;
-    padding: $spacing-sm $spacing-md calc(200px + env(safe-area-inset-bottom, 0px));
-  }
-
-  &__section {
-    scroll-margin-top: 120px;
+    padding: $spacing-md $spacing-md calc(#{$spacing-3xl} + env(safe-area-inset-bottom, 0px));
   }
 
   &__card {
@@ -218,19 +297,27 @@
     padding: $spacing-md;
   }
 
+  // Karten mit Eintragszeilen: kein horizontales Padding, damit die Zeilen
+  // bündig zur Kartenkante laufen (Kopfzeile behält ihren Einzug).
+  &__card--flush {
+    padding: $spacing-md 0;
+
+    .new-detail__card-head {
+      padding: 0 $spacing-md;
+    }
+
+    .new-detail__card-empty {
+      padding-left: $spacing-md;
+      padding-right: $spacing-md;
+    }
+  }
+
+  // Kopfzeile ohne Icon (das steht bereits in der Leiste darüber)
   &__card-head {
     display: flex;
     align-items: center;
     gap: $spacing-sm + $spacing-2xs;
-    margin-bottom: $spacing-sm + $spacing-xs;
-  }
-
-  &__card-icon {
-    @include flex-center;
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    flex-shrink: 0;
+    margin-bottom: $spacing-sm;
   }
 
   &__card-title {
@@ -270,17 +357,102 @@
     padding: $spacing-sm 0;
   }
 
+  // ── Eintragszeilen im Listen-Look (wie NewCatListScreen-Zeilen) ──
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm + $spacing-xs;
+    padding: $spacing-sm $spacing-md;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  // Führende Kachel (Aufgaben: tippbarer Erledigen-Kreis)
+  &__row-tile {
+    flex-shrink: 0;
+    @include flex-center;
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-sm;
+    border: none;
+    padding: 0;
+
+    &--toggle {
+      cursor: pointer;
+
+      &:active {
+        transform: scale(0.94);
+      }
+    }
+  }
+
+  &__row-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  // Titel mit Ellipsis – bewusst OHNE Lauftext-Animation
+  &__row-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  // Meta-Zeile: blaues Datum (Kalender-Icon + Text) · Typ-Icon der Verknüpfung
+  &__row-meta {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    min-width: 0;
+  }
+
+  &__row-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0B8CE9;
+    white-space: nowrap;
+  }
+
+  &__row-cat {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  // Rechts: Verknüpfen-Mini-Logo (PARA·LIST-Verzweigung), grau
+  &__row-link {
+    flex-shrink: 0;
+    @include flex-center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    color: $color-muted;
+    cursor: pointer;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+
   // ── Seiteninhalt-Karte: Akzentfläche wie Spotifys Lyrics-Vorschau ──
   &__card--canvas {
     background: rgb(var(--nd-accent-rgb));
     border-color: transparent;
-  }
-
-  &__card-eyebrow {
-    font-size: 13px;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: $spacing-sm;
   }
 
   // Eingeklappt: fester Ausschnitt mit Fade unten; --open zeigt alles.
@@ -338,13 +510,13 @@
     }
   }
 
-  // Verknüpfte Ressourcen in der Medien-Karte
+  // Verknüpfte Ressourcen in der Medien-Karte (bündige Zeile)
   &__res-row {
     display: flex;
     align-items: center;
-    gap: $spacing-sm + $spacing-2xs;
+    gap: $spacing-sm + $spacing-xs;
     width: 100%;
-    padding: $spacing-sm 0;
+    padding: $spacing-sm $spacing-md;
     background: transparent;
     border: none;
     color: $color-muted;
@@ -365,22 +537,55 @@
 }
 
 // ── Light Theme ──────────────────────────────────────────────────
-// Cover bleibt in der Typfarbe; die Icon-Leiste läuft in die helle
-// Fläche aus, Karten werden hell.
+// Cover bleibt in der Typfarbe; gepinnt wird der Grund hell und der Titel
+// dunkel, die Karten werden hell.
 .app.light-theme .new-detail {
   background: #f7f7f9;
 
-  &__barwrap {
-    background:
-      linear-gradient(
-        to bottom,
-        rgba(247, 247, 249, 0) 0%,
-        rgba(247, 247, 249, 0.72) 34%,
-        rgba(247, 247, 249, 0.96) 62%,
-        #f7f7f9 100%
-      ),
-      linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
-      rgb(var(--nd-accent-rgb));
+  &--pinned .new-detail__topbar {
+    background: #f7f7f9;
+  }
+
+  &--pinned .new-detail__type-label {
+    color: #1a1a24;
+  }
+
+  // Home-Pille auf hellem Grund: weißes Glas mit dunklem Icon.
+  &__home {
+    color: #5858a0;
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(255, 255, 255, 0.9);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      inset 0 1px 2px rgba(255, 255, 255, 0.9);
+
+    &:active {
+      background: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  // Emblem im Light Theme: dunkelgrauer Ton auf der Cover-Farbe.
+  &__emblem {
+    color: rgba(0, 0, 0, 0.32);
+  }
+
+  // Fläche + Trennlinie unter den kleinen Icons auf die helle Seite
+  // umfärben – der Verlauf darüber (Akzent → Schwarz) bleibt wie im Dark
+  // Theme, da Titel-Text durchgehend weiß auf dunklem Grund sitzt. Unter der
+  // Linie ebenfalls weich zu Transparenz ausblenden.
+  &__iconbar::after {
+    background: linear-gradient(to bottom, #f7f7f9 0%, rgba(247, 247, 249, 0) 100%);
+    border-top-color: rgba(0, 0, 0, 0.08);
+  }
+
+  &--pinned .new-detail__sticky {
+    background: #f7f7f9;
+  }
+
+  // Titel: über dem Cover weiß, gepinnt auf heller Fläche dunkel
+  &--pinned .new-detail__title {
+    color: #1a1a24;
+    text-shadow: none;
   }
 
   &__tile-label {
@@ -414,9 +619,17 @@
     color: #8a8a96;
   }
 
-  &__res-name {
+  &__row {
+    &:active {
+      background: rgba(26, 26, 36, 0.05);
+    }
+  }
+
+  &__row-title {
     color: #1a1a24;
   }
 
-  // Akzent-Karte (Seiteninhalt) bleibt farbig mit weißem Text – wie Dark.
+  &__res-name {
+    color: #1a1a24;
+  }
 }

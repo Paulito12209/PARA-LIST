@@ -253,6 +253,7 @@
     font-size: 34px;
     font-weight: 800;
     letter-spacing: -0.8px;
+    text-align: center;
     color: #fff;
     text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
 
@@ -308,8 +309,8 @@
   }
 
   &__tile--active &__tile-icon {
-    width: 58px;
-    height: 58px;
+    width: 64px;
+    height: 64px;
     border-radius: 16px;
   }
 
@@ -337,7 +338,12 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-md;
-    padding: $spacing-md $spacing-md calc(#{$spacing-3xl} + env(safe-area-inset-bottom, 0px));
+    padding: 0 $spacing-md calc(#{$spacing-3xl} + env(safe-area-inset-bottom, 0px));
+    // Erste Karte optisch auf ~16px an das aktive Icon heranziehen. Die
+    // Icon-Leiste behält unten ihren Platz fürs Aktiv-Label (kein Clipping,
+    // kein Layout-Sprung beim Pinnen); nur der Feed rückt in diese sonst leere
+    // Zone hinein. Der (transparente bzw. auslaufende) Sticky liegt darüber.
+    margin-top: -26px;
   }
 
   &__card {
@@ -538,10 +544,12 @@
     font-size: 16px;
     line-height: 1.55;
     font-weight: 600;
-    color: #fff;
+    // Etwas gedämpftes Weiß – dezent dunkler als der voll-weiße, fette
+    // "Seiteninhalt"-Kartentitel, damit dieser sich klar abhebt.
+    color: rgba(255, 255, 255, 0.82);
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.6);
+      color: rgba(255, 255, 255, 0.55);
     }
 
     &:focus {

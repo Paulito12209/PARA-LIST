@@ -414,6 +414,11 @@ export function NewCatDetailScreen({
           <div className="new-detail__iconbar" ref={barRef}>
             {SECTIONS.map(({ id, Icon, color, label }) => {
               const isActive = id === active;
+              // Erstes Lesezeichen ("Seiteninhalt") trägt die Kontextfarbe der
+              // Seite (Projekt = rot, Ressource = grün …); die übrigen behalten
+              // ihre eigene Lesezeichen-Farbe (Aufgaben blau usw.).
+              const tileColor = id === "canvas" ? `rgb(${accentRgb})` : color;
+              const tint = id === "canvas" ? `rgba(${accentRgb}, 0.16)` : `${color}24`;
               return (
                 <button
                   key={id}
@@ -432,13 +437,13 @@ export function NewCatDetailScreen({
                             // Theme): das größere aktive Icon überdeckt die
                             // Trennlinie vollständig (kein Durchscheinen der Linie).
                             backgroundColor: "var(--nd-tile-active-bg)",
-                            backgroundImage: `linear-gradient(${color}24, ${color}24)`,
-                            color,
+                            backgroundImage: `linear-gradient(${tint}, ${tint})`,
+                            color: tileColor,
                           }
-                        : { background: color + "24", color }
+                        : { background: tint, color: tileColor }
                     }
                   >
-                    <Icon size={isActive ? 26 : 20} color={color} />
+                    <Icon size={isActive ? 26 : 20} color={tileColor} />
                   </span>
                   {/* Label nur unter dem aktiven Icon – und nur, wenn der
                       Kartentitel des Abschnitts nicht sichtbar ist (s.

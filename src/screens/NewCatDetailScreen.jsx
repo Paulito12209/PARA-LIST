@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Calendar, ChevronLeft, Circle, Home, MoreHorizontal, Paperclip, Pencil, Plus, Square } from "lucide-react";
+import { ArrowUp, Calendar, ChevronLeft, Circle, MoreHorizontal, Paperclip, Pencil, Plus, Square } from "lucide-react";
 import { BOOKMARKS, CAT_ICONS, COVER_COLORS, fmtDate } from "../utils";
 import { DartTargetIcon, GitMergeBranchIcon, CustomSettingsIcon } from "../components/AppIcons";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
@@ -154,7 +154,6 @@ export function NewCatDetailScreen({
   onTogglePin,
   onDelete,
   onBack,
-  onHome,
   toggleTask,
   deleteEntry,
   onAddEntry,
@@ -192,6 +191,13 @@ export function NewCatDetailScreen({
   const barRef = useRef(null);
   const sectionRefs = useRef({});
   const tileRefs = useRef({});
+  // Kartentitel je Abschnitt – um zu erkennen, ob der Titel (in der Karte) noch
+  // sichtbar ist. Das Label unter dem aktiven Icon wird nur dann eingeblendet,
+  // wenn der zugehörige Kartentitel hinter dem gepinnten Header verschwunden ist.
+  const titleRefs = useRef({});
+  const [showLabel, setShowLabel] = useState(false);
+  // Schwebende "Nach oben"-Pille: erst einblenden, wenn spürbar weit gescrollt.
+  const [showToTop, setShowToTop] = useState(false);
   // Beim Tap auf ein Icon nicht vom Scroll-Spy "überstimmt" werden, solange
   // der Smooth-Scroll noch läuft.
   const spyLockUntil = useRef(0);
@@ -239,7 +245,7 @@ export function NewCatDetailScreen({
       : b.id === "cal" ? t.events || t.calendar
       : b.id === "media" ? t.mediaTab
       : b.id === "link" ? t.link
-      : t.detailsTitle,
+      : t.detailsTab || "Details",
     count:
       b.id === "tasks" ? openTasks.length
       : b.id === "notes" ? notes.length
@@ -263,6 +269,8 @@ export function NewCatDetailScreen({
     if (stickyEl) {
       setPinned(scroller.scrollTop >= stickyEl.offsetTop - topbarH - 1);
     }
+    // "Nach oben"-Pille erst nach etwa einer Bildschirmhöhe Scrollstrecke.
+    setShowToTop(scroller.scrollTop > scroller.clientHeight * 0.8);
     if (Date.now() < spyLockUntil.current) return;
     const top = scroller.scrollTop + headerOffset() + 56;
     let cur = "canvas";
@@ -271,6 +279,19 @@ export function NewCatDetailScreen({
       if (el && el.offsetTop <= top) cur = s.id;
     }
     setActive(cur);
+
+    // Label unter dem aktiven Icon nur einblenden, wenn der zugehörige
+    // Kartentitel (jetzt auch bei "Seiteninhalt" und "Details") hinter dem
+    // gepinnten Header (Trennlinie) verschwunden ist. Ist noch kein Titel
+    // gemessen, Label sicherheitshalber zeigen.
+    const bar = barRef.current;
+    const dividerY = (topbarH || 56) + (bar ? bar.offsetTop : 0) + 60;
+    const titleEl = titleRefs.current[cur];
+    if (!titleEl) {
+      setShowLabel(true);
+    } else {
+      setShowLabel(titleEl.getBoundingClientRect().bottom <= dividerY + 2);
+    }
     // SECTIONS ist pro Render neu, ändert aber nur Zähler/Labels.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -303,9 +324,12 @@ export function NewCatDetailScreen({
       setFadeStartPx(bar.offsetTop + 60);
     };
     measure();
+    // Einmal den Scroll-Status auswerten, damit das "Seiteninhalt"-Label beim
+    // Öffnen korrekt aus ist (Kartentitel ist sichtbar) statt initial zu blinken.
+    handleScroll();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [cat.name]);
+  }, [cat.name, handleScroll]);
 
   const scrollToSection = (id) => {
     const el = sectionRefs.current[id];
@@ -403,10 +427,11 @@ export function NewCatDetailScreen({
                     style={
                       isActive
                         ? {
-                            // Getönte Fläche über opakem, dunklem Grund: das
-                            // größere aktive Icon überdeckt die Trennlinie
-                            // vollständig (kein Durchscheinen der Linie).
-                            backgroundColor: "#08080B",
+                            // Getönte Fläche über opakem Grund (themeabhängig via
+                            // --nd-tile-active-bg: dunkel im Dark-, hell im Light-
+                            // Theme): das größere aktive Icon überdeckt die
+                            // Trennlinie vollständig (kein Durchscheinen der Linie).
+                            backgroundColor: "var(--nd-tile-active-bg)",
                             backgroundImage: `linear-gradient(${color}24, ${color}24)`,
                             color,
                           }
@@ -415,8 +440,11 @@ export function NewCatDetailScreen({
                   >
                     <Icon size={isActive ? 26 : 20} color={color} />
                   </span>
-                  {/* Label nur unter dem aktiven Icon, ohne Chevron */}
-                  <span className="new-detail__tile-label">{isActive ? label : ""}</span>
+                  {/* Label nur unter dem aktiven Icon – und nur, wenn der
+                      Kartentitel des Abschnitts nicht sichtbar ist (s.
+                      showLabel). Absolut positioniert, damit die Breite die
+                      Icon-Abstände nicht verändert. */}
+                  <span className="new-detail__tile-label">{isActive && showLabel ? label : ""}</span>
                 </button>
               );
             })}
@@ -425,13 +453,20 @@ export function NewCatDetailScreen({
 
         {/* Karten-Feed */}
         <div className="new-detail__feed">
-          {/* Seiteninhalt: Akzent-Karte – Label steht bereits unter dem
-              aktiven Icon, daher keine Kopfzeile in der Karte. */}
+          {/* Seiteninhalt: Akzent-Karte mit eigenem Abschnitttitel. Das Label
+              unter dem aktiven Icon erscheint erst, wenn dieser Titel beim
+              Hochscrollen hinter dem gepinnten Header verschwindet. */}
           <section
             className="new-detail__section"
             ref={(el) => { sectionRefs.current.canvas = el; }}
           >
             <div className="new-detail__card new-detail__card--canvas">
+              <div className="new-detail__card-head">
+                <span
+                  className="new-detail__card-title"
+                  ref={(el) => { titleRefs.current.canvas = el; }}
+                >{t.pageContent}</span>
+              </div>
               <div
                 className={`new-detail__canvas-clip${canvasExpanded || !canvasOverflows ? " new-detail__canvas-clip--open" : ""}`}
               >
@@ -463,7 +498,10 @@ export function NewCatDetailScreen({
             >
               <div className={`new-detail__card${s.id !== "link" ? " new-detail__card--flush" : ""}`}>
                 <div className="new-detail__card-head">
-                  <span className="new-detail__card-title">{s.label}</span>
+                  <span
+                    className="new-detail__card-title"
+                    ref={(el) => { titleRefs.current[s.id] = el; }}
+                  >{s.label}</span>
                   {s.count > 0 && <span className="new-detail__card-count">{s.count}</span>}
                   <button
                     className="new-detail__card-add"
@@ -535,6 +573,12 @@ export function NewCatDetailScreen({
             ref={(el) => { sectionRefs.current.details = el; }}
           >
             <div className="new-detail__card">
+              <div className="new-detail__card-head">
+                <span
+                  className="new-detail__card-title"
+                  ref={(el) => { titleRefs.current.details = el; }}
+                >{t.detailsTab || "Details"}</span>
+              </div>
               <DetailsBody
                 t={t}
                 item={cat}
@@ -547,13 +591,15 @@ export function NewCatDetailScreen({
         </div>
       </div>
 
-      {/* Schwebende Home-Pille mittig am unteren Rand – zurück zur Startseite. */}
+      {/* Schwebende "Nach oben"-Pille mittig am unteren Rand – erscheint erst,
+          wenn spürbar weit gescrollt wurde, und scrollt zurück nach oben. */}
       <button
-        className="new-detail__home"
-        onClick={onHome}
-        aria-label={t.home || "Startseite"}
+        className={`new-detail__totop${showToTop ? " new-detail__totop--show" : ""}`}
+        onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label={t.toTop || "Nach oben"}
       >
-        <Home size={20} strokeWidth={2.2} />
+        <ArrowUp size={18} strokeWidth={2.4} />
+        <span className="new-detail__totop-label">{t.toTop || "Nach oben"}</span>
       </button>
 
       {/* Options-Sheet (Settings-Glas-Button): Cover-Design + Favorit/

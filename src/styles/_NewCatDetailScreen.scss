@@ -8,6 +8,9 @@
   // Höhe der fixen Topbar (16px Rand + 40px Buttons + 8px Puffer) – Bezugs-
   // punkt für das Pinnen von Titel + Icon-Leiste darunter.
   --nd-topbar-h: calc(64px + env(safe-area-inset-top, 0px));
+  // Opaker Grund des aktiven Icons (überdeckt die Trennlinie). Dark: fast
+  // schwarz; im Light-Theme unten auf hell überschrieben.
+  --nd-tile-active-bg: #{$color-bg};
 
   height: 100%;
   position: relative;
@@ -56,8 +59,8 @@
   // Liquid-Glass-Kreis (Zurück links, Einstellungen rechts)
   &__glass-btn {
     @include flex-center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.18);
     background: rgba(20, 20, 26, 0.28);
@@ -73,17 +76,20 @@
     }
   }
 
-  // ── Schwebende Home-Pille: mittig am unteren Rand, oval, nur Home-Icon.
-  // Milchig-dunkles Glas (wie das Home-Dock), schwebt über dem Inhalt. ──
-  &__home {
+  // ── Schwebende "Nach oben"-Pille: mittig am unteren Rand, Pfeil + Label.
+  // Milchig-dunkles Glas (wie das Home-Dock), schwebt über dem Inhalt.
+  // Standard versteckt (nach unten weggeblendet); erst mit --show sichtbar,
+  // sobald spürbar weit gescrollt wurde. ──
+  &__totop {
     position: absolute;
     left: 50%;
     bottom: calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(16px);
     z-index: 30;
     @include flex-center;
-    width: 64px;
+    gap: $spacing-xs + $spacing-2xs;
     height: 44px;
+    padding: 0 $spacing-md;
     border-radius: $radius-pill;
     color: #fff;
     cursor: pointer;
@@ -94,10 +100,18 @@
     box-shadow:
       0 8px 28px rgba(0, 0, 0, 0.42),
       inset 0 1px 1px rgba(255, 255, 255, 0.18);
-    transition: transform $transition-fast, background $transition-fast;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform $transition-normal, opacity $transition-normal, background $transition-fast;
+
+    &--show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+    }
 
     &:active {
-      transform: translateX(-50%) scale(0.94);
+      transform: translateX(-50%) translateY(0) scale(0.94);
       background: rgba(40, 40, 64, 0.92);
     }
 
@@ -105,6 +119,13 @@
     @supports (-webkit-touch-callout: none) {
       background: rgba(22, 22, 40, 0.55);
     }
+  }
+
+  &__totop-label {
+    font-size: 13px;
+    font-weight: 700;
+    font-family: $font-body;
+    white-space: nowrap;
   }
 
   &__scroll {
@@ -192,6 +213,22 @@
     // Transparent: der durchgehende Verlauf liegt in &__cover-bg dahinter.
     // Erst beim Pinnen bekommt der Block festen Grund (s. &--pinned).
     background: transparent;
+
+    // Trennlinie auf dem Sticky (NICHT in der horizontal scrollenden Leiste),
+    // damit sie immer bis zum rechten Rand durchläuft. Position = Trennlinie
+    // im Sticky (--nd-fade-start, per JS gemessen). Das größere Aktiv-Icon
+    // (z-index 1, opak) überdeckt die Linie an seiner Stelle (N26-Stil).
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--nd-fade-start);
+      height: 0;
+      border-top: 1px solid $color-border;
+      z-index: 0;
+      pointer-events: none;
+    }
   }
 
   // Gepinnt: fester schwarzer Grund bis zur Trennlinie (--nd-fade-start),
@@ -229,34 +266,21 @@
   }
 
   // Automatisch (per JS) horizontal scrollende Leiste – Overflow versteckt,
-  // kein manueller Scrollbalken.
+  // kein manueller Scrollbalken. Die Trennlinie liegt bewusst auf &__sticky
+  // (nicht hier), damit sie beim horizontalen Scrollen nicht mitwandert und
+  // stets bis zum rechten Rand durchläuft. Genug Platz unten für das absolut
+  // positionierte Aktiv-Label (überlappt, ohne die Icon-Abstände zu ändern).
   &__iconbar {
     position: relative;
     display: flex;
     align-items: flex-start;
     gap: $spacing-sm + $spacing-xs;
-    padding: $spacing-sm $spacing-md $spacing-xs;
+    padding: $spacing-sm $spacing-md 26px;
     overflow-x: hidden;
     scrollbar-width: none;
 
     &::-webkit-scrollbar {
       display: none;
-    }
-
-    // Trennlinie 8px unter der Unterkante der kleinen (nicht-aktiven) Icons –
-    // nur das größere aktive Icon ragt darüber hinaus und überlappt die Linie
-    // (N26-Stil). Der weiche schwarz→transparent-Auslauf UNTER der Linie liegt
-    // in &__cover-bg dahinter; hier nur noch die Linie selbst (kein eigener
-    // dunkler Block, der den Auslauf sonst wieder zudeckt).
-    &::after {
-      content: '';
-      position: absolute;
-      top: calc(#{$spacing-sm} + 44px + #{$spacing-sm});
-      left: 0;
-      right: 0;
-      height: 0;
-      border-top: 1px solid $color-border;
-      z-index: 0;
     }
   }
 
@@ -289,13 +313,21 @@
     border-radius: 16px;
   }
 
-  // Label nur unter dem aktiven Icon (ohne Chevron)
+  // Label unter dem aktiven Icon: absolut mittig unter dem Icon – so ändert
+  // seine Breite (z.B. "Lesezeichen") die Icon-Abstände NICHT und es darf die
+  // Nachbarn überlappen. Die Leiste ist unten breit genug (padding-bottom),
+  // damit das Label vertikal nicht abgeschnitten wird.
   &__tile-label {
-    min-height: 14px;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 6px;
     font-size: 11px;
     font-weight: 700;
     color: $color-text;
     white-space: nowrap;
+    pointer-events: none;
   }
 
   // ── Karten-Feed ─────────────────────────────────────────────────
@@ -313,6 +345,7 @@
     border: 1px solid $color-border;
     border-radius: $radius-lg;
     padding: $spacing-md;
+    min-height: 200px;
   }
 
   // Karten mit Eintragszeilen: kein horizontales Padding, damit die Zeilen
@@ -471,6 +504,12 @@
   &__card--canvas {
     background: rgb(var(--nd-accent-rgb));
     border-color: transparent;
+
+    // Abschnitttitel weiß auf der Akzentfläche (statt dunkel wie in normalen
+    // Karten) – gilt in Dark- wie Light-Theme.
+    .new-detail__card-title {
+      color: #fff;
+    }
   }
 
   // Eingeklappt: fester Ausschnitt mit Fade unten; --open zeigt alles.
@@ -552,13 +591,37 @@
     font-weight: 600;
     color: $color-text;
   }
+
+  // Lesezeichen-Karte: die Link-Vorschau bündig zur (bereits gepolsterten)
+  // Kartenkante – kein zusätzliches seitliches Padding, keine eigene Border
+  // (die Karte drumherum liefert Rahmen + Fläche).
+  .media-item--link {
+    padding-left: 0;
+    padding-right: 0;
+    border: none;
+    margin-bottom: 0;
+  }
 }
 
 // ── Light Theme ──────────────────────────────────────────────────
-// Cover bleibt in der Typfarbe; gepinnt wird der Grund hell und der Titel
-// dunkel, die Karten werden hell.
+// Der Cover-Kopf bleibt kontextabhängig in der Typfarbe (Projekt = rot,
+// Notiz-Gelb usw.), läuft aber – anders als im Dark-Theme – nach HELL statt
+// nach Schwarz aus. So sitzen Icon-Leiste, Labels und Titel auf hellem Grund.
 .app.light-theme .new-detail {
   background: #f7f7f9;
+  // Aktives Icon: opaker heller Grund (überdeckt die helle Trennlinie).
+  --nd-tile-active-bg: #f7f7f9;
+
+  // Verlauf des Cover-Kopfes: oben volle Akzentfarbe → schon oberhalb der
+  // Icon-Leiste vollständig auf Hell (#f7f7f9), danach durchgehend hell.
+  &__cover-bg {
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--nd-accent-rgb)) 0%,
+      #f7f7f9 var(--nd-black-start, 60%),
+      #f7f7f9 100%
+    );
+  }
 
   &--pinned .new-detail__topbar {
     background: #f7f7f9;
@@ -568,8 +631,8 @@
     color: #1a1a24;
   }
 
-  // Home-Pille auf hellem Grund: weißes Glas mit dunklem Icon.
-  &__home {
+  // "Nach oben"-Pille auf hellem Grund: weißes Glas mit dunklem Icon/Label.
+  &__totop {
     color: #5858a0;
     background: rgba(255, 255, 255, 0.96);
     border-color: rgba(255, 255, 255, 0.9);
@@ -587,11 +650,8 @@
     color: rgba(0, 0, 0, 0.32);
   }
 
-  // Nur die Trennlinie auf die helle Seite umfärben – der Verlauf darüber
-  // (Akzent → Schwarz → transparent) bleibt wie im Dark Theme, da der Titel
-  // durchgehend weiß auf dunklem Grund sitzt und der Auslauf unter der Linie
-  // in &__cover-bg zur hellen Kartenfläche hin transparent wird.
-  &__iconbar::after {
+  // Trennlinie (auf dem Sticky) auf die helle Seite umfärben.
+  &__sticky::after {
     border-top-color: rgba(0, 0, 0, 0.08);
   }
 
@@ -606,19 +666,14 @@
     );
   }
 
-  // Titel: über dem Cover weiß, gepinnt auf heller Fläche dunkel
-  &--pinned .new-detail__title {
+  // Titel: sitzt (auch un-pinned) auf hellem Grund → durchgehend dunkel.
+  &__title {
     color: #1a1a24;
     text-shadow: none;
   }
 
-  // Label wie der Titel: über dem dunklen Cover weiß, erst gepinnt (heller
-  // Grund) dunkel – sonst stünde es dunkel auf dem dunklen Cover-Auslauf.
+  // Label unter dem aktiven Icon: sitzt auf hellem Cover-Auslauf → dunkel.
   &__tile-label {
-    color: #fff;
-  }
-
-  &--pinned &__tile-label {
     color: #1a1a24;
   }
 
@@ -632,6 +687,12 @@
   &__card--canvas {
     background: rgb(var(--nd-accent-rgb));
     border-color: transparent;
+
+    // Abschnitttitel weiß auf der Akzentfläche (überstimmt die helle
+    // card-title-Regel weiter unten, die sonst spezifischer wäre).
+    .new-detail__card-title {
+      color: #fff;
+    }
   }
 
   &__card-title {

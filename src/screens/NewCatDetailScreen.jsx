@@ -24,6 +24,11 @@ const GRAIN_URI =
 // "Kompletten Inhalt anzeigen"-Button.
 const CANVAS_CLIP_PX = 224;
 
+// So weit über der Icon-Leiste ist der rot→schwarz-Verlauf des Covers bereits
+// vollständig schwarz – damit die Icons + das "Seiteninhalt"-Label auf
+// durchgehend Schwarz sitzen (kein Grauverlauf mehr an den Icons).
+const BLACK_ABOVE_ICONS_PX = 24;
+
 // Auto-wachsendes Textfeld der Seiteninhalt-Karte; meldet per onOverflow,
 // ob der Inhalt höher als die eingeklappte Karte ist.
 function AutoGrowTextarea({ value, onChange, placeholder, onOverflow }) {
@@ -166,10 +171,15 @@ export function NewCatDetailScreen({
 
   const [active, setActive] = useState("canvas");
   const [pinned, setPinned] = useState(false);
-  // Höhe der Farbverlaufs-Fläche (Akzent → Schwarz) hinter Cover + Titel +
-  // Icon-Leiste, gemessen bis zur Trennlinie – so verläuft das Rot vom oberen
-  // Rand durchgehend linear bis zur Linie (ein Hintergrund statt zweier).
+  // Mitscrollende Verlaufsfläche (Akzent → Schwarz) hinter Cover + Titel +
+  // Icon-Leiste. `coverBgH` = Höhe bis zur Unterkante des Sticky-Headers, damit
+  // die Icon-/Label-Zone auf durchgehend Schwarz sitzt. `blackStartPx` = Punkt
+  // (px von oben), an dem der Verlauf voll schwarz ist – oberhalb der Icons.
+  // `fadeStartPx` = Position der Trennlinie im Sticky, ab der der gepinnte
+  // Header nach unten transparent ausläuft (Content-Fadeout beim Scrollen).
   const [coverBgH, setCoverBgH] = useState(0);
+  const [blackStartPx, setBlackStartPx] = useState(0);
+  const [fadeStartPx, setFadeStartPx] = useState(0);
   const [canvasExpanded, setCanvasExpanded] = useState(false);
   const [canvasOverflows, setCanvasOverflows] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -274,15 +284,23 @@ export function NewCatDetailScreen({
     }
   }, [active]);
 
-  // Höhe der Verlaufsfläche bis zur Trennlinie messen: Sticky-Position im
-  // Scroller + Leisten-Position im Sticky + Linien-Offset in der Leiste
-  // (8px Padding + 44px Icon + 8px Abstand = 60px, s. SCSS __iconbar::after).
+  // Geometrie für Cover-Verlauf + Header-Fadeout messen. Bezugspunkte:
+  //  • iconBarTop  = Oberkante der Icon-Leiste (im Scroller)
+  //  • divider     = Trennlinie = iconBarTop + 60 (8px Padding + 44px Icon +
+  //                  8px Abstand, s. SCSS __iconbar::after)
+  // Der rot→schwarz-Verlauf ist schon `BLACK_ABOVE_ICONS_PX` über der Leiste
+  // voll schwarz (Icons auf durchgehend Schwarz); die Fläche reicht bis zur
+  // Unterkante des Sticky-Headers. `fadeStartPx` markiert die Trennlinie im
+  // Sticky – darunter läuft der gepinnte Header transparent aus.
   useLayoutEffect(() => {
     const measure = () => {
       const st = stickyRef.current;
       const bar = barRef.current;
       if (!st || !bar) return;
-      setCoverBgH(st.offsetTop + bar.offsetTop + 60);
+      const iconBarTop = st.offsetTop + bar.offsetTop;
+      setCoverBgH(st.offsetTop + st.offsetHeight);
+      setBlackStartPx(Math.max(0, iconBarTop - BLACK_ABOVE_ICONS_PX));
+      setFadeStartPx(bar.offsetTop + 60);
     };
     measure();
     window.addEventListener("resize", measure);
@@ -309,7 +327,11 @@ export function NewCatDetailScreen({
   return (
     <div
       className={`new-detail${pinned ? " new-detail--pinned" : ""}`}
-      style={{ "--nd-accent-rgb": accentRgb }}
+      style={{
+        "--nd-accent-rgb": accentRgb,
+        "--nd-black-start": `${blackStartPx}px`,
+        "--nd-fade-start": `${fadeStartPx}px`,
+      }}
     >
       {/* Fixe Topbar – immer sichtbar: Zurück links, Typ-Label mittig,
           Einstellungen rechts (16px Abstand zum oberen Rand). */}

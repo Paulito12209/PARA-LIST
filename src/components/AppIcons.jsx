@@ -140,8 +140,9 @@ export const DartTargetIcon = ({ size = 24, color = "currentColor", strokeWidth 
     className={className}
   >
     {/* Zielscheibe: äußerer + mittlerer Ring – jeweils oben rechts offen,
-        wo der Dart eintritt. Mitte als gefüllter Punkt. */}
-    <path d="M20.9 12a9 9 0 1 1-8.9-9" />
+        wo der Dart eintritt. Mitte als gefüllter Punkt. Äußerer Ring: Enden
+        um ~22° (≈16px @112) näher an den Pfeil gezogen (Lücke kleiner). */}
+    <path d="M20.34 8.63a9 9 0 1 1-4.97-4.97" />
     <path d="M16.5 12a4.5 4.5 0 1 1-4.5-4.5" />
     <circle cx="12" cy="12" r="1.4" fill={color} stroke="none" />
     {/* Dart: Schaft vom Zentrum nach oben rechts, außen ein solides

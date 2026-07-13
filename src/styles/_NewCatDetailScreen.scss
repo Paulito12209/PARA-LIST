@@ -118,6 +118,11 @@
   // Leiste. Höhe wird per JS bis zur Trennlinie gesetzt; scrollt als absolute
   // Fläche mit dem Inhalt. Oben 100 % Akzentfarbe, linear bis Schwarz an der
   // Linie – ein einziger Hintergrund statt zweier gestückelter Verläufe.
+  // Oben 100 % Akzentfarbe → linear bis Schwarz, das aber schon oberhalb der
+  // Icon-Leiste voll erreicht ist (--nd-black-start, per JS gemessen) und dann
+  // durchgehend schwarz bleibt. So sitzen Icons + "Seiteninhalt"-Label auf
+  // reinem Schwarz statt auf einem Grauverlauf. Der Fadeout beim Scrollen liegt
+  // NICHT hier, sondern im gepinnten Sticky-Header (&--pinned &__sticky).
   &__cover-bg {
     position: absolute;
     top: 0;
@@ -125,7 +130,12 @@
     right: 0;
     z-index: 0;
     pointer-events: none;
-    background: linear-gradient(to bottom, rgb(var(--nd-accent-rgb)) 0%, #000 100%);
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--nd-accent-rgb)) 0%,
+      #{$color-bg} var(--nd-black-start, 60%),
+      #{$color-bg} 100%
+    );
   }
 
   // ── Cover: Grain-Verlauf + Emblem – scrollt komplett weg. Hintergrund liegt
@@ -170,22 +180,30 @@
     filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.12));
   }
 
-  // ── Gepinnter Block: Titel + Icon-Leiste kleben unter der Topbar fest;
-  // das Cover läuft dahinter über einen transparent→dunkel-Layer aus.
+  // ── Gepinnter Block: Titel + Icon-Leiste kleben unter der Topbar fest.
   &__sticky {
     position: sticky;
     top: var(--nd-topbar-h);
     z-index: 10;
     padding-top: $spacing-sm;
+    // Etwas Luft unter der Trennlinie, damit der Fadeout (gepinnt) genug
+    // Strecke hat, um den hochscrollenden Content weich auszublenden.
+    padding-bottom: $spacing-md;
     // Transparent: der durchgehende Verlauf liegt in &__cover-bg dahinter.
     // Erst beim Pinnen bekommt der Block festen Grund (s. &--pinned).
     background: transparent;
   }
 
-  // Gepinnt: fester dunkler Grund statt des Verlaufs (die transparente Zone
-  // würde sonst den durchscrollenden Inhalt zeigen).
+  // Gepinnt: fester schwarzer Grund bis zur Trennlinie (--nd-fade-start),
+  // darunter transparent auslaufend. So blendet der hochscrollende Content
+  // unter der Linie weich aus (unten durchsichtig, an der Linie fest schwarz).
   &--pinned &__sticky {
-    background: $color-bg;
+    background: linear-gradient(
+      to bottom,
+      #{$color-bg} 0,
+      #{$color-bg} var(--nd-fade-start),
+      rgba($color-bg, 0) 100%
+    );
   }
 
   // Titel oberhalb der Icon-Leiste (Spotify-Playlist-Titel), editierbar
@@ -227,16 +245,16 @@
 
     // Trennlinie 8px unter der Unterkante der kleinen (nicht-aktiven) Icons –
     // nur das größere aktive Icon ragt darüber hinaus und überlappt die Linie
-    // (N26-Stil). Der Bereich UNTER der Linie blendet weich zu Transparenz aus
-    // (kein harter dunkler Block mehr) – Label bleibt oben drüber lesbar.
+    // (N26-Stil). Der weiche schwarz→transparent-Auslauf UNTER der Linie liegt
+    // in &__cover-bg dahinter; hier nur noch die Linie selbst (kein eigener
+    // dunkler Block, der den Auslauf sonst wieder zudeckt).
     &::after {
       content: '';
       position: absolute;
       top: calc(#{$spacing-sm} + 44px + #{$spacing-sm});
       left: 0;
       right: 0;
-      bottom: 0;
-      background: linear-gradient(to bottom, $color-bg 0%, rgba($color-bg, 0) 100%);
+      height: 0;
       border-top: 1px solid $color-border;
       z-index: 0;
     }
@@ -569,17 +587,23 @@
     color: rgba(0, 0, 0, 0.32);
   }
 
-  // Fläche + Trennlinie unter den kleinen Icons auf die helle Seite
-  // umfärben – der Verlauf darüber (Akzent → Schwarz) bleibt wie im Dark
-  // Theme, da Titel-Text durchgehend weiß auf dunklem Grund sitzt. Unter der
-  // Linie ebenfalls weich zu Transparenz ausblenden.
+  // Nur die Trennlinie auf die helle Seite umfärben – der Verlauf darüber
+  // (Akzent → Schwarz → transparent) bleibt wie im Dark Theme, da der Titel
+  // durchgehend weiß auf dunklem Grund sitzt und der Auslauf unter der Linie
+  // in &__cover-bg zur hellen Kartenfläche hin transparent wird.
   &__iconbar::after {
-    background: linear-gradient(to bottom, #f7f7f9 0%, rgba(247, 247, 249, 0) 100%);
     border-top-color: rgba(0, 0, 0, 0.08);
   }
 
+  // Gepinnt: heller Grund bis zur Trennlinie, darunter transparent auslaufend
+  // (Content-Fadeout wie im Dark Theme, nur zur hellen Fläche hin).
   &--pinned .new-detail__sticky {
-    background: #f7f7f9;
+    background: linear-gradient(
+      to bottom,
+      #f7f7f9 0,
+      #f7f7f9 var(--nd-fade-start),
+      rgba(247, 247, 249, 0) 100%
+    );
   }
 
   // Titel: über dem Cover weiß, gepinnt auf heller Fläche dunkel
@@ -588,7 +612,13 @@
     text-shadow: none;
   }
 
+  // Label wie der Titel: über dem dunklen Cover weiß, erst gepinnt (heller
+  // Grund) dunkel – sonst stünde es dunkel auf dem dunklen Cover-Auslauf.
   &__tile-label {
+    color: #fff;
+  }
+
+  &--pinned &__tile-label {
     color: #1a1a24;
   }
 

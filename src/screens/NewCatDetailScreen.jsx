@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ArrowUp, Calendar, ChevronLeft, Circle, MoreHorizontal, Paperclip, Pencil, Plus, Square } from "lucide-react";
 import { BOOKMARKS, CAT_ICONS, COVER_COLORS, fmtDate } from "../utils";
-import { DartTargetIcon, GitMergeBranchIcon, CustomSettingsIcon } from "../components/AppIcons";
+import { DartTargetIcon, GitMergeBranchIcon, CustomSettingsIcon, TagIcon } from "../components/AppIcons";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
 import { MediaTypeSheet } from "../components/PillSheets";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
 import { DetailsBody } from "../components/DetailsPopup";
 import { LinkList } from "../components/EntryLists";
+import { LinkedPillSheet } from "../components/LinkedPillSheet";
+import { CatLinkSheet } from "../components/CatLinkSheet";
 
 // Akzent (RGB) des Covers – Typfarbe der Seite (Projekt rot usw.).
 const TYPE_ACCENT_RGB = {
@@ -24,10 +26,12 @@ const GRAIN_URI =
 // "Kompletten Inhalt anzeigen"-Button.
 const CANVAS_CLIP_PX = 224;
 
-// So weit über der Icon-Leiste ist der rot→schwarz-Verlauf des Covers bereits
-// vollständig schwarz – damit die Icons + das "Seiteninhalt"-Label auf
-// durchgehend Schwarz sitzen (kein Grauverlauf mehr an den Icons).
-const BLACK_ABOVE_ICONS_PX = 24;
+// Der Karten-Feed wird per negativem Margin so weit an die aktive Icon-Kachel
+// herangezogen, dass optisch ~16px Abstand bleiben. Muss mit dem SCSS-Wert
+// (--nd-feed-pull) übereinstimmen. Die Cover-Verlaufsfläche endet um genau
+// diesen Betrag höher, damit ihr (grund-farbener) Fuß NICHT über die
+// hochgezogene erste Karte malt.
+const FEED_PULL_UP_PX = 26;
 
 // Auto-wachsendes Textfeld der Seiteninhalt-Karte; meldet per onOverflow,
 // ob der Inhalt höher als die eingeklappte Karte ist.
@@ -125,16 +129,15 @@ function DetailEntryRow({ t, CC, entry, allCats, onToggle, onOpen }) {
               <LinkedIcon size={12} strokeWidth={2.4} />
             </span>
           )}
+          <button
+            className="new-detail__row-link"
+            onClick={(e) => { e.stopPropagation(); onOpen?.(entry); }}
+            aria-label={t.linkAction || "Verknüpfen"}
+          >
+            <GitMergeBranchIcon size={13} strokeWidth={2.2} />
+          </button>
         </div>
       </div>
-
-      <button
-        className="new-detail__row-link"
-        onClick={(e) => { e.stopPropagation(); onOpen?.(entry); }}
-        aria-label={t.linkAction || "Verknüpfen"}
-      >
-        <GitMergeBranchIcon size={14} strokeWidth={2.2} />
-      </button>
     </div>
   );
 }
@@ -160,6 +163,7 @@ export function NewCatDetailScreen({
   onAddMediaEntry,
   onOpenCat,
   onOpenEntry,
+  onUpdateCat,
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -170,32 +174,32 @@ export function NewCatDetailScreen({
 
   const [active, setActive] = useState("canvas");
   const [pinned, setPinned] = useState(false);
-  // Mitscrollende Verlaufsfläche (Akzent → Schwarz) hinter Cover + Titel +
-  // Icon-Leiste. `coverBgH` = Höhe bis zur Unterkante des Sticky-Headers, damit
-  // die Icon-/Label-Zone auf durchgehend Schwarz sitzt. `blackStartPx` = Punkt
-  // (px von oben), an dem der Verlauf voll schwarz ist – oberhalb der Icons.
-  // `fadeStartPx` = Position der Trennlinie im Sticky, ab der der gepinnte
-  // Header nach unten transparent ausläuft (Content-Fadeout beim Scrollen).
+  // Mitscrollende Verlaufsfläche hinter Cover + Titel + Icon-Leiste: EIN
+  // durchgehender Verlauf (Akzent oben → Seitenfarbe an der Trennlinie).
+  // `coverBgH` = Gesamthöhe bis zur Unterkante des Sticky-Headers. `fadeStartPx`
+  // = Position der Trennlinie im Sticky, ab der der gepinnte Header nach unten
+  // transparent ausläuft (Content-Fadeout beim Scrollen).
   const [coverBgH, setCoverBgH] = useState(0);
-  const [blackStartPx, setBlackStartPx] = useState(0);
   const [fadeStartPx, setFadeStartPx] = useState(0);
   const [canvasExpanded, setCanvasExpanded] = useState(false);
   const [canvasOverflows, setCanvasOverflows] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [showMediaTypeSheet, setShowMediaTypeSheet] = useState(false);
   const [collabOpen, setCollabOpen] = useState(false);
+  // Tag-Zeile: Antippen einer verknüpften Typ-Pille öffnet das kompakte
+  // LinkedPillSheet (Liste dieses Typs). `catLinkOpen` = volles Verknüpfungs-
+  // Sheet ("Mehr verknüpfen").
+  const [pillSheetType, setPillSheetType] = useState(null);
+  const [catLinkOpen, setCatLinkOpen] = useState(false);
 
   const scrollRef = useRef(null);
   const topbarRef = useRef(null);
   const stickyRef = useRef(null);
+  const titleElRef = useRef(null);
   const barRef = useRef(null);
   const sectionRefs = useRef({});
   const tileRefs = useRef({});
-  // Kartentitel je Abschnitt – um zu erkennen, ob der Titel (in der Karte) noch
-  // sichtbar ist. Das Label unter dem aktiven Icon wird nur dann eingeblendet,
-  // wenn der zugehörige Kartentitel hinter dem gepinnten Header verschwunden ist.
   const titleRefs = useRef({});
-  const [showLabel, setShowLabel] = useState(false);
   // Schwebende "Nach oben"-Pille: erst einblenden, wenn spürbar weit gescrollt.
   const [showToTop, setShowToTop] = useState(false);
   // Beim Tap auf ein Icon nicht vom Scroll-Spy "überstimmt" werden, solange
@@ -235,11 +239,37 @@ export function NewCatDetailScreen({
   const linkedResources = allCats.filter((c) => c.type === "resource" && c.relatedId === cat.id);
   const collaborators = cat.collaborators || [];
 
+  // Verknüpfte Inhalte für die Tag-Zeile unter dem Titel: NUR die mit DIESER
+  // Seite verknüpften Kategorien – Elternseite (relatedId dieser Kategorie) +
+  // Kindseiten (deren relatedId auf diese Kategorie zeigt). Gruppiert nach Typ,
+  // damit pro Typ EINE Pille steht (bei mehreren: "+N"), dazu die eigenen Tags
+  // (cat.tags). Es werden bewusst nur seiten-spezifische Verknüpfungen gezeigt,
+  // keine globale Tag-Liste.
+  const parentCat = cat.relatedId ? allCats.find((c) => c.id === cat.relatedId) : null;
+  const childCats = allCats.filter((c) => c.relatedId === cat.id && !c.archived);
+  const linkedPages = parentCat ? [parentCat, ...childCats] : childCats;
+  const linkedByType = ["project", "area", "resource"]
+    .map((type) => ({ type, items: linkedPages.filter((c) => c.type === type) }))
+    .filter((g) => g.items.length > 0);
+  const catTags = cat.tags || [];
+  const hasTagsRow = linkedByType.length > 0 || catTags.length > 0;
+
   // Icon-Leiste = Lesezeichen (ohne Tags) mit Label unter dem aktiven Icon.
+  // `label` = voller Name (Kartentitel, aria); `tileLabel` = kurzer Name für
+  // die aktive Kachel (z.B. "Inhalt" statt "Seiteninhalt"), damit er in das
+  // 1:1-Quadrat passt.
   const SECTIONS = BOOKMARKS.filter((b) => b.id !== "tags").map((b) => ({
     ...b,
     label:
       b.id === "canvas" ? t.pageContent
+      : b.id === "tasks" ? t.tasks
+      : b.id === "notes" ? t.notes
+      : b.id === "cal" ? t.events || t.calendar
+      : b.id === "media" ? t.mediaTab
+      : b.id === "link" ? t.link
+      : t.detailsTab || "Details",
+    tileLabel:
+      b.id === "canvas" ? (t.pageContentShort || "Inhalt")
       : b.id === "tasks" ? t.tasks
       : b.id === "notes" ? t.notes
       : b.id === "cal" ? t.events || t.calendar
@@ -272,26 +302,28 @@ export function NewCatDetailScreen({
     // "Nach oben"-Pille erst nach etwa einer Bildschirmhöhe Scrollstrecke.
     setShowToTop(scroller.scrollTop > scroller.clientHeight * 0.8);
     if (Date.now() < spyLockUntil.current) return;
-    const top = scroller.scrollTop + headerOffset() + 56;
-    let cur = "canvas";
+
+    // Aktiv = der Abschnitt, dessen Karte gerade "oben unter dem Header" liegt:
+    // der letzte Abschnitt, dessen Oberkante bereits über die Trennlinie
+    // (Header-Unterkante) gescrollt ist. So bleibt z.B. "Seiteninhalt" aktiv,
+    // solange seine (große) Karte noch prominent im Bild ist – der nächste
+    // Abschnitt greift erst, wenn dessen Karte tatsächlich oben ankommt (nicht
+    // schon, wenn sie flächenmäßig überwiegt = "zu früh").
+    const refLine = headerOffset() + 12;
+    let cur = SECTIONS[0]?.id || "canvas";
     for (const s of SECTIONS) {
       const el = sectionRefs.current[s.id];
-      if (el && el.offsetTop <= top) cur = s.id;
+      if (!el) continue;
+      const top = el.offsetTop - scroller.scrollTop;
+      if (top <= refLine) cur = s.id;
+    }
+    // Ganz unten angekommen (kein weiteres Scrollen möglich): immer den letzten
+    // Abschnitt (Details) aktivieren – seine kurze Karte erreicht die Linie am
+    // Seitenende sonst nie.
+    if (scroller.scrollTop >= scroller.scrollHeight - scroller.clientHeight - 2) {
+      cur = SECTIONS[SECTIONS.length - 1]?.id || cur;
     }
     setActive(cur);
-
-    // Label unter dem aktiven Icon nur einblenden, wenn der zugehörige
-    // Kartentitel (jetzt auch bei "Seiteninhalt" und "Details") hinter dem
-    // gepinnten Header (Trennlinie) verschwunden ist. Ist noch kein Titel
-    // gemessen, Label sicherheitshalber zeigen.
-    const bar = barRef.current;
-    const dividerY = (topbarH || 56) + (bar ? bar.offsetTop : 0) + 60;
-    const titleEl = titleRefs.current[cur];
-    if (!titleEl) {
-      setShowLabel(true);
-    } else {
-      setShowLabel(titleEl.getBoundingClientRect().bottom <= dividerY + 2);
-    }
     // SECTIONS ist pro Render neu, ändert aber nur Zähler/Labels.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -305,23 +337,20 @@ export function NewCatDetailScreen({
     }
   }, [active]);
 
-  // Geometrie für Cover-Verlauf + Header-Fadeout messen. Bezugspunkte:
-  //  • iconBarTop  = Oberkante der Icon-Leiste (im Scroller)
-  //  • divider     = Trennlinie = iconBarTop + 60 (8px Padding + 44px Icon +
-  //                  8px Abstand, s. SCSS __iconbar::after)
-  // Der rot→schwarz-Verlauf ist schon `BLACK_ABOVE_ICONS_PX` über der Leiste
-  // voll schwarz (Icons auf durchgehend Schwarz); die Fläche reicht bis zur
-  // Unterkante des Sticky-Headers. `fadeStartPx` markiert die Trennlinie im
-  // Sticky – darunter läuft der gepinnte Header transparent aus.
+  // Geometrie für Cover-Verlauf + Header-Fadeout messen. `coverBgH` = Höhe der
+  // durchgehenden Verlaufsfläche bis zur Unterkante des Sticky-Headers.
+  // `fadeStartPx` = Trennlinie unter der Icon-Leiste, ab der der gepinnte
+  // Header nach unten transparent ausläuft (Content-Fadeout beim Scrollen).
   useLayoutEffect(() => {
     const measure = () => {
       const st = stickyRef.current;
       const bar = barRef.current;
       if (!st || !bar) return;
-      const iconBarTop = st.offsetTop + bar.offsetTop;
-      setCoverBgH(st.offsetTop + st.offsetHeight);
-      setBlackStartPx(Math.max(0, iconBarTop - BLACK_ABOVE_ICONS_PX));
-      setFadeStartPx(bar.offsetTop + 60);
+      setCoverBgH(st.offsetTop + st.offsetHeight - FEED_PULL_UP_PX);
+      // Trennlinie exakt unter die Icon-Leiste (Unterkante der Kacheln, inkl.
+      // der größeren aktiven Kachel mit Label). Kein Magic-Offset – so sitzt
+      // die Linie immer bündig unter den Icons. Darunter folgt die Fade-Zone.
+      setFadeStartPx(bar.offsetTop + bar.offsetHeight);
     };
     measure();
     // Einmal den Scroll-Status auswerten, damit das "Seiteninhalt"-Label beim
@@ -330,6 +359,17 @@ export function NewCatDetailScreen({
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, [cat.name, handleScroll]);
+
+  // Gepinnt klappt der große Titel ein (s. SCSS &--pinned &__title) – die
+  // Icon-Leiste rückt dadurch nach oben. Auch der Wechsel der aktiven Kachel
+  // (unterschiedlich hoch durch das Label) kann die Leistenhöhe minimal ändern.
+  // Beides verschiebt die Trennlinie; sie wird daher neu gemessen und bleibt so
+  // immer direkt unter den Icons.
+  useLayoutEffect(() => {
+    const bar = barRef.current;
+    if (!bar) return;
+    setFadeStartPx(bar.offsetTop + bar.offsetHeight);
+  }, [pinned, active, hasTagsRow]);
 
   const scrollToSection = (id) => {
     const el = sectionRefs.current[id];
@@ -353,17 +393,31 @@ export function NewCatDetailScreen({
       className={`new-detail${pinned ? " new-detail--pinned" : ""}`}
       style={{
         "--nd-accent-rgb": accentRgb,
-        "--nd-black-start": `${blackStartPx}px`,
         "--nd-fade-start": `${fadeStartPx}px`,
+        "--nd-feed-pull": `${FEED_PULL_UP_PX}px`,
       }}
     >
-      {/* Fixe Topbar – immer sichtbar: Zurück links, Typ-Label mittig,
-          Einstellungen rechts (16px Abstand zum oberen Rand). */}
+      {/* Fixe Topbar – immer sichtbar: Zurück links, Typ-Label (bzw. beim
+          Hochscrollen der Seitentitel) mittig, Einstellungen rechts. */}
       <div className="new-detail__topbar" ref={topbarRef}>
         <button className="new-detail__glass-btn" onClick={onBack} aria-label={t.back || "Zurück"}>
           <ChevronLeft size={22} strokeWidth={2.2} />
         </button>
-        <span className="new-detail__type-label">{cfg.sing || cfg.label}</span>
+        <span className="new-detail__topbar-center">
+          <span className="new-detail__type-label">{cfg.sing || cfg.label}</span>
+          {/* Gepinnt: der große Titel ist ausgeblendet; hier steht der Titel als
+              editierbares Eingabefeld, damit man ihn direkt ganz oben ändern
+              kann. Ungepinnt ist es (via Opacity/pointer-events) inaktiv. */}
+          <input
+            className="new-detail__topbar-title"
+            value={cat.name}
+            onChange={(e) => onUpdate({ name: e.target.value })}
+            placeholder={t.titlePlaceholder || "Titel…"}
+            onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
+            tabIndex={pinned ? 0 : -1}
+            aria-hidden={!pinned}
+          />
+        </span>
         <button
           className="new-detail__glass-btn"
           onClick={() => setShowOptions(true)}
@@ -374,10 +428,10 @@ export function NewCatDetailScreen({
       </div>
 
       <div className="new-detail__scroll" ref={scrollRef} onScroll={handleScroll}>
-        {/* Durchgehender Hintergrund-Verlauf (Akzent oben → Schwarz an der
-            Trennlinie), scrollt als absolute Fläche mit. Liegt hinter Cover
-            und Titel/Leiste, damit das Rot linear vom Rand bis zur Linie
-            ausläuft – nicht erst im Titel-Container. */}
+        {/* Ein durchgehender Verlauf (Akzent oben → Seitenfarbe an der
+            Trennlinie unter der Icon-Leiste), scrollt als absolute Fläche mit.
+            Volle Breite, KEINE Rundung – so entstehen keine schwarzen Ecken;
+            der Verlauf läuft optisch nahtlos vom oberen Rand bis zur Leiste. */}
         <div className="new-detail__cover-bg" style={{ height: coverBgH }}>
           {/* Grain über der GESAMTEN Verlaufsfläche (bis zur Trennlinie) –
               läge er nur überm Cover, entstünde an dessen Unterkante ein
@@ -405,14 +459,45 @@ export function NewCatDetailScreen({
             Linie (N26-Stil). Nur das Cover darüber scrollt aus dem Bild. */}
         <div className="new-detail__sticky" ref={stickyRef}>
           <input
+            ref={titleElRef}
             className="new-detail__title"
             value={cat.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
             placeholder={t.titlePlaceholder || "Titel…"}
             onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
           />
+          {hasTagsRow && (
+            <div className="new-detail__tags">
+              {/* Verknüpfte Seiten – eine Pille pro Typ. Einzeln: Icon + Name
+                  (öffnet die Seite). Mehrere: Icon + Erste·Name + "+N" (öffnet
+                  das LinkedPillSheet mit allen dieses Typs). */}
+              {linkedByType.map(({ type, items }) => {
+                const pcfg = CC[type] || CC.resource;
+                const PIcon = CAT_ICONS[type] || Square;
+                const many = items.length > 1;
+                return (
+                  <button
+                    key={type}
+                    className="new-detail__tag new-detail__tag--linked"
+                    style={{ color: pcfg.color, background: pcfg.color + "1F", borderColor: pcfg.color + "40" }}
+                    onClick={() => (many ? setPillSheetType(type) : onOpenCat?.(items[0]))}
+                  >
+                    <PIcon size={12} strokeWidth={2.4} />
+                    <span>{items[0].name}</span>
+                    {many && <span className="new-detail__tag-count">+{items.length - 1}</span>}
+                  </button>
+                );
+              })}
+              {catTags.map((tag) => (
+                <span key={tag} className="new-detail__tag">
+                  <TagIcon size={12} strokeWidth={2.4} />
+                  <span>{tag}</span>
+                </span>
+              ))}
+            </div>
+          )}
           <div className="new-detail__iconbar" ref={barRef}>
-            {SECTIONS.map(({ id, Icon, color, label }) => {
+            {SECTIONS.map(({ id, Icon, color, label, tileLabel }) => {
               const isActive = id === active;
               // Erstes Lesezeichen ("Seiteninhalt") trägt die Kontextfarbe der
               // Seite (Projekt = rot, Ressource = grün …); die übrigen behalten
@@ -427,15 +512,14 @@ export function NewCatDetailScreen({
                   onClick={() => scrollToSection(id)}
                   aria-label={label}
                 >
+                  {/* Getönte Kachel: inaktiv nur das Icon, aktiv ein größeres
+                      1:1-Quadrat mit Icon (oben) + kurzem Lesezeichen-Namen
+                      (darunter, z.B. "Inhalt"). */}
                   <span
-                    className="new-detail__tile-icon"
+                    className="new-detail__tile-box"
                     style={
                       isActive
                         ? {
-                            // Getönte Fläche über opakem Grund (themeabhängig via
-                            // --nd-tile-active-bg: dunkel im Dark-, hell im Light-
-                            // Theme): das größere aktive Icon überdeckt die
-                            // Trennlinie vollständig (kein Durchscheinen der Linie).
                             backgroundColor: "var(--nd-tile-active-bg)",
                             backgroundImage: `linear-gradient(${tint}, ${tint})`,
                             color: tileColor,
@@ -443,13 +527,9 @@ export function NewCatDetailScreen({
                         : { background: tint, color: tileColor }
                     }
                   >
-                    <Icon size={isActive ? 26 : 20} color={tileColor} />
+                    <Icon size={isActive ? 24 : 20} color={tileColor} />
+                    {isActive && <span className="new-detail__tile-label">{tileLabel}</span>}
                   </span>
-                  {/* Label nur unter dem aktiven Icon – und nur, wenn der
-                      Kartentitel des Abschnitts nicht sichtbar ist (s.
-                      showLabel). Absolut positioniert, damit die Breite die
-                      Icon-Abstände nicht verändert. */}
-                  <span className="new-detail__tile-label">{isActive && showLabel ? label : ""}</span>
                 </button>
               );
             })}
@@ -631,6 +711,30 @@ export function NewCatDetailScreen({
           onUpdateCat={(_id, patch) => onUpdate(patch)}
           onClose={() => setCollabOpen(false)}
           initialView={collaborators.length === 0 ? "add" : "list"}
+        />
+      )}
+
+      {/* Tag-Pille mit mehreren Verknüpfungen angetippt: kompakte Liste dieses
+          Typs, "Mehr verknüpfen" öffnet das volle Verknüpfungs-Sheet. */}
+      {pillSheetType && (
+        <LinkedPillSheet
+          type={pillSheetType}
+          items={(linkedByType.find((g) => g.type === pillSheetType) || {}).items || []}
+          CC={CC}
+          t={t}
+          onMore={() => { setPillSheetType(null); setCatLinkOpen(true); }}
+          onClose={() => setPillSheetType(null)}
+        />
+      )}
+
+      {catLinkOpen && (
+        <CatLinkSheet
+          cat={cat}
+          cats={allCats}
+          CC={CC}
+          t={t}
+          onUpdateCat={onUpdateCat}
+          onClose={() => setCatLinkOpen(false)}
         />
       )}
 

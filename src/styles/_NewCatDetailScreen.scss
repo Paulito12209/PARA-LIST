@@ -40,20 +40,71 @@
     background: $color-bg;
   }
 
+  // Mittlere Zone der Topbar: Typ-Label und (gepinnter) Seitentitel liegen
+  // übereinander (absolut) und blenden per Opacity ineinander über – so
+  // ändert sich nur der Inhalt, nicht die Position/Höhe der Topbar.
+  &__topbar-center {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   // Typ-Label mittig oben ("Projekt" / "Arbeitsbereich" / "Ressource")
   &__type-label {
-    align-self: center;
-    margin-top: calc(#{$spacing-md} + env(safe-area-inset-top, 0px) - 6px);
+    position: absolute;
+    left: 8px;
+    right: 8px;
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.06em;
+    text-align: center;
     color: rgba(255, 255, 255, 0.92);
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s ease;
   }
 
   &--pinned &__type-label {
+    opacity: 0;
+    pointer-events: none;
     color: $color-text;
     text-shadow: none;
+  }
+
+  // Seitentitel als editierbares Eingabefeld: sitzt ausgeblendet über dem
+  // Typ-Label, blendet erst beim Pinnen ein – dann direkt oben editierbar
+  // (ersetzt optisch den Subtitle "Projekt" usw.).
+  &__topbar-title {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    opacity: 0;
+    pointer-events: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    font-family: $font-heading;
+    font-size: 17px;
+    font-weight: 800;
+    text-align: center;
+    color: $color-text;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: opacity 0.2s ease;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
+  }
+
+  &--pinned &__topbar-title {
+    opacity: 1;
+    pointer-events: auto;
   }
 
   // Liquid-Glass-Kreis (Zurück links, Einstellungen rechts)
@@ -135,15 +186,11 @@
     position: relative;
   }
 
-  // ── Durchgehende Verlaufsfläche (Akzent → Schwarz) hinter Cover + Titel +
-  // Leiste. Höhe wird per JS bis zur Trennlinie gesetzt; scrollt als absolute
-  // Fläche mit dem Inhalt. Oben 100 % Akzentfarbe, linear bis Schwarz an der
-  // Linie – ein einziger Hintergrund statt zweier gestückelter Verläufe.
-  // Oben 100 % Akzentfarbe → linear bis Schwarz, das aber schon oberhalb der
-  // Icon-Leiste voll erreicht ist (--nd-black-start, per JS gemessen) und dann
-  // durchgehend schwarz bleibt. So sitzen Icons + "Seiteninhalt"-Label auf
-  // reinem Schwarz statt auf einem Grauverlauf. Der Fadeout beim Scrollen liegt
-  // NICHT hier, sondern im gepinnten Sticky-Header (&--pinned &__sticky).
+  // ── Durchgehende Verlaufsfläche hinter Cover + Titel + Leiste: EIN Verlauf
+  // (Akzent oben → Seitenfarbe an der Trennlinie), volle Breite, KEINE Rundung
+  // (sonst schwarze Ecken). Höhe wird per JS bis zur Trennlinie gesetzt; scrollt
+  // als absolute Fläche mit. Der Fadeout beim Scrollen (gepinnt) liegt NICHT
+  // hier, sondern im Sticky-Header (&--pinned &__sticky).
   &__cover-bg {
     position: absolute;
     top: 0;
@@ -154,8 +201,8 @@
     background: linear-gradient(
       to bottom,
       rgb(var(--nd-accent-rgb)) 0%,
-      #{$color-bg} var(--nd-black-start, 60%),
-      #{$color-bg} 100%
+      rgba(var(--nd-accent-rgb), 0.55) 46%,
+      #{$color-bg} 96%
     );
   }
 
@@ -207,17 +254,19 @@
     top: var(--nd-topbar-h);
     z-index: 10;
     padding-top: $spacing-sm;
-    // Etwas Luft unter der Trennlinie, damit der Fadeout (gepinnt) genug
-    // Strecke hat, um den hochscrollenden Content weich auszublenden.
-    padding-bottom: $spacing-md;
+    // Fade-Zone UNTER der Trennlinie: genug Strecke (32px), damit der beim
+    // Scrollen hochlaufende Content gepinnt weich statt hart ausblendet. Die
+    // Linie (--nd-fade-start) sitzt an der Oberkante dieser Zone, direkt unter
+    // den Icons.
+    padding-bottom: $spacing-xl;
     // Transparent: der durchgehende Verlauf liegt in &__cover-bg dahinter.
     // Erst beim Pinnen bekommt der Block festen Grund (s. &--pinned).
     background: transparent;
 
     // Trennlinie auf dem Sticky (NICHT in der horizontal scrollenden Leiste),
-    // damit sie immer bis zum rechten Rand durchläuft. Position = Trennlinie
-    // im Sticky (--nd-fade-start, per JS gemessen). Das größere Aktiv-Icon
-    // (z-index 1, opak) überdeckt die Linie an seiner Stelle (N26-Stil).
+    // damit sie immer bis zum rechten Rand durchläuft. Position = Unterkante
+    // der Icon-Leiste (--nd-fade-start, per JS gemessen) – sie sitzt sauber
+    // unter allen Kacheln (auch der größeren aktiven).
     &::after {
       content: '';
       position: absolute;
@@ -266,17 +315,71 @@
     }
   }
 
+  // Gepinnt: der große Titel klappt weg (ersetzt durch den kompakten Titel in
+  // der Topbar, s. &__topbar-title) – Tags-Zeile + Icon-Leiste rücken dadurch
+  // direkt unter die Topbar nach.
+  &--pinned &__title {
+    padding-top: 0;
+    padding-bottom: 0;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  // Tag-Zeile unter dem Titel: verknüpfte Seiten (eine Pille pro Typ, farbig)
+  // + eigene Tags (cat.tags). Sitzt mit gleichem Abstand oben (zum Titel) wie
+  // unten (zur Icon-Leiste) – vertikal mittig zwischen beiden. Fehlt alles,
+  // entfällt die Zeile (kein Leerraum, s. JSX: hasTagsRow).
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-xs + $spacing-2xs;
+    padding: $spacing-sm $spacing-md;
+  }
+
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border-radius: $radius-pill;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &--linked {
+      cursor: pointer;
+
+      &:active {
+        transform: scale(0.96);
+      }
+    }
+  }
+
+  // "+N" innerhalb einer verknüpften Pille (mehrere desselben Typs)
+  &__tag-count {
+    font-weight: 800;
+    opacity: 0.85;
+  }
+
   // Automatisch (per JS) horizontal scrollende Leiste – Overflow versteckt,
   // kein manueller Scrollbalken. Die Trennlinie liegt bewusst auf &__sticky
   // (nicht hier), damit sie beim horizontalen Scrollen nicht mitwandert und
-  // stets bis zum rechten Rand durchläuft. Genug Platz unten für das absolut
-  // positionierte Aktiv-Label (überlappt, ohne die Icon-Abstände zu ändern).
+  // stets bis zum rechten Rand durchläuft. Die Kacheln richten sich oben aus
+  // (align-items: flex-start); die aktive Kachel wächst nur nach UNTEN (Label),
+  // ihre Trennlinie (JS: fadeStart = Leisten-Unterkante) sitzt darunter.
   &__iconbar {
     position: relative;
     display: flex;
     align-items: flex-start;
     gap: $spacing-sm + $spacing-xs;
-    padding: $spacing-sm $spacing-md 26px;
+    padding: $spacing-xs $spacing-md $spacing-2xs;
     overflow-x: hidden;
     scrollbar-width: none;
 
@@ -290,44 +393,50 @@
     z-index: 1;
     flex-shrink: 0;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
     background: transparent;
     border: none;
     padding: 0;
     cursor: pointer;
   }
 
-  // Getönte Kachel wie in der Vorlage: aktive Kachel größer als die übrigen
-  &__tile-icon {
-    @include flex-center;
+  // Getönte Kachel: inaktiv ein 44er-Icon-Quadrat, aktiv ein größeres
+  // 1:1-QUADRAT (64×64) mit Icon (oben) + Lesezeichen-Name (darunter) DARIN.
+  // Bewusst KEINE auto-Breite – der Name zieht die Kachel nicht in die Breite;
+  // stattdessen ist die Schrift klein genug, dass er ins Quadrat passt. Das Icon
+  // sitzt bei aktiv wie inaktiv auf gleicher Höhe (Padding: Icon-Mitte ≈ 22px).
+  &__tile-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
     width: 44px;
     height: 44px;
     border-radius: 12px;
-    transition: width 0.25s ease, height 0.25s ease, border-radius 0.25s ease;
+    transition: border-radius 0.2s ease;
   }
 
-  &__tile--active &__tile-icon {
+  &__tile--active &__tile-box {
     width: 64px;
     height: 64px;
+    justify-content: flex-start;
+    padding: 10px 4px 0;
     border-radius: 16px;
   }
 
-  // Label unter dem aktiven Icon: absolut mittig unter dem Icon – so ändert
-  // seine Breite (z.B. "Lesezeichen") die Icon-Abstände NICHT und es darf die
-  // Nachbarn überlappen. Die Leiste ist unten breit genug (padding-bottom),
-  // damit das Label vertikal nicht abgeschnitten wird.
+  // Lesezeichen-Name innerhalb der aktiven Kachel – in der Kachelfarbe, klein
+  // genug fürs Quadrat; überlange Namen werden mit Ellipsis gekürzt.
   &__tile-label {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 6px;
-    font-size: 11px;
+    max-width: 100%;
+    margin-top: 1px;
+    font-size: 9px;
     font-weight: 700;
-    color: $color-text;
+    line-height: 1;
+    letter-spacing: -0.1px;
+    color: currentColor;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     pointer-events: none;
   }
 
@@ -342,11 +451,14 @@
     // Erste Karte optisch auf ~16px an das aktive Icon heranziehen. Die
     // Icon-Leiste behält unten ihren Platz fürs Aktiv-Label (kein Clipping,
     // kein Layout-Sprung beim Pinnen); nur der Feed rückt in diese sonst leere
-    // Zone hinein. Der (transparente bzw. auslaufende) Sticky liegt darüber.
-    margin-top: -26px;
+    // Zone hinein. Die Cover-Verlaufsfläche (JS: coverBgH) endet um denselben
+    // Betrag höher, damit ihr Fuß nicht über diese Karte malt.
+    margin-top: calc(-1 * var(--nd-feed-pull, 26px));
   }
 
   &__card {
+    display: flex;
+    flex-direction: column;
     background: $color-card;
     border: 1px solid $color-border;
     border-radius: $radius-lg;
@@ -409,6 +521,11 @@
   }
 
   &__card-empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     color: $color-muted;
     font-size: 13px;
     padding: $spacing-sm 0;
@@ -490,12 +607,14 @@
     flex-shrink: 0;
   }
 
-  // Rechts: Verknüpfen-Mini-Logo (PARA·LIST-Verzweigung), grau
+  // Verknüpfen-Mini-Logo (PARA·LIST-Verzweigung): steht in der Meta-Zeile
+  // direkt nach der letzten Mini-Kachel (Datum/Typ-Icon der Verknüpfung),
+  // nicht am rechten Zeilenrand.
   &__row-link {
+    display: inline-flex;
+    align-items: center;
     flex-shrink: 0;
-    @include flex-center;
-    width: 32px;
-    height: 32px;
+    padding: 2px 4px;
     background: transparent;
     border: none;
     color: $color-muted;
@@ -616,26 +735,40 @@
 // Notiz-Gelb usw.), läuft aber – anders als im Dark-Theme – nach HELL statt
 // nach Schwarz aus. So sitzen Icon-Leiste, Labels und Titel auf hellem Grund.
 .app.light-theme .new-detail {
-  background: #f7f7f9;
+  // Umgedreht wie auf der Einstellungsseite: Grundfläche WEISS, Karten leicht
+  // hellgrau. So heben sich Karten dezent ab und Einträge (z.B. Lesezeichen)
+  // verschmelzen mit der grauen Karte statt als eigener Kasten aufzufallen.
+  background: #ffffff;
   // Aktives Icon: opaker heller Grund (überdeckt die helle Trennlinie).
-  --nd-tile-active-bg: #f7f7f9;
+  --nd-tile-active-bg: #ffffff;
 
-  // Verlauf des Cover-Kopfes: oben volle Akzentfarbe → schon oberhalb der
-  // Icon-Leiste vollständig auf Hell (#f7f7f9), danach durchgehend hell.
+  // Cover-Verlauf läuft im Light-Theme nach WEISS statt nach Schwarz aus.
   &__cover-bg {
     background: linear-gradient(
       to bottom,
       rgb(var(--nd-accent-rgb)) 0%,
-      #f7f7f9 var(--nd-black-start, 60%),
-      #f7f7f9 100%
+      rgba(var(--nd-accent-rgb), 0.55) 46%,
+      #ffffff 96%
     );
   }
 
   &--pinned .new-detail__topbar {
-    background: #f7f7f9;
+    background: #ffffff;
   }
 
   &--pinned .new-detail__type-label {
+    color: #1a1a24;
+  }
+
+  &--pinned .new-detail__topbar-title {
+    color: #1a1a24;
+  }
+
+  // Eigene Tags (cat.tags, keine Typfarbe): gepinnt sitzt die Zeile auf
+  // weißem Grund – dort dunkel statt (unsichtbar) weiß auf weiß.
+  &--pinned .new-detail__tag:not(.new-detail__tag--linked) {
+    border-color: rgba(0, 0, 0, 0.12);
+    background: rgba(0, 0, 0, 0.06);
     color: #1a1a24;
   }
 
@@ -668,9 +801,9 @@
   &--pinned .new-detail__sticky {
     background: linear-gradient(
       to bottom,
-      #f7f7f9 0,
-      #f7f7f9 var(--nd-fade-start),
-      rgba(247, 247, 249, 0) 100%
+      #ffffff 0,
+      #ffffff var(--nd-fade-start),
+      rgba(255, 255, 255, 0) 100%
     );
   }
 
@@ -685,9 +818,10 @@
     color: #1a1a24;
   }
 
+  // Karten leicht hellgrau auf weissem Grund (umgedreht).
   &__card {
-    background: #ffffff;
-    border-color: rgba(0, 0, 0, 0.07);
+    background: #f2f2f5;
+    border-color: transparent;
   }
 
   // Akzent-Karte (Seiteninhalt) bleibt farbig mit weißem Text – die helle
@@ -703,18 +837,28 @@
     }
   }
 
+  // Lesezeichen-Eintrag: verschmilzt mit der grauen Karte – keine eigene
+  // Fläche, kein Rahmen (sonst wirkt er als abgesetzter Kasten auf der Karte).
+  .media-item--link {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+
   &__card-title {
     color: #1a1a24;
   }
 
+  // Zähler/Plus-Button etwas dunkler als die graue Karte, damit sie sichtbar
+  // bleiben.
   &__card-count {
-    background: #f0f0f3;
+    background: #e6e6ea;
     color: #8a8a96;
   }
 
   &__card-add {
-    background: #f0f0f3;
-    border-color: rgba(0, 0, 0, 0.07);
+    background: #e6e6ea;
+    border-color: transparent;
     color: #8a8a96;
   }
 

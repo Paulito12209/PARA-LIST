@@ -393,17 +393,28 @@ export default function App() {
   // Pokal-Button liegt jetzt im Header (CommandPanel). Der Fortschritts-State
   // wohnt aber in HomeScreen → per Tick-Zähler von oben antriggern.
   const [progressTick, setProgressTick] = useState(0);
-  // Begrüßungs-Popup beim App-Start (Spotify-Card-Stil): zeigt sich einmal
-  // pro App-Start, sobald der State geladen und ein Name gesetzt ist – damit
-  // auch direkt nach abgeschlossenem Onboarding.
+  // Begrüßungs-Popup beim App-Start (Spotify-Card-Stil): zeigt sich EINMAL PRO
+  // TAG – beim ersten Start am jeweiligen Kalendertag, sobald der State geladen
+  // und ein Name gesetzt ist (also auch direkt nach dem Onboarding). Reloads am
+  // selben Tag zeigen es NICHT erneut; das zuletzt gezeigte Datum wird im State
+  // (→ IndexedDB) gespeichert. Am nächsten Tag erscheint es beim ersten Start
+  // wieder.
   const [greetOpen, setGreetOpen] = useState(false);
   const greetShownRef = useRef(false);
   const hasUserName = !!state.user?.name;
   useEffect(() => {
     if (isLoaded && hasUserName && !greetShownRef.current) {
       greetShownRef.current = true;
-      setGreetOpen(true);
+      const d = new Date();
+      const today = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+      if (state.lastGreetDate !== today) {
+        setState((s) => ({ ...s, lastGreetDate: today }));
+        setGreetOpen(true);
+      }
     }
+    // Nur einmal pro Session auswerten (greetShownRef); lastGreetDate/setState
+    // bewusst nicht in den Deps, um kein erneutes Auslösen beim Speichern.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, hasUserName]);
   // Header-Titel der Startseite: null → "Startseite"; beim Aufklappen der Liste → aktiver Typ-Titel
   const [homeHeaderTitle, setHomeHeaderTitle] = useState(null);
@@ -1523,6 +1534,7 @@ export default function App() {
                 allCats={state.cats}
                 entries={inclusiveEntries}
                 onUpdate={(p) => updateCat(cat.id, p)}
+                onUpdateCat={updateCat}
                 onTogglePin={() => togglePin(cat.id, "cat")}
                 onDelete={() => {
                   if (window.confirm(t.confirmDelete(cat.name))) deleteCat(cat.id);

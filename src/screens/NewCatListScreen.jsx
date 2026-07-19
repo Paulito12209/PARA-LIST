@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { Archive, Calendar, ChevronLeft, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
 import { fmtDate, fmtRelative, CAT_ICONS, COVER_COLORS } from "../utils";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -6,6 +6,7 @@ import { CustomSettingsIcon, GitMergeBranchIcon, ActiveDotIcon } from "../compon
 import { NewDesignNav } from "../components/NewDesignNav";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
 import { ConnSheet } from "../components/PillSheets";
+import { DatePickerSheet } from "../components/PickerSheets";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { DetailMetaRow } from "../components/TaskSubtabControls";
 
@@ -19,7 +20,7 @@ const TYPE_ACCENT_RGB = {
 // Eine Zeile der Spotify-Liste: Cover-Kachel · Titel + Meta-Zeile (Datums-Tag
 // mit Kalender-Icon, Verknüpfen-Icon) · Kebab-Menü. Tap auf die Zeile öffnet
 // die Seite; Verknüpfen/Kebab stoppen die Propagation.
-function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu, onUpdate }) {
+function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu, onPickDate }) {
   const cfg = CC[cat.type] || CC.resource;
   const CatIcon = CAT_ICONS[cat.type] || CAT_ICONS.resource;
   const RelatedIcon = related ? CAT_ICONS[related.type] || CAT_ICONS.resource : null;
@@ -35,7 +36,6 @@ function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu, onUpd
     : cat.createdAt
       ? cat.createdAt.split("T")[0]
       : null;
-  const dateInputRef = useRef(null);
   const relatedCfg = related && CC[related.type] ? CC[related.type] : null;
 
   return (
@@ -72,9 +72,7 @@ function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu, onUpd
               className="new-list__row-date new-list__row-date--btn"
               onClick={(e) => {
                 e.stopPropagation();
-                const inp = dateInputRef.current;
-                if (!inp) return;
-                try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
+                onPickDate?.(cat);
               }}
               aria-label={t.scheduledLabel || "Terminiert"}
             >
@@ -86,17 +84,6 @@ function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu, onUpd
               <Calendar size={12} strokeWidth={2.4} />
               {dateStr && fmtDate(dateStr, t.locale)}
             </span>
-          )}
-          {isProject && (
-            <input
-              ref={dateInputRef}
-              type="date"
-              className="new-list__row-date-input"
-              value={cat.date || ""}
-              tabIndex={-1}
-              onClick={(e) => e.stopPropagation()}
-              onChange={(e) => onUpdate?.({ date: e.target.value || null })}
-            />
           )}
           {related && relatedCfg && RelatedIcon && (
             <span className="new-list__row-linked" style={{ color: relatedCfg.color }}>
@@ -157,6 +144,8 @@ export function NewCatListScreen({
   const [filter, setFilter] = useState("active");
   const [menuCatId, setMenuCatId] = useState(null);
   const [connCatId, setConnCatId] = useState(null);
+  // Zeile, deren Terminierung gerade im Datums-Sheet bearbeitet wird
+  const [dateCatId, setDateCatId] = useState(null);
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [sort, setSort] = useState({ by: "date", desc: true });
   const [pinnedFilter, setPinnedFilter] = useState("all");
@@ -165,6 +154,7 @@ export function NewCatListScreen({
   // Öffnen), damit z.B. der Favoriten-Stern direkt umschaltet.
   const menuCat = allCats.find((c) => c.id === menuCatId) || null;
   const connCat = allCats.find((c) => c.id === connCatId) || null;
+  const dateCat = allCats.find((c) => c.id === dateCatId) || null;
 
   const getTs = (c) =>
     typeof c?.createdAt === "number" ? c.createdAt : c?.createdAt ? Date.parse(c.createdAt) || 0 : 0;
@@ -319,7 +309,7 @@ export function NewCatListScreen({
               onOpen={onOpen}
               onOpenConn={(c) => setConnCatId(c.id)}
               onOpenMenu={(c) => setMenuCatId(c.id)}
-              onUpdate={(patch) => onUpdateCat(cat.id, patch)}
+              onPickDate={(c) => setDateCatId(c.id)}
             />
           ))
         )}
@@ -337,6 +327,17 @@ export function NewCatListScreen({
         onAdd={onAdd}
         onOpenVoice={() => setVoiceOpen(true)}
       />
+
+      {/* Datums-Sheet des Datum-Tags in der Meta-Zeile (nur Projekte) */}
+      {dateCat && (
+        <DatePickerSheet
+          t={t}
+          value={dateCat.date || null}
+          accent={cfg.color}
+          onSelect={(d) => onUpdateCat(dateCat.id, { date: d })}
+          onClose={() => setDateCatId(null)}
+        />
+      )}
 
       {/* Kebab-Sheet der Zeile: Cover-Design (Farben/Foto/Kamera + URL) und
           Favorit/Anpinnen/Archivieren/Löschen – geteilt mit der Detailseite. */}

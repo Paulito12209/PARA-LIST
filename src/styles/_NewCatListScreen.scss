@@ -230,18 +230,6 @@
     cursor: pointer;
   }
 
-  // Unsichtbares natives Datums-Input: Anker für showPicker(); darf nicht
-  // display:none sein, sonst öffnet der Picker nicht.
-  &__row-date-input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    border: 0;
-    padding: 0;
-    pointer-events: none;
-  }
-
   // Typ-Icon des verknüpften Elements (z.B. gelbes Dreieck = Arbeitsbereich)
   &__row-linked {
     display: inline-flex;

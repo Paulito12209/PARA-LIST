@@ -259,23 +259,31 @@
   // Terminierung neben dem Emblem: links das Datum (Kalender-Icon), rechts die
   // Uhrzeit (Uhr-Icon) – vertikal auf Emblem-Mitte und horizontal MITTIG in
   // der jeweiligen Restfläche zwischen Bildschirmrand und Emblem (56px = halbe
-  // Emblem-Breite von 112px). Dezent hell auf dem Cover-Verlauf
-  // (Light-Theme-Override unten).
+  // Emblem-Breite von 112px). Beide Icons stehen IMMER (ohne Wert als
+  // Placeholder); als Buttons öffnen sie den nativen Picker. Dezent hell auf
+  // dem Cover-Verlauf (Light-Theme-Override unten).
+  // WICHTIG: KEIN transform fürs Zentrieren – der globale button:active-Style
+  // (scale 0.97) würde das translateY ersetzen und der Button spränge beim
+  // Antippen nach unten. Stattdessen volle Emblem-Höhe + Flex-Zentrierung.
   &__cover-meta {
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 0;
+    bottom: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 5px;
     width: calc(50% - 56px);
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.82);
     text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
     white-space: nowrap;
-    pointer-events: none;
+    cursor: pointer;
 
     &--left {
       left: 0;
@@ -386,13 +394,19 @@
     align-items: center;
     justify-content: center;
     gap: 5px;
+    width: 100%;
     max-height: 0;
     opacity: 0;
     overflow: hidden;
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: $font-body;
     font-size: 12px;
     font-weight: 700;
     color: #0b8ce9;
     white-space: nowrap;
+    // Eingeklappt (ungepinnt) darf der Button keine Taps abfangen.
     pointer-events: none;
   }
 
@@ -401,6 +415,8 @@
     opacity: 1;
     padding-top: 0;
     padding-bottom: 12px;
+    pointer-events: auto;
+    cursor: pointer;
   }
 
   // Automatisch (per JS) horizontal scrollende Leiste – Overflow versteckt,
@@ -725,8 +741,20 @@
   }
 
   // ── Seiteninhalt-Karte: Akzentfläche wie Spotifys Lyrics-Vorschau ──
+  // Seiteninhalt-Karte: vertikaler Verlauf vom Seitenakzent (oben) bis EXAKT
+  // zum Kartengrau der normalen Karten darunter ($color-card, wie "Aufgaben") –
+  // Projekt = rot→dunkelgrau, Ressource = grün→dunkelgrau usw. Der weiße Text
+  // bleibt auf dem dunklen Verlaufsende gut lesbar.
   &__card--canvas {
-    background: rgb(var(--nd-accent-rgb));
+    background: linear-gradient(
+      to bottom,
+      rgb(var(--nd-accent-rgb)) 0%,
+      $color-card 100%
+    );
+    // Ohne no-repeat wiederholt sich der Verlauf im 1px-Border-Streifen unten
+    // (Gradient-Größe = Padding-Box) – dort begänne er wieder mit der
+    // Akzentfarbe und malte eine feine rote Linie an die Kartenunterkante.
+    background-repeat: no-repeat;
     border-color: transparent;
 
     // Abschnitttitel weiß auf der Akzentfläche (statt dunkel wie in normalen
@@ -842,13 +870,29 @@
   --nd-tile-active-bg: #ffffff;
 
   // Cover-Verlauf läuft im Light-Theme nach WEISS statt nach Schwarz aus.
+  // Oben nur ein HELLES Rot (60 % Akzent auf Weiß) – hell genug, dass
+  // Typ-Label, Zurück-Pfeil und Kebab-Menü in Schwarz lesbar sind, aber
+  // deutlich satter als die zarte Tönung der aktiven Lesezeichen-Kachel.
   &__cover-bg {
     background: linear-gradient(
       to bottom,
-      rgb(var(--nd-accent-rgb)) 0%,
-      rgba(var(--nd-accent-rgb), 0.55) 46%,
+      color-mix(in srgb, rgb(var(--nd-accent-rgb)) 60%, #ffffff) 0%,
+      rgba(var(--nd-accent-rgb), 0.32) 46%,
       #ffffff 96%
     );
+  }
+
+  // Topbar-Inhalte sitzen auf dem hellen Cover → durchgehend dunkel.
+  &__type-label {
+    color: #1a1a24;
+    text-shadow: none;
+  }
+
+  // Glas-Buttons (Zurück/Kebab): helles Glas mit schwarzem Icon.
+  &__glass-btn {
+    color: #1a1a24;
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.42);
   }
 
   &--pinned .new-detail__topbar {
@@ -926,16 +970,29 @@
     border-color: transparent;
   }
 
-  // Akzent-Karte (Seiteninhalt) bleibt farbig mit weißem Text – die helle
-  // Karten-Regel darüber hätte sonst höhere Spezifität als die Dark-Basis.
+  // Akzent-Karte (Seiteninhalt): Verlauf von einem HELLEN Akzentton (55 % auf
+  // Weiß – dunkler als die zarte Tönung der aktiven Kachel, aber hell genug
+  // für schwarze Schrift) zum hellen Kartengrau der normalen Karten (#f2f2f5).
+  // Titel UND Fließtext daher durchgehend dunkel.
   &__card--canvas {
-    background: rgb(var(--nd-accent-rgb));
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, rgb(var(--nd-accent-rgb)) 55%, #ffffff) 0%,
+      #f2f2f5 100%
+    );
+    background-repeat: no-repeat; // s. Dark-Theme-Regel (rote 1px-Linie unten)
     border-color: transparent;
 
-    // Abschnitttitel weiß auf der Akzentfläche (überstimmt die helle
-    // card-title-Regel weiter unten, die sonst spezifischer wäre).
     .new-detail__card-title {
-      color: #fff;
+      color: #16161f;
+    }
+
+    .new-detail__canvas-input {
+      color: rgba(26, 26, 36, 0.85);
+
+      &::placeholder {
+        color: rgba(26, 26, 36, 0.45);
+      }
     }
   }
 

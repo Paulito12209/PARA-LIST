@@ -9,6 +9,7 @@ import { DetailsBody } from "../components/DetailsPopup";
 import { LinkList } from "../components/EntryLists";
 import { LinkedPillSheet } from "../components/LinkedPillSheet";
 import { CatLinkSheet } from "../components/CatLinkSheet";
+import { SchedulePickerSheet } from "../components/PickerSheets";
 
 // Akzent (RGB) des Covers – Typfarbe der Seite (Projekt rot usw.).
 const TYPE_ACCENT_RGB = {
@@ -125,12 +126,10 @@ function DetailEntryRow({ t, CC, entry, allCats, onToggle, onOpen }) {
       <div className="new-detail__row-info">
         <div className="new-detail__row-title">{entry.title}</div>
         <div className="new-detail__row-meta">
-          {dateStr && (
-            <span className="new-detail__row-date">
-              <Calendar size={12} strokeWidth={2.4} />
-              {fmtDate(dateStr, t.locale)}
-            </span>
-          )}
+          <span className="new-detail__row-date">
+            <Calendar size={12} strokeWidth={2.4} />
+            {dateStr && fmtDate(dateStr, t.locale)}
+          </span>
           {linkedCfg && LinkedIcon && (
             <span className="new-detail__row-cat" style={{ color: linkedCfg.color }}>
               <LinkedIcon size={12} strokeWidth={2.4} />
@@ -203,9 +202,8 @@ export function NewCatDetailScreen({
   const topbarRef = useRef(null);
   const stickyRef = useRef(null);
   const feedRef = useRef(null);
-  // Versteckte native Pickers für Terminierung (Datum/Uhrzeit) am Cover.
-  const coverDateRef = useRef(null);
-  const coverTimeRef = useRef(null);
+  // Eigene Picker-Sheets für die Terminierung am Cover ("date" | "time" | null)
+  const [coverPicker, setCoverPicker] = useState(null);
   const titleElRef = useRef(null);
   const barRef = useRef(null);
   const sectionRefs = useRef({});
@@ -475,24 +473,12 @@ export function NewCatDetailScreen({
                   (verstecktes Input darunter). */}
               <button
                 className="new-detail__cover-meta new-detail__cover-meta--left"
-                onClick={() => {
-                  const inp = coverDateRef.current;
-                  if (!inp) return;
-                  try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
-                }}
+                onClick={() => setCoverPicker("date")}
                 aria-label={t.scheduledLabel || "Terminiert"}
               >
                 <Calendar size={14} strokeWidth={2.2} />
                 {cat.date && fmtDate(cat.date, t.locale)}
               </button>
-              <input
-                ref={coverDateRef}
-                type="date"
-                className="new-detail__meta-input"
-                value={cat.date || ""}
-                tabIndex={-1}
-                onChange={(e) => onUpdate({ date: e.target.value || null })}
-              />
               {safeType === "project" ? (
                 <DartTargetIcon size={112} strokeWidth={1.4} />
               ) : (
@@ -500,24 +486,12 @@ export function NewCatDetailScreen({
               )}
               <button
                 className="new-detail__cover-meta new-detail__cover-meta--right"
-                onClick={() => {
-                  const inp = coverTimeRef.current;
-                  if (!inp) return;
-                  try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
-                }}
+                onClick={() => setCoverPicker("time")}
                 aria-label={t.timeLabel || "Uhrzeit"}
               >
                 <Clock size={14} strokeWidth={2.2} />
                 {cat.time}
               </button>
-              <input
-                ref={coverTimeRef}
-                type="time"
-                className="new-detail__meta-input"
-                value={cat.time || ""}
-                tabIndex={-1}
-                onChange={(e) => onUpdate({ time: e.target.value || null })}
-              />
             </div>
           )}
         </div>
@@ -537,8 +511,13 @@ export function NewCatDetailScreen({
               Icon + Datum, dahinter (falls gesetzt) Mittelpunkt + Uhrzeit ohne
               eigenes Uhr-Icon. IMMER gerendert (auch ohne Datum bleibt das
               Icon als Placeholder stehen), damit die Headerhöhe auf allen
-              Seiten identisch ist. Ungepinnt eingeklappt. */}
-          <div className="new-detail__pinned-meta">
+              Seiten identisch ist. Ungepinnt eingeklappt; Tap öffnet das
+              kombinierte Terminierungs-Sheet. */}
+          <button
+            className="new-detail__pinned-meta"
+            onClick={() => setCoverPicker("date")}
+            aria-label={t.scheduledLabel || "Terminiert"}
+          >
             <Calendar size={12} strokeWidth={2.4} />
             {cat.date && (
               <span>
@@ -546,7 +525,7 @@ export function NewCatDetailScreen({
                 {cat.time ? ` · ${cat.time}` : ""}
               </span>
             )}
-          </div>
+          </button>
           <div className="new-detail__iconbar" ref={barRef}>
             {SECTIONS.map(({ id, Icon, color, label, tileLabel }) => {
               const isActive = id === active;
@@ -821,6 +800,22 @@ export function NewCatDetailScreen({
           t={t}
           onUpdateCat={onUpdateCat}
           onClose={() => setCatLinkOpen(false)}
+        />
+      )}
+
+      {/* Terminierung: EIN kombiniertes Frosted-Glass-Sheet mit den Subtabs
+          Datum/Uhrzeit – geöffnet von den Cover-Icons (mit passendem Start-
+          Tab) und der Miniatur-Terminierung im gepinnten Header. */}
+      {coverPicker && (
+        <SchedulePickerSheet
+          t={t}
+          date={cat.date || null}
+          time={cat.time || null}
+          accent={`rgb(${accentRgb})`}
+          initialTab={coverPicker}
+          onChangeDate={(d) => onUpdate({ date: d })}
+          onChangeTime={(v) => onUpdate({ time: v })}
+          onClose={() => setCoverPicker(null)}
         />
       )}
 

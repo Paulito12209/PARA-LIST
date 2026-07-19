@@ -16,6 +16,9 @@
 
 // Listen & Detail-Screens
 @use './styles/EntryLists';
+// Nach EntryLists laden: .picker-sheet__panel überstimmt .link-sheet__panel
+// (gleiche Spezifität – Reihenfolge entscheidet).
+@use './styles/PickerSheets';
 @use './styles/FolderScreens';
 @use './styles/NewCatListScreen';
 @use './styles/NewCatDetailScreen';

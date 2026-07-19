@@ -17,7 +17,12 @@ export function SheetFooter({ onClose, closeLabel = "Schließen", children }) {
   // zeigt das Text-Label (wie der Schließen-Button im Einstellungs-Menü).
   const closeOnly = !children;
   return (
-    <div className="sheet-footer">
+    // data-keep-focus: Taps auf die Footer-Buttons dürfen ein fokussiertes
+    // Eingabefeld NICHT über den globalen Blur-Handler (App.jsx) verlassen –
+    // sonst klappt auf iOS erst die Tastatur zu, die Seite verschiebt sich
+    // und der Tap landet daneben (z.B. auf dem Modal-Backdrop → Sheet
+    // schließt, ohne zu speichern).
+    <div className="sheet-footer" data-keep-focus="true">
       <button
         type="button"
         className={`sheet-footer__close${closeOnly ? " sheet-footer__close--full" : ""}`}

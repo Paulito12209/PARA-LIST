@@ -34,6 +34,11 @@ const MEDIA_TYPES = [
 const MULTI_SELECT_PREVIEW_LIMIT = 2;
 
 export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }) {
+  // Backdrop schließt nur, wenn der Tap auch AUF dem Backdrop begonnen hat –
+  // verhindert versehentliches Schließen durch Ghost-Taps (iOS: Tastatur
+  // klappt beim Tippen auf einen Button zu, Layout verschiebt sich, der
+  // Klick landet auf dem Backdrop statt auf dem Button).
+  const backdropPressRef = useRef(false);
   const [title, setTitle] = useState("");
   const [note, setNote] = useState("");
   const [due, setDue] = useState("");
@@ -105,7 +110,16 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
   };
 
   return (
-    <div className="modal" onClick={onClose}>
+    <div
+      className="modal"
+      onPointerDown={(e) => {
+        backdropPressRef.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (backdropPressRef.current && e.target === e.currentTarget) onClose();
+        backdropPressRef.current = false;
+      }}
+    >
       <div className="modal__sheet modal__sheet--minimal" onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
 

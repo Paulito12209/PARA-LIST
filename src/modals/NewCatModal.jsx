@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CAT_ICONS } from "../utils";
 import { SheetFooter } from "../components/SheetFooter";
 
 export function NewCatModal({ type, onSave, onClose, t, CC }) {
   const [name, setName] = useState("");
+  // Backdrop schließt nur, wenn der Tap auch AUF dem Backdrop begonnen hat
+  // (gleiche Ghost-Tap-Absicherung wie im CreateModal).
+  const backdropPressRef = useRef(false);
   const cfg = CC[type];
   const CatIcon = CAT_ICONS[type];
 
@@ -12,7 +15,16 @@ export function NewCatModal({ type, onSave, onClose, t, CC }) {
   };
 
   return (
-    <div className="modal" onClick={onClose}>
+    <div
+      className="modal"
+      onPointerDown={(e) => {
+        backdropPressRef.current = e.target === e.currentTarget;
+      }}
+      onClick={(e) => {
+        if (backdropPressRef.current && e.target === e.currentTarget) onClose();
+        backdropPressRef.current = false;
+      }}
+    >
       <div className="modal__sheet" onClick={(e) => e.stopPropagation()}>
         <div className="modal__handle" />
         <div className="modal__icon-row">

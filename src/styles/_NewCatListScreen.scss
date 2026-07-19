@@ -269,6 +269,80 @@
   }
 }
 
+// ── Eintrags-Listen (Aufgaben/Notizen/Kalender) im neuen Listen-Layout ──
+// Die Home-Karten (.task-item--home) werden hier auf den flachen Look der
+// Kategorie-Zeilen (.new-list__row) umgestellt: kein Karten-Hintergrund,
+// kein Innen-Padding über das Zeilen-Padding hinaus, gleiche Außenabstände
+// links/rechts und gleiche Kachel-Größe wie die Cover-Kachel.
+.new-list__body {
+  .swipe-delete-wrapper {
+    margin-bottom: 0;
+  }
+
+  .task-item--home {
+    position: relative;
+    // !important nötig: die Karten-Regel in _EntryLists.scss setzt den
+    // Hintergrund selbst mit !important (#16161F).
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none;
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-sm;
+    // Platz für den absolut positionierten Kebab rechts (wie __row-kebab)
+    padding-right: 44px;
+    gap: $spacing-sm + $spacing-xs;
+    align-items: center;
+    transition: background $transition-fast;
+
+    &:active {
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    // Erledigte/archivierte Zeilen bleiben ebenfalls flach
+    &.task-item--done {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none;
+    }
+
+    // Typ-Kachel in Größe/Radius der Cover-Kachel der Kategorie-Zeilen
+    .task-item__type-icon,
+    .note-item__type-icon,
+    .cal-item__type-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: $radius-sm;
+    }
+
+    // Kebab vertikal zentriert am rechten Rand – wie .new-list__row-kebab
+    .task-item__menu-btn {
+      position: absolute;
+      right: $spacing-2xs;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+    }
+
+    // Datums-Pille als schlichter Text-Tag (blau bzw. rot bei überfällig),
+    // wie der Datums-Tag der Kategorie-Zeilen – ohne Pillen-Gehäuse.
+    .task-item__pill--date {
+      background: transparent;
+      border: none;
+      padding: 0 2px;
+    }
+
+    // Kompaktere Zeilenabstände analog zur 2-zeiligen Kategorie-Zeile
+    .task-item__note-hint {
+      margin-top: 3px;
+    }
+
+    .task-item__pills-row {
+      margin-top: 3px;
+    }
+  }
+}
+
 // ── Light Theme ──────────────────────────────────────────────────
 // Pillen mit invertierten Farbtoken (aktiv dunkel auf hell), Glas-Buttons
 // als helles Glas, Verlauf läuft in die helle Fläche aus.
@@ -318,5 +392,28 @@
   // _FolderScreens.scss, die sonst höhere Spezifität hätte).
   &__pills .cat-detail__task-meta {
     background: transparent;
+  }
+}
+
+// Light Theme der flachen Eintragszeilen: das globale Light-Override setzt
+// `background: #ffffff !important` auf .task-item--home – hier zurück auf
+// transparent, Aktiv-Feedback wie bei den Kategorie-Zeilen.
+.app.light-theme .new-list__body {
+  .task-item--home,
+  .task-item--home.task-item--done {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+
+    &:active {
+      background: rgba(26, 26, 36, 0.05) !important;
+    }
+  }
+
+  // Datums-Pille auch im Light Theme ohne Pillen-Gehäuse (schlichter Text-Tag)
+  .task-item--home .task-item__pill--date {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none;
   }
 }

@@ -184,6 +184,11 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     position: relative;
+    // Kein Browser-Scroll-Anchoring: Beim Pinnen klappt der große Titel ein
+    // (Layout über dem Anker schrumpft) – der Browser würde den Scrollstand
+    // "korrigierend" zurückschieben und damit Pin/Unpin-Flackern samt falscher
+    // Verlaufs-Zwischenstände auslösen.
+    overflow-anchor: none;
   }
 
   // ── Durchgehende Verlaufsfläche hinter Cover + Titel + Leiste: EIN Verlauf
@@ -211,7 +216,10 @@
   &__cover {
     position: relative;
     z-index: 1;
-    min-height: calc(240px + env(safe-area-inset-top, 0px));
+    // 220px statt 240px: das Emblem rückt näher an die Topbar, damit unter ihm
+    // genug Luft für den Titel bleibt – der soll optisch MITTIG zwischen Emblem
+    // und Icon-Leiste sitzen (s. &__title).
+    min-height: calc(220px + env(safe-area-inset-top, 0px));
     display: flex;
     flex-direction: column;
     padding-top: var(--nd-topbar-h);
@@ -248,12 +256,45 @@
     filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.12));
   }
 
+  // Terminierung neben dem Emblem: links das Datum (Kalender-Icon), rechts die
+  // Uhrzeit (Uhr-Icon) – vertikal auf Emblem-Mitte und horizontal MITTIG in
+  // der jeweiligen Restfläche zwischen Bildschirmrand und Emblem (56px = halbe
+  // Emblem-Breite von 112px). Dezent hell auf dem Cover-Verlauf
+  // (Light-Theme-Override unten).
+  &__cover-meta {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: calc(50% - 56px);
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.82);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    pointer-events: none;
+
+    &--left {
+      left: 0;
+    }
+
+    &--right {
+      right: 0;
+    }
+  }
+
   // ── Gepinnter Block: Titel + Icon-Leiste kleben unter der Topbar fest.
   &__sticky {
     position: sticky;
     top: var(--nd-topbar-h);
     z-index: 10;
-    padding-top: $spacing-sm;
+    // Kein eigener Abstand oben: der Freiraum über dem Titel kommt aus dem
+    // Cover (Emblem ist dort zentriert); unter dem Titel setzt &__title den
+    // gleich großen Abstand, damit der Titel mittig dazwischen steht.
+    padding-top: 0;
     // Fade-Zone UNTER der Trennlinie: genug Strecke (32px), damit der beim
     // Scrollen hochlaufende Content gepinnt weich statt hart ausblendet. Die
     // Linie (--nd-fade-start) sitzt an der Oberkante dieser Zone, direkt unter
@@ -293,9 +334,16 @@
   }
 
   // Titel oberhalb der Icon-Leiste (Spotify-Playlist-Titel), editierbar
+  // Titel sitzt optisch MITTIG zwischen Emblem und Icon-Leiste: über ihm liegt
+  // der halbe Cover-Restraum (~22px), darunter dieses Padding + das der Leiste
+  // (16px + 4px). Beim Pinnen klappt er weg (s. &--pinned &__title).
   &__title {
+    // Block statt inline-block (Input-Default): sonst bleibt beim Einklappen
+    // (gepinnt, max-height 0) die leere Textzeile des Inline-Layouts stehen
+    // (~21px Phantom-Raum) und drückt Meta-Zeile + Icon-Leiste nach unten.
+    display: block;
     width: 100%;
-    padding: 0 $spacing-md $spacing-xs;
+    padding: 0 $spacing-md $spacing-md;
     background: transparent;
     border: none;
     font-family: $font-heading;
@@ -327,45 +375,32 @@
     overflow: hidden;
   }
 
-  // Tag-Zeile unter dem Titel: verknüpfte Seiten (eine Pille pro Typ, farbig)
-  // + eigene Tags (cat.tags). Sitzt mit gleichem Abstand oben (zum Titel) wie
-  // unten (zur Icon-Leiste) – vertikal mittig zwischen beiden. Fehlt alles,
-  // entfällt die Zeile (kein Leerraum, s. JSX: hasTagsRow).
-  &__tags {
+  // Miniatur-Terminierung im gepinnten Header: Kalender-Icon + "15. Mai · 14:00"
+  // in Datums-Blau, horizontal zentriert (wie der Topbar-Titel darüber) und
+  // vertikal mittig zwischen Titel und Icon-Leiste. Oben KEIN eigenes Padding –
+  // die Topbar bringt unter ihrem Titeltext bereits ~17px Restraum mit; unten
+  // gleichen 12px + 4px Leisten-Padding das aus. Ungepinnt eingeklappt – oben
+  // neben dem Emblem steht die große Variante.
+  &__pinned-meta {
     display: flex;
-    flex-wrap: wrap;
+    align-items: center;
     justify-content: center;
-    align-items: center;
-    gap: $spacing-xs + $spacing-2xs;
-    padding: $spacing-sm $spacing-md;
-  }
-
-  &__tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 5px 11px;
-    border-radius: $radius-pill;
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.85);
+    gap: 5px;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
     font-size: 12px;
     font-weight: 700;
+    color: #0b8ce9;
     white-space: nowrap;
-
-    &--linked {
-      cursor: pointer;
-
-      &:active {
-        transform: scale(0.96);
-      }
-    }
+    pointer-events: none;
   }
 
-  // "+N" innerhalb einer verknüpften Pille (mehrere desselben Typs)
-  &__tag-count {
-    font-weight: 800;
-    opacity: 0.85;
+  &--pinned &__pinned-meta {
+    max-height: 28px;
+    opacity: 1;
+    padding-top: 0;
+    padding-bottom: 12px;
   }
 
   // Automatisch (per JS) horizontal scrollende Leiste – Overflow versteckt,
@@ -416,23 +451,45 @@
     transition: border-radius 0.2s ease;
   }
 
+  // Aktive Kachel: exakt zweigeteilt (2 × 32px). Oben das Icon (unten bündig,
+  // s. &__tile-icon – dadurch auf gleicher Y-Höhe wie die inaktiven Icons),
+  // unten mittig der Lesezeichen-Name. Die Kachel wächst nur nach unten.
   &__tile--active &__tile-box {
     width: 64px;
     height: 64px;
     justify-content: flex-start;
-    padding: 10px 4px 0;
+    gap: 0;
+    padding: 0;
     border-radius: 16px;
   }
 
+  // Icon-Wrapper: inaktiv nur ein neutraler Container, aktiv die OBERE Hälfte
+  // der Kachel (32px von 64px). Das Icon sitzt darin unten bündig – damit
+  // liegt es (20px hoch) auf 12–32px und damit auf exakt derselben Y-Höhe wie
+  // in den inaktiven 44er-Kacheln, wo es mittig steht.
+  &__tile-icon {
+    @include flex-center;
+  }
+
+  &__tile--active &__tile-icon {
+    flex: 0 0 32px;
+    width: 100%;
+    align-items: flex-end;
+  }
+
   // Lesezeichen-Name innerhalb der aktiven Kachel – in der Kachelfarbe, klein
-  // genug fürs Quadrat; überlange Namen werden mit Ellipsis gekürzt.
+  // genug fürs Quadrat; überlange Namen werden mit Ellipsis gekürzt. Die
+  // line-height entspricht der unteren Kachelhälfte (32px), so ist der Text
+  // darin vertikal zentriert und Ellipsis funktioniert weiterhin.
   &__tile-label {
-    max-width: 100%;
-    margin-top: 1px;
+    flex: 0 0 32px;
+    width: 100%;
+    padding: 0 4px;
     font-size: 9px;
     font-weight: 700;
-    line-height: 1;
+    line-height: 32px;
     letter-spacing: -0.1px;
+    text-align: center;
     color: currentColor;
     white-space: nowrap;
     overflow: hidden;
@@ -529,6 +586,48 @@
     color: $color-muted;
     font-size: 13px;
     padding: $spacing-sm 0;
+  }
+
+  // ── Verknüpfungen-Block in der Details-Karte (vor den Metadaten) ──
+  &__conn {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs + $spacing-2xs;
+    margin-bottom: $spacing-md;
+  }
+
+  &__conn-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: $color-muted;
+  }
+
+  &__conn-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-xs + $spacing-2xs;
+  }
+
+  &__conn-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 11px;
+    border-radius: $radius-pill;
+    border: 1px solid transparent;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+
+  &__conn-count {
+    font-weight: 800;
+    opacity: 0.85;
   }
 
   // ── Eintragszeilen im Listen-Look (wie NewCatListScreen-Zeilen) ──
@@ -764,12 +863,9 @@
     color: #1a1a24;
   }
 
-  // Eigene Tags (cat.tags, keine Typfarbe): gepinnt sitzt die Zeile auf
-  // weißem Grund – dort dunkel statt (unsichtbar) weiß auf weiß.
-  &--pinned .new-detail__tag:not(.new-detail__tag--linked) {
-    border-color: rgba(0, 0, 0, 0.12);
-    background: rgba(0, 0, 0, 0.06);
-    color: #1a1a24;
+  // Verknüpfungs-Label in der Details-Karte auf hellem Grund dunkler.
+  &__conn-label {
+    color: #6b6b76;
   }
 
   // "Nach oben"-Pille auf hellem Grund: weißes Glas mit dunklem Icon/Label.
@@ -789,6 +885,12 @@
   // Emblem im Light Theme: dunkelgrauer Ton auf der Cover-Farbe.
   &__emblem {
     color: rgba(0, 0, 0, 0.32);
+  }
+
+  // Terminierung neben dem Emblem: auf hellem Cover dunkel statt weiß.
+  &__cover-meta {
+    color: rgba(0, 0, 0, 0.55);
+    text-shadow: none;
   }
 
   // Trennlinie (auf dem Sticky) auf die helle Seite umfärben.

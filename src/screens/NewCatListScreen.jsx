@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Archive, Calendar, ChevronLeft, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
 import { fmtDate, fmtRelative, CAT_ICONS, COVER_COLORS } from "../utils";
 import { AutoScrollText } from "../components/AutoScrollText";
@@ -19,20 +19,23 @@ const TYPE_ACCENT_RGB = {
 // Eine Zeile der Spotify-Liste: Cover-Kachel · Titel + Meta-Zeile (Datums-Tag
 // mit Kalender-Icon, Verknüpfen-Icon) · Kebab-Menü. Tap auf die Zeile öffnet
 // die Seite; Verknüpfen/Kebab stoppen die Propagation.
-function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu }) {
+function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu, onUpdate }) {
   const cfg = CC[cat.type] || CC.resource;
   const CatIcon = CAT_ICONS[cat.type] || CAT_ICONS.resource;
   const RelatedIcon = related ? CAT_ICONS[related.type] || CAT_ICONS.resource : null;
   // Cover-Kachel: eigenes Bild > gewählte Cover-Farbe > getönte Typfarbe.
   const tileColor = cat.coverColor || cfg.color;
-  // Datums-Tag: bei Projekten das terminierte Datum ("Terminiert zum …" ohne
-  // das Wort – das Kalender-Icon übernimmt), sonst das Erstellungsdatum.
-  const dateStr =
-    cat.type === "project"
-      ? cat.date
-      : cat.createdAt
-        ? cat.createdAt.split("T")[0]
-        : null;
+  // Datums-Tag: das Kalender-Icon ist IMMER sichtbar. Projekte zeigen ihr
+  // terminiertes Datum – ohne Terminierung bleibt nur das Icon stehen (Tap
+  // öffnet den Datums-Picker, KEIN Rückfall aufs Erstellungsdatum). Bereiche/
+  // Ressourcen zeigen ihr Erstellungsdatum.
+  const isProject = cat.type === "project";
+  const dateStr = isProject
+    ? cat.date || null
+    : cat.createdAt
+      ? cat.createdAt.split("T")[0]
+      : null;
+  const dateInputRef = useRef(null);
   const relatedCfg = related && CC[related.type] ? CC[related.type] : null;
 
   return (
@@ -64,11 +67,36 @@ function NewListRow({ t, CC, cat, related, onOpen, onOpenConn, onOpenMenu }) {
           <AutoScrollText>{cat.name}</AutoScrollText>
         </div>
         <div className="new-list__row-meta">
-          {dateStr && (
+          {isProject ? (
+            <button
+              className="new-list__row-date new-list__row-date--btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                const inp = dateInputRef.current;
+                if (!inp) return;
+                try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
+              }}
+              aria-label={t.scheduledLabel || "Terminiert"}
+            >
+              <Calendar size={12} strokeWidth={2.4} />
+              {dateStr && fmtDate(dateStr, t.locale)}
+            </button>
+          ) : (
             <span className="new-list__row-date">
               <Calendar size={12} strokeWidth={2.4} />
-              {fmtDate(dateStr, t.locale)}
+              {dateStr && fmtDate(dateStr, t.locale)}
             </span>
+          )}
+          {isProject && (
+            <input
+              ref={dateInputRef}
+              type="date"
+              className="new-list__row-date-input"
+              value={cat.date || ""}
+              tabIndex={-1}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => onUpdate?.({ date: e.target.value || null })}
+            />
           )}
           {related && relatedCfg && RelatedIcon && (
             <span className="new-list__row-linked" style={{ color: relatedCfg.color }}>
@@ -195,8 +223,9 @@ export function NewCatListScreen({
           </button>
         </div>
         <h1 className="new-list__title">{cfg.label}</h1>
+        {/* Zähler immer universal als "N Einträge" – unabhängig vom Listentyp. */}
         <div className="new-list__subtitle">
-          {t.catCount ? t.catCount(cats.length, cfg.sing, cfg.label) : `${cats.length} ${cfg.label}`}
+          {t.entriesCount ? t.entriesCount(cats.length) : `${cats.length}`}
         </div>
       </div>
 
@@ -290,6 +319,7 @@ export function NewCatListScreen({
               onOpen={onOpen}
               onOpenConn={(c) => setConnCatId(c.id)}
               onOpenMenu={(c) => setMenuCatId(c.id)}
+              onUpdate={(patch) => onUpdateCat(cat.id, patch)}
             />
           ))
         )}

@@ -200,6 +200,7 @@
   // 2. Zeile: Datums-Tag ("Terminiert zum …" ohne Wort, nur Kalender-Icon +
   // Datum) und Verknüpfen-Icon
   &__row-meta {
+    position: relative; // Anker fürs unsichtbare Datums-Input (Picker-Position)
     display: flex;
     align-items: center;
     gap: $spacing-sm;
@@ -210,10 +211,35 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    min-height: 16px;
     font-size: 11px;
     font-weight: 600;
     color: #0B8CE9;
     white-space: nowrap;
+  }
+
+  // Bei Projekten ist der Datums-Tag ein Button (Tap öffnet den Datums-Picker
+  // über das versteckte Input darunter) – ohne Datum bleibt nur das Icon.
+  &__row-date--btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  // Unsichtbares natives Datums-Input: Anker für showPicker(); darf nicht
+  // display:none sein, sonst öffnet der Picker nicht.
+  &__row-date-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    border: 0;
+    padding: 0;
+    pointer-events: none;
   }
 
   // Typ-Icon des verknüpften Elements (z.B. gelbes Dreieck = Arbeitsbereich)

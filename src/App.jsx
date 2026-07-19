@@ -20,6 +20,7 @@ import { wordsResourceName } from "./lib/translate";
 import { TranslateOverlay } from "./components/TranslateOverlay";
 import { CatListScreen, CatDetailScreen } from "./screens/FolderScreens";
 import { NewCatListScreen } from "./screens/NewCatListScreen";
+import { NewEntryListScreen } from "./screens/NewEntryListScreen";
 import { NewCatDetailScreen } from "./screens/NewCatDetailScreen";
 import { EntryDetailScreen } from "./screens/EntryDetailScreen";
 import { CommandPanel } from "./components/CommandPanel";
@@ -53,6 +54,7 @@ const VIEW = {
   HOME: "home",
   ARCHIVE: "archive",
   CAT_LIST: "catList",
+  ENTRY_LIST: "entryList",
   CAT_DETAIL: "catDetail",
   ENTRY_DETAIL: "entryDetail",
   FLASHCARDS: "flashcards",
@@ -527,6 +529,7 @@ export default function App() {
   const newDesignFullScreen =
     newDesign &&
     (cur.view === VIEW.CAT_LIST ||
+      cur.view === VIEW.ENTRY_LIST ||
       (cur.view === VIEW.CAT_DETAIL &&
         !(state.flashcardDecks || []).some((d) => d.catId === cur.catId)));
 
@@ -1371,6 +1374,7 @@ export default function App() {
             setExpandedCat={setExpandedCat}
             onCoverAccentChange={setCoverAccentRgb}
             onOpenCatType={(type) => push({ view: VIEW.CAT_LIST, type })}
+            onOpenEntryList={(listType) => push({ view: VIEW.ENTRY_LIST, listType })}
             onOpenCat={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
             onQuickCreate={quickCreate}
             onAddEntry={(type) => {
@@ -1485,6 +1489,51 @@ export default function App() {
               onOpenArchive={(type) => push({ view: VIEW.ARCHIVE, tab: type })}
             />
           )
+        )}
+
+        {cur.view === VIEW.ENTRY_LIST && (
+          // Neues Design: die Eintrags-Listen der Home-Kacheln (Aufgaben/
+          // Notizen/Kalender/Lesezeichen) im gleichen Spotify-Layout wie die
+          // Kategorien-Listen – Kontext-Verlauf, Filter-Pillen, NewDesignNav.
+          <NewEntryListScreen
+            t={t}
+            CC={CC}
+            lang={lang}
+            listType={cur.listType}
+            entries={state.entries}
+            cats={state.cats}
+            trash={state.trash || []}
+            onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+            onAdd={() =>
+              setCreating({
+                type:
+                  { tasks: "task", notes: "note", calendar: "calendar", links: "link" }[
+                    cur.listType
+                  ] || "task",
+                catId: null,
+              })
+            }
+            onBack={pop}
+            onHome={() => setStack([{ view: VIEW.HOME }])}
+            onOpenSettings={() => push({ view: VIEW.SETTINGS })}
+            onOpenSearch={() => {
+              setPanelOpen(true);
+              setSearchOpen(true);
+            }}
+            // Tab-Wechsel in der Nav ersetzt die aktuelle Liste statt zu stapeln.
+            onOpenCatType={(type) =>
+              setStack((s) => [...s.slice(0, -1), { view: VIEW.CAT_LIST, type }])
+            }
+            toggleTask={toggleTask}
+            toggleStar={toggleStar}
+            togglePin={togglePin}
+            updateEntry={updateEntry}
+            deleteEntry={deleteEntry}
+            onArchiveEntry={(id) => updateEntry(id, { archived: true })}
+            onRestoreFromTrash={restoreFromTrash}
+            onPurgeTrashItem={purgeTrashItem}
+            onAddVoiceEntry={(type, title, date) => addEntry(buildVoiceEntry(type, title, date))}
+          />
         )}
 
         {cur.view === VIEW.CAT_DETAIL && (() => {

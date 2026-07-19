@@ -85,6 +85,7 @@ export function HomeScreen({
   setTab,
   onOpenCat,
   onOpenCatType,
+  onOpenEntryList,
   onQuickCreate,
   onAddEntry,
   onAddVoiceEntry,
@@ -1462,10 +1463,7 @@ export function HomeScreen({
                 type="button"
                 className="home-list-tile"
                 style={{ "--tile-accent-rgb": "245, 158, 11" }}
-                onClick={() => {
-                  handleSelectType("notes");
-                  setListExpanded(true);
-                }}
+                onClick={() => onOpenEntryList?.("notes")}
               >
                 <span className="home-list-tile__icon">
                   <Pencil size={18} />
@@ -1475,10 +1473,7 @@ export function HomeScreen({
               <button
                 type="button"
                 className="home-list-tile"
-                onClick={() => {
-                  handleSelectType("calendar");
-                  setListExpanded(true);
-                }}
+                onClick={() => onOpenEntryList?.("calendar")}
               >
                 <span className="home-list-tile__icon home-list-tile__icon--calendar">
                   <Calendar size={18} />
@@ -1489,10 +1484,7 @@ export function HomeScreen({
                 type="button"
                 className="home-list-tile"
                 style={{ "--tile-accent-rgb": "11, 140, 233" }}
-                onClick={() => {
-                  handleSelectType("tasks");
-                  setListExpanded(true);
-                }}
+                onClick={() => onOpenEntryList?.("tasks")}
               >
                 <span className="home-list-tile__icon">
                   <CheckCircle2 size={18} />
@@ -1503,10 +1495,7 @@ export function HomeScreen({
                 type="button"
                 className="home-list-tile"
                 style={{ "--tile-accent-rgb": "124, 58, 237" }}
-                onClick={() => {
-                  handleSelectType("links");
-                  setListExpanded(true);
-                }}
+                onClick={() => onOpenEntryList?.("links")}
               >
                 <span className="home-list-tile__icon">
                   <BookmarkIcon size={18} />

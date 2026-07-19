@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ArrowUp, Calendar, ChevronLeft, Circle, MoreHorizontal, Paperclip, Pencil, Plus, Square } from "lucide-react";
+import { ArrowUp, Calendar, ChevronLeft, Circle, Clock, MoreHorizontal, Paperclip, Pencil, Plus, Square } from "lucide-react";
 import { BOOKMARKS, CAT_ICONS, COVER_COLORS, fmtDate } from "../utils";
-import { DartTargetIcon, GitMergeBranchIcon, CustomSettingsIcon, TagIcon } from "../components/AppIcons";
+import { DartTargetIcon, GitMergeBranchIcon, CustomSettingsIcon } from "../components/AppIcons";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
 import { MediaTypeSheet } from "../components/PillSheets";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
@@ -32,6 +32,10 @@ const CANVAS_CLIP_PX = 224;
 // diesen Betrag höher, damit ihr (grund-farbener) Fuß NICHT über die
 // hochgezogene erste Karte malt.
 const FEED_PULL_UP_PX = 26;
+
+// Abstand zwischen der Trennlinie und der Oberkante der ersten Karte – gleich
+// dem seitlichen Kartenpadding (16px), damit die Karte ringsum gleich „atmet".
+const CARD_LINE_GAP_PX = 16;
 
 // Auto-wachsendes Textfeld der Seiteninhalt-Karte; meldet per onOverflow,
 // ob der Inhalt höher als die eingeklappte Karte ist.
@@ -71,7 +75,10 @@ function DetailEntryRow({ t, CC, entry, allCats, onToggle, onOpen }) {
   const tile = ENTRY_TILE[entry.type] || ENTRY_TILE.note;
   const TileIcon = tile.Icon;
 
-  // Datum: Aufgabe = Fälligkeit, Termin = Datum, sonst Erstellungsdatum.
+  // Datum: das Kalender-Icon ist IMMER sichtbar. Aufgabe = Fälligkeit,
+  // Termin = Datum – ohne Terminierung bleibt nur das Icon stehen (KEIN
+  // Rückfall aufs Erstellungsdatum). Notizen/Lesezeichen/Medien zeigen ihr
+  // Erstellungsdatum.
   const dateStr =
     entry.type === "task" ? entry.due
     : entry.type === "calendar" ? entry.date
@@ -195,6 +202,10 @@ export function NewCatDetailScreen({
   const scrollRef = useRef(null);
   const topbarRef = useRef(null);
   const stickyRef = useRef(null);
+  const feedRef = useRef(null);
+  // Versteckte native Pickers für Terminierung (Datum/Uhrzeit) am Cover.
+  const coverDateRef = useRef(null);
+  const coverTimeRef = useRef(null);
   const titleElRef = useRef(null);
   const barRef = useRef(null);
   const sectionRefs = useRef({});
@@ -239,20 +250,16 @@ export function NewCatDetailScreen({
   const linkedResources = allCats.filter((c) => c.type === "resource" && c.relatedId === cat.id);
   const collaborators = cat.collaborators || [];
 
-  // Verknüpfte Inhalte für die Tag-Zeile unter dem Titel: NUR die mit DIESER
-  // Seite verknüpften Kategorien – Elternseite (relatedId dieser Kategorie) +
-  // Kindseiten (deren relatedId auf diese Kategorie zeigt). Gruppiert nach Typ,
-  // damit pro Typ EINE Pille steht (bei mehreren: "+N"), dazu die eigenen Tags
-  // (cat.tags). Es werden bewusst nur seiten-spezifische Verknüpfungen gezeigt,
-  // keine globale Tag-Liste.
+  // Verknüpfungen dieser Seite (für den "Verknüpfungen"-Block in der Details-
+  // Karte, nicht mehr als Pillen-Zeile oben): Elternseite (relatedId dieser
+  // Kategorie) + Kindseiten (deren relatedId auf diese Kategorie zeigt).
+  // Gruppiert nach Typ, damit pro Typ EINE Pille steht (bei mehreren: "+N").
   const parentCat = cat.relatedId ? allCats.find((c) => c.id === cat.relatedId) : null;
   const childCats = allCats.filter((c) => c.relatedId === cat.id && !c.archived);
   const linkedPages = parentCat ? [parentCat, ...childCats] : childCats;
   const linkedByType = ["project", "area", "resource"]
     .map((type) => ({ type, items: linkedPages.filter((c) => c.type === type) }))
     .filter((g) => g.items.length > 0);
-  const catTags = cat.tags || [];
-  const hasTagsRow = linkedByType.length > 0 || catTags.length > 0;
 
   // Icon-Leiste = Lesezeichen (ohne Tags) mit Label unter dem aktiven Icon.
   // `label` = voller Name (Kartentitel, aria); `tileLabel` = kurzer Name für
@@ -337,39 +344,55 @@ export function NewCatDetailScreen({
     }
   }, [active]);
 
-  // Geometrie für Cover-Verlauf + Header-Fadeout messen. `coverBgH` = Höhe der
-  // durchgehenden Verlaufsfläche bis zur Unterkante des Sticky-Headers.
-  // `fadeStartPx` = Trennlinie unter der Icon-Leiste, ab der der gepinnte
-  // Header nach unten transparent ausläuft (Content-Fadeout beim Scrollen).
+  // Geometrie für Cover-Verlauf + Trennlinie messen – IMMER beides zusammen,
+  // aus derselben Sticky-Höhe, damit Verlaufsfuß und Linie nie auseinander-
+  // laufen. `coverBgH` = Höhe der Verlaufsfläche (endet exakt an der Oberkante
+  // der ersten Karte, die um FEED_PULL_UP_PX hochgezogen ist). `fadeStartPx` =
+  // Trennlinie, 16px über dieser Kartenoberkante (CARD_LINE_GAP_PX) – gleicher
+  // Abstand wie das seitliche Kartenpadding. Sie liegt damit optisch UNTER der
+  // aktiven Kachel: die (opake) Kachel ragt über die Linie und verdeckt sie
+  // ein Stück, ohne dass die Icon-Leiste selbst verschoben wird.
+  // WICHTIG: NICHT über st.offsetTop messen – bei einem festgeklebten
+  // position:sticky-Element liefert offsetTop die VERSCHOBENE Position (wächst
+  // mit dem Scrollstand); die Verlaufsfläche würde dann mitwachsen und ihr
+  // opaker Fuß als schwarzer Balken im Viewport über dem Inhalt kleben.
+  // feed.offsetTop ist dagegen reine Flow-Geometrie (inkl. des negativen
+  // Pull-up-Margins) und entspricht exakt der Oberkante der ersten Karte.
+  const measureGeometry = useCallback(() => {
+    const st = stickyRef.current;
+    const feed = feedRef.current;
+    if (!st || !feed) return;
+    setCoverBgH(feed.offsetTop);
+    setFadeStartPx(st.offsetHeight - FEED_PULL_UP_PX - CARD_LINE_GAP_PX);
+  }, []);
+
+  // Neu messen bei JEDER Höhenänderung des Sticky-Blocks (ResizeObserver):
+  // Beim Pinnen klappt der große Titel ein (~Titelhöhe weniger), beim Wechsel
+  // der aktiven Kachel ändert sich die Leistenhöhe minimal – beides verschiebt
+  // Kartenoberkante UND Trennlinie. Ohne sofortige Neumessung malt der (unten
+  // opake) Verlaufsfuß mit veralteter Höhe als schwarzer Balken über die
+  // Karten bzw. reißt beim Zurückscrollen ein Loch in den Verlauf.
   useLayoutEffect(() => {
-    const measure = () => {
-      const st = stickyRef.current;
-      const bar = barRef.current;
-      if (!st || !bar) return;
-      setCoverBgH(st.offsetTop + st.offsetHeight - FEED_PULL_UP_PX);
-      // Trennlinie exakt unter die Icon-Leiste (Unterkante der Kacheln, inkl.
-      // der größeren aktiven Kachel mit Label). Kein Magic-Offset – so sitzt
-      // die Linie immer bündig unter den Icons. Darunter folgt die Fade-Zone.
-      setFadeStartPx(bar.offsetTop + bar.offsetHeight);
-    };
-    measure();
+    measureGeometry();
     // Einmal den Scroll-Status auswerten, damit das "Seiteninhalt"-Label beim
     // Öffnen korrekt aus ist (Kartentitel ist sichtbar) statt initial zu blinken.
     handleScroll();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [cat.name, handleScroll]);
+    const ro = new ResizeObserver(measureGeometry);
+    if (stickyRef.current) ro.observe(stickyRef.current);
+    if (barRef.current) ro.observe(barRef.current);
+    window.addEventListener("resize", measureGeometry);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measureGeometry);
+    };
+  }, [cat.name, handleScroll, measureGeometry]);
 
-  // Gepinnt klappt der große Titel ein (s. SCSS &--pinned &__title) – die
-  // Icon-Leiste rückt dadurch nach oben. Auch der Wechsel der aktiven Kachel
-  // (unterschiedlich hoch durch das Label) kann die Leistenhöhe minimal ändern.
-  // Beides verschiebt die Trennlinie; sie wird daher neu gemessen und bleibt so
-  // immer direkt unter den Icons.
+  // Zusätzlich synchron VOR dem Paint nachmessen, wenn Pin-Status oder aktive
+  // Kachel wechseln – der ResizeObserver feuert erst im nächsten Frame; ohne
+  // diese Messung blitzte der Verlauf einen Frame lang mit alter Höhe auf.
   useLayoutEffect(() => {
-    const bar = barRef.current;
-    if (!bar) return;
-    setFadeStartPx(bar.offsetTop + bar.offsetHeight);
-  }, [pinned, active, hasTagsRow]);
+    measureGeometry();
+  }, [pinned, active, measureGeometry]);
 
   const scrollToSection = (id) => {
     const el = sectionRefs.current[id];
@@ -446,11 +469,55 @@ export function NewCatDetailScreen({
           )}
           {!cat.coverImage && (
             <div className="new-detail__emblem">
+              {/* Terminierung neben dem Emblem: links Datum (Kalender-Icon),
+                  rechts Uhrzeit (Uhr-Icon). Beide Icons sind IMMER sichtbar –
+                  ohne Wert nur als Placeholder; Tap öffnet den nativen Picker
+                  (verstecktes Input darunter). */}
+              <button
+                className="new-detail__cover-meta new-detail__cover-meta--left"
+                onClick={() => {
+                  const inp = coverDateRef.current;
+                  if (!inp) return;
+                  try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
+                }}
+                aria-label={t.scheduledLabel || "Terminiert"}
+              >
+                <Calendar size={14} strokeWidth={2.2} />
+                {cat.date && fmtDate(cat.date, t.locale)}
+              </button>
+              <input
+                ref={coverDateRef}
+                type="date"
+                className="new-detail__meta-input"
+                value={cat.date || ""}
+                tabIndex={-1}
+                onChange={(e) => onUpdate({ date: e.target.value || null })}
+              />
               {safeType === "project" ? (
                 <DartTargetIcon size={112} strokeWidth={1.4} />
               ) : (
                 <CatIcon size={104} strokeWidth={1.4} />
               )}
+              <button
+                className="new-detail__cover-meta new-detail__cover-meta--right"
+                onClick={() => {
+                  const inp = coverTimeRef.current;
+                  if (!inp) return;
+                  try { inp.showPicker(); } catch { inp.focus(); inp.click(); }
+                }}
+                aria-label={t.timeLabel || "Uhrzeit"}
+              >
+                <Clock size={14} strokeWidth={2.2} />
+                {cat.time}
+              </button>
+              <input
+                ref={coverTimeRef}
+                type="time"
+                className="new-detail__meta-input"
+                value={cat.time || ""}
+                tabIndex={-1}
+                onChange={(e) => onUpdate({ time: e.target.value || null })}
+              />
             </div>
           )}
         </div>
@@ -466,36 +533,20 @@ export function NewCatDetailScreen({
             placeholder={t.titlePlaceholder || "Titel…"}
             onKeyDown={(e) => { if (e.key === "Enter") e.target.blur(); }}
           />
-          {hasTagsRow && (
-            <div className="new-detail__tags">
-              {/* Verknüpfte Seiten – eine Pille pro Typ. Einzeln: Icon + Name
-                  (öffnet die Seite). Mehrere: Icon + Erste·Name + "+N" (öffnet
-                  das LinkedPillSheet mit allen dieses Typs). */}
-              {linkedByType.map(({ type, items }) => {
-                const pcfg = CC[type] || CC.resource;
-                const PIcon = CAT_ICONS[type] || Square;
-                const many = items.length > 1;
-                return (
-                  <button
-                    key={type}
-                    className="new-detail__tag new-detail__tag--linked"
-                    style={{ color: pcfg.color, background: pcfg.color + "1F", borderColor: pcfg.color + "40" }}
-                    onClick={() => (many ? setPillSheetType(type) : onOpenCat?.(items[0]))}
-                  >
-                    <PIcon size={12} strokeWidth={2.4} />
-                    <span>{items[0].name}</span>
-                    {many && <span className="new-detail__tag-count">+{items.length - 1}</span>}
-                  </button>
-                );
-              })}
-              {catTags.map((tag) => (
-                <span key={tag} className="new-detail__tag">
-                  <TagIcon size={12} strokeWidth={2.4} />
-                  <span>{tag}</span>
-                </span>
-              ))}
-            </div>
-          )}
+          {/* Gepinnt: Miniatur-Terminierung unter dem Topbar-Titel – Kalender-
+              Icon + Datum, dahinter (falls gesetzt) Mittelpunkt + Uhrzeit ohne
+              eigenes Uhr-Icon. IMMER gerendert (auch ohne Datum bleibt das
+              Icon als Placeholder stehen), damit die Headerhöhe auf allen
+              Seiten identisch ist. Ungepinnt eingeklappt. */}
+          <div className="new-detail__pinned-meta">
+            <Calendar size={12} strokeWidth={2.4} />
+            {cat.date && (
+              <span>
+                {fmtDate(cat.date, t.locale)}
+                {cat.time ? ` · ${cat.time}` : ""}
+              </span>
+            )}
+          </div>
           <div className="new-detail__iconbar" ref={barRef}>
             {SECTIONS.map(({ id, Icon, color, label, tileLabel }) => {
               const isActive = id === active;
@@ -527,7 +578,13 @@ export function NewCatDetailScreen({
                         : { background: tint, color: tileColor }
                     }
                   >
-                    <Icon size={isActive ? 24 : 20} color={tileColor} />
+                    {/* Wrapper, damit das Icon bei aktiver Kachel exakt die
+                        obere Hälfte belegt (Label die untere). */}
+                    <span className="new-detail__tile-icon">
+                      {/* Gleiche Icon-Größe wie inaktiv – nur die Kachel
+                          wächst (Platz für den Namen darunter). */}
+                      <Icon size={20} color={tileColor} />
+                    </span>
                     {isActive && <span className="new-detail__tile-label">{tileLabel}</span>}
                   </span>
                 </button>
@@ -537,7 +594,7 @@ export function NewCatDetailScreen({
         </div>
 
         {/* Karten-Feed */}
-        <div className="new-detail__feed">
+        <div className="new-detail__feed" ref={feedRef}>
           {/* Seiteninhalt: Akzent-Karte mit eigenem Abschnitttitel. Das Label
               unter dem aktiven Icon erscheint erst, wenn dieser Titel beim
               Hochscrollen hinter dem gepinnten Header verschwindet. */}
@@ -664,6 +721,35 @@ export function NewCatDetailScreen({
                   ref={(el) => { titleRefs.current.details = el; }}
                 >{t.detailsTab || "Details"}</span>
               </div>
+
+              {/* Verknüpfungen: eine Pille pro Typ (Einzeln → öffnet die Seite;
+                  mehrere → "+N", öffnet das LinkedPillSheet). Sitzt VOR den
+                  Metadaten (erstellt/geändert/geöffnet). */}
+              {linkedByType.length > 0 && (
+                <div className="new-detail__conn">
+                  <span className="new-detail__conn-label">{t.connectionsLabel || "Verknüpfungen"}</span>
+                  <div className="new-detail__conn-pills">
+                    {linkedByType.map(({ type, items }) => {
+                      const pcfg = CC[type] || CC.resource;
+                      const PIcon = CAT_ICONS[type] || Square;
+                      const many = items.length > 1;
+                      return (
+                        <button
+                          key={type}
+                          className="new-detail__conn-pill"
+                          style={{ color: pcfg.color, background: pcfg.color + "1F", borderColor: pcfg.color + "40" }}
+                          onClick={() => (many ? setPillSheetType(type) : onOpenCat?.(items[0]))}
+                        >
+                          <PIcon size={12} strokeWidth={2.4} />
+                          <span>{items[0].name}</span>
+                          {many && <span className="new-detail__conn-count">+{items.length - 1}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <DetailsBody
                 t={t}
                 item={cat}

@@ -621,8 +621,7 @@
 
   .modal {
     &__sheet {
-      background: #ffffff;
-      border-color: #e5e5f0;
+      @include sheet-glass-light;
     }
 
     &__title {
@@ -706,6 +705,15 @@
       border-color: #d1d1e0;
     }
 
+    &__schedule-btn {
+      border-color: rgba(0, 0, 0, 0.12);
+      background: rgba(0, 0, 0, 0.04);
+      color: #6b6b76;
+
+      &:hover { background: rgba(0, 0, 0, 0.07); }
+      &--set { color: #1a1a24; }
+    }
+
     .icon-muted {
       color: #5858A0;
     }
@@ -714,8 +722,7 @@
   // Minimalistische CreateModal-Variante im Light Mode: weißer Sheet,
   // durchsichtige, komplett randlose Felder (nur Abstände, keine Linien).
   .modal__sheet--minimal {
-    background: #ffffff;
-    border: none;
+    // Glas-Grund kommt von .modal__sheet (sheet-glass-light)
 
     .modal__input,
     .modal__textarea,
@@ -1880,8 +1887,7 @@
   }
 
   .settings-sheet {
-    background: #ffffff;
-    border-color: rgba(0, 0, 0, 0.08);
+    @include sheet-glass-light;
 
     &__handle {
       background: #e5e5f0;

@@ -1451,10 +1451,9 @@
     width: 100%;
     max-width: 420px;
     margin: 0 auto;
-    background: $color-card;
+    @include sheet-glass;
     border-top-left-radius: $radius-lg;
     border-top-right-radius: $radius-lg;
-    border-top: 1px solid $color-border;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
     // Seitlich 16px – einheitlich mit den Modal-Sheets (z.B. Kollaborateure)
     padding: 8px $spacing-md calc(16px + env(safe-area-inset-bottom));
@@ -1593,8 +1592,7 @@ body.light-theme .action-sheet {
   background: rgba(0, 0, 0, 0.28);
 
   &__panel {
-    background: #ffffff;
-    border-top-color: rgba(0, 0, 0, 0.08);
+    @include sheet-glass-light;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.14);
   }
 
@@ -1655,10 +1653,9 @@ body.light-theme .action-sheet {
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    background: $color-card;
+    @include sheet-glass;
     border-top-left-radius: $radius-lg;
     border-top-right-radius: $radius-lg;
-    border-top: 1px solid $color-border;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
     animation: action-sheet-slide-up 0.22s cubic-bezier(0.25, 1, 0.5, 1);
 
@@ -1826,8 +1823,7 @@ body.light-theme .link-sheet {
   background: rgba(0, 0, 0, 0.28);
 
   .link-sheet__panel {
-    background: #ffffff;
-    border-top-color: rgba(0, 0, 0, 0.08);
+    @include sheet-glass-light;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.14);
   }
   .link-sheet__handle { background: rgba(0, 0, 0, 0.15); }

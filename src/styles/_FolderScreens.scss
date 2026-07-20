@@ -1243,12 +1243,10 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  background: $color-surface;
+  @include sheet-glass;
   border-radius: $radius-xl $radius-xl 0 0;
   // Einheitliches Sheet-Padding (wie .action-sheet__panel): 8 / 16 / 16+Safe-Area
   padding: $spacing-sm $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
-  border: 1px solid $color-border;
-  border-bottom: none;
   animation: slide-up $transition-normal;
 
   &__handle {

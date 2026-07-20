@@ -2,6 +2,8 @@ import { useState, useRef } from "react";
 import {
   ChevronLeft,
   Check,
+  Calendar as CalendarIcon,
+  Clock as ClockIcon,
   Video as VideoIcon,
   Headphones as AudioIcon,
   File as DocumentIcon,
@@ -9,6 +11,7 @@ import {
 } from "lucide-react";
 import { TODAY, CAT_ICONS, ID_BIRTHDAYS } from "../utils";
 import { SheetFooter } from "../components/SheetFooter";
+import { SchedulePickerSheet } from "../components/PickerSheets";
 
 const TYPE_COLORS = {
   task: "#0B8CE9",
@@ -51,6 +54,8 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
   const [catDropOpen, setCatDropOpen] = useState(false);
   const [mediaFile, setMediaFile] = useState(null);
   const [isBirthday, setIsBirthday] = useState(false);
+  // Terminierungs-Picker (Glas-Sheet mit Kalender/Ziffernblatt): "date"|"time"|null
+  const [pickerTab, setPickerTab] = useState(null);
   const fileInputRef = useRef(null);
 
   const accentColor = TYPE_COLORS[type] || TYPE_COLORS.link;
@@ -65,6 +70,35 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
 
   const toggleCat = (id) =>
     setCatIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+
+  // Beschriftung der Terminierungs-Pillen (z.B. "19. Juli")
+  const fmtDate = (str) =>
+    new Intl.DateTimeFormat(t.locale, { day: "numeric", month: "long" }).format(
+      new Date(str + "T12:00"),
+    );
+
+  // Datum-/Uhrzeit-Pillen im Stil des Terminiert-Sheets: öffnen den
+  // Glas-Picker (Kalender/Ziffernblatt) statt der nativen Browser-Inputs.
+  const scheduleRow = (dateVal, timeVal) => (
+    <div className="modal__schedule-row">
+      <button
+        type="button"
+        className={`modal__schedule-btn${dateVal ? " modal__schedule-btn--set" : ""}`}
+        onClick={() => setPickerTab("date")}
+      >
+        <CalendarIcon size={15} />
+        <span>{dateVal ? fmtDate(dateVal) : t.dateLabel || "Datum"}</span>
+      </button>
+      <button
+        type="button"
+        className={`modal__schedule-btn${timeVal ? " modal__schedule-btn--set" : ""}`}
+        onClick={() => setPickerTab("time")}
+      >
+        <ClockIcon size={15} />
+        <span>{timeVal || t.timeLabel || "Uhrzeit"}</span>
+      </button>
+    </div>
+  );
 
   const handleMediaGridClick = (mId) => {
     const config = MEDIA_TYPES.find((m) => m.id === mId);
@@ -149,22 +183,7 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
               onChange={(e) => setNote(e.target.value)}
               placeholder={t.addNotePlaceholder}
             />
-            <div className="modal__input-row">
-              <input
-                type="date"
-                className="modal__date-input"
-                value={due}
-                onChange={(e) => setDue(e.target.value)}
-                style={{ color: due ? "#EDEEFF" : "#8a8a96" }}
-              />
-              <input
-                type="time"
-                className="modal__time-input"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                style={{ color: time ? "#EDEEFF" : "#8a8a96" }}
-              />
-            </div>
+            {scheduleRow(due, time)}
           </>
         )}
 
@@ -180,21 +199,7 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
 
         {type === "calendar" && (
           <>
-            <div className="modal__input-row">
-              <input
-                type="date"
-                className="modal__date-input"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-              <input
-                type="time"
-                className="modal__time-input"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                style={{ color: time ? "#EDEEFF" : "#8a8a96" }}
-              />
-            </div>
+            {scheduleRow(date, time)}
             <div className="modal__toggle-row">
               <label htmlFor="isBirthday">{t.birthday || "Geburtstag"}</label>
               <label className="modal__switch">
@@ -267,6 +272,23 @@ export function CreateModal({ type, cats, initialCatId, onSave, onClose, t, CC }
           </button>
         </SheetFooter>
       </div>
+
+      {/* Terminierungs-Picker (portalt auf document.body, liegt über dem Modal) */}
+      {pickerTab && (
+        <SchedulePickerSheet
+          t={t}
+          date={type === "task" ? due || null : date}
+          time={time || null}
+          accent={accentColor}
+          initialTab={pickerTab}
+          onChangeDate={(d) => {
+            if (type === "task") setDue(d || "");
+            else setDate(d || TODAY);
+          }}
+          onChangeTime={(v) => setTime(v || "")}
+          onClose={() => setPickerTab(null)}
+        />
+      )}
     </div>
   );
 }

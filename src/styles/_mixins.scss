@@ -53,6 +53,21 @@
   font-family: var(--font-body);
 }
 
+// Frosted-Glass-Panel der Bottom-Sheets (Look des Picker-/Kebab-Sheets):
+// durchsichtiger Grund, kräftiger Blur, feine helle Oberkante.
+@mixin sheet-glass {
+  background: rgba(22, 22, 30, 0.72);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+// Light-Theme-Gegenstück (Blur kommt bereits aus sheet-glass, hier nur Farben)
+@mixin sheet-glass-light {
+  background: rgba(255, 255, 255, 0.78);
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
 // Liquid Glass Border (1px weiß mit Glow)
 @mixin glass-border {
   border: 1px solid rgba(255, 255, 255, 0.4);

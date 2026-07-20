@@ -1,20 +1,18 @@
-import { X } from "lucide-react";
-
 /**
  * Einheitlicher Footer für Sheets/Dialoge mit Primär-Aktion.
  *
- * Struktur analog zur Dock-Eingabezeile: links ein kleiner runder Button in der
- * Form des Home-Buttons – hier rot mit weißem X (Schließen/Zurück); rechts der
- * breite Slot für die Primär-Aktion (als `children` übergeben).
+ * Look des Picker-Sheets ("Terminiert"): links ein dezenter Text-Button
+ * (Schließen/Abbrechen), rechts der Slot für die Primär-Aktion als
+ * Akzent-Pille (als `children` übergeben).
  *
  * Props:
- *  - onClose: Handler für den roten X-Button
- *  - closeLabel: aria-label des X-Buttons (default "Schließen")
- *  - children: die breite Primär-Aktion (z.B. ein <button>)
+ *  - onClose: Handler für den Schließen-Button
+ *  - closeLabel: Text des Schließen-Buttons (default "Schließen")
+ *  - children: die Primär-Aktion (z.B. ein <button>)
  */
 export function SheetFooter({ onClose, closeLabel = "Schließen", children }) {
-  // Ohne Primär-Aktion nimmt der Schließ-Button die volle Breite ein und
-  // zeigt das Text-Label (wie der Schließen-Button im Einstellungs-Menü).
+  // Ohne Primär-Aktion nimmt der Schließ-Button die volle Breite ein
+  // (dezente Glas-Pille, wie der Schließen-Button im Einstellungs-Menü).
   const closeOnly = !children;
   return (
     // data-keep-focus: Taps auf die Footer-Buttons dürfen ein fokussiertes
@@ -29,7 +27,7 @@ export function SheetFooter({ onClose, closeLabel = "Schließen", children }) {
         onClick={onClose}
         aria-label={closeLabel}
       >
-        {closeOnly ? closeLabel : <X size={20} />}
+        {closeLabel}
       </button>
       {!closeOnly && <div className="sheet-footer__action">{children}</div>}
     </div>

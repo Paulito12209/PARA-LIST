@@ -271,7 +271,9 @@
   position: absolute;
   inset: 0;
   z-index: 100;
-  background: rgba(0, 0, 0, 0.75);
+  // Gleiche Abdunklung wie die übrigen Sheets (.link-sheet/.action-sheet),
+  // damit der Glas-Effekt des Panels sichtbar bleibt.
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: flex-end;
 
@@ -283,20 +285,18 @@
 
   &__sheet {
     width: 100%;
-    background: $color-surface;
+    @include sheet-glass;
     border-radius: $radius-xl $radius-xl 0 0;
     // Einheitliches Sheet-Padding: seitlich 16px, unten 16px + Safe-Area
     // (gleicher Wert wie .action-sheet__panel und .settings-sheet).
     padding: $spacing-md + $spacing-xs $spacing-md calc(#{$spacing-md} + env(safe-area-inset-bottom, 0px));
-    border: 1px solid $color-border;
-    border-bottom: none;
     max-height: 82vh;
     overflow-y: auto;
     animation: slide-up $transition-normal;
 
     @media (min-width: 480px) {
       border-radius: $radius-xl;
-      border-bottom: 1px solid $color-border;
+      border: 1px solid rgba(255, 255, 255, 0.14);
       max-height: 85vh;
     }
   }
@@ -577,6 +577,40 @@
     margin-top: $spacing-sm + 1px;
   }
 
+  // Terminierungs-Pillen (öffnen das Glas-Picker-Sheet) – gleiche Optik wie
+  // die Subtabs "Datum · Uhrzeit" im Terminiert-Sheet.
+  &__schedule-row {
+    display: flex;
+    gap: $spacing-sm;
+  }
+
+  &__schedule-btn {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: $radius-pill;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: $color-muted;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background $transition-fast, color $transition-fast;
+
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+    &:active { transform: scale(0.98); }
+
+    // Wert gesetzt → heller Text
+    &--set { color: $color-text; }
+
+    span { @include text-truncate; }
+  }
+
   &__submit {
     width: 100%;
     margin-top: 16px;
@@ -618,14 +652,12 @@
 // Nur aktiv über die Modifier-Klasse .modal__sheet--minimal (CreateModal), damit
 // andere Modals (Kategorie anlegen, Settings …) unberührt bleiben.
 .modal__sheet--minimal {
-  background: #16161F;
-  border: none;
+  // Frosted-Glass-Grund kommt von .modal__sheet – hier nur die Radius-Varianten.
   border-radius: $radius-xl $radius-xl 0 0;
   // padding-bottom kommt einheitlich von .modal__sheet (16px + Safe-Area)
 
   @media (min-width: 480px) {
     border-radius: $radius-xl;
-    border: none;
   }
 
   // Greift-Pille oben: neutrales Grau statt Lila
@@ -752,8 +784,12 @@
   }
 
   .modal__multi-select-list {
-    background: #1f1f2b;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    // Eigenes Glas: das Dropdown schwebt über dem Sheet und braucht daher
+    // seinen eigenen Blur-Grund.
+    background: rgba(30, 30, 42, 0.85);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
   }
 
   // Geburtstag-Toggle-Zeile ohne Kasten, ohne Linie
@@ -770,58 +806,80 @@
   }
 }
 
-// ── Einheitlicher Sheet-Footer (roter runder X-Button + breite Aktion) ──
-// Struktur analog zur Dock-Eingabezeile: kleiner Button in Home-Button-Form
-// (hier rot mit weißem X) links, breiter Aktions-Slot rechts.
+// ── Einheitlicher Sheet-Footer im Picker-Look (Terminiert-Sheet) ──
+// Links ein dezenter Text-Button (wie "Entfernen"), rechts die Primär-Aktion
+// als kompakte Akzent-Pille (wie "Fertig").
 .sheet-footer {
   // Volle Breite, damit die Zeile exakt so weit reicht wie die Listen-Karten
   // darüber (der zentrierende Body-Flex würde sie sonst schmal einrücken).
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: $spacing-sm;
   margin-top: $spacing-lg;
   width: 100%;
 
-  // Schließen-Button exakt in der Form des Dock-Home-Buttons: 48 × 40px,
-  // liegende Pille (radius 20px).
+  // Schließen/Abbrechen als reiner Text-Button, neutral grau.
   &__close {
-    flex: 0 0 48px;
-    width: 48px;
-    height: 40px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-notif-red);
+    flex: 0 0 auto;
     border: none;
-    color: #fff;
+    background: none;
+    padding: 10px 14px;
+    font-family: $font-body;
+    font-size: 14px;
+    font-weight: 700;
+    color: $color-muted;
     cursor: pointer;
-    transition: filter $transition-fast, transform $transition-fast;
+    transition: color $transition-fast;
 
-    &:hover { filter: brightness(1.08); }
+    &:hover { color: $color-text; }
     &:active { transform: scale(0.97); }
 
-    // Ohne Primär-Aktion daneben: volle Breite mit Text-Label
+    // Ohne Primär-Aktion daneben: volle Breite als dezente Glas-Pille
     // (wie der Schließen-Button im Einstellungs-Menü)
     &--full {
       flex: 1;
       width: 100%;
+      padding: 12px;
+      border-radius: $radius-pill;
+      background: rgba(255, 255, 255, 0.06);
       font-size: 15px;
-      font-weight: 700;
-      font-family: $font-body;
+
+      &:hover { background: rgba(255, 255, 255, 0.1); }
     }
   }
 
-  // Primär-Aktion füllt die restliche Breite.
+  // Primär-Aktion: kompakte Pille rechts (Akzentfarbe kommt inline).
   &__action {
-    flex: 1;
+    flex: 0 1 auto;
     min-width: 0;
     display: flex;
+    justify-content: flex-end;
 
     > button {
-      flex: 1;
-      min-width: 0;
+      flex: 0 0 auto;
+      width: auto;
+      min-width: 132px;
       margin-top: 0;
+      border: none;
+      border-radius: $radius-pill;
+      padding: 12px 26px;
+    }
+  }
+}
+
+// Light Theme: Text-Button dunkler, Glas-Pille auf dunkler Basis
+.app.light-theme .sheet-footer,
+body.light-theme .sheet-footer {
+  &__close {
+    color: #6b6b76;
+
+    &:hover { color: #1c1c30; }
+
+    &--full {
+      background: rgba(0, 0, 0, 0.05);
+
+      &:hover { background: rgba(0, 0, 0, 0.08); }
     }
   }
 }

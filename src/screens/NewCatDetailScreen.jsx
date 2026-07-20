@@ -43,6 +43,7 @@ export function NewCatDetailScreen({
   onOpenCat,
   onOpenEntry,
   onUpdateCat,
+  tags = [],
 }) {
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
@@ -536,6 +537,7 @@ export function NewCatDetailScreen({
         <CatLinkSheet
           cat={cat}
           cats={allCats}
+          tags={tags}
           CC={CC}
           t={t}
           onUpdateCat={onUpdateCat}

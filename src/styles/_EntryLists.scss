@@ -1803,6 +1803,41 @@ body.light-theme .action-sheet {
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    // Scroll-Gesten bleiben im Sheet – sonst zieht die Startseite dahinter mit.
+    overscroll-behavior: contain;
+  }
+
+  // Subtabs (die beiden anderen PARA-Typen + Tags) – gleiche Pillen-Optik wie
+  // die Datum/Uhrzeit-Tabs im Terminierungs-Sheet.
+  &__tabs {
+    display: flex;
+    justify-content: center;
+    gap: $spacing-sm;
+    padding: 0 $spacing-md $spacing-sm;
+    flex-shrink: 0;
+  }
+
+  &__tab {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 10px;
+    border-radius: $radius-pill;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    font-family: $font-body;
+    font-size: 13px;
+    font-weight: 700;
+    color: $color-muted;
+    cursor: pointer;
+    @include text-truncate;
+
+    &:active { transform: scale(0.97); }
+
+    &--active {
+      background: rgba($color-task, 0.16);
+      border-color: rgba($color-task, 0.45);
+      color: $color-task;
+    }
   }
 
   &__list {
@@ -1938,6 +1973,17 @@ body.light-theme .link-sheet {
   }
   .link-sheet__handle { background: rgba(0, 0, 0, 0.15); }
   .link-sheet__title { color: #1c1c30; }
+  .link-sheet__tab {
+    border-color: rgba(0, 0, 0, 0.12);
+    background: rgba(0, 0, 0, 0.04);
+    color: #6b6b76;
+
+    &--active {
+      background: rgba(#0B8CE9, 0.12);
+      border-color: rgba(#0B8CE9, 0.4);
+      color: #0B8CE9;
+    }
+  }
   .link-sheet__group-head { color: #8a8a96; }
   .link-sheet__row {
     color: #1c1c30;

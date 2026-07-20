@@ -1458,6 +1458,7 @@ export default function App() {
               lang={lang}
               type={cur.type}
               allCats={state.cats}
+              tags={state.tags || []}
               trash={state.trash || []}
               onOpen={(cat) => push({ view: VIEW.CAT_DETAIL, catId: cat.id })}
               onAdd={() => setNewCatType(cur.type)}
@@ -1504,6 +1505,7 @@ export default function App() {
             listType={cur.listType}
             entries={state.entries}
             cats={state.cats}
+            tags={state.tags || []}
             trash={state.trash || []}
             onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
             onAdd={() =>
@@ -1584,6 +1586,7 @@ export default function App() {
                 user={state.user}
                 allCats={state.cats}
                 entries={inclusiveEntries}
+                tags={state.tags || []}
                 onUpdate={(p) => updateCat(cat.id, p)}
                 onUpdateCat={updateCat}
                 onTogglePin={() => togglePin(cat.id, "cat")}

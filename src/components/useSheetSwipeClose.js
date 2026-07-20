@@ -5,6 +5,22 @@ const CLOSE_DY_PX = 60; // Mindest-Strecke nach unten zum Schließen
 const AXIS_TOL_PX = 80; // erlaubte horizontale Abweichung
 
 /**
+ * Nächster scrollbarer Vorfahre des berührten Elements. Bewusst generisch
+ * ermittelt statt über eine Liste bekannter Klassen: jedes Sheet bringt seinen
+ * eigenen Scroll-Container mit, und ein vergessener Name führt sonst dazu, dass
+ * das Sheet beim Hochscrollen zuklappt statt zu scrollen.
+ */
+function findScrollableAncestor(el) {
+  for (let node = el; node && node !== document.body; node = node.parentElement) {
+    const { overflowY } = getComputedStyle(node);
+    if ((overflowY === "auto" || overflowY === "scroll") && node.scrollHeight > node.clientHeight) {
+      return node;
+    }
+  }
+  return null;
+}
+
+/**
  * Wisch-nach-unten-zum-Schließen für Bottom-Sheets. Liefert Touch-Handler für
  * den Overlay-Container. Stoppt zudem die Propagation, damit die globale
  * Swipe-Down-Geste in `App.jsx` NICHT das Command-Panel öffnet, solange ein
@@ -30,7 +46,7 @@ export function useSheetSwipeClose(onClose) {
     if (dy <= CLOSE_DY_PX || Math.abs(dx) > AXIS_TOL_PX) return;
     // Nicht schließen, wenn innerhalb eines scrollbaren Bereichs gewischt wurde,
     // der nicht ganz oben steht (dann war es eine Scroll-Geste).
-    const scrollEl = e.target.closest?.(".trash-sheet__list, .settings-sheet");
+    const scrollEl = findScrollableAncestor(e.target);
     if (scrollEl && scrollEl.scrollTop > 0) return;
     onClose?.();
   };

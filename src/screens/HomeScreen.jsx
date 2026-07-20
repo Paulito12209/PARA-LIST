@@ -1506,10 +1506,7 @@ export function HomeScreen({
                 type="button"
                 className="home-list-tile"
                 style={{ "--tile-accent-rgb": "236, 72, 153" }}
-                onClick={() => {
-                  handleSelectType("tags");
-                  setListExpanded(true);
-                }}
+                onClick={() => onOpenEntryList?.("tags")}
               >
                 <span className="home-list-tile__icon">
                   <TagIcon size={18} />

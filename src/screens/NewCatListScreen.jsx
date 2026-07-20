@@ -5,7 +5,7 @@ import { AutoScrollText } from "../components/AutoScrollText";
 import { CustomSettingsIcon, GitMergeBranchIcon, ActiveDotIcon } from "../components/AppIcons";
 import { NewDesignNav } from "../components/NewDesignNav";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
-import { ConnSheet } from "../components/PillSheets";
+import { CatLinkSheet } from "../components/CatLinkSheet";
 import { DatePickerSheet } from "../components/PickerSheets";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { DetailMetaRow } from "../components/TaskSubtabControls";
@@ -136,6 +136,7 @@ export function NewCatListScreen({
   onRestoreFromTrash,
   onPurgeTrashItem,
   onQuickCreate,
+  tags = [],
 }) {
   const cfg = CC[type] || CC.resource;
   const accentRgb = TYPE_ACCENT_RGB[type] || "88, 88, 160";
@@ -183,17 +184,6 @@ export function NewCatListScreen({
         .sort((a, b) => b.deletedAt - a.deletedAt),
     [trash, type]
   );
-
-  // Verknüpfungs-Optionen wie auf der Detailseite: Projekt ↔ Bereich,
-  // Ressourcen an beides.
-  const connOptions = connCat
-    ? allCats.filter((c) => {
-        if (c.id === connCat.id) return false;
-        if (connCat.type === "project") return c.type === "area";
-        if (connCat.type === "area") return c.type === "project";
-        return c.type === "project" || c.type === "area";
-      })
-    : [];
 
   return (
     <div className="new-list" style={{ "--nl-accent-rgb": accentRgb }}>
@@ -353,15 +343,13 @@ export function NewCatListScreen({
 
       {/* Verknüpfen-Sheet des Link-Icons in der Meta-Zeile */}
       {connCat && (
-        <ConnSheet
+        <CatLinkSheet
           t={t}
           CC={CC}
-          options={connOptions}
-          currentId={connCat.relatedId || null}
-          onSelect={(id) => {
-            onUpdateCat(connCat.id, { relatedId: id });
-            setConnCatId(null);
-          }}
+          cat={connCat}
+          cats={allCats}
+          tags={tags}
+          onUpdateCat={onUpdateCat}
           onClose={() => setConnCatId(null)}
         />
       )}

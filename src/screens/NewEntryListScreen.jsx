@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Archive, ChevronLeft, RotateCcw, Trash2 } from "lucide-react";
 import { fmtRelative, isOld, getNextBirthday } from "../utils";
-import { CustomSettingsIcon, ActiveDotIcon } from "../components/AppIcons";
+import { CustomSettingsIcon, ActiveDotIcon, TagIcon } from "../components/AppIcons";
 import { NewDesignNav } from "../components/NewDesignNav";
 import { VoiceOverlay } from "../modals/VoiceOverlay";
 import { DetailMetaRow } from "../components/TaskSubtabControls";
@@ -14,6 +14,9 @@ const LIST_CFG = {
   notes: { accentRgb: "245, 158, 11", color: "#F59E0B", entryType: "note", labelKey: "notes" },
   calendar: { accentRgb: "0, 120, 212", color: "#0078D4", entryType: "calendar", labelKey: "calendar" },
   links: { accentRgb: "124, 58, 237", color: "#7C3AED", entryType: "link", labelKey: "bookmarks" },
+  // Tags sind keine Eintragsart, sondern eine Sicht ÜBER alle Einträge –
+  // daher ohne `entryType`.
+  tags: { accentRgb: "236, 72, 153", color: "#EC4899", entryType: null, labelKey: "tagsLabel" },
 };
 
 // Spotify-artige Listenansicht der Eintrags-Listen (Aufgaben/Notizen/Kalender/
@@ -29,6 +32,7 @@ export function NewEntryListScreen({
   listType,
   entries,
   cats,
+  tags = [],
   trash = [],
   onOpenEntry,
   onAdd,
@@ -48,11 +52,15 @@ export function NewEntryListScreen({
   onAddVoiceEntry,
 }) {
   const cfg = LIST_CFG[listType] || LIST_CFG.tasks;
-  const label = t[cfg.labelKey] || cfg.labelKey;
-  // Lesezeichen kennen kein "Archiviert" – die Pille entfällt dort.
-  const hasArchive = listType !== "links";
+  const isTagList = listType === "tags";
+  // Tag-Liste: ist ein Tag gewählt, zeigt der Screen dessen Einträge; der
+  // Zurück-Pfeil führt dann erst zur Tag-Übersicht zurück.
+  const [selectedTag, setSelectedTag] = useState(null);
+  const label = isTagList && selectedTag ? selectedTag : t[cfg.labelKey] || cfg.labelKey;
+  // Lesezeichen und Tags kennen kein "Archiviert" – die Pille entfällt dort.
+  const hasArchive = listType !== "links" && !isTagList;
   // Voice-Erstellung gibt es nur für Aufgaben/Notizen/Termine.
-  const hasVoice = listType !== "links";
+  const hasVoice = listType !== "links" && !isTagList;
 
   const [filter, setFilter] = useState("active");
   const [voiceOpen, setVoiceOpen] = useState(false);
@@ -91,6 +99,38 @@ export function NewEntryListScreen({
       });
   }, [entries, cfg.entryType, hasArchive, filter, pinnedFilter, sort, t.yearsShort]);
 
+  // ── Tag-Liste ──────────────────────────────────────────────────────
+  // Alle bekannten Tag-Namen: global gepflegte plus die, die nur an Einträgen
+  // hängen. Zählung ohne archivierte/erledigte Einträge (Lesezeichen kennen
+  // kein "erledigt").
+  const tagNames = useMemo(() => {
+    if (!isTagList) return [];
+    return Array.from(
+      new Set([...tags.map((tg) => tg.name), ...entries.flatMap((e) => e.tags || [])]),
+    ).sort((a, b) => a.localeCompare(b));
+  }, [isTagList, tags, entries]);
+
+  const countForTag = (name) =>
+    entries.filter(
+      (e) => (e.tags || []).includes(name) && !e.archived && (e.type === "link" || !e.done),
+    ).length;
+
+  // Einträge des gewählten Tags, nach Typ getrennt (wie auf der Startseite).
+  const tagged = useMemo(() => {
+    if (!isTagList || !selectedTag) return null;
+    const has = (e) => (e.tags || []).includes(selectedTag);
+    return {
+      tasks: entries.filter((e) => e.type === "task" && !e.archived && !e.done && has(e)),
+      notes: entries.filter((e) => e.type === "note" && !e.archived && !e.done && has(e)),
+      cals: entries.filter((e) => e.type === "calendar" && !e.archived && !e.done && has(e)),
+      links: entries.filter((e) => e.type === "link" && has(e)),
+    };
+  }, [isTagList, selectedTag, entries]);
+
+  const taggedCount = tagged
+    ? tagged.tasks.length + tagged.notes.length + tagged.cals.length + tagged.links.length
+    : 0;
+
   // Papierkorb: gelöschte Einträge dieses Typs, neueste zuerst.
   const trashItems = useMemo(
     () =>
@@ -119,7 +159,11 @@ export function NewEntryListScreen({
       {/* Hero: Kontext-Verlauf, Glas-Buttons oben, großer Titel unten */}
       <div className="new-list__hero">
         <div className="new-list__topbar">
-          <button className="new-list__glass-btn" onClick={onBack} aria-label={t.back || "Zurück"}>
+          <button
+            className="new-list__glass-btn"
+            onClick={() => (selectedTag ? setSelectedTag(null) : onBack())}
+            aria-label={t.back || "Zurück"}
+          >
             <ChevronLeft size={22} strokeWidth={2.2} />
           </button>
           <button
@@ -133,12 +177,17 @@ export function NewEntryListScreen({
         <h1 className="new-list__title">{label}</h1>
         {/* Zähler immer universal als "N Einträge" – unabhängig vom Listentyp. */}
         <div className="new-list__subtitle">
-          {t.entriesCount ? t.entriesCount(list.length) : `${list.length}`}
+          {(() => {
+            const n = isTagList ? (selectedTag ? taggedCount : tagNames.length) : list.length;
+            return t.entriesCount ? t.entriesCount(n) : `${n}`;
+          })()}
         </div>
       </div>
 
       {/* Filter-Pillen: Aktiv · Archiviert · Papierkorb; rechts Sortieren +
-          Angeheftet-Filter – identisch zur Kategorien-Liste. */}
+          Angeheftet-Filter – identisch zur Kategorien-Liste. Die Tag-Übersicht
+          hat keine dieser Achsen und blendet die Zeile aus. */}
+      {!isTagList && (
       <div className="new-list__pills">
         <div className="new-list__pills-group">
           <button
@@ -179,9 +228,92 @@ export function NewEntryListScreen({
           onChangeFilter={setPinnedFilter}
         />
       </div>
+      )}
 
       <div className="new-list__body">
-        {filter === "trash" ? (
+        {isTagList ? (
+          selectedTag ? (
+            taggedCount === 0 ? (
+              <div className="new-list__empty">{t.noEntries(selectedTag)}</div>
+            ) : (
+              <>
+                {tagged.tasks.length > 0 && (
+                  <TaskList
+                    {...shared}
+                    entries={tagged.tasks}
+                    lang={lang}
+                    color="#0B8CE9"
+                    onToggle={toggleTask}
+                    onToggleStar={toggleStar}
+                    onTogglePin={togglePin}
+                    onUpdateEntry={updateEntry}
+                    onDelete={deleteEntry}
+                  />
+                )}
+                {tagged.notes.length > 0 && (
+                  <NoteList
+                    {...shared}
+                    entries={tagged.notes}
+                    color="#F59E0B"
+                    onDelete={deleteEntry}
+                    onToggleStar={toggleStar}
+                    onTogglePin={togglePin}
+                    onUpdateEntry={updateEntry}
+                    onArchiveEntry={onArchiveEntry}
+                  />
+                )}
+                {tagged.cals.length > 0 && (
+                  <CalList
+                    {...shared}
+                    entries={tagged.cals}
+                    lang={lang}
+                    color="#0078D4"
+                    onDelete={deleteEntry}
+                    onToggle={toggleTask}
+                    onToggleStar={toggleStar}
+                    onTogglePin={togglePin}
+                    onUpdateEntry={updateEntry}
+                  />
+                )}
+                {tagged.links.length > 0 && (
+                  <LinkList t={t} CC={CC} entries={tagged.links} cats={cats} onDelete={deleteEntry} />
+                )}
+              </>
+            )
+          ) : tagNames.length === 0 ? (
+            <div className="new-list__empty">{t.noTags}</div>
+          ) : (
+            // Zeilen im Layout der Kategorien-Liste: Kachel · Name · Anzahl.
+            tagNames.map((name) => (
+              <div
+                key={name}
+                className="new-list__row"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedTag(name)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setSelectedTag(name);
+                  }
+                }}
+              >
+                <span
+                  className="new-list__row-cover new-list__row-cover--tile"
+                  style={{ background: `${cfg.color}1F`, color: cfg.color }}
+                >
+                  <TagIcon size={22} />
+                </span>
+                <div className="new-list__row-info">
+                  <div className="new-list__row-title">{name}</div>
+                  <div className="new-list__row-meta">
+                    <span className="new-list__row-count">{t.entriesCount(countForTag(name))}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )
+        ) : filter === "trash" ? (
           trashItems.length === 0 ? (
             <div className="new-list__empty">{t.trashEmpty}</div>
           ) : (

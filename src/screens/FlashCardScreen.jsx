@@ -87,9 +87,13 @@ export function FlashCardScreen({
         back: v.back,
         createdAt: v.createdAt,
         deck,
-        // Übersetzer-Wortpaare: front = deutsches Quellwort, back = Übersetzung
-        // → Richtung ist gegenüber dem Deck-languagePair umgekehrt.
-        langPair: deck?.languagePair ? [deck.languagePair[1], deck.languagePair[0]] : null,
+        // Übersetzer-Wortpaare bringen ihre Richtung selbst mit (front =
+        // Quellsprache der Übersetzung). Nur wenn die fehlt (Altbestand),
+        // greift die alte Annahme "front ist deutsch" – dann läuft die
+        // Richtung dem Deck-languagePair entgegen.
+        langPair:
+          v.langPair ||
+          (deck?.languagePair ? [deck.languagePair[1], deck.languagePair[0]] : null),
       };
     }),
   ]

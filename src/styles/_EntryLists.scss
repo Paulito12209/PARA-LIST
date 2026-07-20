@@ -1966,7 +1966,13 @@ body.light-theme .action-sheet {
 // Light-Theme (Klasse liegt auf <body>, da das Sheet per Portal dort hängt)
 body.light-theme .link-sheet {
   background: rgba(0, 0, 0, 0.28);
+}
 
+// Die Verknüpfen-Ansicht steckt nicht nur im eigenen Bottom-Sheet, sondern
+// auch im Erstellen-Sheet (CreateModal). Die Light-Overrides hängen deshalb
+// an den Klassen selbst statt am `.link-sheet`-Container – sonst blieben
+// Zeilen im Modal auf den Dark-Werten (graue Schrift auf Weiß).
+body.light-theme {
   .link-sheet__panel {
     @include sheet-glass-light;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.14);

@@ -54,18 +54,32 @@
 }
 
 // Frosted-Glass-Panel der Bottom-Sheets (Look des Picker-/Kebab-Sheets):
-// durchsichtiger Grund, kräftiger Blur, feine helle Oberkante.
+// nahezu deckender Grund, Blur nur als Zugabe, feine helle Oberkante.
+//
+// WICHTIG: Der Grund muss für sich allein lesbar sein. Auf iOS trägt der
+// Backdrop-Blur den Look, auf Android greift er je nach Gerät/GPU gar nicht
+// oder deutlich schwächer – bei den früheren 0.72/0.78 schien der Seiten-
+// inhalt dann durch das Sheet hindurch. Daher hohe Deckkraft plus ein
+// @supports-Fallback, das ohne Blur komplett deckend wird.
 @mixin sheet-glass {
-  background: rgba(22, 22, 30, 0.72);
+  background: rgba(22, 22, 30, 0.96);
   backdrop-filter: blur(24px) saturate(150%);
   -webkit-backdrop-filter: blur(24px) saturate(150%);
   border-top: 1px solid rgba(255, 255, 255, 0.14);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: #16161e;
+  }
 }
 
 // Light-Theme-Gegenstück (Blur kommt bereits aus sheet-glass, hier nur Farben)
 @mixin sheet-glass-light {
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.97);
   border-top-color: rgba(0, 0, 0, 0.08);
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    background: #ffffff;
+  }
 }
 
 // Liquid Glass Border (1px weiß mit Glow)

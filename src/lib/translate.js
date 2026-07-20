@@ -49,6 +49,21 @@ export function wordsResourceName(langName) {
 }
 
 /**
+ * Umkehrung von `wordsResourceName`: "Spanische Wörter" → "Spanisch".
+ * Wird gebraucht, um aus einer Vokabel-Ressource die Fremdsprache zu
+ * bestimmen, wenn am Wortpaar selbst keine Richtung hinterlegt ist
+ * (Altbestand vor dem Speichern von `langPair`).
+ */
+export function langFromWordsResourceName(resName) {
+  if (!resName) return null;
+  for (const lang of Object.keys(WORDS_ADJ)) {
+    if (wordsResourceName(lang) === resName) return lang;
+  }
+  const m = /^(.+?)\s+Wörter$/.exec(resName);
+  return m ? m[1] : null;
+}
+
+/**
  * Akzeptiert Anzeigenamen ("Spanisch") oder ISO-Codes ("es").
  * Unbekannte Eingaben liefern "" (fail-closed): so landet niemals
  * ungeprüfter Text im API-Request, der Aufruf scheitert sauber.

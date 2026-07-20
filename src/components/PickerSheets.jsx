@@ -48,7 +48,9 @@ function PickerShell({ title, onClose, children }) {
 }
 
 // ── Kalender (Monatsansicht) – wird von Einzel- und Kombi-Sheet genutzt ──
-function CalendarPane({ t, value, accent, onPick }) {
+// Exportiert, weil das Erstellen-Sheet (CreateModal) dieselben Panes in
+// seinen eigenen Subtabs rendert statt ein zweites Sheet zu öffnen.
+export function CalendarPane({ t, value, accent, onPick }) {
   const init = value ? new Date(value + "T12:00") : new Date();
   const [viewY, setViewY] = useState(init.getFullYear());
   const [viewM, setViewM] = useState(init.getMonth());
@@ -123,7 +125,7 @@ function CalendarPane({ t, value, accent, onPick }) {
 }
 
 // ── Ziffernblatt (Google-Stil) – äußerer Ring 12–23, innerer 0–11 ──
-function ClockPane({ value, accent, onDraft }) {
+export function ClockPane({ value, accent, onDraft }) {
   const hour = value ? parseInt(value.split(":")[0], 10) : 12;
   const minute = value ? parseInt(value.split(":")[1], 10) : 0;
   const [mode, setMode] = useState("hour");

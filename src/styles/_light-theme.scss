@@ -729,6 +729,7 @@
     .modal__date-input,
     .modal__time-input,
     .modal__multi-select-btn,
+    .modal__link-btn,
     .modal__toggle-row {
       background: transparent;
       border: none;
@@ -736,7 +737,8 @@
     }
 
     // Select-Text neutral grau statt Lila (ausgewählt = dunkel)
-    .modal__multi-select-btn {
+    .modal__multi-select-btn,
+    .modal__link-btn {
       color: #76767f;
 
       &--has-selection {

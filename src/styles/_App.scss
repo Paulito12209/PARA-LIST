@@ -1002,3 +1002,67 @@ body.light-theme .sheet-footer {
   }
 }
 
+
+// ============================================================
+// Erstellen-Sheet mit Subtabs (CreateModal)
+// Inhalt · Datum · Uhrzeit in EINEM Sheet; der Verknüpfen-Button tauscht die
+// Tab-Leiste gegen die PARA-/Tag-Auswahl (gleiches Sheet, kein zweites Panel).
+// ============================================================
+
+// Zurück-Pfeil links im Kopf, sichtbar nur in der Verknüpfen-Ansicht.
+.modal__back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text, #f2f2f7);
+  cursor: pointer;
+
+  &:active { transform: scale(0.94); }
+}
+
+// Verknüpfen-Zeile im Inhalt-Tab – Optik der früheren Kategorie-Auswahl,
+// zeigt bei Auswahl die erste Verknüpfung + Zähler.
+.modal__link-btn {
+  @include input-base;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  width: 100%;
+  font-size: 13px;
+  color: $color-muted;
+  cursor: pointer;
+
+  &--has-selection {
+    color: $color-text;
+  }
+
+  > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// Kalender-/Uhr-Pane innerhalb des Erstellen-Sheets: das eigene Sheet-Padding
+// des Pickers entfällt hier, der Rahmen kommt vom Modal.
+.picker-sheet--in-modal {
+  padding: 0;
+}
+
+// Verknüpfen-Liste im Modal: begrenzte Höhe, damit Fußzeile und Tastatur
+// nicht aus dem Viewport gedrückt werden.
+.link-sheet__list--in-modal {
+  max-height: 46vh;
+  overflow-y: auto;
+}
+
+.app.light-theme .modal__back-btn,
+body.light-theme .modal__back-btn {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1a1a24;
+}

@@ -17,7 +17,7 @@ import {
   LOGO_SRC,
 } from "./utils";
 import { buildPresetDecks, FLASHCARD_PRESETS_VERSION } from "./data/flashcardPresets";
-import { wordsResourceName } from "./lib/translate";
+import { wordsResourceName, langFromWordsResourceName } from "./lib/translate";
 import { TranslateOverlay } from "./components/TranslateOverlay";
 import { CatListScreen, CatDetailScreen } from "./screens/FolderScreens";
 import { NewCatListScreen } from "./screens/NewCatListScreen";
@@ -566,15 +566,32 @@ export default function App() {
       .map((e) => {
         const parts = (e.title || "").split(" ↔ ");
         const catId = e.catId || (e.catIds || []).find((id) => vocabResIds.has(id));
+        // Richtung: bevorzugt die am Wortpaar gespeicherte. Altbestand hat
+        // keine – dort liefert der Ressourcenname ("Spanische Wörter") die
+        // Fremdsprache, und front gilt wie früher als deutsches Quellwort.
+        const resName = state.cats.find((c) => c.id === catId)?.name;
+        const foreign = langFromWordsResourceName(resName);
         return {
           id: e.id,
           front: parts[0] || "",
           back: parts.slice(1).join(" ↔ "),
           createdAt: e.createdAt || 0,
           deckId: deckByCat[catId] || null,
+          langPair: e.langPair || (foreign ? ["Deutsch", foreign] : null),
         };
       });
   })();
+
+  // Decks fürs Flashcards-Modul: selbst angelegte Decks haben oft kein
+  // `languagePair`. Hängt so ein Deck an einer Vokabel-Ressource ("Spanische
+  // Wörter"), lässt sich die Fremdsprache daraus ableiten – sonst fehlte auf
+  // den Karten die Richtungs-Pille komplett.
+  const flashcardDecks = (state.flashcardDecks || []).map((d) => {
+    if (d.languagePair) return d;
+    const resName = state.cats.find((c) => c.id === d.catId)?.name;
+    const foreign = langFromWordsResourceName(resName);
+    return foreign ? { ...d, languagePair: [foreign, "Deutsch"] } : d;
+  });
 
   /* ── tag mutations ─────────────────────────────────────────── */
   const updateGlobalTag = (id, newName) => {
@@ -942,7 +959,7 @@ export default function App() {
   // Übersetzung speichern: legt (falls nötig) den Arbeitsbereich "Sprachen"
   // und die Ressource "{Sprache} Wörter" an und hängt das Wortpaar als
   // verknüpften Notiz-Eintrag darunter. Alles atomar in einem setState.
-  const saveTranslation = ({ source, translation, toLang }) =>
+  const saveTranslation = ({ source, translation, fromLang, toLang }) =>
     setState((s) => {
       const src = (source || "").trim();
       const trans = (translation || "").trim();
@@ -983,6 +1000,11 @@ export default function App() {
       const entry = {
         id: uid(), type: "note", title: `${src} ↔ ${trans}`, body: "",
         catId: resId, catIds: [resId], linkedEntryIds: [], parentId: null,
+        // Richtung der Übersetzung festhalten (front = Quellsprache). Ohne sie
+        // ließe sich später nicht entscheiden, ob das Wortpaar Deutsch →
+        // Fremdsprache oder umgekehrt läuft – die Richtungs-Pille der
+        // Karteikarte hat genau das vorher geraten.
+        langPair: fromLang && toLang ? [fromLang, toLang] : null,
         createdAt: Date.now(),
       };
 
@@ -1163,6 +1185,7 @@ export default function App() {
           CC={CC}
           type={creating.type}
           cats={state.cats}
+          tags={state.tags}
           initialCatId={creating.catId}
           onSave={(entry) => {
             if (creating.linkToEntryId) {
@@ -1758,7 +1781,7 @@ export default function App() {
           <FlashCardScreen
             t={t}
             lang={lang}
-            decks={state.flashcardDecks || []}
+            decks={flashcardDecks}
             mistakes={state.flashcardMistakes || []}
             vocabEntries={vocabEntries}
             onSessionComplete={recordStudyResults}

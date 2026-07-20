@@ -816,7 +816,7 @@
   align-items: center;
   justify-content: space-between;
   gap: $spacing-sm;
-  margin-top: $spacing-lg;
+  margin-top: $spacing-sm + $spacing-xs;
   width: 100%;
 
   // Schließen/Abbrechen als reiner Text-Button, neutral grau.
@@ -849,6 +849,33 @@
     }
   }
 
+  // Neutrale Glas-Pille für Sekundär-Aktionen im Aktions-Slot (z.B.
+  // "Schließen" neben "Zurück") – gleiche Form wie --full, aber rechts.
+  &__pill {
+    border: none;
+    border-radius: $radius-pill;
+    background: rgba(255, 255, 255, 0.06);
+    color: $color-muted;
+    font-family: $font-body;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background $transition-fast;
+
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+    &:active { transform: scale(0.97); }
+  }
+
+  // Zurück-Button links: Chevron + Text auf einer Linie. `justify-content`
+  // ist nötig, damit die Vollbreiten-Variante (--full) ihr Label weiterhin
+  // mittig zeigt statt linksbündig.
+  &__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
   // Primär-Aktion: kompakte Pille rechts (Akzentfarbe kommt inline).
   &__action {
     flex: 0 1 auto;
@@ -868,7 +895,7 @@
   }
 }
 
-// Light Theme: Text-Button dunkler, Glas-Pille auf dunkler Basis
+// Light Theme: Text-Button dunkler, Glas-Pillen auf dunkler Basis
 .app.light-theme .sheet-footer,
 body.light-theme .sheet-footer {
   &__close {
@@ -881,6 +908,13 @@ body.light-theme .sheet-footer {
 
       &:hover { background: rgba(0, 0, 0, 0.08); }
     }
+  }
+
+  &__pill {
+    background: rgba(0, 0, 0, 0.05);
+    color: #6b6b76;
+
+    &:hover { background: rgba(0, 0, 0, 0.08); }
   }
 }
 

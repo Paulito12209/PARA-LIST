@@ -23,6 +23,7 @@ import { NewCatListScreen } from "./screens/NewCatListScreen";
 import { NewEntryListScreen } from "./screens/NewEntryListScreen";
 import { NewCatDetailScreen } from "./screens/NewCatDetailScreen";
 import { EntryDetailScreen } from "./screens/EntryDetailScreen";
+import { NewEntryDetailScreen } from "./screens/NewEntryDetailScreen";
 import { CommandPanel } from "./components/CommandPanel";
 import { AppSwitcherSheet } from "./components/AppSwitcherSheet";
 import { FlashCardScreen } from "./screens/FlashCardScreen";
@@ -530,6 +531,7 @@ export default function App() {
     newDesign &&
     (cur.view === VIEW.CAT_LIST ||
       cur.view === VIEW.ENTRY_LIST ||
+      cur.view === VIEW.ENTRY_DETAIL ||
       (cur.view === VIEW.CAT_DETAIL &&
         !(state.flashcardDecks || []).some((d) => d.catId === cur.catId)));
 
@@ -1679,6 +1681,40 @@ export default function App() {
             return <NotFoundScreen Icon={FileText} iconColor="#8a8a96" onBack={pop} />;
           }
           const cat = state.cats.find((c) => c.id === entry.catId);
+
+          // Neues Design: Eintrags-Detailseite im selben Spotify-Layout wie die
+          // Kategorie-Seiten (Cover + Icon-Leiste + Karten-Feed).
+          if (newDesign) {
+            return (
+              <NewEntryDetailScreen
+                key={entry.id}
+                t={t}
+                CC={CC}
+                entry={entry}
+                allCats={state.cats}
+                entries={state.entries}
+                user={state.user}
+                tags={state.tags}
+                onUpdate={(p) => updateEntry(entry.id, p)}
+                onTogglePin={() => togglePin(entry.id, "entry")}
+                onDelete={() => {
+                  deleteEntry(entry.id);
+                  pop();
+                }}
+                onBack={handleSmartBack}
+                onOpenEntry={(e) => push({ view: VIEW.ENTRY_DETAIL, entryId: e.id })}
+                onOpenCat={(c) => push({ view: VIEW.CAT_DETAIL, catId: c.id })}
+                toggleTask={toggleTask}
+                onAddLinkedEntry={(type) =>
+                  setCreating({ type, catId: entry.catIds?.[0] || null, linkToEntryId: entry.id })
+                }
+                onAddSubtask={() =>
+                  setCreating({ type: "task", catId: entry.catIds?.[0] || null, parentEntryId: entry.id })
+                }
+              />
+            );
+          }
+
           return (
             <EntryDetailScreen
               key={entry.id}

@@ -311,17 +311,25 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
             title={e.title}
             type={e.type}
             t={t}
-            flags={{ done: !!e.done, starred: !!e.starred, pinned: !!e.pinned }}
+            flags={{ done: !!e.done, starred: !!e.starred, pinned: !!e.pinned, status: e.status }}
             dateValue={e[dateField]}
             onClose={() => setMenuEntryId(null)}
             on={{
-              // Erledigt: Aufgabe/Termin via onToggle (Celebration); Notiz via done-Flag
-              done: () => (e.type === 'note' ? onUpdateEntry?.(e.id, { done: true }) : onToggle?.(e.id)),
-              reopen: () => (e.type === 'note' ? onUpdateEntry?.(e.id, { done: false }) : onToggle?.(e.id)),
-              // Verschoben: neues Datum + Tag, bleibt sichtbar
-              postpone: (newDate) => onUpdateEntry?.(e.id, { [dateField]: newDate, tags: addTag(t.tagPostponed) }),
-              // Abgesagt: wie erledigt (raus aus aktiver Liste, ins Archiv) + Tag
-              cancel: () => onUpdateEntry?.(e.id, { done: true, tags: addTag(t.tagCancelled) }),
+              // Erledigt: Aufgabe/Termin via onToggle (Celebration); Notiz via done-Flag.
+              // `status` läuft immer mit, damit Listen- und Detailansicht dieselbe
+              // aktive Kachel zeigen.
+              done: () => {
+                if (e.type === 'note') onUpdateEntry?.(e.id, { done: true, status: 'done' });
+                else { onToggle?.(e.id); onUpdateEntry?.(e.id, { status: 'done', archived: false }); }
+              },
+              reopen: () => {
+                if (e.type === 'note') onUpdateEntry?.(e.id, { done: false, status: null });
+                else { onToggle?.(e.id); onUpdateEntry?.(e.id, { status: null }); }
+              },
+              // Verschoben: neues Datum + Tag, bleibt offen und sichtbar
+              postpone: (newDate) => onUpdateEntry?.(e.id, { [dateField]: newDate, status: 'postponed', tags: addTag(t.tagPostponed) }),
+              // Abgesagt ≠ erledigt: wandert ins Archiv, zählt aber nicht zum Fortschritt
+              cancel: () => onUpdateEntry?.(e.id, { status: 'cancelled', archived: true, done: false, tags: addTag(t.tagCancelled) }),
               pin: () => onTogglePin?.(e.id),
               star: () => onToggleStar?.(e.id),
               edit: () => onOpenEntry?.(e),
@@ -486,14 +494,14 @@ export function HomeCatItem({ c, cats = [], t, CC, onOpenCat, onUpdateCat, onTog
           title={c.name}
           type={c.type}
           t={t}
-          flags={{ done: false, starred: !!c.starred, pinned: !!c.pinned, verified: !!c.verified }}
+          flags={{ done: false, starred: !!c.starred, pinned: !!c.pinned, verified: !!c.verified, status: c.status }}
           dateValue={c.date}
           onClose={() => setMenuOpen(false)}
           on={{
             // Projekt: erledigen/absagen = archivieren (Projekte haben kein done-Flag)
-            done: isProject ? () => update({ archived: true }) : undefined,
-            postpone: isProject ? (d) => update({ date: d, tags: addTag(t.tagPostponed) }) : undefined,
-            cancel: isProject ? () => update({ archived: true, tags: addTag(t.tagCancelled) }) : undefined,
+            done: isProject ? () => update({ archived: true, status: 'done' }) : undefined,
+            postpone: isProject ? (d) => update({ date: d, status: 'postponed', tags: addTag(t.tagPostponed) }) : undefined,
+            cancel: isProject ? () => update({ archived: true, status: 'cancelled', tags: addTag(t.tagCancelled) }) : undefined,
             verify: isResource ? () => onToggleVerified?.(c.id) : undefined,
             pin: () => onTogglePin?.(c.id),
             star: () => update({ starred: !c.starred }),

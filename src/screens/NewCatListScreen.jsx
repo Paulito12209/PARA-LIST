@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Archive, Calendar, ChevronLeft, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
-import { fmtDate, fmtRelative, CAT_ICONS, COVER_COLORS } from "../utils";
+import { fmtDate, fmtRelative, CAT_ICONS } from "../utils";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { CustomSettingsIcon, GitMergeBranchIcon, ActiveDotIcon } from "../components/AppIcons";
 import { NewDesignNav } from "../components/NewDesignNav";
@@ -138,8 +138,7 @@ export function NewCatListScreen({
   onQuickCreate,
 }) {
   const cfg = CC[type] || CC.resource;
-  const accentRgb =
-    TYPE_ACCENT_RGB[type] || COVER_COLORS.find((c) => c.label === type)?.rgb || "88, 88, 160";
+  const accentRgb = TYPE_ACCENT_RGB[type] || "88, 88, 160";
 
   const [filter, setFilter] = useState("active");
   const [menuCatId, setMenuCatId] = useState(null);

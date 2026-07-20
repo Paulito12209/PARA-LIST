@@ -1472,14 +1472,100 @@
     margin: 4px auto 10px;
   }
 
+  // Kopfzeile: Name des Eintrags links, Info-Schalter rechts
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: 0 8px 8px;
+  }
+
   &__title {
+    flex: 1;
+    min-width: 0;
     font-size: 13px;
     font-weight: 600;
     color: $color-muted;
-    padding: 0 8px 8px;
+    padding: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  // Nur das Icon, kein Kreis – aktiv färbt es sich in der Aufgaben-Farbe.
+  &__info-btn {
+    @include flex-center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: none;
+    background: none;
+    padding: 0;
+    color: $color-muted;
+    cursor: pointer;
+    transition: color $transition-fast;
+
+    &:hover { color: $color-text; }
+    &:active { transform: scale(0.94); }
+
+    &--on { color: $color-task; }
+  }
+
+  // Erklärtext hinter dem ⓘ – klappt über den Status-Kacheln auf
+  &__info {
+    margin: 0 4px 10px;
+    padding: 10px 12px;
+    border-radius: $radius-md - 2px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: $color-muted;
+    animation: action-sheet-fade-in 0.15s ease-out;
+
+    p {
+      margin: 0;
+
+      + p { margin-top: 8px; }
+    }
+  }
+
+  // ── Status-Kacheln (Abgesagt · Verschoben · Erledigt) ──────────
+  // Gleiche Optik wie das Kachel-Trio der Cover-Anpassung; die Farbe der
+  // aktiven Kachel kommt inline (je Status).
+  &__tiles {
+    display: flex;
+    gap: 10px;
+    padding: 0 4px 12px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid $color-border;
+  }
+
+  &__tile {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 13px 8px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.07);
+    color: $color-muted;
+    font-family: $font-body;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+    span {
+      max-width: 100%;
+      @include text-truncate;
+    }
+
+    &:hover { background: rgba(255, 255, 255, 0.1); }
+    &:active { transform: scale(0.97); }
   }
 
   &__subtitle {
@@ -1598,6 +1684,30 @@ body.light-theme .action-sheet {
 
   .action-sheet__handle { background: rgba(0, 0, 0, 0.15); }
   .action-sheet__title  { color: #8a8a96; }
+
+  .action-sheet__info-btn {
+    color: #6b6b76;
+
+    &:hover { color: #1c1c30; }
+
+    &--on { color: #0B8CE9; }
+  }
+
+  .action-sheet__info {
+    border-color: rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.035);
+    color: #5a5a66;
+  }
+
+  .action-sheet__tiles { border-bottom-color: rgba(0, 0, 0, 0.08); }
+
+  .action-sheet__tile {
+    border-color: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.04);
+    color: #6a6a78;
+
+    &:hover { background: rgba(0, 0, 0, 0.07); }
+  }
 
   .action-sheet__item {
     color: #1c1c30;

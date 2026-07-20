@@ -203,12 +203,46 @@
     right: 0;
     z-index: 0;
     pointer-events: none;
+    overflow: hidden;
     background: linear-gradient(
       to bottom,
       rgb(var(--nd-accent-rgb)) 0%,
       rgba(var(--nd-accent-rgb), 0.55) 46%,
       #{$color-bg} 96%
     );
+  }
+
+  // Cover-BILD: füllt dieselbe Fläche wie der Farbverlauf – also bis zur
+  // Trennlinie unter der Icon-Leiste, nicht nur den Cover-Block oben.
+  &__cover-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  // Darüber derselbe Ausblendverlauf wie beim Farb-Cover: oben transparent
+  // (Foto sichtbar), zur Trennlinie hin voll in der Seitenfarbe. Nur so sitzen
+  // Titel und Icon-Leiste unabhängig vom Bildinhalt auf festem Grund.
+  &--has-cover-img &__cover-bg {
+    background: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      // Oben transparent (Foto sichtbar), ab der Titelzone kräftig genug,
+      // dass Titel und Icon-Leiste unabhängig vom Bildinhalt tragen.
+      background: linear-gradient(
+        to bottom,
+        rgba($color-bg, 0) 0%,
+        rgba($color-bg, 0.10) 30%,
+        rgba($color-bg, 0.55) 58%,
+        rgba($color-bg, 0.88) 78%,
+        #{$color-bg} 93%
+      );
+    }
   }
 
   // ── Cover: Grain-Verlauf + Emblem – scrollt komplett weg. Hintergrund liegt
@@ -224,14 +258,6 @@
     flex-direction: column;
     padding-top: var(--nd-topbar-h);
     overflow: hidden;
-  }
-
-  &__cover-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
   }
 
   // Körniger Film ("grained") über dem Farbverlauf
@@ -292,6 +318,46 @@
     &--right {
       right: 0;
     }
+  }
+
+  // Über einem Cover-Bild liegen Terminierung und Emblem auf beliebigen
+  // Bildinhalten: dort immer Weiß mit kräftigerem Schatten (auch im
+  // Light-Theme, wo beide sonst dunkel wären).
+  &--has-cover-img &__cover-meta {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75), 0 2px 12px rgba(0, 0, 0, 0.55);
+  }
+
+  &--has-cover-img &__emblem {
+    color: rgba(255, 255, 255, 0.5);
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
+  }
+
+  // ── Helligkeitsabhängige Umschaltung (useCoverLuminance) ────────────
+  // Ist der Bildbereich hinter einem Element hell, wird dort schwarz statt
+  // weiß gezeichnet – inklusive umgekehrtem Schatten. Die Regeln stehen
+  // bewusst NACH den --has-cover-img-Regeln (gleiche Spezifität, Quelltext-
+  // reihenfolge entscheidet) und gelten in beiden Themes.
+  &--cover-top-light &__type-label {
+    color: #14141a;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.85);
+  }
+
+  // Gepinnt liegt die Topbar auf festem Grund – dort gilt wieder das Theme.
+  &--cover-top-light:not(&--pinned) &__glass-btn {
+    color: #14141a;
+    border-color: rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  &--cover-mid-light &__cover-meta {
+    color: rgba(0, 0, 0, 0.78);
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
+  }
+
+  &--cover-mid-light &__emblem {
+    color: rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(0 2px 10px rgba(255, 255, 255, 0.55));
   }
 
   // ── Gepinnter Block: Titel + Icon-Leiste kleben unter der Topbar fest.
@@ -646,6 +712,35 @@
     opacity: 0.85;
   }
 
+  // Hinzufügen-Pille am Ende der Verknüpfungs-/Tag-Zeile: gestrichelt und
+  // neutral, damit sie sich klar von den gefüllten Wert-Pillen absetzt.
+  &__conn-pill--add {
+    background: transparent;
+    border-style: dashed;
+    border-color: rgba(255, 255, 255, 0.24);
+    color: $color-muted;
+  }
+
+  // "Erledigt"/"Wieder öffnen" in der Kopfzeile der Seiteninhalt-Karte
+  // (nur Aufgaben-Detailseiten) – helle Glas-Pille auf der Akzentfläche.
+  &__card-done {
+    margin-left: auto;
+    padding: 5px 12px;
+    border-radius: $radius-pill;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-family: $font-body;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+
+    &:active {
+      transform: scale(0.96);
+    }
+  }
+
   // ── Eintragszeilen im Listen-Look (wie NewCatListScreen-Zeilen) ──
   &__row {
     display: flex;
@@ -657,6 +752,16 @@
 
     &:active {
       background: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  // Erledigte Aufgabe: gedämpft + durchgestrichener Titel (sie bleibt in der
+  // Liste stehen, rutscht aber ans Ende).
+  &__row--done {
+    opacity: 0.55;
+
+    .new-detail__row-title {
+      text-decoration: line-through;
     }
   }
 
@@ -912,6 +1017,18 @@
     color: #6b6b76;
   }
 
+  &__conn-pill--add {
+    border-color: rgba(0, 0, 0, 0.18);
+    color: #6b6b76;
+  }
+
+  // Erledigt-Pille sitzt auf der (hellen) Akzentfläche → dunkle Schrift.
+  &__card-done {
+    border-color: rgba(0, 0, 0, 0.14);
+    background: rgba(255, 255, 255, 0.55);
+    color: #16161f;
+  }
+
   // "Nach oben"-Pille auf hellem Grund: weißes Glas mit dunklem Icon/Label.
   &__totop {
     color: #5858a0;
@@ -935,6 +1052,57 @@
   &__cover-meta {
     color: rgba(0, 0, 0, 0.55);
     text-shadow: none;
+  }
+
+  // Über einem Cover-BILD bleiben Terminierung und Emblem weiß mit Schatten –
+  // auf einem Foto sind dunkle Elemente unlesbar. Stehen bewusst NACH den
+  // Regeln darüber, damit die höhere Spezifität greift. Die Nachfahren werden
+  // literal geschrieben: ein zweites `&` würde die Elternkette erneut
+  // einsetzen (`.app.light-theme` doppelt).
+  &--has-cover-img .new-detail__cover-meta {
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75), 0 2px 12px rgba(0, 0, 0, 0.55);
+  }
+
+  &--has-cover-img .new-detail__emblem {
+    color: rgba(255, 255, 255, 0.5);
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.5));
+  }
+
+  // Helligkeitsabhängige Umschaltung – im Light-Theme nochmals aufgeführt,
+  // weil die Regeln oben (`.app.light-theme .new-detail__…`) sonst mit
+  // höherer Spezifität gewinnen würden.
+  &--cover-top-light .new-detail__type-label {
+    color: #14141a;
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.85);
+  }
+
+  &--cover-top-light:not(.new-detail--pinned) .new-detail__glass-btn {
+    color: #14141a;
+    border-color: rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.45);
+  }
+
+  &--cover-mid-light .new-detail__cover-meta {
+    color: rgba(0, 0, 0, 0.78);
+    text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
+  }
+
+  &--cover-mid-light .new-detail__emblem {
+    color: rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(0 2px 10px rgba(255, 255, 255, 0.55));
+  }
+
+  // Ausblendung des Cover-Bildes läuft im Light-Theme nach WEISS.
+  &--has-cover-img .new-detail__cover-bg::after {
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.10) 30%,
+      rgba(255, 255, 255, 0.58) 58%,
+      rgba(255, 255, 255, 0.90) 78%,
+      #ffffff 93%
+    );
   }
 
   // Trennlinie (auf dem Sticky) auf die helle Seite umfärben.

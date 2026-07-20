@@ -1,24 +1,35 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
-  Check,
-  Undo2,
-  Calendar,
+  Archive,
   Ban,
+  CalendarClock,
+  CheckCircle2,
+  Info,
+  Pencil,
   Pin,
   PinOff,
-  Star,
-  Pencil,
-  Archive,
-  Trash2,
   ShieldCheck,
+  Star,
+  Trash2,
 } from "lucide-react";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
+import { DatePickerSheet } from "./PickerSheets";
+import { SheetFooter } from "./SheetFooter";
 
 // Typen, die "erledigt" / "abgesagt" werden können
 const COMPLETABLE = ["task", "note", "calendar", "project"];
 // Typen mit Datum → "verschoben" möglich
 const SCHEDULABLE = ["task", "calendar", "project"];
+
+// Status-Kacheln: bewusst "Abgesagt · Verschoben · Erledigt" – Erledigt liegt
+// ganz rechts und damit im bequemsten Daumenbereich, weil es der mit Abstand
+// häufigste Griff ist.
+const STATUS_TILES = [
+  { id: "cancelled", Icon: Ban, color: "#F26565", labelKey: "actionCancelled" },
+  { id: "postponed", Icon: CalendarClock, color: "#F59E0B", labelKey: "actionPostpone" },
+  { id: "done", Icon: CheckCircle2, color: "#0B8CE9", labelKey: "actionDone" },
+];
 
 /**
  * Einheitliches Aktions-Bottom-Sheet für Listeneinträge (Aufgaben, Notizen,
@@ -29,13 +40,14 @@ const SCHEDULABLE = ["task", "calendar", "project"];
  * Props:
  *  - title: Anzeigename des Items
  *  - type: 'task'|'note'|'calendar'|'project'|'area'|'resource'
- *  - flags: { done, starred, pinned, verified }
+ *  - flags: { done, starred, pinned, verified, status }
  *  - dateValue: aktuelles Datum (für "Verschoben"-Default)
  *  - on: { done, reopen, postpone(date), cancel, pin, star, verify, edit, archive, trash }
  *  - onClose
  */
 export function EntryActionSheet({ title, type, flags = {}, dateValue, on = {}, t, onClose }) {
   const [postponeOpen, setPostponeOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
   const [closing, setClosing] = useState(false);
 
   // ESC schließt das Sheet
@@ -58,66 +70,104 @@ export function EntryActionSheet({ title, type, flags = {}, dateValue, on = {}, 
   const canSchedule = SCHEDULABLE.includes(type) && on.postpone;
   const canCancel = COMPLETABLE.includes(type) && on.cancel;
   const canVerify = type === "resource" && on.verify;
+  const hasStatus = canComplete || canSchedule || canCancel;
+
+  // Aktueller Status: bevorzugt das explizite Feld, sonst aus dem done-Flag.
+  const status = flags.status || (flags.done ? "done" : null);
+
+  const handleStatus = (id) => {
+    if (id === "done") {
+      // Erneutes Antippen der aktiven Kachel öffnet die Aufgabe wieder.
+      run(status === "done" ? on.reopen : on.done)();
+    } else if (id === "postponed") {
+      // Verschieben heißt neu terminieren – deshalb geht direkt der
+      // Datums-Picker auf, statt das Sheet zu schließen.
+      setPostponeOpen(true);
+    } else {
+      run(on.cancel)();
+    }
+  };
 
   const swipe = useSheetSwipeClose(handleClose);
 
   return createPortal(
-    <div
-      className={`action-sheet ${closing ? "action-sheet--closing" : ""}`}
-      onClick={handleClose}
-      {...swipe}
-    >
+    <>
       <div
-        className={`action-sheet__panel ${closing ? "action-sheet__panel--closing" : ""}`}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-modal="true"
+        className={`action-sheet ${closing ? "action-sheet--closing" : ""}`}
+        onClick={handleClose}
+        {...swipe}
       >
-        <div className="action-sheet__handle" />
-        {title && <div className="action-sheet__title">{title}</div>}
+        <div
+          className={`action-sheet__panel ${closing ? "action-sheet__panel--closing" : ""}`}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="action-sheet__handle" />
 
-        {postponeOpen ? (
-          <div className="action-sheet__postpone">
-            <label className="action-sheet__postpone-label">{t.postponeTo}</label>
-            <input
-              type="date"
-              className="action-sheet__date-input"
-              defaultValue={dateValue || ""}
-              autoFocus
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val) run(() => on.postpone(val))();
-              }}
-            />
-          </div>
-        ) : (
+          {/* Kopfzeile: Name des Eintrags links, Info-Schalter rechts */}
+          {(title || hasStatus) && (
+            <div className="action-sheet__head">
+              {title && <div className="action-sheet__title">{title}</div>}
+              {hasStatus && (
+                <button
+                  className={`action-sheet__info-btn${infoOpen ? " action-sheet__info-btn--on" : ""}`}
+                  onClick={() => setInfoOpen((v) => !v)}
+                  aria-expanded={infoOpen}
+                  aria-label={t.statusInfoAria || "Info"}
+                >
+                  <Info size={17} />
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Erklärtext hinter dem ⓘ – klappt über den Kacheln auf */}
+          {hasStatus && infoOpen && (
+            <div className="action-sheet__info">
+              <p>{t.statusInfoDone}</p>
+              <p>{t.statusInfoPostponed}</p>
+              <p>{t.statusInfoCancelled}</p>
+            </div>
+          )}
+
+          {/* Status als Kachel-Trio */}
+          {hasStatus && (
+            <div className="action-sheet__tiles">
+              {STATUS_TILES.map(({ id, Icon, color, labelKey }) => {
+                const enabled =
+                  id === "done" ? canComplete : id === "postponed" ? canSchedule : canCancel;
+                if (!enabled) return null;
+                const isActive = status === id;
+                const label =
+                  id === "done" && isActive ? t.actionReopen : t[labelKey];
+                return (
+                  <button
+                    key={id}
+                    className={`action-sheet__tile${isActive ? " action-sheet__tile--on" : ""}`}
+                    // Aktive Kachel trägt ihre Statusfarbe (Rot/Gelb/Blau).
+                    style={isActive ? { color, background: `${color}26`, borderColor: `${color}66` } : undefined}
+                    onClick={() => handleStatus(id)}
+                    aria-pressed={isActive}
+                  >
+                    <Icon size={20} />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <div className="action-sheet__list">
-            {canComplete && (
-              <button className="action-sheet__item" onClick={run(flags.done ? on.reopen : on.done)}>
-                {flags.done ? <Undo2 size={18} /> : <Check size={18} />}
-                <span>{flags.done ? t.actionReopen : t.actionDone}</span>
-              </button>
-            )}
-            {canSchedule && (
-              <button className="action-sheet__item" onClick={() => setPostponeOpen(true)}>
-                <Calendar size={18} />
-                <span>{t.actionPostpone}</span>
-              </button>
-            )}
-            {canCancel && (
-              <button className="action-sheet__item" onClick={run(on.cancel)}>
-                <Ban size={18} />
-                <span>{t.actionCancelled}</span>
-              </button>
-            )}
             {canVerify && (
-              <button className="action-sheet__item" onClick={run(on.verify)}>
-                <ShieldCheck size={18} color={flags.verified ? "#30A060" : undefined} />
-                <span>{flags.verified ? t.actionUnverify : t.actionVerify}</span>
-              </button>
+              <>
+                <button className="action-sheet__item" onClick={run(on.verify)}>
+                  <ShieldCheck size={18} color={flags.verified ? "#30A060" : undefined} />
+                  <span>{flags.verified ? t.actionUnverify : t.actionVerify}</span>
+                </button>
+                <div className="action-sheet__divider" />
+              </>
             )}
-
-            {(canComplete || canSchedule || canVerify) && <div className="action-sheet__divider" />}
 
             <button className="action-sheet__item" onClick={run(on.pin)}>
               {flags.pinned ? <PinOff size={18} /> : <Pin size={18} />}
@@ -140,14 +190,33 @@ export function EntryActionSheet({ title, type, flags = {}, dateValue, on = {}, 
 
             <div className="action-sheet__divider" />
 
+            {/* Wording bewusst "Löschen" – gleich wie im Options-Sheet der
+                Detailseiten; beide legen das Item in den Papierkorb. */}
             <button className="action-sheet__item action-sheet__item--danger" onClick={run(on.trash)}>
               <Trash2 size={18} />
-              <span>{t.actionTrash}</span>
+              <span>{t.delete}</span>
             </button>
           </div>
-        )}
+
+          <SheetFooter onClose={handleClose} closeLabel={t.closeBtn || "Schließen"} />
+        </div>
       </div>
-    </div>,
+
+      {/* Verschieben: derselbe Frosted-Glass-Kalender wie überall sonst */}
+      {postponeOpen && (
+        <DatePickerSheet
+          t={t}
+          value={dateValue || null}
+          accent="#F59E0B"
+          title={t.postponeTo}
+          onSelect={(d) => {
+            setPostponeOpen(false);
+            if (d) run(() => on.postpone(d))();
+          }}
+          onClose={() => setPostponeOpen(false)}
+        />
+      )}
+    </>,
     document.body
   );
 }

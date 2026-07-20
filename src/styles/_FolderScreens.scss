@@ -1230,7 +1230,9 @@
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.6);
+  // Gleiche Abdunklung wie die übrigen Sheets – bei 0.6 wirkte das Glas-Panel
+  // darüber wieder opak.
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: flex-end;
 }
@@ -1255,6 +1257,14 @@
     border-radius: $radius-pill;
     background: $color-dim;
     margin: 0 auto $spacing-md;
+  }
+
+  // Abschnittsüberschrift über einer Gruppe (z.B. "Individualisieren")
+  &__section-label {
+    padding: 0 12px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: $color-muted;
   }
 
   &__list {
@@ -1292,42 +1302,58 @@
     }
   }
 
-  // Cover-Bild-URL-Eingabe (klappt unter der Listen-Zeile auf)
-  &__url-row {
+  // Cover-Bild-URL: dauerhaft sichtbare Zeile im Stil des Namensfelds der
+  // Einstellungen (transparent, nur Unterstrich). Link-Icon links, der
+  // Übernehmen-Haken rechts erscheint erst bei Eingabe.
+  &__url-field {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 4px 12px 10px;
-    animation: fade-in 0.15s ease;
+    gap: $spacing-sm + $spacing-xs;
+    // Gleicher Einzug wie die Listenzeilen darunter, damit Icon und Text
+    // exakt auf deren Achse sitzen. Die Unterlinie trennt die Gruppe bereits –
+    // ein zusätzlicher __divider darunter wäre doppelt.
+    margin: 0 $spacing-md $spacing-sm;
+    // Feste Höhe statt vertikalem Padding: der Übernehmen-Haken (28px) taucht
+    // beim Tippen auf, darf die Zeile aber nicht wachsen lassen – sonst
+    // rutschen die Kacheln darüber hoch.
+    height: 44px;
+    padding: 0;
+    border-bottom: 1px solid $color-border;
+    transition: border-bottom-color $transition-fast;
+
+    &:focus-within {
+      border-bottom-color: $color-task;
+    }
+
+    > svg { flex-shrink: 0; }
   }
 
   &__url-input {
     flex: 1;
     min-width: 0;
-    background: $color-hover;
-    border: 1px solid $color-border;
-    border-radius: $radius-md - 4px;
-    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    padding: 0;
     color: $color-text;
     font-family: $font-body;
     font-size: 14px;
+    font-weight: 500;
 
     &::placeholder { color: $color-muted; }
-    &:focus { outline: none; border-color: rgba($color-task, 0.5); }
+    &:focus { outline: none; }
   }
 
   &__url-apply {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: $radius-md - 4px;
+    @include flex-center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
     border: none;
-    background: $color-task;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: rgba($color-task, 0.18);
+    color: $color-task;
     cursor: pointer;
+    animation: fade-in 0.15s ease;
 
     &:active { transform: scale(0.94); }
   }
@@ -1388,6 +1414,113 @@
   opacity: 0.35;
 }
 
+// ── Farbwahl-Ansicht im Options-Sheet ──────────────────────
+// Ersetzt dort den Individualisieren-Inhalt (kein eigenes Sheet).
+.color-sheet {
+  // Vorgabefarben als Kachelraster – große Tippflächen statt enger Punkte.
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 0 8px $spacing-md;
+  }
+
+  &__swatch {
+    height: 56px;
+    border-radius: 16px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+
+    &:active { transform: scale(0.95); }
+
+    // Aktive Farbe: heller Ring mit Abstand, damit die Farbe selbst voll
+    // sichtbar bleibt.
+    &--active {
+      border-color: #fff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.22);
+    }
+
+    // "Standard" (keine eigene Farbe): Regenbogen-Kachel mit Kreuz.
+    &--default {
+      position: relative;
+      background: conic-gradient(#f26565, #f59e0b, #30a060, #0b8ce9, #7c3aed, #f26565);
+
+      &::after {
+        content: '×';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+      }
+    }
+  }
+
+  &__custom-label {
+    padding-top: $spacing-2xs;
+  }
+
+  // Spektrum über die volle Breite + Vorschau rechts
+  &__custom {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    padding: 0 8px $spacing-sm;
+  }
+
+  &__spectrum {
+    flex: 1;
+    min-width: 0;
+    height: 64px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    cursor: crosshair;
+    // Ziehen auf dem Feld darf das Sheet nicht scrollen/schließen.
+    touch-action: none;
+    // Waagerecht der Farbton, senkrecht die Helligkeit (oben Weiß, unten
+    // Schwarz) – deckt sich mit der Berechnung in CoverColorSheet.
+    background:
+      linear-gradient(to bottom,
+        #ffffff 0%,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0) 50%,
+        #000000 100%),
+      linear-gradient(to right,
+        hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%),
+        hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%),
+        hsl(360, 100%, 50%));
+  }
+
+  // Vorschau der getippten Farbe – der Haken übernimmt sie.
+  &__preview {
+    flex: 0 0 64px;
+    width: 64px;
+    height: 64px;
+    @include flex-center;
+    border-radius: 14px;
+    border: 1px dashed rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:disabled { cursor: default; }
+
+    &--on {
+      border-style: solid;
+      border-color: rgba(255, 255, 255, 0.6);
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
+    }
+
+    &:not(:disabled):active { transform: scale(0.95); }
+  }
+}
+
 // ── Cover Picker Bubbles & Color Grid ──────────────────────
 
 .settings-sheet__bubbles {
@@ -1398,19 +1531,29 @@
 
 .settings-sheet__bubble {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   padding: 14px 12px;
   border-radius: 18px;
-  background: $color-card;
-  border: 1px solid $color-border;
+  // Transluzent statt Kartenfarbe: auf dem Frosted-Glass-Panel würde eine
+  // opake Fläche als Block aufliegen.
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 11px;
   font-weight: 600;
   color: $color-muted;
   cursor: pointer;
   transition: all 0.15s;
+
+  span {
+    @include text-truncate;
+    max-width: 100%;
+  }
+
+  &:active { transform: scale(0.97); }
 
   &--active {
     background: rgba($color-task, 0.15);
@@ -1418,6 +1561,7 @@
     color: $color-task;
   }
 }
+
 
 .settings-sheet__color-grid {
   display: flex;

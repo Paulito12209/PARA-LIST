@@ -178,17 +178,29 @@ export const CAT_ICONS = {
   resource: Square,
 };
 
-// Cover-Farbpalette der Kategorie-Seiten (Design-Anpassung im Options-Sheet).
-// Zentral hier, damit Detailseite UND Listen-Kebab dieselbe Auswahl zeigen.
+// Cover-Farbpalette der Detailseiten (Design-Anpassung im Options-Sheet).
+// Bewusst NICHT die semantischen Typfarben: dort gäbe es zweimal Gelb und
+// zweimal Blau. Hier zählt Varianz – je ein klares Rot, Orange, Gelb, Grün,
+// Türkis, Blau und Lila.
 export const COVER_COLORS = [
-  { hex: "#30A060", rgb: "48, 160, 96",   label: "resource" },
-  { hex: "#D09020", rgb: "208, 144, 32",  label: "area" },
-  { hex: "#F59E0B", rgb: "245, 158, 11",  label: "note" },
-  { hex: "#0078D4", rgb: "0, 120, 212",   label: "calendar" },
-  { hex: "#0B8CE9", rgb: "11, 140, 233",  label: "task" },
-  { hex: "#E03E3E", rgb: "224, 62, 62",   label: "project" },
-  { hex: "#5858A0", rgb: "88, 88, 160",   label: "archive" },
+  { hex: "#E03E3E", rgb: "224, 62, 62",   label: "red" },
+  { hex: "#F97316", rgb: "249, 115, 22",  label: "orange" },
+  { hex: "#FACC15", rgb: "250, 204, 21",  label: "yellow" },
+  { hex: "#30A060", rgb: "48, 160, 96",   label: "green" },
+  { hex: "#14B8A6", rgb: "20, 184, 166",  label: "teal" },
+  { hex: "#0B8CE9", rgb: "11, 140, 233",  label: "blue" },
+  { hex: "#7C3AED", rgb: "124, 58, 237",  label: "purple" },
 ];
+
+// "#RRGGBB" → "r, g, b" für die CSS-Variablen der Cover-Verläufe. Nötig, weil
+// eine Cover-Farbe auch frei aus dem Spektrum stammen kann und dann in keiner
+// Palette steht – ein Nachschlagen in COVER_COLORS würde dort ins Leere laufen.
+export function hexToRgbString(hex) {
+  const match = /^#?([\da-f]{6})$/i.exec(hex || "");
+  if (!match) return null;
+  const n = parseInt(match[1], 16);
+  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+}
 
 export const ID_BIRTHDAYS = "res-birthdays";
 

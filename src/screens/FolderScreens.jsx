@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Circle, Triangle, Square, Plus, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Check, Bell, Trash2, X, FileText, CheckSquare, Calendar, Home, Edit2, Search, Link2, Pencil, Paperclip, Image as ImageIcon, Archive, ArchiveRestore, Moon, Sun, Video as VideoIcon, Headphones as AudioIcon, File as DocumentIcon, Star, Palette, Camera, Info, Send, MoreHorizontal, UserPlus, Pin, PinOff, AlertTriangle } from 'lucide-react';
-import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, COVER_COLORS } from "../utils";
+import { TODAY, fmtDate, BOOKMARKS, NOTIF_RED, NOTIF_NAVY, NOTIF_VIOL, CAT_ICONS, ID_BIRTHDAYS, hexToRgbString } from "../utils";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { AutoScrollText } from "../components/AutoScrollText";
 import { TagIcon, ArchiveIcon, BookmarkIcon, GitMergeBranchIcon } from "../components/AppIcons";
@@ -151,7 +151,7 @@ export function CatDetailScreen({
 
   // Cover-Akzent berechnen
   const catAccentRgb = cat.coverColor
-    ? COVER_COLORS.find(c => c.hex === cat.coverColor)?.rgb || CAT_ACCENT_RGB[safeType] || "88, 88, 160"
+    ? hexToRgbString(cat.coverColor) || CAT_ACCENT_RGB[safeType] || "88, 88, 160"
     : CAT_ACCENT_RGB[safeType] || "88, 88, 160";
   const hasCoverImg = !!cat.coverImage;
 

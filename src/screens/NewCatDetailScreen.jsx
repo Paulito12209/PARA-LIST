@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { ArrowUp, Calendar, ChevronLeft, Circle, Clock, MoreHorizontal, Paperclip, Pencil, Plus, Square } from "lucide-react";
-import { BOOKMARKS, CAT_ICONS, COVER_COLORS, fmtDate } from "../utils";
-import { DartTargetIcon, GitMergeBranchIcon, CustomSettingsIcon } from "../components/AppIcons";
+import { useRef, useState } from "react";
+import { ArrowUp, Calendar, ChevronLeft, Clock, MoreHorizontal, Plus, Square } from "lucide-react";
+import { BOOKMARKS, CAT_ICONS, fmtDate, hexToRgbString } from "../utils";
+import { DartTargetIcon } from "../components/AppIcons";
 import { CatOptionsSheet } from "../components/CatOptionsSheet";
 import { MediaTypeSheet } from "../components/PillSheets";
 import { CollaboratorsModal } from "../modals/CollaboratorsModal";
@@ -10,6 +10,9 @@ import { LinkList } from "../components/EntryLists";
 import { LinkedPillSheet } from "../components/LinkedPillSheet";
 import { CatLinkSheet } from "../components/CatLinkSheet";
 import { SchedulePickerSheet } from "../components/PickerSheets";
+import { AutoGrowTextarea, DetailEntryRow } from "../components/NewDetailKit";
+import { GRAIN_URI, FEED_PULL_UP_PX, useDetailScaffold } from "../hooks/useDetailScaffold";
+import { useCoverLuminance } from "../hooks/useCoverLuminance";
 
 // Akzent (RGB) des Covers – Typfarbe der Seite (Projekt rot usw.).
 const TYPE_ACCENT_RGB = {
@@ -17,136 +20,6 @@ const TYPE_ACCENT_RGB = {
   area: "208, 144, 32",
   resource: "48, 160, 96",
 };
-
-// Körniger Film über dem Cover ("grained" Verlauf) – SVG-Turbulenz als
-// Daten-URI, damit keine externen Assets nötig sind.
-const GRAIN_URI =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")";
-
-// Eingeklappte Seiteninhalt-Karte: mehr Text als diese Höhe → Fade +
-// "Kompletten Inhalt anzeigen"-Button.
-const CANVAS_CLIP_PX = 224;
-
-// Der Karten-Feed wird per negativem Margin so weit an die aktive Icon-Kachel
-// herangezogen, dass optisch ~16px Abstand bleiben. Muss mit dem SCSS-Wert
-// (--nd-feed-pull) übereinstimmen. Die Cover-Verlaufsfläche endet um genau
-// diesen Betrag höher, damit ihr (grund-farbener) Fuß NICHT über die
-// hochgezogene erste Karte malt.
-const FEED_PULL_UP_PX = 26;
-
-// Abstand zwischen der Trennlinie und der Oberkante der ersten Karte – gleich
-// dem seitlichen Kartenpadding (16px), damit die Karte ringsum gleich „atmet".
-const CARD_LINE_GAP_PX = 16;
-
-// Auto-wachsendes Textfeld der Seiteninhalt-Karte; meldet per onOverflow,
-// ob der Inhalt höher als die eingeklappte Karte ist.
-function AutoGrowTextarea({ value, onChange, placeholder, onOverflow }) {
-  const ref = useRef(null);
-  useEffect(() => {
-    const ta = ref.current;
-    if (!ta) return;
-    ta.style.height = "auto";
-    ta.style.height = `${ta.scrollHeight}px`;
-    onOverflow?.(ta.scrollHeight > CANVAS_CLIP_PX);
-  }, [value, onOverflow]);
-  return (
-    <textarea
-      ref={ref}
-      className="new-detail__canvas-input"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={3}
-    />
-  );
-}
-
-// Icon + Farbe der Eintragszeilen (führende Kachel)
-const ENTRY_TILE = {
-  task: { Icon: Circle, color: "#0B8CE9" },
-  note: { Icon: Pencil, color: "#F59E0B" },
-  calendar: { Icon: Calendar, color: "#0078D4" },
-  media: { Icon: Paperclip, color: "#10B981" },
-};
-
-// Eintragszeile im Look der Listen-Zeilen (NewCatListScreen): Kachel · Titel
-// (Ellipsis, ohne Lauftext) · Meta-Zeile mit blauem Datum + Typ-Icon der
-// verknüpften Seite (nur das Icon) · rechts das Verknüpfen-Mini-Logo.
-function DetailEntryRow({ t, CC, entry, allCats, onToggle, onOpen }) {
-  const tile = ENTRY_TILE[entry.type] || ENTRY_TILE.note;
-  const TileIcon = tile.Icon;
-
-  // Datum: das Kalender-Icon ist IMMER sichtbar. Aufgabe = Fälligkeit,
-  // Termin = Datum – ohne Terminierung bleibt nur das Icon stehen (KEIN
-  // Rückfall aufs Erstellungsdatum). Notizen/Lesezeichen/Medien zeigen ihr
-  // Erstellungsdatum.
-  const dateStr =
-    entry.type === "task" ? entry.due
-    : entry.type === "calendar" ? entry.date
-    : entry.createdAt ? new Date(entry.createdAt).toISOString().split("T")[0]
-    : null;
-
-  // Verknüpfte Seite: nur deren Typ-Icon in Typfarbe (kein Name).
-  const linkedCatId = entry.catIds?.[0] || entry.catId;
-  const linkedCat = linkedCatId ? allCats.find((c) => c.id === linkedCatId) : null;
-  const linkedCfg = linkedCat && CC[linkedCat.type] ? CC[linkedCat.type] : null;
-  const LinkedIcon = linkedCat ? CAT_ICONS[linkedCat.type] || Square : null;
-
-  return (
-    <div
-      className="new-detail__row"
-      role="button"
-      tabIndex={0}
-      onClick={() => onOpen?.(entry)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onOpen?.(entry);
-        }
-      }}
-    >
-      {entry.type === "task" ? (
-        <button
-          className="new-detail__row-tile new-detail__row-tile--toggle"
-          style={{ background: tile.color + "1F", color: tile.color }}
-          onClick={(e) => { e.stopPropagation(); onToggle?.(entry.id); }}
-          aria-label={t.markDone || "Erledigt"}
-        >
-          <TileIcon size={22} strokeWidth={2.2} />
-        </button>
-      ) : (
-        <span
-          className="new-detail__row-tile"
-          style={{ background: tile.color + "1F", color: tile.color }}
-        >
-          <TileIcon size={20} strokeWidth={2} />
-        </span>
-      )}
-
-      <div className="new-detail__row-info">
-        <div className="new-detail__row-title">{entry.title}</div>
-        <div className="new-detail__row-meta">
-          <span className="new-detail__row-date">
-            <Calendar size={12} strokeWidth={2.4} />
-            {dateStr && fmtDate(dateStr, t.locale)}
-          </span>
-          {linkedCfg && LinkedIcon && (
-            <span className="new-detail__row-cat" style={{ color: linkedCfg.color }}>
-              <LinkedIcon size={12} strokeWidth={2.4} />
-            </span>
-          )}
-          <button
-            className="new-detail__row-link"
-            onClick={(e) => { e.stopPropagation(); onOpen?.(entry); }}
-            aria-label={t.linkAction || "Verknüpfen"}
-          >
-            <GitMergeBranchIcon size={13} strokeWidth={2.2} />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // Spotify-artige Detailseite einer Kategorie (neues Design): fixe Topbar
 // (Zurück · Typ-Label · Einstellungen, immer sichtbar), Cover mit Emblem,
@@ -174,19 +47,15 @@ export function NewCatDetailScreen({
   const safeType = cat?.type && CC[cat.type] ? cat.type : "resource";
   const cfg = CC[safeType];
   const CatIcon = CAT_ICONS[safeType] || Square;
-  const accentRgb = cat.coverColor
-    ? COVER_COLORS.find((c) => c.hex === cat.coverColor)?.rgb || TYPE_ACCENT_RGB[safeType]
-    : TYPE_ACCENT_RGB[safeType] || "88, 88, 160";
+  // Freie Spektrumsfarben stehen in keiner Palette – daher direkt aus dem
+  // Hex-Wert umrechnen statt nachschlagen.
+  const accentRgb =
+    hexToRgbString(cat.coverColor) || TYPE_ACCENT_RGB[safeType] || "88, 88, 160";
 
-  const [active, setActive] = useState("canvas");
-  const [pinned, setPinned] = useState(false);
-  // Mitscrollende Verlaufsfläche hinter Cover + Titel + Icon-Leiste: EIN
-  // durchgehender Verlauf (Akzent oben → Seitenfarbe an der Trennlinie).
-  // `coverBgH` = Gesamthöhe bis zur Unterkante des Sticky-Headers. `fadeStartPx`
-  // = Position der Trennlinie im Sticky, ab der der gepinnte Header nach unten
-  // transparent ausläuft (Content-Fadeout beim Scrollen).
-  const [coverBgH, setCoverBgH] = useState(0);
-  const [fadeStartPx, setFadeStartPx] = useState(0);
+  // Helligkeit des Cover-Bildes je Zone – entscheidet, ob Typ-Label,
+  // Emblem und Terminierung darüber weiß oder schwarz gezeichnet werden.
+  const coverLum = useCoverLuminance(cat.coverImage);
+
   const [canvasExpanded, setCanvasExpanded] = useState(false);
   const [canvasOverflows, setCanvasOverflows] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
@@ -197,23 +66,8 @@ export function NewCatDetailScreen({
   // Sheet ("Mehr verknüpfen").
   const [pillSheetType, setPillSheetType] = useState(null);
   const [catLinkOpen, setCatLinkOpen] = useState(false);
-
-  const scrollRef = useRef(null);
-  const topbarRef = useRef(null);
-  const stickyRef = useRef(null);
-  const feedRef = useRef(null);
   // Eigene Picker-Sheets für die Terminierung am Cover ("date" | "time" | null)
   const [coverPicker, setCoverPicker] = useState(null);
-  const titleElRef = useRef(null);
-  const barRef = useRef(null);
-  const sectionRefs = useRef({});
-  const tileRefs = useRef({});
-  const titleRefs = useRef({});
-  // Schwebende "Nach oben"-Pille: erst einblenden, wenn spürbar weit gescrollt.
-  const [showToTop, setShowToTop] = useState(false);
-  // Beim Tap auf ein Icon nicht vom Scroll-Spy "überstimmt" werden, solange
-  // der Smooth-Scroll noch läuft.
-  const spyLockUntil = useRef(0);
 
   // Medien-Upload: Sheet wählt die Medienart, dann öffnet der versteckte
   // File-Input mit passendem accept.
@@ -290,116 +144,12 @@ export function NewCatDetailScreen({
       : null,
   }));
 
-  // Höhe des fixierten Kopfes (Topbar + gepinnter Titel/Leiste) – Grundlage
-  // für Scroll-Spy-Schwelle und Sprungziel beim Icon-Tap.
-  const headerOffset = () =>
-    (topbarRef.current?.offsetHeight || 56) + (stickyRef.current?.offsetHeight || 150);
-
-  // Scroll-Spy + Pinned-Erkennung (Topbar/Titelblock bekommen festen Grund).
-  const handleScroll = useCallback(() => {
-    const scroller = scrollRef.current;
-    if (!scroller) return;
-    const stickyEl = stickyRef.current;
-    const topbarH = topbarRef.current?.offsetHeight || 56;
-    if (stickyEl) {
-      setPinned(scroller.scrollTop >= stickyEl.offsetTop - topbarH - 1);
-    }
-    // "Nach oben"-Pille erst nach etwa einer Bildschirmhöhe Scrollstrecke.
-    setShowToTop(scroller.scrollTop > scroller.clientHeight * 0.8);
-    if (Date.now() < spyLockUntil.current) return;
-
-    // Aktiv = der Abschnitt, dessen Karte gerade "oben unter dem Header" liegt:
-    // der letzte Abschnitt, dessen Oberkante bereits über die Trennlinie
-    // (Header-Unterkante) gescrollt ist. So bleibt z.B. "Seiteninhalt" aktiv,
-    // solange seine (große) Karte noch prominent im Bild ist – der nächste
-    // Abschnitt greift erst, wenn dessen Karte tatsächlich oben ankommt (nicht
-    // schon, wenn sie flächenmäßig überwiegt = "zu früh").
-    const refLine = headerOffset() + 12;
-    let cur = SECTIONS[0]?.id || "canvas";
-    for (const s of SECTIONS) {
-      const el = sectionRefs.current[s.id];
-      if (!el) continue;
-      const top = el.offsetTop - scroller.scrollTop;
-      if (top <= refLine) cur = s.id;
-    }
-    // Ganz unten angekommen (kein weiteres Scrollen möglich): immer den letzten
-    // Abschnitt (Details) aktivieren – seine kurze Karte erreicht die Linie am
-    // Seitenende sonst nie.
-    if (scroller.scrollTop >= scroller.scrollHeight - scroller.clientHeight - 2) {
-      cur = SECTIONS[SECTIONS.length - 1]?.id || cur;
-    }
-    setActive(cur);
-    // SECTIONS ist pro Render neu, ändert aber nur Zähler/Labels.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Aktives Icon in der (overflow-hidden) Leiste automatisch nach links rücken.
-  useEffect(() => {
-    const tile = tileRefs.current[active];
-    const bar = barRef.current;
-    if (tile && bar) {
-      bar.scrollTo({ left: Math.max(0, tile.offsetLeft - 16), behavior: "smooth" });
-    }
-  }, [active]);
-
-  // Geometrie für Cover-Verlauf + Trennlinie messen – IMMER beides zusammen,
-  // aus derselben Sticky-Höhe, damit Verlaufsfuß und Linie nie auseinander-
-  // laufen. `coverBgH` = Höhe der Verlaufsfläche (endet exakt an der Oberkante
-  // der ersten Karte, die um FEED_PULL_UP_PX hochgezogen ist). `fadeStartPx` =
-  // Trennlinie, 16px über dieser Kartenoberkante (CARD_LINE_GAP_PX) – gleicher
-  // Abstand wie das seitliche Kartenpadding. Sie liegt damit optisch UNTER der
-  // aktiven Kachel: die (opake) Kachel ragt über die Linie und verdeckt sie
-  // ein Stück, ohne dass die Icon-Leiste selbst verschoben wird.
-  // WICHTIG: NICHT über st.offsetTop messen – bei einem festgeklebten
-  // position:sticky-Element liefert offsetTop die VERSCHOBENE Position (wächst
-  // mit dem Scrollstand); die Verlaufsfläche würde dann mitwachsen und ihr
-  // opaker Fuß als schwarzer Balken im Viewport über dem Inhalt kleben.
-  // feed.offsetTop ist dagegen reine Flow-Geometrie (inkl. des negativen
-  // Pull-up-Margins) und entspricht exakt der Oberkante der ersten Karte.
-  const measureGeometry = useCallback(() => {
-    const st = stickyRef.current;
-    const feed = feedRef.current;
-    if (!st || !feed) return;
-    setCoverBgH(feed.offsetTop);
-    setFadeStartPx(st.offsetHeight - FEED_PULL_UP_PX - CARD_LINE_GAP_PX);
-  }, []);
-
-  // Neu messen bei JEDER Höhenänderung des Sticky-Blocks (ResizeObserver):
-  // Beim Pinnen klappt der große Titel ein (~Titelhöhe weniger), beim Wechsel
-  // der aktiven Kachel ändert sich die Leistenhöhe minimal – beides verschiebt
-  // Kartenoberkante UND Trennlinie. Ohne sofortige Neumessung malt der (unten
-  // opake) Verlaufsfuß mit veralteter Höhe als schwarzer Balken über die
-  // Karten bzw. reißt beim Zurückscrollen ein Loch in den Verlauf.
-  useLayoutEffect(() => {
-    measureGeometry();
-    // Einmal den Scroll-Status auswerten, damit das "Seiteninhalt"-Label beim
-    // Öffnen korrekt aus ist (Kartentitel ist sichtbar) statt initial zu blinken.
-    handleScroll();
-    const ro = new ResizeObserver(measureGeometry);
-    if (stickyRef.current) ro.observe(stickyRef.current);
-    if (barRef.current) ro.observe(barRef.current);
-    window.addEventListener("resize", measureGeometry);
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", measureGeometry);
-    };
-  }, [cat.name, handleScroll, measureGeometry]);
-
-  // Zusätzlich synchron VOR dem Paint nachmessen, wenn Pin-Status oder aktive
-  // Kachel wechseln – der ResizeObserver feuert erst im nächsten Frame; ohne
-  // diese Messung blitzte der Verlauf einen Frame lang mit alter Höhe auf.
-  useLayoutEffect(() => {
-    measureGeometry();
-  }, [pinned, active, measureGeometry]);
-
-  const scrollToSection = (id) => {
-    const el = sectionRefs.current[id];
-    const scroller = scrollRef.current;
-    if (!el || !scroller) return;
-    spyLockUntil.current = Date.now() + 600;
-    setActive(id);
-    scroller.scrollTo({ top: Math.max(0, el.offsetTop - headerOffset() - 8), behavior: "smooth" });
-  };
+  // Scroll-Gerüst (Spy, Pinning, Cover-Geometrie, "Nach oben"-Pille)
+  const {
+    active, pinned, coverBgH, fadeStartPx, showToTop,
+    scrollRef, topbarRef, stickyRef, feedRef, barRef, setSectionRef, setTileRef,
+    handleScroll, scrollToSection, scrollToTop,
+  } = useDetailScaffold(SECTIONS.map((s) => s.id));
 
   const emptyText = {
     tasks: t.noTasks,
@@ -411,7 +161,7 @@ export function NewCatDetailScreen({
 
   return (
     <div
-      className={`new-detail${pinned ? " new-detail--pinned" : ""}`}
+      className={`new-detail${pinned ? " new-detail--pinned" : ""}${cat.coverImage ? " new-detail--has-cover-img" : ""}${coverLum?.top ? " new-detail--cover-top-light" : ""}${coverLum?.mid ? " new-detail--cover-mid-light" : ""}`}
       style={{
         "--nd-accent-rgb": accentRgb,
         "--nd-fade-start": `${fadeStartPx}px`,
@@ -454,53 +204,52 @@ export function NewCatDetailScreen({
             Volle Breite, KEINE Rundung – so entstehen keine schwarzen Ecken;
             der Verlauf läuft optisch nahtlos vom oberen Rand bis zur Leiste. */}
         <div className="new-detail__cover-bg" style={{ height: coverBgH }}>
+          {/* Ein Cover-Bild liegt in DIESER Fläche (nicht im Cover-Block
+              darüber), damit es wie der Farbverlauf bis zur Trennlinie reicht
+              und dort nach Schwarz bzw. Weiß ausläuft – so bleibt der Titel
+              immer lesbar. */}
+          {cat.coverImage && (
+            <img className="new-detail__cover-bg-img" src={cat.coverImage} alt="" />
+          )}
           {/* Grain über der GESAMTEN Verlaufsfläche (bis zur Trennlinie) –
               läge er nur überm Cover, entstünde an dessen Unterkante ein
               sichtbarer Helligkeits-Cut im Verlauf. */}
           <div className="new-detail__grain" style={{ backgroundImage: GRAIN_URI }} />
         </div>
-        {/* Cover: Emblem bzw. Bild – scrollt komplett weg. */}
+        {/* Cover-Block: trägt Emblem + Terminierung und scrollt weg. */}
         <div className="new-detail__cover">
-          {cat.coverImage && <img className="new-detail__cover-img" src={cat.coverImage} alt="" />}
-          {cat.coverImage && (
-            <div className="new-detail__grain" style={{ backgroundImage: GRAIN_URI }} />
-          )}
-          {!cat.coverImage && (
-            <div className="new-detail__emblem">
-              {/* Terminierung neben dem Emblem: links Datum (Kalender-Icon),
-                  rechts Uhrzeit (Uhr-Icon). Beide Icons sind IMMER sichtbar –
-                  ohne Wert nur als Placeholder; Tap öffnet den nativen Picker
-                  (verstecktes Input darunter). */}
-              <button
-                className="new-detail__cover-meta new-detail__cover-meta--left"
-                onClick={() => setCoverPicker("date")}
-                aria-label={t.scheduledLabel || "Terminiert"}
-              >
-                <Calendar size={14} strokeWidth={2.2} />
-                {cat.date && fmtDate(cat.date, t.locale)}
-              </button>
-              {safeType === "project" ? (
-                <DartTargetIcon size={112} strokeWidth={1.4} />
-              ) : (
-                <CatIcon size={104} strokeWidth={1.4} />
-              )}
-              <button
-                className="new-detail__cover-meta new-detail__cover-meta--right"
-                onClick={() => setCoverPicker("time")}
-                aria-label={t.timeLabel || "Uhrzeit"}
-              >
-                <Clock size={14} strokeWidth={2.2} />
-                {cat.time}
-              </button>
-            </div>
-          )}
+          <div className="new-detail__emblem">
+            {/* Terminierung neben dem Emblem: links Datum (Kalender-Icon),
+                rechts Uhrzeit (Uhr-Icon). Beide Icons sind IMMER sichtbar –
+                ohne Wert nur als Placeholder; Tap öffnet das Picker-Sheet. */}
+            <button
+              className="new-detail__cover-meta new-detail__cover-meta--left"
+              onClick={() => setCoverPicker("date")}
+              aria-label={t.scheduledLabel || "Terminiert"}
+            >
+              <Calendar size={14} strokeWidth={2.2} />
+              {cat.date && fmtDate(cat.date, t.locale)}
+            </button>
+            {safeType === "project" ? (
+              <DartTargetIcon size={112} strokeWidth={1.4} />
+            ) : (
+              <CatIcon size={104} strokeWidth={1.4} />
+            )}
+            <button
+              className="new-detail__cover-meta new-detail__cover-meta--right"
+              onClick={() => setCoverPicker("time")}
+              aria-label={t.timeLabel || "Uhrzeit"}
+            >
+              <Clock size={14} strokeWidth={2.2} />
+              {cat.time}
+            </button>
+          </div>
         </div>
 
         {/* Pinnt unter der Topbar fest: Titel + Icon-Leiste mit durchgehender
             Linie (N26-Stil). Nur das Cover darüber scrollt aus dem Bild. */}
         <div className="new-detail__sticky" ref={stickyRef}>
           <input
-            ref={titleElRef}
             className="new-detail__title"
             value={cat.name}
             onChange={(e) => onUpdate({ name: e.target.value })}
@@ -537,7 +286,7 @@ export function NewCatDetailScreen({
               return (
                 <button
                   key={id}
-                  ref={(el) => { tileRefs.current[id] = el; }}
+                  ref={setTileRef(id)}
                   className={`new-detail__tile${isActive ? " new-detail__tile--active" : ""}`}
                   onClick={() => scrollToSection(id)}
                   aria-label={label}
@@ -579,14 +328,11 @@ export function NewCatDetailScreen({
               Hochscrollen hinter dem gepinnten Header verschwindet. */}
           <section
             className="new-detail__section"
-            ref={(el) => { sectionRefs.current.canvas = el; }}
+            ref={setSectionRef("canvas")}
           >
             <div className="new-detail__card new-detail__card--canvas">
               <div className="new-detail__card-head">
-                <span
-                  className="new-detail__card-title"
-                  ref={(el) => { titleRefs.current.canvas = el; }}
-                >{t.pageContent}</span>
+                <span className="new-detail__card-title">{t.pageContent}</span>
               </div>
               <div
                 className={`new-detail__canvas-clip${canvasExpanded || !canvasOverflows ? " new-detail__canvas-clip--open" : ""}`}
@@ -615,14 +361,11 @@ export function NewCatDetailScreen({
             <section
               key={s.id}
               className="new-detail__section"
-              ref={(el) => { sectionRefs.current[s.id] = el; }}
+              ref={setSectionRef(s.id)}
             >
               <div className={`new-detail__card${s.id !== "link" ? " new-detail__card--flush" : ""}`}>
                 <div className="new-detail__card-head">
-                  <span
-                    className="new-detail__card-title"
-                    ref={(el) => { titleRefs.current[s.id] = el; }}
-                  >{s.label}</span>
+                  <span className="new-detail__card-title">{s.label}</span>
                   {s.count > 0 && <span className="new-detail__card-count">{s.count}</span>}
                   <button
                     className="new-detail__card-add"
@@ -691,14 +434,11 @@ export function NewCatDetailScreen({
           {/* Seiten-Details (Metadaten + Kollaboratoren) als letzte Karte */}
           <section
             className="new-detail__section"
-            ref={(el) => { sectionRefs.current.details = el; }}
+            ref={setSectionRef("details")}
           >
             <div className="new-detail__card">
               <div className="new-detail__card-head">
-                <span
-                  className="new-detail__card-title"
-                  ref={(el) => { titleRefs.current.details = el; }}
-                >{t.detailsTab || "Details"}</span>
+                <span className="new-detail__card-title">{t.detailsTab || "Details"}</span>
               </div>
 
               {/* Verknüpfungen: eine Pille pro Typ (Einzeln → öffnet die Seite;
@@ -745,7 +485,7 @@ export function NewCatDetailScreen({
           wenn spürbar weit gescrollt wurde, und scrollt zurück nach oben. */}
       <button
         className={`new-detail__totop${showToTop ? " new-detail__totop--show" : ""}`}
-        onClick={() => scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+        onClick={scrollToTop}
         aria-label={t.toTop || "Nach oben"}
       >
         <ArrowUp size={18} strokeWidth={2.4} />

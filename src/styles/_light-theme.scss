@@ -1911,8 +1911,8 @@
   }
 
   .settings-sheet__bubble {
-    background: #f0f0f5;
-    border-color: #e5e5f0;
+    background: rgba(0, 0, 0, 0.04);
+    border-color: rgba(0, 0, 0, 0.1);
     color: #6a6a78;
 
     &--active {
@@ -1922,13 +1922,36 @@
     }
   }
 
+
   .settings-sheet__color-swatch--active {
     border-color: #1c1c30;
   }
 
+  // Farb-Sheet: Ringe und Rahmen auf hellem Grund dunkel statt weiß.
+  .color-sheet__swatch--active {
+    border-color: #1c1c30;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.12);
+  }
+
+  .color-sheet__spectrum {
+    border-color: rgba(0, 0, 0, 0.12);
+  }
+
+  .color-sheet__preview {
+    border-color: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.04);
+    color: #1c1c30;
+
+    &--on { border-color: rgba(0, 0, 0, 0.35); }
+  }
+
+  .settings-sheet__url-field {
+    border-bottom-color: #e5e5f0;
+
+    &:focus-within { border-bottom-color: #0B8CE9; }
+  }
+
   .settings-sheet__url-input {
-    background: #f0f0f5;
-    border-color: #e5e5f0;
     color: #1c1c30;
 
     &::placeholder { color: #8a8a96; }

@@ -1,15 +1,27 @@
 import { useCallback, useRef, useState } from "react";
 import { Archive, ArchiveRestore, Camera, Check, Image as ImageIcon, Link2, Palette, Pin, PinOff, Star, Trash2 } from "lucide-react";
 import { useSheetSwipeClose } from "./useSheetSwipeClose";
-import { COVER_COLORS } from "../utils";
+import { SheetFooter } from "./SheetFooter";
+import { CoverColorPanel } from "./CoverColorPanel";
 
-// Options-Sheet einer Kategorie-Seite (Projekt/Bereich/Ressource): oben die
-// Design-Anpassung des Hintergrunds (Farben · Foto · Kamera als Kachel-Trio,
-// Cover-URL als Listen-Zeile), darunter Favorit/Anpinnen/Archivieren/Löschen.
-// Wird von der Detailseite (Drei-Punkte im Header) UND vom Kebab-Menü der
-// neuen Listenansicht geöffnet.
-export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClose }) {
+// Options-Sheet einer Detailseite: oben die Design-Anpassung des Hintergrunds
+// (Farben · Foto · Kamera als Kachel-Trio, Cover-URL als Listen-Zeile),
+// darunter Favorit/Anpinnen/Archivieren/Löschen. Wird von den Kategorie-Seiten
+// (Projekt/Bereich/Ressource), deren Listen-Kebab UND von den Eintrags-
+// Detailseiten geöffnet – `cat` ist daher allgemein das bearbeitete Objekt.
+// `extraItems` hängt typspezifische Zeilen (z.B. Erledigt, Geburtstag) vor den
+// Löschen-Eintrag.
+export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClose, extraItems }) {
   const [coverMode, setCoverMode] = useState(null);
+  // Ansicht des Sheets: "main" = Individualisieren + Aktionen, "colors" =
+  // Farbwahl. Die Farbwahl ERSETZT den Inhalt, statt ein weiteres Sheet
+  // darüberzulegen.
+  const [view, setView] = useState("main");
+  // Cover-Bild-URL: nur echte http(s)-Cover vorbelegen – hochgeladene Bilder
+  // liegen als data:-URI vor und gehören nicht ins Eingabefeld.
+  const [coverUrl, setCoverUrl] = useState(
+    cat.coverImage && /^https?:/.test(cat.coverImage) ? cat.coverImage : "",
+  );
 
   const coverInputRef = useRef(null);
   const cameraInputRef = useRef(null);
@@ -21,6 +33,13 @@ export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClo
 
   // Wisch-nach-unten zum Schließen des Sheets
   const swipe = useSheetSwipeClose(close);
+
+  const applyCoverUrl = useCallback(() => {
+    const val = coverUrl.trim();
+    if (!val) return;
+    onUpdate({ coverImage: val, coverColor: null });
+    close();
+  }, [coverUrl, onUpdate, close]);
 
   const handleCoverUpload = useCallback((e) => {
     const file = e.target.files[0];
@@ -38,11 +57,27 @@ export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClo
       <div className="settings-sheet" onClick={(e) => e.stopPropagation()}>
         <div className="settings-sheet__handle" />
 
+        {view === "colors" ? (
+          <CoverColorPanel
+            t={t}
+            value={cat.coverColor || null}
+            onPick={(hex) => {
+              onUpdate({ coverColor: hex, coverImage: null });
+              close();
+            }}
+            onBack={() => setView("main")}
+            onClose={close}
+          />
+        ) : (
+        <>
+        {/* Abschnitt 1 – Aussehen der Seite: Kachel-Trio + Cover-Bild-URL */}
+        <div className="settings-sheet__section-label">{t.customizeLabel}</div>
+
         {/* Cover Picker Bubbles */}
         <div className="settings-sheet__bubbles">
           <button
-            className={`settings-sheet__bubble ${coverMode === "colors" ? "settings-sheet__bubble--active" : ""}`}
-            onClick={() => setCoverMode(coverMode === "colors" ? null : "colors")}
+            className="settings-sheet__bubble"
+            onClick={() => setView("colors")}
           >
             <Palette size={20} />
             <span>{t.coverColors}</span>
@@ -63,68 +98,34 @@ export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClo
           </button>
         </div>
 
-        {/* Color Grid (visible when coverMode === "colors") */}
-        {coverMode === "colors" && (
-          <div className="settings-sheet__color-grid">
-            {COVER_COLORS.map((c) => (
-              <button
-                key={c.hex}
-                className={`settings-sheet__color-swatch ${cat.coverColor === c.hex ? "settings-sheet__color-swatch--active" : ""}`}
-                style={{ background: c.hex, color: c.hex }}
-                onClick={() => {
-                  onUpdate({ coverColor: c.hex, coverImage: null });
-                  close();
-                }}
-              />
-            ))}
+        {/* Cover-Bild-URL gehört zur Individualisierung und steht daher direkt
+            unter den Kacheln. Immer sichtbares Eingabefeld im Stil des
+            Namensfelds der Einstellungen; seine Unterlinie schließt die Gruppe
+            zugleich ab (kein eigener __divider). Der Übernehmen-Haken erscheint
+            erst, sobald etwas drinsteht. */}
+        <div className="settings-sheet__url-field">
+          <Link2 size={18} color="#8a8a96" />
+          <input
+            className="settings-sheet__url-input"
+            type="url"
+            placeholder={t.coverUrlPlaceholder}
+            value={coverUrl}
+            onChange={(e) => setCoverUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") applyCoverUrl(); }}
+          />
+          {coverUrl.trim() && (
             <button
-              className={`settings-sheet__color-swatch settings-sheet__color-swatch--default ${!cat.coverColor && !cat.coverImage ? "settings-sheet__color-swatch--active" : ""}`}
-              onClick={() => {
-                onUpdate({ coverColor: null, coverImage: null });
-                close();
-              }}
-              title={t.coverDefault}
-            />
-          </div>
-        )}
-
-        <div className="settings-sheet__divider" />
-
-        <div className="settings-sheet__list">
-          <button
-            className={`settings-sheet__item ${coverMode === "url" ? "settings-sheet__item--active" : ""}`}
-            onClick={() => setCoverMode(coverMode === "url" ? null : "url")}
-          >
-            <Link2 size={18} color="#8a8a96" />
-            <span>{t.coverUrl}</span>
-          </button>
-          {coverMode === "url" && (
-            <div className="settings-sheet__url-row">
-              <input
-                className="settings-sheet__url-input"
-                type="url"
-                placeholder="https://..."
-                autoFocus
-                defaultValue={cat.coverImage && /^https?:/.test(cat.coverImage) ? cat.coverImage : ""}
-                onKeyDown={(e) => {
-                  const val = e.target.value.trim();
-                  if (e.key === "Enter" && val) {
-                    onUpdate({ coverImage: val, coverColor: null });
-                    close();
-                  }
-                }}
-              />
-              <button
-                className="settings-sheet__url-apply"
-                onClick={(e) => {
-                  const val = e.currentTarget.previousElementSibling?.value.trim();
-                  if (val) { onUpdate({ coverImage: val, coverColor: null }); close(); }
-                }}
-              >
-                <Check size={18} />
-              </button>
-            </div>
+              className="settings-sheet__url-apply"
+              onClick={applyCoverUrl}
+              aria-label={t.applyLabel}
+            >
+              <Check size={18} />
+            </button>
           )}
+        </div>
+
+        {/* Abschnitt 2 – Aktionen: Favorit · Anheften · (Erledigt) · Archivieren */}
+        <div className="settings-sheet__list">
           <button
             className="settings-sheet__item"
             onClick={() => { onUpdate({ starred: !cat.starred }); close(); }}
@@ -139,6 +140,7 @@ export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClo
             {cat.pinned ? <PinOff size={18} color="#8a8a96" /> : <Pin size={18} color="#8a8a96" />}
             <span>{cat.pinned ? t.actionUnpin : t.actionPin}</span>
           </button>
+          {extraItems}
           <button
             className="settings-sheet__item"
             onClick={() => { onUpdate({ archived: !cat.archived }); close(); }}
@@ -155,6 +157,11 @@ export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClo
             <span>{t.delete}</span>
           </button>
         </div>
+
+        {/* Schließen als breite Glas-Pille am Fuß des Sheets */}
+        <SheetFooter onClose={close} closeLabel={t.closeBtn || "Schließen"} />
+        </>
+        )}
 
         {/* Versteckte File-Inputs für Foto/Kamera-Cover */}
         <input
@@ -174,5 +181,7 @@ export function CatOptionsSheet({ t, cat, onUpdate, onTogglePin, onDelete, onClo
         />
       </div>
     </div>
+
   );
 }
+

@@ -354,11 +354,12 @@ export function HomeEntryItem({ e, cats, onDelete, onToggle, onToggleStar, onTog
       {linkSheetOpen && (
         <LinkSheet
           currentIds={ids}
+          currentTags={e.tags || []}
           cats={cats}
           CC={CC}
           t={t}
-          onConfirm={(nextIds) => {
-            onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null });
+          onConfirm={(nextIds, nextTags) => {
+            onUpdateEntry && onUpdateEntry(e.id, { catIds: nextIds, catId: nextIds[0] || null, tags: nextTags });
             setLinkSheetOpen(false);
           }}
           onClose={() => setLinkSheetOpen(false)}

@@ -840,9 +840,11 @@ export function EntryDetailScreen({
           t={t}
           CC={CC}
           cats={allCats}
+          tags={tags}
           currentIds={entry.catIds || []}
-          onConfirm={(nextIds) => {
-            onUpdate({ catIds: nextIds, catId: nextIds[0] || null });
+          currentTags={entry.tags || []}
+          onConfirm={(nextIds, nextTags) => {
+            onUpdate({ catIds: nextIds, catId: nextIds[0] || null, tags: nextTags });
             setShowConnSelect(false);
           }}
           onClose={() => setShowConnSelect(false)}

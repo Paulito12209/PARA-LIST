@@ -2223,3 +2223,35 @@
     drop-shadow(0 1px 4px rgba(255, 255, 255, 0.8))
     drop-shadow(0 0 8px rgba(255, 255, 255, 0.6));
 }
+
+// ── Celebration-Popups (Aufgabe erledigt / Geburtstag) ───────
+// Das Overlay hing im Light Mode auf den dunklen $color-surface-Werten fest
+// und wirkte als schwarzer Block. Scope schließt `body.light-theme` ein,
+// falls die Karte außerhalb von `.app` gerendert wird.
+.app.light-theme, body.light-theme {
+  .task-done-overlay {
+    background: rgba(20, 22, 34, 0.28);
+  }
+
+  .task-done-card {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow:
+      0 24px 80px rgba(20, 22, 34, 0.18),
+      0 0 0 1px rgba(255, 255, 255, 0.9) inset;
+
+    &__title {
+      color: #1a1a24;
+    }
+
+    &__message {
+      color: #5a5a6e;
+    }
+
+    &__counter {
+      background: rgba(11, 140, 233, 0.08);
+      border-color: rgba(11, 140, 233, 0.22);
+      color: #0B6BB8;
+    }
+  }
+}

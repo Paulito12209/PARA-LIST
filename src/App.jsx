@@ -14,6 +14,7 @@ import {
   CAT_ICONS,
   blurActiveInput,
   isEditableElement,
+  LOGO_SRC,
 } from "./utils";
 import { buildPresetDecks, FLASHCARD_PRESETS_VERSION } from "./data/flashcardPresets";
 import { wordsResourceName } from "./lib/translate";
@@ -1137,7 +1138,7 @@ export default function App() {
   if (!isLoaded) {
     return (
       <div className="loading">
-        <img className="loading__logo" src="/paralist_logo.png" alt="PARA·LIST" />
+        <img className="loading__logo" src={LOGO_SRC} alt="PARA·LIST" />
         <div className="loading__text">PARA·LIST</div>
         <div className="loading__spinner" />
       </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { I18N } from "../i18n";
-import { blurActiveInput } from "../utils";
+import { blurActiveInput, LOGO_SRC } from "../utils";
 
 const STEP_SPLASH = 0;
 const STEP_LANGUAGE = 1;
@@ -95,7 +95,7 @@ export function OnboardingModal({ theme = "dark", onPreviewTheme, onComplete }) 
     return (
       <div className="onboarding onboarding--splash" onClick={() => setStep(STEP_LANGUAGE)}>
         <div className="onboarding__splash-inner">
-          <img className="onboarding__splash-logo" src="/paralist_logo.png" alt="" />
+          <img className="onboarding__splash-logo" src={LOGO_SRC} alt="" />
           <div className="onboarding__splash-wordmark">PARA·LIST</div>
           <div className="onboarding__splash-tagline">{t.onboardingTagline}</div>
         </div>

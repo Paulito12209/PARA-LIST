@@ -137,7 +137,16 @@ export function useDetailScaffold(sectionIds) {
     const feed = feedRef.current;
     if (!st || !feed) return;
     setCoverBgH(feed.offsetTop);
-    setFadeStartPx(st.offsetHeight - FEED_PULL_UP_PX - CARD_LINE_GAP_PX);
+    const designed = st.offsetHeight - FEED_PULL_UP_PX - CARD_LINE_GAP_PX;
+    // Sicherheits-Untergrenze: die Linie darf NIE oberhalb der Unterkante der
+    // Icon-Leiste landen. Die aktive Kachel ist nur getönt (halbtransparent),
+    // eine dort liegende Linie scheint also durch sie hindurch – auf iOS war
+    // genau das sichtbar, weil dort Sticky-Höhe und Leisten-Unterkante durch
+    // abweichende Font-Metriken (Label-Zeile) auseinanderlaufen. Der Browser
+    // traf denselben Fall nur zufällig nicht.
+    const bar = barRef.current;
+    const barBottom = bar ? bar.offsetTop + bar.offsetHeight : 0;
+    setFadeStartPx(Math.max(designed, barBottom));
   }, []);
 
   // Neu messen bei JEDER Höhenänderung des Sticky-Blocks (ResizeObserver):

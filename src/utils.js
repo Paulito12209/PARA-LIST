@@ -7,6 +7,15 @@ import { Circle, Triangle, Square, FileText, CheckCircle2, Calendar, Paperclip, 
 import { BookmarkIcon, TagIcon } from "./components/AppIcons";
 import { I18N } from "./i18n";
 
+/* ── Asset helpers ───────────────────────────────────────────── */
+// Dateien aus public/ müssen über die Vite-Base aufgelöst werden, sonst
+// zeigen absolute Pfade (`/logo.png`) unter einem Unterverzeichnis-Deploy
+// (base `/projects/paralist/`) ins Leere.
+export const asset = (path) =>
+  `${import.meta.env.BASE_URL}${String(path).replace(/^\//, "")}`;
+
+export const LOGO_SRC = asset("paralist_logo.png");
+
 /* ── ID helpers ──────────────────────────────────────────────── */
 export const uid = () => Math.random().toString(36).slice(2, 9);
 
